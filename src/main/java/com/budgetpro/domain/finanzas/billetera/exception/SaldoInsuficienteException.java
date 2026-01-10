@@ -1,6 +1,7 @@
-package com.budgetpro.domain.finanzas.exception;
+package com.budgetpro.domain.finanzas.billetera.exception;
 
-import java.math.BigDecimal;
+import com.budgetpro.domain.finanzas.billetera.Monto;
+
 import java.util.UUID;
 
 /**
@@ -13,10 +14,10 @@ import java.util.UUID;
 public class SaldoInsuficienteException extends RuntimeException {
 
     private final UUID proyectoId;
-    private final BigDecimal saldoActual;
-    private final BigDecimal montoIntentado;
+    private final Monto saldoActual;
+    private final Monto montoIntentado;
 
-    public SaldoInsuficienteException(UUID proyectoId, BigDecimal saldoActual, BigDecimal montoIntentado) {
+    public SaldoInsuficienteException(UUID proyectoId, Monto saldoActual, Monto montoIntentado) {
         super(String.format(
             "Saldo insuficiente en billetera del proyecto %s. Saldo actual: %s, Monto intentado: %s",
             proyectoId, saldoActual, montoIntentado
@@ -30,11 +31,11 @@ public class SaldoInsuficienteException extends RuntimeException {
         return proyectoId;
     }
 
-    public BigDecimal getSaldoActual() {
+    public Monto getSaldoActual() {
         return saldoActual;
     }
 
-    public BigDecimal getMontoIntentado() {
+    public Monto getMontoIntentado() {
         return montoIntentado;
     }
 }

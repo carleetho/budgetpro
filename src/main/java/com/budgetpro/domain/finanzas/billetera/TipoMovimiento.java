@@ -1,7 +1,7 @@
-package com.budgetpro.domain.finanzas.model;
+package com.budgetpro.domain.finanzas.billetera;
 
 /**
- * Enum que representa el tipo de movimiento de caja.
+ * Enum que representa el tipo de movimiento de fondos.
  * 
  * INGRESO: Aumenta el saldo de la billetera.
  * EGRESO: Disminuye el saldo de la billetera.

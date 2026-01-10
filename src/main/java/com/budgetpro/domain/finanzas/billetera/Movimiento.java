@@ -1,12 +1,11 @@
-package com.budgetpro.domain.finanzas.model;
+package com.budgetpro.domain.finanzas.billetera;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Entidad que representa un movimiento de caja dentro del agregado Billetera.
+ * Entidad que representa un movimiento de fondos dentro del agregado Billetera.
  * 
  * Invariantes:
  * - El monto debe ser positivo (estricto > 0)
@@ -16,11 +15,11 @@ import java.util.UUID;
  * 
  * El tipo de movimiento define si el monto suma o resta al saldo.
  */
-public final class MovimientoCaja {
+public final class Movimiento {
 
     private final UUID id;
     private final BilleteraId billeteraId;
-    private final BigDecimal monto;
+    private final Monto monto;
     private final TipoMovimiento tipo;
     private final LocalDateTime fecha;
     private final String referencia;
@@ -29,9 +28,9 @@ public final class MovimientoCaja {
     /**
      * Constructor privado. Usar factory methods.
      */
-    private MovimientoCaja(UUID id, BilleteraId billeteraId, BigDecimal monto, 
-                          TipoMovimiento tipo, LocalDateTime fecha, 
-                          String referencia, String evidenciaUrl) {
+    private Movimiento(UUID id, BilleteraId billeteraId, Monto monto, 
+                      TipoMovimiento tipo, LocalDateTime fecha, 
+                      String referencia, String evidenciaUrl) {
         validarInvariantes(billeteraId, monto, tipo, referencia);
         
         this.id = Objects.requireNonNull(id, "El ID del movimiento no puede ser nulo");
@@ -46,9 +45,9 @@ public final class MovimientoCaja {
     /**
      * Factory method para crear un movimiento de INGRESO.
      */
-    public static MovimientoCaja crearIngreso(BilleteraId billeteraId, BigDecimal monto, 
-                                              String referencia, String evidenciaUrl) {
-        return new MovimientoCaja(
+    public static Movimiento crearIngreso(BilleteraId billeteraId, Monto monto, 
+                                         String referencia, String evidenciaUrl) {
+        return new Movimiento(
             UUID.randomUUID(),
             billeteraId,
             monto,
@@ -62,9 +61,9 @@ public final class MovimientoCaja {
     /**
      * Factory method para crear un movimiento de EGRESO.
      */
-    public static MovimientoCaja crearEgreso(BilleteraId billeteraId, BigDecimal monto, 
-                                             String referencia, String evidenciaUrl) {
-        return new MovimientoCaja(
+    public static Movimiento crearEgreso(BilleteraId billeteraId, Monto monto, 
+                                        String referencia, String evidenciaUrl) {
+        return new Movimiento(
             UUID.randomUUID(),
             billeteraId,
             monto,
@@ -78,19 +77,19 @@ public final class MovimientoCaja {
     /**
      * Factory method para reconstruir un movimiento desde persistencia.
      */
-    public static MovimientoCaja reconstruir(UUID id, BilleteraId billeteraId, BigDecimal monto,
-                                            TipoMovimiento tipo, LocalDateTime fecha,
-                                            String referencia, String evidenciaUrl) {
-        return new MovimientoCaja(id, billeteraId, monto, tipo, fecha, referencia, evidenciaUrl);
+    public static Movimiento reconstruir(UUID id, BilleteraId billeteraId, Monto monto,
+                                        TipoMovimiento tipo, LocalDateTime fecha,
+                                        String referencia, String evidenciaUrl) {
+        return new Movimiento(id, billeteraId, monto, tipo, fecha, referencia, evidenciaUrl);
     }
 
-    private static void validarInvariantes(BilleteraId billeteraId, BigDecimal monto, 
+    private static void validarInvariantes(BilleteraId billeteraId, Monto monto, 
                                           TipoMovimiento tipo, String referencia) {
         Objects.requireNonNull(billeteraId, "El billeteraId no puede ser nulo");
         Objects.requireNonNull(monto, "El monto no puede ser nulo");
         Objects.requireNonNull(tipo, "El tipo de movimiento no puede ser nulo");
         
-        if (monto.compareTo(BigDecimal.ZERO) <= 0) {
+        if (monto.esNegativo() || monto.esCero()) {
             throw new IllegalArgumentException("El monto debe ser positivo (mayor que cero)");
         }
         
@@ -109,7 +108,7 @@ public final class MovimientoCaja {
         return billeteraId;
     }
 
-    public BigDecimal getMonto() {
+    public Monto getMonto() {
         return monto;
     }
 
@@ -130,18 +129,24 @@ public final class MovimientoCaja {
     }
 
     /**
-     * Retorna el monto como valor absoluto para cálculos.
-     * El tipo ya define la dirección (suma o resta).
+     * Verifica si es un movimiento de ingreso.
      */
-    public BigDecimal getMontoAbsoluto() {
-        return monto;
+    public boolean esIngreso() {
+        return tipo == TipoMovimiento.INGRESO;
+    }
+
+    /**
+     * Verifica si es un movimiento de egreso.
+     */
+    public boolean esEgreso() {
+        return tipo == TipoMovimiento.EGRESO;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MovimientoCaja that = (MovimientoCaja) o;
+        Movimiento that = (Movimiento) o;
         return Objects.equals(id, that.id);
     }
 
@@ -152,7 +157,7 @@ public final class MovimientoCaja {
 
     @Override
     public String toString() {
-        return String.format("MovimientoCaja{id=%s, tipo=%s, monto=%s, referencia='%s'}", 
-                           id, tipo, monto, referencia);
+        return String.format("Movimiento{id=%s, tipo=%s, monto=%s, referencia='%s', fecha=%s}", 
+                           id, tipo, monto, referencia, fecha);
     }
 }

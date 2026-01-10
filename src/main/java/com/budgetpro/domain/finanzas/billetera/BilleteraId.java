@@ -1,4 +1,4 @@
-package com.budgetpro.domain.finanzas.model;
+package com.budgetpro.domain.finanzas.billetera;
 
 import java.util.Objects;
 import java.util.UUID;

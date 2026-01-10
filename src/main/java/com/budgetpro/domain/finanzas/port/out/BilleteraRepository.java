@@ -1,7 +1,7 @@
 package com.budgetpro.domain.finanzas.port.out;
 
-import com.budgetpro.domain.finanzas.model.Billetera;
-import com.budgetpro.domain.finanzas.model.BilleteraId;
+import com.budgetpro.domain.finanzas.billetera.Billetera;
+import com.budgetpro.domain.finanzas.billetera.BilleteraId;
 
 import java.util.Optional;
 import java.util.UUID;
