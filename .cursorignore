@@ -1,0 +1,235 @@
+# =============================================================================
+# .cursorignore - Exclusiones para Cursor AI
+# =============================================================================
+# Objetivo: Eliminar ruido del contexto para mejorar razonamiento y evitar confusiones
+# Generado por: Ingeniero DevOps
+# Fecha: 2026-01-11
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. ARTEFACTOS DE GESTIÓN OBSOLETOS (Metodología Chanctivity)
+# -----------------------------------------------------------------------------
+# Archivos de metodología anterior que ya no deben ser leídos
+**/CURRENT_TASK.md
+**/MASTER_PLAN.md
+**/QA_REPORT.md
+**/00_PROMPT_SINCRONIZACION_CURSOR.md
+**/*_CHANCTIVITY*.md
+**/orchestration/
+**/_orchestration/
+
+# -----------------------------------------------------------------------------
+# 2. ARTEFACTOS DE COMPILACIÓN JAVA/MAVEN
+# -----------------------------------------------------------------------------
+# Carpetas y archivos generados por Maven/Java
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.sar
+*.nar
+*.so
+*.dll
+*.dylib
+
+# Maven wrapper (mantener solo el jar necesario, excluir propiedades)
+.mvn/wrapper/maven-wrapper.properties
+
+# Archivos de compilación incremental
+**/.maven/
+**/maven-archiver/
+
+# -----------------------------------------------------------------------------
+# 3. LOGS Y ARCHIVOS TEMPORALES
+# -----------------------------------------------------------------------------
+# Logs de aplicación
+*.log
+logs/
+**/logs/
+_logs/
+**/_logs/
+
+# Temporales del sistema
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de Spring Boot
+spring.log
+application-local.yml
+application-local.properties
+
+# -----------------------------------------------------------------------------
+# 4. SEGURIDAD Y CREDENCIALES
+# -----------------------------------------------------------------------------
+# Variables de entorno y credenciales (NUNCA incluir en contexto)
+.env
+.env.*
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.keystore
+*.truststore
+secrets/
+**/secrets/
+credentials/
+**/credentials/
+
+# -----------------------------------------------------------------------------
+# 5. CONFIGURACIONES IDE Y EDITORES
+# -----------------------------------------------------------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Visual Studio Code
+.vscode/
+.vscode-test/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+tmp/
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# -----------------------------------------------------------------------------
+# 6. DOCKER Y CONTENEDORES
+# -----------------------------------------------------------------------------
+# Datos de PostgreSQL local y otros volúmenes
+.docker/
+docker/postgres-data/
+**/postgres-data/
+**/postgres_data/
+
+# Archivos de Docker Compose generados
+docker-compose.override.yml
+docker-compose.local.yml
+
+# -----------------------------------------------------------------------------
+# 7. ARCHIVOS DE SISTEMA Y BACKUP
+# -----------------------------------------------------------------------------
+# Backups y archivos de respaldo
+*.bak
+*.backup
+*.old
+*~
+*.orig
+
+# Archivos de sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# -----------------------------------------------------------------------------
+# 8. DEPENDENCIAS Y CACHÉS
+# -----------------------------------------------------------------------------
+# Caché de Maven (local repository, solo si está en el proyecto)
+.m2/
+**/.mvn/repository/
+
+# Node modules (si hay frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -----------------------------------------------------------------------------
+# 9. REPORTES Y COBERTURA DE CÓDIGO
+# -----------------------------------------------------------------------------
+# Reportes de cobertura y análisis estático
+coverage/
+**/coverage/
+*.lcov
+.nyc_output/
+junit.xml
+test-results/
+**/test-results/
+surefire-reports/
+**/surefire-reports/
+failsafe-reports/
+**/failsafe-reports/
+
+# -----------------------------------------------------------------------------
+# 10. ARCHIVOS GRANDES Y BINARIOS
+# -----------------------------------------------------------------------------
+# Archivos grandes que no aportan contexto útil
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.pdf
+*.xlsx
+*.xls
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# Imágenes grandes (mantener solo las necesarias para documentación)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+!**/docs/**/*.png
+!**/docs/**/*.jpg
+!**/_docs/**/*.png
+!**/_docs/**/*.jpg
+
+# -----------------------------------------------------------------------------
+# 11. ARCHIVOS DE CONFIGURACIÓN ESPECÍFICOS DEL ENTORNO
+# -----------------------------------------------------------------------------
+# Configuraciones locales que no deben compartirse
+application-local*.yml
+application-local*.properties
+application-dev*.yml
+application-dev*.properties
+!application-test.yml
+!application-test.properties
+
+# -----------------------------------------------------------------------------
+# 12. ARCHIVOS DE TRANSCRIPCIÓN Y TEMPORALES DE AI
+# -----------------------------------------------------------------------------
+# Transcripts y archivos temporales de herramientas AI
+**/agent-transcripts/
+**/.cursor/
+**/.codex/
+transcripts/
+**/transcripts/
+
+# =============================================================================
+# NOTAS:
+# - Los archivos en _docs/context/ y _docs/audits/ se MANTIENEN (son documentación activa)
+# - El código fuente en src/ se MANTIENE (es el contexto principal)
+# - Los archivos de configuración principales (pom.xml, application.yml) se MANTIENEN
+# =============================================================================

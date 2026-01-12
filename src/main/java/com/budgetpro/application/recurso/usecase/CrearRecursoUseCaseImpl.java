@@ -4,7 +4,7 @@ import com.budgetpro.application.recurso.dto.CrearRecursoCommand;
 import com.budgetpro.application.recurso.dto.RecursoResponse;
 import com.budgetpro.application.recurso.exception.RecursoDuplicadoException;
 import com.budgetpro.application.recurso.port.in.CrearRecursoUseCase;
-import com.budgetpro.application.recurso.port.out.RecursoRepository;
+import com.budgetpro.domain.recurso.port.out.RecursoRepository;
 import com.budgetpro.domain.recurso.model.Recurso;
 import com.budgetpro.domain.recurso.model.RecursoId;
 import com.budgetpro.domain.recurso.model.TipoRecurso;

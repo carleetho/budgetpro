@@ -29,3 +29,8 @@ logs/
 spring.log
 application-local.yml
 application-local.properties
+
+# Variables de entorno (NUNCA commitees archivos .env)
+.env
+.env.local
+.env.*.local

@@ -1,4 +1,4 @@
-package com.budgetpro.application.recurso.port.out;
+package com.budgetpro.domain.recurso.port.out;
 
 import com.budgetpro.domain.recurso.model.Recurso;
 import com.budgetpro.domain.recurso.model.RecursoId;
@@ -9,8 +9,7 @@ import java.util.Optional;
  * Puerto de Salida (Outbound Port) para la persistencia del agregado Recurso.
  * Esta interfaz define el contrato que debe implementar la capa de infraestructura.
  * 
- * Siguiendo los principios de Arquitectura Hexagonal, esta interfaz pertenece
- * a la capa de aplicación y es implementada por adaptadores de infraestructura.
+ * Según Directiva Maestra v2.0: Los puertos de salida deben residir en domain/model/{agregado}/port/out
  */
 public interface RecursoRepository {
 

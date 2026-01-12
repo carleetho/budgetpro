@@ -1,6 +1,6 @@
 package com.budgetpro.infrastructure.persistence.adapter;
 
-import com.budgetpro.application.recurso.port.out.RecursoRepository;
+import com.budgetpro.domain.recurso.port.out.RecursoRepository;
 import com.budgetpro.domain.recurso.model.Recurso;
 import com.budgetpro.domain.recurso.model.RecursoId;
 import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
@@ -25,10 +25,15 @@ public class RecursoRepositoryAdapter implements RecursoRepository {
 
     private final RecursoJpaRepository jpaRepository;
     private final RecursoMapper mapper;
+    private final com.budgetpro.infrastructure.security.service.SecurityContextService securityContextService;
 
-    public RecursoRepositoryAdapter(RecursoJpaRepository jpaRepository, RecursoMapper mapper) {
+    public RecursoRepositoryAdapter(
+            RecursoJpaRepository jpaRepository,
+            RecursoMapper mapper,
+            com.budgetpro.infrastructure.security.service.SecurityContextService securityContextService) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
+        this.securityContextService = securityContextService;
     }
 
     @Override
@@ -47,9 +52,7 @@ public class RecursoRepositoryAdapter implements RecursoRepository {
                 jpaRepository.save(existingEntity);
             } else {
                 // Crear nueva entidad
-                // TODO: Obtener createdBy del contexto de seguridad cuando se implemente Spring Security
-                // Por ahora, usar un UUID temporal o lanzar excepción
-                UUID createdBy = getCurrentUserId(); // Implementación temporal
+                UUID createdBy = getCurrentUserId();
                 RecursoEntity newEntity = mapper.toEntity(recurso, createdBy);
                 jpaRepository.save(newEntity);
             }
@@ -85,15 +88,11 @@ public class RecursoRepositoryAdapter implements RecursoRepository {
 
     /**
      * Obtiene el ID del usuario actual del contexto de seguridad.
-     * Implementación temporal hasta que se implemente Spring Security.
      * 
      * @return El UUID del usuario actual
      * @throws IllegalStateException si no se puede obtener el usuario del contexto
      */
     private UUID getCurrentUserId() {
-        // TODO: Implementar obtención del usuario del SecurityContext cuando se agregue Spring Security
-        // Por ahora, usar un UUID temporal para permitir desarrollo y pruebas
-        // Este método debe ser reemplazado por una implementación real cuando se agregue autenticación
-        return UUID.fromString("00000000-0000-0000-0000-000000000000"); // System user temporal
+        return securityContextService.getCurrentUserId();
     }
 }

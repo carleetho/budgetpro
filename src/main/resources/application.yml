@@ -3,9 +3,9 @@ spring:
     name: budgetpro-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/budgetpro
-    username: postgres
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/budgetpro}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -23,7 +23,11 @@ spring:
     baseline-on-migrate: true
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+
+# JWT Configuration
+jwt:
+  secret-key: ${JWT_SECRET_KEY:}
 
 logging:
   level:
@@ -34,3 +38,15 @@ logging:
     # %X{correlationId} obtiene el valor del MDC con clave "correlationId"
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId}] - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId}] - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
