@@ -3,6 +3,7 @@ package com.budgetpro.application.compra.usecase;
 import com.budgetpro.application.compra.dto.RegistrarCompraDirectaCommand;
 import com.budgetpro.application.compra.dto.RegistrarCompraDirectaResponse;
 import com.budgetpro.application.compra.port.in.RegistrarCompraDirectaUseCase;
+import com.budgetpro.application.compra.dto.RegistrarCompraDirectaResponse.StockInfo;
 import com.budgetpro.domain.finanzas.compra.port.out.CompraRepository;
 import com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository;
 import com.budgetpro.domain.finanzas.compra.port.out.OutboxEventRepository;
@@ -15,11 +16,14 @@ import com.budgetpro.domain.finanzas.compra.service.ProcesarCompraDirectaService
 import com.budgetpro.domain.finanzas.model.Billetera;
 import com.budgetpro.domain.finanzas.port.out.BilleteraRepository;
 import com.budgetpro.domain.logistica.inventario.InventarioItem;
+import com.budgetpro.domain.recurso.model.Recurso;
 import com.budgetpro.domain.recurso.model.RecursoId;
+import com.budgetpro.domain.recurso.port.out.RecursoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +48,7 @@ public class RegistrarCompraDirectaUseCaseImpl implements RegistrarCompraDirecta
     private final CompraRepository compraRepository;
     private final BilleteraRepository billeteraRepository;
     private final InventarioRepository inventarioRepository;
+    private final RecursoRepository recursoRepository;
     private final ProcesarCompraDirectaService procesarCompraDirectaService;
     private final OutboxEventRepository outboxEventRepository;
 
@@ -51,11 +56,13 @@ public class RegistrarCompraDirectaUseCaseImpl implements RegistrarCompraDirecta
             CompraRepository compraRepository,
             BilleteraRepository billeteraRepository,
             InventarioRepository inventarioRepository,
+            RecursoRepository recursoRepository,
             ProcesarCompraDirectaService procesarCompraDirectaService,
             OutboxEventRepository outboxEventRepository) {
         this.compraRepository = compraRepository;
         this.billeteraRepository = billeteraRepository;
         this.inventarioRepository = inventarioRepository;
+        this.recursoRepository = recursoRepository;
         this.procesarCompraDirectaService = procesarCompraDirectaService;
         this.outboxEventRepository = outboxEventRepository;
     }
@@ -99,6 +106,16 @@ public class RegistrarCompraDirectaUseCaseImpl implements RegistrarCompraDirecta
                 }
             }
 
+            // Guardar stock anterior antes de procesar (para respuesta)
+            Map<RecursoId, BigDecimal> stockAnteriorPorRecurso = inventariosPorRecurso.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> entry.getKey(),
+                            entry -> entry.getValue().getStock()
+                    ));
+
+            // Guardar saldo anterior antes de procesar (para respuesta)
+            BigDecimal saldoAnterior = billetera.getSaldoActual();
+
             // 6. Invocar Domain Service para procesar la compra
             procesarCompraDirectaService.procesar(compra, billetera, inventariosPorRecurso);
 
@@ -124,11 +141,37 @@ public class RegistrarCompraDirectaUseCaseImpl implements RegistrarCompraDirecta
             );
             outboxEventRepository.save(evento);
 
-            // 10. Retornar respuesta con estado CONFIRMADA
+            // 10. Construir información de stock actualizado para la respuesta
+            List<StockInfo> stockActualizado = detalles.stream()
+                    .map(detalle -> {
+                        RecursoId recursoId = detalle.getRecursoId();
+                        InventarioItem inventario = inventariosPorRecurso.get(recursoId);
+                        BigDecimal stockAnterior = stockAnteriorPorRecurso.get(recursoId);
+                        BigDecimal stockActual = inventario.getStock();
+                        
+                        // Obtener información del recurso (nombre y unidad)
+                        Recurso recurso = recursoRepository.findById(recursoId)
+                                .orElseThrow(() -> new IllegalStateException(
+                                    String.format("No se encontró el recurso %s", recursoId)
+                                ));
+                        
+                        return new StockInfo(
+                                recursoId.getValue(),
+                                recurso.getNombre(),
+                                stockAnterior,
+                                stockActual,
+                                recurso.getUnidadBase()
+                        );
+                    })
+                    .collect(Collectors.toList());
+
+            // 11. Retornar respuesta con estado CONFIRMADA, saldo actual y stock actualizado
             return new RegistrarCompraDirectaResponse(
                 compra.getId().getValue(),
                 compra.getEstado(),
-                null // Sin mensaje de error
+                null, // Sin mensaje de error
+                billetera.getSaldoActual(), // Saldo actualizado después de la compra
+                stockActualizado
             );
         } catch (Exception e) {
             // 10. Marcar compra como ERROR solo si aún está en estado PENDIENTE

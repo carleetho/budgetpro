@@ -314,12 +314,36 @@ class CompraIntegrationTest extends AbstractIntegrationTest {
             assertThat(body).isNotNull();
             assertThat(body.compraId()).isNotNull();
             assertThat(body.estado()).isEqualTo(com.budgetpro.domain.finanzas.compra.EstadoCompra.CONFIRMADA);
+            
+            // Then: Verificar que la respuesta incluye saldoActual
+            assertThat(body.saldoActual()).isNotNull();
+            BigDecimal saldoEsperado = saldoInicial.subtract(new BigDecimal("5300.00"));
+            assertThat(body.saldoActual()).isEqualByComparingTo(saldoEsperado);
+            
+            // Then: Verificar que la respuesta incluye stockActualizado
+            assertThat(body.stockActualizado()).isNotNull();
+            assertThat(body.stockActualizado()).hasSize(2);
+            
+            // Verificar stock del recurso 1
+            var stockRecurso1 = body.stockActualizado().stream()
+                    .filter(s -> s.recursoId().equals(recursoId1))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(stockRecurso1.stockAnterior()).isEqualByComparingTo(new BigDecimal("1000.00"));
+            assertThat(stockRecurso1.stockActual()).isEqualByComparingTo(new BigDecimal("1100.00"));
+            
+            // Verificar stock del recurso 2 (compra 10.00 unidades de 1000.00 inicial = 1010.00)
+            var stockRecurso2 = body.stockActualizado().stream()
+                    .filter(s -> s.recursoId().equals(recursoId2))
+                    .findFirst()
+                    .orElseThrow();
+            assertThat(stockRecurso2.stockAnterior()).isEqualByComparingTo(new BigDecimal("1000.00"));
+            assertThat(stockRecurso2.stockActual()).isEqualByComparingTo(new BigDecimal("1010.00"));
 
-            // Then: Verificar que el saldo se rebajó correctamente
+            // Then: Verificar que el saldo se rebajó correctamente (verificación adicional desde repositorio)
             Optional<Billetera> billeteraDespues = billeteraRepository.findByProyectoId(proyectoId);
             assertThat(billeteraDespues).isPresent();
             BigDecimal saldoFinal = billeteraDespues.get().getSaldoActual();
-            BigDecimal saldoEsperado = saldoInicial.subtract(new BigDecimal("5300.00"));
             assertThat(saldoFinal).isEqualByComparingTo(saldoEsperado);
 
             // Then: Verificar que el stock aumentó correctamente

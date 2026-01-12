@@ -1,7 +1,10 @@
 package com.budgetpro.infrastructure.rest.recurso.controller;
 
 import com.budgetpro.application.recurso.dto.RecursoResponse;
+import com.budgetpro.application.recurso.dto.RecursoSearchResponse;
+import com.budgetpro.application.recurso.port.in.BuscarRecursosUseCase;
 import com.budgetpro.application.recurso.port.in.CrearRecursoUseCase;
+import com.budgetpro.domain.recurso.model.TipoRecurso;
 import com.budgetpro.infrastructure.rest.recurso.dto.CrearRecursoRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 /**
  * Controlador REST para operaciones relacionadas con Recursos.
@@ -23,9 +27,34 @@ import java.net.URI;
 public class RecursoController {
 
     private final CrearRecursoUseCase crearRecursoUseCase;
+    private final BuscarRecursosUseCase buscarRecursosUseCase;
 
-    public RecursoController(CrearRecursoUseCase crearRecursoUseCase) {
+    public RecursoController(CrearRecursoUseCase crearRecursoUseCase,
+                             BuscarRecursosUseCase buscarRecursosUseCase) {
         this.crearRecursoUseCase = crearRecursoUseCase;
+        this.buscarRecursosUseCase = buscarRecursosUseCase;
+    }
+
+    /**
+     * Busca recursos por nombre (autocomplete).
+     * 
+     * @param search Término de búsqueda (opcional)
+     * @param tipo Filtro opcional por tipo de recurso
+     * @param limit Límite de resultados (opcional, por defecto sin límite)
+     * @return ResponseEntity con la lista de recursos y código HTTP 200 OK
+     */
+    @GetMapping
+    public ResponseEntity<List<RecursoSearchResponse>> buscar(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) TipoRecurso tipo,
+            @RequestParam(required = false) Integer limit) {
+        // Delegar al caso de uso (puerto de entrada)
+        List<RecursoSearchResponse> recursos = buscarRecursosUseCase.buscar(search, tipo, limit);
+        
+        // Retornar respuesta con código 200 OK
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(recursos);
     }
 
     /**
