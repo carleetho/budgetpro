@@ -56,7 +56,8 @@ public class CrearPresupuestoUseCaseImpl implements CrearPresupuestoUseCase {
                 presupuesto.getNombre(),
                 presupuesto.getEstado(),
                 presupuesto.getEsContractual(),
-                java.math.BigDecimal.ZERO, // Costo total inicial (sin partidas aún)
+                java.math.BigDecimal.ZERO, // Costo Directo inicial (sin partidas aún)
+                java.math.BigDecimal.ZERO, // Precio de Venta inicial (sin sobrecosto configurado aún)
                 presupuesto.getVersion().intValue(),
                 null, // createdAt se obtiene de la entidad después de persistir
                 null  // updatedAt se obtiene de la entidad después de persistir

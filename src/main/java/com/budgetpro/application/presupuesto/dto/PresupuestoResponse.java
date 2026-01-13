@@ -15,7 +15,8 @@ public record PresupuestoResponse(
         String nombre,
         EstadoPresupuesto estado,
         Boolean esContractual,
-        BigDecimal costoTotal, // Costo total calculado
+        BigDecimal costoTotal, // Costo Directo (CD) - Lo que cuesta construir
+        BigDecimal precioVenta, // Precio de Venta (PV) - Lo que se cobra al cliente
         Integer version,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
