@@ -29,3 +29,16 @@ logs/
 spring.log
 application-local.yml
 application-local.properties
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.vite/

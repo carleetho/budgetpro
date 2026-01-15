@@ -1,101 +1,89 @@
-# BUDGETPRO Backend
+# 🏗️ BUDGETPRO - Sistema de Control Técnico-Financiero
 
-Sistema de control técnico-financiero para proyectos de ingeniería civil.
-
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-
-- Java 17+
-- Maven 3.8+
-- Docker & Docker Compose
-
-### Levantar la Infraestructura
-
-```bash
-# Levantar PostgreSQL con Docker Compose
-docker compose up -d
-
-# Verificar que el contenedor está corriendo
-docker compose ps
-
-# Ver logs del contenedor
-docker compose logs -f budgetpro-db
-```
-
-### Ejecutar la Aplicación
-
-```bash
-# Compilar y ejecutar
-mvn spring-boot:run
-
-# O construir y ejecutar el JAR
-mvn clean package
-java -jar target/budgetpro-backend-1.0.0-SNAPSHOT.jar
-```
-
-La aplicación estará disponible en: `http://localhost:8080`
-
-### Configuración
-
-La configuración de la base de datos está en `src/main/resources/application.yml`:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/budgetpro
-    username: postgres
-    password: ${DB_PASSWORD}
-```
-
-### Migraciones de Base de Datos
-
-Flyway ejecuta automáticamente las migraciones al iniciar la aplicación desde `src/main/resources/db/migration/`.
-
-### Comandos Útiles
-
-```bash
-# Levantar infraestructura
-docker compose up -d
-
-# Detener infraestructura
-docker compose down
-
-# Ver logs
-docker compose logs -f budgetpro-db
-
-# Ejecutar tests
-mvn test
-
-# Limpiar y reconstruir
-mvn clean install
-```
+Sistema completo de gestión de presupuestos y control de costos para proyectos de ingeniería civil.
 
 ## 📁 Estructura del Proyecto
 
 ```
-src/
-├── main/
-│   ├── java/com/budgetpro/
-│   │   ├── domain/          # Capa de Dominio (DDD)
-│   │   ├── application/     # Capa de Aplicación (Use Cases)
-│   │   └── infrastructure/  # Capa de Infraestructura (REST, JPA)
-│   └── resources/
-│       ├── application.yml  # Configuración principal
-│       └── db/migration/    # Migraciones Flyway
-└── test/
-    └── java/                # Tests
+budgetpro-backend/
+├── backend/              # Backend Spring Boot
+│   ├── src/             # Código fuente Java
+│   ├── pom.xml          # Configuración Maven
+│   └── compose.yaml     # Docker Compose para PostgreSQL
+├── frontend/            # Frontend (por implementar)
+│   └── README.md        # Documentación del frontend
+├── docs/                # Documentación del proyecto
+│   ├── ARQUITECTURA_VISUAL.md    # Diagramas y endpoints
+│   ├── AUDITORIA_BACKEND.md      # Auditoría de código
+│   └── audits/          # Reportes de implementación
+└── README.md            # Este archivo
 ```
+
+## 🚀 Inicio Rápido
+
+### Backend
+
+```bash
+# Navegar al directorio backend
+cd backend
+
+# Levantar PostgreSQL con Docker
+docker compose up -d
+
+# Compilar y ejecutar
+./mvnw spring-boot:run
+
+# O construir JAR
+./mvnw clean package
+java -jar target/budgetpro-backend-1.0.0-SNAPSHOT.jar
+```
+
+El backend estará disponible en: `http://localhost:8080`
+
+### Frontend
+
+```bash
+# Navegar al directorio frontend
+cd frontend
+
+# Instalar dependencias (cuando se configure)
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+## 📚 Documentación
+
+- **Arquitectura Visual:** `docs/ARQUITECTURA_VISUAL.md` - Diagramas Mermaid, endpoints REST, diagramas ER
+- **Auditoría Backend:** `docs/AUDITORIA_BACKEND.md` - Análisis de código, cobertura de tests
+- **Reportes de Implementación:** `docs/audits/` - Reportes detallados de cada movimiento
+
+## 🛠️ Tecnologías
+
+### Backend
+- Java 17
+- Spring Boot 3.x
+- PostgreSQL
+- Flyway (migraciones)
+- Maven
+
+### Frontend
+- (Por definir)
+
+## 📖 API REST
+
+Base URL: `http://localhost:8080/api/v1`
+
+Ver documentación completa de endpoints en: `docs/ARQUITECTURA_VISUAL.md`
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar todos los tests
-mvn test
-
-# Ejecutar tests de integración específicos
-mvn test -Dtest=RecursoControllerIT
-
-# Ejecutar con cobertura (si está configurado)
-mvn test jacoco:report
+cd backend
+./mvnw test
 ```
+
+## 📝 Licencia
+
+(Definir según corresponda)
