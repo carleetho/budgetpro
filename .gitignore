@@ -33,3 +33,8 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .vite/
+# Secretos y archivos de IDE específicos
+*.env
+*.iws
+*.iml
+*.ipr
