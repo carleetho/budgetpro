@@ -43,3 +43,5 @@ Thumbs.db
 *.iml
 *.ipr
 **/db/migration/*.sql
+backend/RESEND_API_KEY.env
+database.env
