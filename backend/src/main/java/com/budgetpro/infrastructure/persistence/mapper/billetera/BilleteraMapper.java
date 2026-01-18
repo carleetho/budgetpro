@@ -70,7 +70,8 @@ public class BilleteraMapper {
             movimiento.getTipo(),
             movimiento.getFecha(),
             movimiento.getReferencia(),
-            movimiento.getEvidenciaUrl()
+            movimiento.getEvidenciaUrl(),
+            movimiento.getEstado()
         );
     }
 
@@ -105,7 +106,8 @@ public class BilleteraMapper {
             entity.getTipo(),
             entity.getFecha(),
             entity.getReferencia(),
-            entity.getEvidenciaUrl()
+            entity.getEvidenciaUrl(),
+            entity.getEstado()
         );
     }
 }

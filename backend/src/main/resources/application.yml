@@ -1,19 +1,19 @@
 spring:
   config:
-    import: optional:file:./database.env,optional:file:../database.env,optional:file:./database.properties,optional:file:../database.properties
+    import: optional:file:./database.env,optional:file:../database.env
   application:
     name: budgetpro-backend
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/budgetpro}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -39,13 +39,13 @@ logging:
 
 resend:
   api:
-    key: ${RESEND_API_KEY:test-key}
+    key: ${RESEND_API_KEY}
 
 app:
   notification:
-    email: ${ADMIN_EMAIL:admin@test.local}
+    email: ${ADMIN_EMAIL}
     sender: ${NOTIFICATION_SENDER:onboarding@resend.dev}
 
 jwt:
-  secret: ${JWT_SECRET:dev-local-jwt-secret-32-characters-min}
-  expiration-hours: ${JWT_EXPIRATION_HOURS:24}
+  secret: ${JWT_SECRET}
+  expiration-hours: ${JWT_EXPIRATION_HOURS}

@@ -104,7 +104,14 @@ public final class Billetera {
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto del egreso debe ser positivo");
         }
-        
+        int pendientesEvidencia = contarMovimientosPendientesEvidencia();
+        if (pendientesEvidencia > 3) {
+            throw new IllegalStateException("No se permiten egresos con más de 3 movimientos pendientes de evidencia.");
+        }
+        if ((evidenciaUrl == null || evidenciaUrl.isBlank()) && pendientesEvidencia >= 3) {
+            throw new IllegalStateException("No se permiten más de 3 movimientos pendientes de evidencia.");
+        }
+
         // INVARIANTE CRÍTICA: Validar que el saldo no quede negativo
         BigDecimal saldoResultante = this.saldoActual.subtract(monto);
         if (saldoResultante.compareTo(BigDecimal.ZERO) < 0) {
@@ -118,6 +125,12 @@ public final class Billetera {
         this.movimientosNuevos.add(movimiento);
         
         return movimiento;
+    }
+
+    public int contarMovimientosPendientesEvidencia() {
+        return (int) movimientosNuevos.stream()
+                .filter(MovimientoCaja::isPendienteEvidencia)
+                .count();
     }
 
     /**

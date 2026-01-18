@@ -77,6 +77,16 @@ public class PartidaEntity extends AuditEntity {
     @Column(name = "precio_unitario", nullable = false, precision = 19, scale = 4)
     private BigDecimal precioUnitario;
 
+    @NotNull
+    @Digits(integer = 15, fraction = 4)
+    @Column(name = "gastos_reales", nullable = false, precision = 19, scale = 4)
+    private BigDecimal gastosReales;
+
+    @NotNull
+    @Digits(integer = 15, fraction = 4)
+    @Column(name = "compromisos_pendientes", nullable = false, precision = 19, scale = 4)
+    private BigDecimal compromisosPendientes;
+
     @Column(name = "nivel")
     private Integer nivel;
 
@@ -96,6 +106,12 @@ public class PartidaEntity extends AuditEntity {
     private void prePersist() {
         if (metradoVigente == null) {
             metradoVigente = metradoOriginal;
+        }
+        if (gastosReales == null) {
+            gastosReales = BigDecimal.ZERO;
+        }
+        if (compromisosPendientes == null) {
+            compromisosPendientes = BigDecimal.ZERO;
         }
     }
 
@@ -126,6 +142,8 @@ public class PartidaEntity extends AuditEntity {
         this.metradoOriginal = metrado;
         this.metradoVigente = metrado;
         this.precioUnitario = BigDecimal.ZERO;
+        this.gastosReales = BigDecimal.ZERO;
+        this.compromisosPendientes = BigDecimal.ZERO;
         this.nivel = nivel;
         this.version = version;
     }

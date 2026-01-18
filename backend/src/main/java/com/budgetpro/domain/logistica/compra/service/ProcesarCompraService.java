@@ -2,7 +2,7 @@ package com.budgetpro.domain.logistica.compra.service;
 
 import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartida;
 import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartidaId;
-import com.budgetpro.domain.finanzas.consumo.model.TipoConsumo;
+import com.budgetpro.domain.finanzas.exception.SaldoInsuficienteException;
 import com.budgetpro.domain.finanzas.model.Billetera;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
@@ -11,17 +11,15 @@ import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.inventario.service.GestionInventarioService;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Servicio de Dominio para procesar compras.
  * 
  * Orquesta la transacción completa:
  * - Valida que las Partidas existan
- * - Valida si las Partidas tienen saldo suficiente (alerta, no bloquea en MVP)
+ * - Valida si las Partidas tienen saldo suficiente
  * - Genera los registros de ConsumoPartida
  * - Descuenta de la Billetera
  * - Registra entrada en Inventario (Kardex físico)
@@ -61,9 +59,15 @@ public class ProcesarCompraService {
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("Partida no encontrada: %s", detalle.getPartidaId())));
             
-            // (Opcional MVP) Validar si la Partida tiene saldo suficiente
-            // En MVP, solo alertamos, no bloqueamos
-            // Esta validación puede implementarse en el UseCase si se requiere
+            if (compra.getTotal().compareTo(partida.getSaldoDisponible()) > 0) {
+                throw new SaldoInsuficienteException(
+                        compra.getProyectoId(),
+                        partida.getSaldoDisponible(),
+                        compra.getTotal()
+                );
+            }
+            partida.reservarSaldo(detalle.getSubtotal());
+            partidaRepository.save(partida);
             
             // Crear consumo para este detalle
             ConsumoPartidaId consumoId = ConsumoPartidaId.nuevo();
@@ -106,10 +110,19 @@ public class ProcesarCompraService {
     public List<PartidaId> validarSaldoPartidas(Compra compra) {
         List<PartidaId> partidasSinSaldo = new ArrayList<>();
         
-        // En MVP, esta validación es opcional
-        // Se puede implementar consultando el costo disponible de cada partida
-        // comparando con el presupuesto aprobado vs consumos acumulados
-        
-        return partidasSinSaldo; // MVP: retorna vacío (no bloquea)
+        for (CompraDetalle detalle : compra.getDetalles()) {
+            if (detalle.getPartidaId() == null) {
+                continue;
+            }
+            PartidaId partidaId = PartidaId.from(detalle.getPartidaId());
+            Partida partida = partidaRepository.findById(partidaId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Partida no encontrada: %s", detalle.getPartidaId())));
+            if (compra.getTotal().compareTo(partida.getSaldoDisponible()) > 0) {
+                partidasSinSaldo.add(partidaId);
+            }
+        }
+
+        return partidasSinSaldo;
     }
 }

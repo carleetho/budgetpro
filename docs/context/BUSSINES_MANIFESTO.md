@@ -29,7 +29,18 @@ esa acción es ilegal dentro del sistema.
 
 ---
 
-## 3. Principio de Origen del Costo
+## 3. Principio de Saldo Disponible Preventivo
+
+El saldo disponible de una partida se calcula con la fórmula canónica:
+
+Saldo_Disponible = Presupuesto_Asignado - (Gastos_Reales + Compromisos_Pendientes)
+
+Los compromisos pendientes se registran en el instante de la aprobación
+de la compra, no en el pago.
+
+---
+
+## 4. Principio de Origen del Costo
 
 No existe costo sin origen técnico.
 
@@ -43,7 +54,7 @@ por qué existe y a qué contrato responde.
 
 ---
 
-## 4. Principio de Verdad No Retroactiva
+## 5. Principio de Verdad No Retroactiva
 
 La historia del proyecto no se reescribe.
 
@@ -55,7 +66,7 @@ constituye una violación del sistema.
 
 ---
 
-## 5. Principio de Excepción Formal
+## 6. Principio de Excepción Formal
 
 Las desviaciones de la línea base no son errores del sistema,
 son decisiones humanas.
@@ -70,7 +81,7 @@ La modifican solo mediante capas trazables.
 
 ---
 
-## 6. Principio de Protección de Utilidad
+## 7. Principio de Protección de Utilidad
 
 El objetivo primario del sistema es proteger la utilidad del proyecto,
 no la comodidad del usuario.
@@ -82,7 +93,7 @@ La fricción temprana es preferible a la pérdida tardía.
 
 ---
 
-## 7. Relación entre Dominios Principales
+## 8. Relación entre Dominios Principales
 
 El sistema se organiza bajo una jerarquía clara:
 
@@ -99,7 +110,7 @@ ni ignorar esta jerarquía.
 
 ---
 
-## 8. Decisión Arquitectónica No Negociable
+## 9. Decisión Arquitectónica No Negociable
 
 BudgetPro opera exclusivamente en modalidad online.
 

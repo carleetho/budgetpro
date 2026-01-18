@@ -28,6 +28,9 @@ public final class Partida {
     private String descripcion;
     private String unidad; // Opcional si es título
     private BigDecimal metrado; // Cantidad presupuestada. 0 si es título
+    private BigDecimal presupuestoAsignado;
+    private BigDecimal gastosReales;
+    private BigDecimal compromisosPendientes;
     private Integer nivel; // Profundidad en el árbol: 1, 2, 3...
     private Long version;
 
@@ -45,6 +48,9 @@ public final class Partida {
         this.descripcion = normalizarDescripcion(descripcion);
         this.unidad = unidad != null ? unidad.trim() : null;
         this.metrado = metrado != null ? metrado : BigDecimal.ZERO;
+        this.presupuestoAsignado = BigDecimal.ZERO;
+        this.gastosReales = BigDecimal.ZERO;
+        this.compromisosPendientes = BigDecimal.ZERO;
         this.nivel = Objects.requireNonNull(nivel, "El nivel no puede ser nulo");
         this.version = version != null ? version : 0L;
     }
@@ -151,6 +157,51 @@ public final class Partida {
         }
     }
 
+    public void actualizarPresupuestoAsignado(BigDecimal presupuestoAsignado) {
+        if (presupuestoAsignado == null || presupuestoAsignado.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El presupuesto asignado no puede ser nulo ni negativo");
+        }
+        this.presupuestoAsignado = presupuestoAsignado;
+    }
+
+    public void actualizarGastosReales(BigDecimal gastosReales) {
+        if (gastosReales == null || gastosReales.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Los gastos reales no pueden ser nulos ni negativos");
+        }
+        this.gastosReales = gastosReales;
+    }
+
+    public void actualizarCompromisosPendientes(BigDecimal compromisosPendientes) {
+        if (compromisosPendientes == null || compromisosPendientes.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Los compromisos pendientes no pueden ser nulos ni negativos");
+        }
+        this.compromisosPendientes = compromisosPendientes;
+    }
+
+    public BigDecimal getSaldoDisponible() {
+        BigDecimal asignado = presupuestoAsignado != null ? presupuestoAsignado : BigDecimal.ZERO;
+        BigDecimal reales = gastosReales != null ? gastosReales : BigDecimal.ZERO;
+        BigDecimal pendientes = compromisosPendientes != null ? compromisosPendientes : BigDecimal.ZERO;
+        return asignado.subtract(reales.add(pendientes));
+    }
+
+    public void reservarSaldo(BigDecimal monto) {
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto a reservar debe ser positivo");
+        }
+        BigDecimal disponible = getSaldoDisponible();
+        if (disponible.compareTo(monto) < 0) {
+            throw new IllegalStateException(String.format(
+                    "Saldo disponible insuficiente en la partida %s. Disponible: %s, Monto: %s",
+                    this.id != null ? this.id.getValue() : "N/A",
+                    disponible,
+                    monto
+            ));
+        }
+        this.compromisosPendientes = (this.compromisosPendientes != null ? this.compromisosPendientes : BigDecimal.ZERO)
+                .add(monto);
+    }
+
     // Getters
 
     public PartidaId getId() {
@@ -179,6 +230,18 @@ public final class Partida {
 
     public BigDecimal getMetrado() {
         return metrado;
+    }
+
+    public BigDecimal getPresupuestoAsignado() {
+        return presupuestoAsignado;
+    }
+
+    public BigDecimal getGastosReales() {
+        return gastosReales;
+    }
+
+    public BigDecimal getCompromisosPendientes() {
+        return compromisosPendientes;
     }
 
     public Integer getNivel() {

@@ -25,13 +25,14 @@ public final class MovimientoCaja {
     private final LocalDateTime fecha;
     private final String referencia;
     private final String evidenciaUrl;
+    private final EstadoMovimientoCaja estado;
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private MovimientoCaja(UUID id, BilleteraId billeteraId, BigDecimal monto, 
-                          TipoMovimiento tipo, LocalDateTime fecha, 
-                          String referencia, String evidenciaUrl) {
+    private MovimientoCaja(UUID id, BilleteraId billeteraId, BigDecimal monto,
+                          TipoMovimiento tipo, LocalDateTime fecha,
+                          String referencia, String evidenciaUrl, EstadoMovimientoCaja estado) {
         validarInvariantes(billeteraId, monto, tipo, referencia);
         
         this.id = Objects.requireNonNull(id, "El ID del movimiento no puede ser nulo");
@@ -41,6 +42,7 @@ public final class MovimientoCaja {
         this.fecha = fecha != null ? fecha : LocalDateTime.now();
         this.referencia = referencia;
         this.evidenciaUrl = evidenciaUrl;
+        this.estado = estado;
     }
 
     /**
@@ -55,7 +57,8 @@ public final class MovimientoCaja {
             TipoMovimiento.INGRESO,
             LocalDateTime.now(),
             referencia,
-            evidenciaUrl
+            evidenciaUrl,
+            null
         );
     }
 
@@ -64,6 +67,9 @@ public final class MovimientoCaja {
      */
     public static MovimientoCaja crearEgreso(BilleteraId billeteraId, BigDecimal monto, 
                                              String referencia, String evidenciaUrl) {
+        EstadoMovimientoCaja estado = (evidenciaUrl == null || evidenciaUrl.isBlank())
+                ? EstadoMovimientoCaja.PENDIENTE_DE_EVIDENCIA
+                : null;
         return new MovimientoCaja(
             UUID.randomUUID(),
             billeteraId,
@@ -71,7 +77,8 @@ public final class MovimientoCaja {
             TipoMovimiento.EGRESO,
             LocalDateTime.now(),
             referencia,
-            evidenciaUrl
+            evidenciaUrl,
+            estado
         );
     }
 
@@ -80,8 +87,9 @@ public final class MovimientoCaja {
      */
     public static MovimientoCaja reconstruir(UUID id, BilleteraId billeteraId, BigDecimal monto,
                                             TipoMovimiento tipo, LocalDateTime fecha,
-                                            String referencia, String evidenciaUrl) {
-        return new MovimientoCaja(id, billeteraId, monto, tipo, fecha, referencia, evidenciaUrl);
+                                            String referencia, String evidenciaUrl,
+                                            EstadoMovimientoCaja estado) {
+        return new MovimientoCaja(id, billeteraId, monto, tipo, fecha, referencia, evidenciaUrl, estado);
     }
 
     private static void validarInvariantes(BilleteraId billeteraId, BigDecimal monto, 
@@ -127,6 +135,14 @@ public final class MovimientoCaja {
 
     public String getEvidenciaUrl() {
         return evidenciaUrl;
+    }
+
+    public EstadoMovimientoCaja getEstado() {
+        return estado;
+    }
+
+    public boolean isPendienteEvidencia() {
+        return estado == EstadoMovimientoCaja.PENDIENTE_DE_EVIDENCIA;
     }
 
     /**

@@ -6,6 +6,7 @@ import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -25,7 +26,7 @@ public class PartidaMapper {
             return null;
         }
 
-        return new PartidaEntity(
+        PartidaEntity entity = new PartidaEntity(
             partida.getId().getValue(),
             presupuestoEntity,
             padreEntity, // Puede ser null para partida raíz
@@ -36,6 +37,9 @@ public class PartidaMapper {
             partida.getNivel(),
             null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
         );
+        entity.setGastosReales(partida.getGastosReales());
+        entity.setCompromisosPendientes(partida.getCompromisosPendientes());
+        return entity;
     }
 
     /**
@@ -49,7 +53,7 @@ public class PartidaMapper {
         UUID padreId = entity.getPadre() != null ? entity.getPadre().getId() : null;
         UUID presupuestoId = entity.getPresupuesto() != null ? entity.getPresupuesto().getId() : null;
 
-        return Partida.reconstruir(
+        Partida partida = Partida.reconstruir(
             PartidaId.from(entity.getId()),
             presupuestoId,
             padreId,
@@ -60,6 +64,12 @@ public class PartidaMapper {
             entity.getNivel(),
             entity.getVersion() != null ? entity.getVersion().longValue() : 0L
         );
+        BigDecimal presupuestoAsignado = entity.getPrecioUnitario()
+                .multiply(entity.getMetrado() != null ? entity.getMetrado() : BigDecimal.ZERO);
+        partida.actualizarPresupuestoAsignado(presupuestoAsignado);
+        partida.actualizarGastosReales(entity.getGastosReales());
+        partida.actualizarCompromisosPendientes(entity.getCompromisosPendientes());
+        return partida;
     }
 
     /**
@@ -73,6 +83,8 @@ public class PartidaMapper {
         existingEntity.setUnidad(partida.getUnidad());
         existingEntity.setMetrado(partida.getMetrado());
         existingEntity.setNivel(partida.getNivel());
+        existingEntity.setGastosReales(partida.getGastosReales());
+        existingEntity.setCompromisosPendientes(partida.getCompromisosPendientes());
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
         // CRÍTICO: NO se toca padre ni presupuesto (son inmutables después de crear)
     }

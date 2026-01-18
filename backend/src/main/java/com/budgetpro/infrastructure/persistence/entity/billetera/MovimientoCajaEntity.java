@@ -45,6 +45,10 @@ public class MovimientoCajaEntity {
     @Column(name = "evidencia_url", length = 1000)
     private String evidenciaUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", length = 50)
+    private com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja estado;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -57,7 +61,8 @@ public class MovimientoCajaEntity {
 
     public MovimientoCajaEntity(UUID id, BilleteraEntity billetera, BigDecimal monto,
                                 com.budgetpro.domain.finanzas.model.TipoMovimiento tipo,
-                                LocalDateTime fecha, String referencia, String evidenciaUrl) {
+                                LocalDateTime fecha, String referencia, String evidenciaUrl,
+                                com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja estado) {
         this.id = id;
         this.billetera = billetera;
         this.monto = monto;
@@ -65,6 +70,7 @@ public class MovimientoCajaEntity {
         this.fecha = fecha;
         this.referencia = referencia;
         this.evidenciaUrl = evidenciaUrl;
+        this.estado = estado;
     }
 
     // Getters y Setters
@@ -123,6 +129,14 @@ public class MovimientoCajaEntity {
 
     public void setEvidenciaUrl(String evidenciaUrl) {
         this.evidenciaUrl = evidenciaUrl;
+    }
+
+    public com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja getEstado() {
+        return estado;
+    }
+
+    public void setEstado(com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja estado) {
+        this.estado = estado;
     }
 
     public LocalDateTime getCreatedAt() {

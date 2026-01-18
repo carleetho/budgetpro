@@ -1,158 +1,52 @@
-CURRENT_TASK.md
-Auditoría de Código — Sobreconsumo y Saldo Disponible (VD-02 / RS-03 / FG-03)
-Rol de Cursor
+CURRENT_TASK: Implementación de Leyes Canónicas de Integridad Financiera
+🎯 Objetivo
 
-Actúa exclusivamente como Auditor Técnico de Dominio.
-No eres implementador.
-No eres diseñador.
-No propones mejoras.
+Eliminar la "nube de humo" lógica y técnica. Implementar el control presupuestario preventivo y el gobierno de evidencias estricto según el acuerdo de auditoría 2026.
+📜 Leyes Canónicas a Aplicar
 
-Tu función es leer código existente y verificar comportamiento real contra documentación canónica.
+    Fórmula de Saldo Disponible (VD-02): Saldo_Disponible = Presupuesto_Asignado - (Gastos_Reales + Compromisos_Pendientes)
 
-Objetivo
+        Compromisos_Pendientes: Órdenes de compra aprobadas pero no liquidadas.
 
-Re-auditar el backend para confirmar:
+    Momento del Compromiso: El presupuesto se resta en el instante de la Aprobación de la Compra, no en el pago.
 
-que NO existe cálculo de saldo disponible por Partida/APU,
+    Bloqueo de Evidencia (CD-04): No se permiten egresos si existen >3 movimientos en estado PENDIENTE_DE_EVIDENCIA.
 
-que NO existe cuantificación contractual de sobreconsumo,
+🛠️ Acciones Requeridas
+1. Modelos de Dominio (backend/src/main/java/com/budgetpro/domain/)
 
-que NO se infieren fórmulas implícitas,
+    finanzas/partida/model/Partida.java:
 
-que el sistema solo alerta o registra, sin bloquear por saldo.
+        Añadir campo/lógica para calcular saldoDisponible usando la fórmula canónica.
 
-Esta auditoría cierra definitivamente VD-02 / RS-03 / FG-03.
+        Añadir método reservarSaldo(BigDecimal monto) que incremente los compromisos.
 
-Fuentes documentales canónicas (obligatorias)
+    finanzas/model/MovimientoBilletera.java:
 
-Debes usar únicamente estos documentos como verdad de dominio:
+        Añadir estado PENDIENTE_DE_EVIDENCIA al Enum de estados.
 
-docs/modules/COMPRAS_SPECS.md
+    finanzas/model/Billetera.java:
 
-docs/modules/INVENTARIOS_SPECS.md
+        Modificar egresar() para validar que contarMovimientosSinEvidencia() <= 3.
 
-docs/modules/PRESUPUESTO_SPECS.md
+2. Servicios de Dominio
 
-docs/decisiones/DECISION_SALDO_DISPONIBLE_PARTIDA_APU.md
+    logistica/compra/service/ProcesarCompraService.java:
 
-docs/audits/FASE2_DIAGNOSTICO_DOMINIO_BUDGETPRO.md
+        ELIMINAR "Opcional MVP".
 
-docs/audits/FASE3_INVENTARIO_CANONICO_REGLAS_EXISTENTES.md
+        Implementar validación obligatoria: Si compra.total > partida.getSaldoDisponible(), lanzar SaldoInsuficienteException.
 
-Si algo no está definido ahí, se considera NO DEFINIDO.
+        Invocar partida.reservarSaldo() al aprobar la compra.
 
-Alcance de lectura de código
+3. Documentación (docs/)
 
-Audita como mínimo:
+    Actualizar BUSINESS_MANIFESTO.md y FINANZAS_BILLETERA_SPECS.md con estas nuevas definiciones para mantener la sincronía entre código y verdad canónica.
 
-COMPRAS
+⚠️ Restricciones (Leyes de Hierro de Cursor)
 
-ProcesarCompraService
+    NO HARDCODE: Prohibido escribir API Keys o credenciales reales. Usa ${RESEND_API_KEY} y ${DB_PASSWORD}.
 
-cualquier método que:
+    COMPILACIÓN: El código debe ser sintácticamente correcto. Usa ./mvnw clean compile para verificar.
 
-valide cantidades,
-
-compare contra APU,
-
-mencione “saldo”, “disponible”, “exceso”, “cap”, “tope”.
-
-INVENTARIOS
-
-servicios de salida de inventario,
-
-cualquier referencia a:
-
-“saldo APU”,
-
-“disponible”,
-
-“exceso”.
-
-PRODUCCIÓN (solo referencia)
-
-validaciones de metrado existentes,
-
-confirmar que NO aplican a APU/costo.
-
-Qué debes verificar (checklist estricto)
-
-Para cada módulo indica SÍ / NO / NO APLICA, con evidencia:
-
-¿Existe cálculo explícito de saldo disponible por Partida?
-
-¿Existe cálculo explícito de saldo disponible por APU?
-
-¿Existe fórmula que cuantifique sobreconsumo contractual?
-
-¿Se bloquea una compra por exceder APU?
-
-¿Se bloquea una salida de inventario por exceder APU?
-
-¿Existen alertas sin cálculo contractual?
-
-¿Alguna validación infiere reglas no documentadas?
-
-Prohibiciones absolutas
-
-❌ No propongas fórmulas.
-
-❌ No sugieras cambios.
-
-❌ No corrijas código.
-
-❌ No “completes” reglas faltantes.
-
-❌ No interpretes intención del desarrollador.
-
-Si no existe definición documental, responde “NO DEFINIDO CANÓNICAMENTE”.
-
-Formato de salida (OBLIGATORIO)
-
-Debes generar un único archivo:
-
-docs/audits/RE_AUDITORIA_SOBRECONSUMO_SALDO_PARTIDA_APU.md
-
-Estructura obligatoria del reporte
-
-Resumen ejecutivo
-
-Confirmación clara:
-
-“El sistema NO implementa cálculo de saldo disponible ni cuantificación contractual de sobreconsumo.”
-
-Hallazgos por módulo
-
-COMPRAS
-
-INVENTARIOS
-
-PRODUCCIÓN
-
-Matriz de verificación
-
-checklist SÍ / NO / NO APLICA
-
-con referencia a clases/métodos
-
-Conclusión de dominio
-
-confirmar si el código:
-
-respeta los SPECS,
-
-no viola decisiones canónicas,
-
-no introduce lógica implícita.
-
-Criterio de aceptación
-
-La auditoría es válida solo si:
-
-No se detecta ningún cálculo oculto.
-
-No se detecta ningún bloqueo por saldo.
-
-No se detecta inferencia de reglas no documentadas.
-
-El reporte no propone soluciones, solo constata hechos.
+    GIT: No realizar git commit. El usuario ejecutará ./secure-commit.sh manualmente.
