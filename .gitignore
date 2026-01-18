@@ -42,3 +42,4 @@ Thumbs.db
 *.iws
 *.iml
 *.ipr
+**/db/migration/*.sql
