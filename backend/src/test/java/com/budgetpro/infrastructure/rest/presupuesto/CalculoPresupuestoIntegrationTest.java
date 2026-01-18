@@ -167,7 +167,7 @@ class CalculoPresupuestoIntegrationTest extends AbstractIntegrationTest {
                 .orElseThrow(() -> new AssertionError("El presupuesto debería existir en BD"));
 
         assertThat(presupuestoEntity.getEstado())
-                .isEqualTo(com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.APROBADO);
+                .isEqualTo(com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.CONGELADO);
         assertThat(presupuestoEntity.getEsContractual())
                 .isTrue(); // Debe estar marcado como contractual
 
@@ -184,6 +184,6 @@ class CalculoPresupuestoIntegrationTest extends AbstractIntegrationTest {
 
         // Validar el cálculo manualmente
         assertThat(presupuestoEntity.getEstado())
-                .isEqualTo(com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.APROBADO);
+                .isEqualTo(com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.CONGELADO);
     }
 }

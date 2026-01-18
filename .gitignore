@@ -45,3 +45,6 @@ Thumbs.db
 **/db/migration/*.sql
 backend/RESEND_API_KEY.env
 database.env
+backend/.docker/
+knowledge_base/
+backend/target/

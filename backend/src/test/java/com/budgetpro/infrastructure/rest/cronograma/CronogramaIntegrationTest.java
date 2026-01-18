@@ -66,7 +66,7 @@ class CronogramaIntegrationTest extends AbstractIntegrationTest {
             UUID.randomUUID(),
             "Proyecto Test Cronograma",
             "San Salvador, El Salvador",
-            com.budgetpro.domain.proyecto.model.EstadoProyecto.EJECUCION,
+            com.budgetpro.domain.proyecto.model.EstadoProyecto.ACTIVO,
             null
         );
         proyecto = proyectoJpaRepository.save(proyecto);

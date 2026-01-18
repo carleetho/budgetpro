@@ -27,7 +27,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.30</lombok.version>
         <flyway.version>10.0.1</flyway.version>
-        <testcontainers.version>1.19.3</testcontainers.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -191,7 +191,11 @@
                     <!-- Asegurar que las variables de entorno se hereden -->
                     <environmentVariables>
                         <DOCKER_HOST>unix:///var/run/docker.sock</DOCKER_HOST>
+                        <DOCKER_API_VERSION>1.52</DOCKER_API_VERSION>
                     </environmentVariables>
+                    <systemPropertyVariables>
+                        <docker.api.version>1.52</docker.api.version>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

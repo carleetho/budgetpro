@@ -27,6 +27,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @Testcontainers
 public abstract class AbstractIntegrationTest {
+    static {
+        // Forzar versión de API compatible con el daemon actual.
+        System.setProperty("docker.api.version", "1.52");
+    }
 
     /**
      * Contenedor PostgreSQL estático compartido entre todos los tests de la misma clase.

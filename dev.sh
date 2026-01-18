@@ -2,10 +2,9 @@
 
 # ==============================================================================
 # SCRIPT DE DESARROLLO - BUDGETPRO CORE (EDICIÓN SEGURA 2026)
-# OBJETIVO: Inyectar secretos de DB y API sin exponerlos en el código.
+# ROL: Senior DevSecOps Guardian
 # ==============================================================================
 
-# Colores para salida de terminal
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -13,43 +12,46 @@ NC='\033[0m'
 
 echo -e "${GREEN}🚀 Iniciando entorno BudgetPro...${NC}"
 
-# 1. Función interna de carga segura
+# 1. Función interna de carga segura (Ejecutada desde la raíz)
 # ------------------------------------------------------------------------------
 load_env() {
     local env_file=$1
     if [ -f "$env_file" ]; then
         echo -e "${GREEN}🔐 Cargando variables desde $env_file...${NC}"
-        # Exporta variables ignorando comentarios y líneas vacías
+        # Exporta variables para que estén disponibles en los subprocesos (Maven)
         export $(grep -v '^#' "$env_file" | xargs)
     else
-        echo -e "${RED}❌ ERROR: No se encontró el archivo $env_file.${NC}"
-        echo -e "${YELLOW}Crea el archivo basándote en los requerimientos de seguridad.${NC}"
+        echo -e "${RED}❌ ERROR: No se encontró el archivo $env_file en la raíz.${NC}"
         exit 1
     fi
 }
 
-# 2. Carga de Secretos (Asegúrate de que estén en .gitignore)
+# 2. Carga de Secretos
 # ------------------------------------------------------------------------------
 load_env "database.env"
 load_env "RESEND_API_KEY.env"
 
 # 3. Validación de Variables Críticas
 # ------------------------------------------------------------------------------
-# Verificamos que las variables que espera application.yml no estén vacías
 if [ -z "$DB_PASSWORD" ] || [ -z "$RESEND_API_KEY" ]; then
-    echo -e "${RED}❌ ERROR: Variables críticas (DB o API) faltantes en los archivos .env.${NC}"
+    echo -e "${RED}❌ ERROR: Variables críticas faltantes en los archivos .env.${NC}"
     exit 1
 fi
 
-# 4. Ejecución del Backend
+# 4. Ejecución del Backend (Corrección de Ruta y Wrapper)
 # ------------------------------------------------------------------------------
-echo -e "${GREEN}📦 Ejecutando Maven Spring-Boot...${NC}"
+echo -e "${GREEN}📦 Preparando ejecución con Maven Wrapper...${NC}"
 
-# Validamos existencia de carpeta backend
 if [ -d "backend" ]; then
     cd backend || exit
-    mvn spring-boot:run
+    
+    # Aseguramos que el wrapper sea ejecutable
+    chmod +x mvnw
+    
+    # IMPORTANTE: Usamos ./mvnw en lugar de mvn global para evitar el error de Launcher
+    echo -e "${GREEN}☕ Levantando Spring Boot...${NC}"
+    ./mvnw spring-boot:run
 else
-    echo -e "${RED}❌ ERROR: No se encuentra la carpeta 'backend' en el directorio actual.${NC}"
+    echo -e "${RED}❌ ERROR: No se encuentra la carpeta 'backend'.${NC}"
     exit 1
 fi

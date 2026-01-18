@@ -71,7 +71,7 @@ class ReporteProduccionIntegrationTest extends AbstractIntegrationTest {
                 UUID.randomUUID(),
                 "Proyecto RPC Test",
                 "San Salvador",
-                com.budgetpro.domain.proyecto.model.EstadoProyecto.EJECUCION,
+                com.budgetpro.domain.proyecto.model.EstadoProyecto.ACTIVO,
                 null
         );
         proyecto = proyectoJpaRepository.save(proyecto);

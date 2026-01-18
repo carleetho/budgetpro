@@ -65,7 +65,7 @@ class EstimacionIntegrationTest extends AbstractIntegrationTest {
             UUID.randomUUID(),
             "Proyecto Test Estimaciones",
             "San Salvador, El Salvador",
-            com.budgetpro.domain.proyecto.model.EstadoProyecto.EJECUCION,
+            com.budgetpro.domain.proyecto.model.EstadoProyecto.ACTIVO,
             null
         );
         proyecto = proyectoJpaRepository.save(proyecto);
@@ -75,7 +75,7 @@ class EstimacionIntegrationTest extends AbstractIntegrationTest {
             UUID.randomUUID(),
             proyectoId,
             "Presupuesto Base",
-            com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.APROBADO,
+            com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.CONGELADO,
             true, // esContractual = true (presupuesto aprobado)
             null
         );
