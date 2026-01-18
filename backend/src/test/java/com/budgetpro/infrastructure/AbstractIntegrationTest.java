@@ -25,11 +25,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 public abstract class AbstractIntegrationTest {
     static {
         // Forzar versión de API compatible con el daemon actual.
-        System.setProperty("docker.api.version", "1.52");
+        System.setProperty("docker.api.version", "1.44");
     }
 
     /**

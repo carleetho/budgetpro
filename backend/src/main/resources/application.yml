@@ -1,0 +1,51 @@
+spring:
+  config:
+    import: optional:file:./database.env,optional:file:../database.env,optional:file:./database.properties,optional:file:../database.properties
+  application:
+    name: budgetpro-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/budgetpro}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.budgetpro: DEBUG
+  pattern:
+    # Patrón de logging que incluye correlationId del MDC
+    # %X{correlationId} obtiene el valor del MDC con clave "correlationId"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId}] - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId}] - %msg%n"
+
+resend:
+  api:
+    key: ${RESEND_API_KEY:test-key}
+
+app:
+  notification:
+    email: ${ADMIN_EMAIL:admin@test.local}
+    sender: ${NOTIFICATION_SENDER:onboarding@resend.dev}
+
+jwt:
+  secret: ${JWT_SECRET:dev-local-jwt-secret-32-characters-min}
+  expiration-hours: ${JWT_EXPIRATION_HOURS:24}

@@ -191,10 +191,10 @@
                     <!-- Asegurar que las variables de entorno se hereden -->
                     <environmentVariables>
                         <DOCKER_HOST>unix:///var/run/docker.sock</DOCKER_HOST>
-                        <DOCKER_API_VERSION>1.52</DOCKER_API_VERSION>
+                        <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
                     </environmentVariables>
                     <systemPropertyVariables>
-                        <docker.api.version>1.52</docker.api.version>
+                        <docker.api.version>1.44</docker.api.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
