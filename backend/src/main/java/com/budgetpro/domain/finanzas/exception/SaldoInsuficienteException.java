@@ -13,8 +13,8 @@ import java.util.UUID;
 public class SaldoInsuficienteException extends RuntimeException {
 
     private final UUID proyectoId;
-    private final BigDecimal saldoActual;
-    private final BigDecimal montoIntentado;
+    private final BigDecimal saldoDisponible;
+    private final BigDecimal montoRequerido;
 
     public SaldoInsuficienteException(UUID proyectoId, BigDecimal saldoActual, BigDecimal montoIntentado) {
         super(String.format(
@@ -22,8 +22,18 @@ public class SaldoInsuficienteException extends RuntimeException {
             proyectoId, saldoActual, montoIntentado
         ));
         this.proyectoId = proyectoId;
-        this.saldoActual = saldoActual;
-        this.montoIntentado = montoIntentado;
+        this.saldoDisponible = saldoActual;
+        this.montoRequerido = montoIntentado;
+    }
+
+    public SaldoInsuficienteException(UUID proyectoId, BigDecimal saldoDisponible, BigDecimal montoRequerido, String detalleAdicional) {
+        super(String.format(
+            "Saldo insuficiente en proyecto %s. Disponible: %s, Requerido: %s. %s",
+            proyectoId, saldoDisponible, montoRequerido, detalleAdicional
+        ));
+        this.proyectoId = proyectoId;
+        this.saldoDisponible = saldoDisponible;
+        this.montoRequerido = montoRequerido;
     }
 
     public UUID getProyectoId() {
@@ -31,10 +41,18 @@ public class SaldoInsuficienteException extends RuntimeException {
     }
 
     public BigDecimal getSaldoActual() {
-        return saldoActual;
+        return saldoDisponible;
     }
 
     public BigDecimal getMontoIntentado() {
-        return montoIntentado;
+        return montoRequerido;
+    }
+
+    public BigDecimal getSaldoDisponible() {
+        return saldoDisponible;
+    }
+
+    public BigDecimal getMontoRequerido() {
+        return montoRequerido;
     }
 }

@@ -1,0 +1,15 @@
+{
+  "organization_id": "default",
+  "project_id": "2f0832b8-05ef-4d6d-844a-0c33f9293be7",
+  "project_short_id": "PROJ-2",
+  "project_name": "budgetpro",
+  "project_description": null,
+  "repository": {
+    "id": "145a3111-31ec-4225-883c-3fd86248d3ff",
+    "owner": "carleetho",
+    "name": "budgetpro",
+    "full_name": "carleetho/budgetpro",
+    "url": "git@github.com:carleetho/budgetpro.git"
+  },
+  "created_at": "2026-01-18T21:36:42.862Z"
+}

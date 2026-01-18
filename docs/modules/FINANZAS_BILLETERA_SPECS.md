@@ -15,3 +15,38 @@ Definir reglas canónicas del flujo real de dinero del proyecto.
 - La evidencia es requisito previo para registrar ingresos.
 - El control de evidencia se aplica a egresos y su trazabilidad.
 
+## 4. Flujo de aprobación de compra (reserva preventiva)
+
+```mermaid
+sequenceDiagram
+    participant Usuario
+    participant Servicio as ProcesarCompraService
+    participant Partida
+    participant Repo as PartidaRepository
+    participant Compra
+
+    Usuario->>Servicio: aprobarCompra(compra)
+    loop Por partida
+        Servicio->>Repo: findById(partidaId)
+        Repo-->>Servicio: Partida
+        Servicio->>Partida: getSaldoDisponible()
+        Partida-->>Servicio: saldoDisponible
+        alt Saldo suficiente
+            Servicio->>Partida: reservarSaldo(totalPartida)
+            Servicio->>Repo: save(partida)
+        else Saldo insuficiente
+            Servicio-->>Usuario: SaldoInsuficienteException
+        end
+    end
+    Servicio->>Compra: aprobar()
+    Servicio-->>Usuario: OK
+```
+
+## 5. Escenarios de error y recuperación
+
+| Escenario | Excepción | Recuperación |
+| --- | --- | --- |
+| Saldo insuficiente | SaldoInsuficienteException | Ajustar presupuesto o reducir compra |
+| Partida no encontrada | IllegalArgumentException | Verificar partida activa y válida |
+| >3 pendientes de evidencia | IllegalStateException | Subir evidencias pendientes antes de egresos |
+| Conflicto de versión | OptimisticLockException | Reintentar con datos actualizados |

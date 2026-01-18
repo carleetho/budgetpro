@@ -1,4 +1,16 @@
 CURRENT_TASK: Implementación de Leyes Canónicas de Integridad Financiera
+Estado: COMPLETADO
+Fecha: 2026-01-18
+
+Resumen de ejecución:
+- VD-02 y CD-04 implementadas en dominio y servicio.
+- Validación obligatoria y reserva por partida aplicada en compras.
+- Tests unitarios e integración ejecutados (ver sección de pruebas).
+
+Pruebas ejecutadas:
+- ./mvnw test -Dtest=PartidaTest,BilleteraTest,MovimientoCajaTest,SaldoInsuficienteExceptionTest,ProcesarCompraServiceTest
+- ./mvnw test -Dtest=PartidaEntityVersionTest
+- ./mvnw test -Dtest=ProcesarCompraIntegrationTest
 🎯 Objetivo
 
 Eliminar la "nube de humo" lógica y técnica. Implementar el control presupuestario preventivo y el gobierno de evidencias estricto según el acuerdo de auditoría 2026.

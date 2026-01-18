@@ -48,8 +48,12 @@ public class ProcesarCompraService {
      */
     public List<ConsumoPartida> procesar(Compra compra, Billetera billetera) {
         List<ConsumoPartida> consumos = new ArrayList<>();
-        
-        // Validar que todas las partidas existan
+        List<CompraDetalle> detallesConPartida = new ArrayList<>();
+        List<Partida> partidasCargadas = new ArrayList<>();
+        List<PartidaId> partidasIds = new ArrayList<>();
+        List<java.math.BigDecimal> totalesPorPartida = new ArrayList<>();
+
+        // Pre-cargar partidas y filtrar detalles con partida
         for (CompraDetalle detalle : compra.getDetalles()) {
             if (detalle.getPartidaId() == null) {
                 continue; // Compra sin partida: no genera consumo presupuestal
@@ -58,22 +62,46 @@ public class ProcesarCompraService {
             Partida partida = partidaRepository.findById(partidaId)
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("Partida no encontrada: %s", detalle.getPartidaId())));
-            
-            if (compra.getTotal().compareTo(partida.getSaldoDisponible()) > 0) {
+            detallesConPartida.add(detalle);
+            int index = partidasIds.indexOf(partida.getId());
+            if (index < 0) {
+                partidasIds.add(partida.getId());
+                partidasCargadas.add(partida);
+                totalesPorPartida.add(detalle.getSubtotal());
+            } else {
+                totalesPorPartida.set(index, totalesPorPartida.get(index).add(detalle.getSubtotal()));
+            }
+        }
+
+        // Validar saldos disponibles sin mutar estado (atomicidad)
+        for (int i = 0; i < partidasCargadas.size(); i++) {
+            Partida partida = partidasCargadas.get(i);
+            java.math.BigDecimal totalPartida = totalesPorPartida.get(i);
+            if (totalPartida.compareTo(partida.getSaldoDisponible()) > 0) {
                 throw new SaldoInsuficienteException(
                         compra.getProyectoId(),
                         partida.getSaldoDisponible(),
-                        compra.getTotal()
+                        totalPartida,
+                        String.format("Partida %s", partida.getId().getValue())
                 );
             }
-            partida.reservarSaldo(detalle.getSubtotal());
+        }
+
+        // Reservar saldo y persistir partidas
+        for (int i = 0; i < partidasCargadas.size(); i++) {
+            Partida partida = partidasCargadas.get(i);
+            java.math.BigDecimal totalPartida = totalesPorPartida.get(i);
+            partida.reservarSaldo(totalPartida);
             partidaRepository.save(partida);
-            
+        }
+        
+        // Crear consumos por detalle
+        for (CompraDetalle detalle : detallesConPartida) {
             // Crear consumo para este detalle
             ConsumoPartidaId consumoId = ConsumoPartidaId.nuevo();
             ConsumoPartida consumo = ConsumoPartida.crearPorCompra(
                     consumoId,
-                    partida.getId().getValue(),
+                    detalle.getPartidaId(),
                     detalle.getId().getValue(),
                     detalle.getSubtotal(),
                     compra.getFecha()
@@ -109,6 +137,9 @@ public class ProcesarCompraService {
      */
     public List<PartidaId> validarSaldoPartidas(Compra compra) {
         List<PartidaId> partidasSinSaldo = new ArrayList<>();
+        List<PartidaId> partidasIds = new ArrayList<>();
+        List<java.math.BigDecimal> totalesPorPartida = new ArrayList<>();
+        List<Partida> partidasCargadas = new ArrayList<>();
         
         for (CompraDetalle detalle : compra.getDetalles()) {
             if (detalle.getPartidaId() == null) {
@@ -118,8 +149,20 @@ public class ProcesarCompraService {
             Partida partida = partidaRepository.findById(partidaId)
                     .orElseThrow(() -> new IllegalArgumentException(
                             String.format("Partida no encontrada: %s", detalle.getPartidaId())));
-            if (compra.getTotal().compareTo(partida.getSaldoDisponible()) > 0) {
-                partidasSinSaldo.add(partidaId);
+            int index = partidasIds.indexOf(partida.getId());
+            if (index < 0) {
+                partidasIds.add(partida.getId());
+                partidasCargadas.add(partida);
+                totalesPorPartida.add(detalle.getSubtotal());
+            } else {
+                totalesPorPartida.set(index, totalesPorPartida.get(index).add(detalle.getSubtotal()));
+            }
+        }
+
+        for (int i = 0; i < partidasCargadas.size(); i++) {
+            Partida partida = partidasCargadas.get(i);
+            if (totalesPorPartida.get(i).compareTo(partida.getSaldoDisponible()) > 0) {
+                partidasSinSaldo.add(partida.getId());
             }
         }
 

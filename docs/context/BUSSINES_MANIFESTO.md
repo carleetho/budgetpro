@@ -38,6 +38,9 @@ Saldo_Disponible = Presupuesto_Asignado - (Gastos_Reales + Compromisos_Pendiente
 Los compromisos pendientes se registran en el instante de la aprobación
 de la compra, no en el pago.
 
+Los egresos quedan bloqueados si existen más de 3 movimientos
+PENDIENTE_DE_EVIDENCIA, hasta regularizar la evidencia.
+
 ---
 
 ## 4. Principio de Origen del Costo
