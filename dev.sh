@@ -1,47 +1,55 @@
 #!/bin/bash
 
-# Colores para que se vea bonito
+# ==============================================================================
+# SCRIPT DE DESARROLLO - BUDGETPRO CORE (EDICIÓN SEGURA 2026)
+# OBJETIVO: Inyectar secretos de DB y API sin exponerlos en el código.
+# ==============================================================================
+
+# Colores para salida de terminal
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
+RED='\033[0;31m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m' 
 
-echo -e "${BLUE}🚀 INICIANDO ENTORNO DE DESARROLLO BUDGETPRO...${NC}"
+echo -e "${GREEN}🚀 Iniciando entorno BudgetPro...${NC}"
 
-# 1. Levantar Base de Datos (Docker)
-echo -e "${YELLOW}🐳 [1/3] Levantando Base de Datos PostgreSQL...${NC}"
-cd backend || exit
+# 1. Función interna de carga segura
+# ------------------------------------------------------------------------------
+load_env() {
+    local env_file=$1
+    if [ -f "$env_file" ]; then
+        echo -e "${GREEN}🔐 Cargando variables desde $env_file...${NC}"
+        # Exporta variables ignorando comentarios y líneas vacías
+        export $(grep -v '^#' "$env_file" | xargs)
+    else
+        echo -e "${RED}❌ ERROR: No se encontró el archivo $env_file.${NC}"
+        echo -e "${YELLOW}Crea el archivo basándote en los requerimientos de seguridad.${NC}"
+        exit 1
+    fi
+}
 
-# Cargar variables de entorno (Resend / notificaciones)
-if [ -f "RESEND_API_KEY.env" ]; then
-    set -a
-    # shellcheck disable=SC1091
-    source "RESEND_API_KEY.env"
-    set +a
-    echo -e "${GREEN}✅ Variables de entorno cargadas desde RESEND_API_KEY.env.${NC}"
-else
-    echo -e "${YELLOW}⚠️  No se encontró RESEND_API_KEY.env. Variables de Resend no cargadas.${NC}"
-fi
-docker compose up -d
+# 2. Carga de Secretos (Asegúrate de que estén en .gitignore)
+# ------------------------------------------------------------------------------
+load_env "database.env"
+load_env "RESEND_API_KEY.env"
 
-# Verificación de salud de Docker
-if [ $? -ne 0 ]; then
-    echo -e "\033[0;31m❌ Error: Docker no parece estar corriendo o falló el compose.${NC}"
+# 3. Validación de Variables Críticas
+# ------------------------------------------------------------------------------
+# Verificamos que las variables que espera application.yml no estén vacías
+if [ -z "$DB_PASSWORD" ] || [ -z "$RESEND_API_KEY" ]; then
+    echo -e "${RED}❌ ERROR: Variables críticas (DB o API) faltantes en los archivos .env.${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Base de Datos operativa.${NC}"
+# 4. Ejecución del Backend
+# ------------------------------------------------------------------------------
+echo -e "${GREEN}📦 Ejecutando Maven Spring-Boot...${NC}"
 
-# 2. Instrucción para el Frontend
-echo -e "${YELLOW}⚛️  [2/3] Preparando Frontend...${NC}"
-echo -e "   ⚠️  AVISO: Para correr el Frontend, abre una ${BLUE}NUEVA TERMINAL${NC} y ejecuta:"
-echo -e "   ${GREEN}cd frontend && npm run dev${NC}"
-echo -e "   (Dejamos esta terminal exclusiva para los logs del Backend)"
-
-# 3. Levantar Backend (Spring Boot)
-echo -e "${YELLOW}☕ [3/3] Arrancando Backend Spring Boot...${NC}"
-echo -e "   Los logs aparecerán aquí abajo. Presiona CTRL+C para detener."
-echo -e "-------------------------------------------------------"
-
-# Ejecutar Spring Boot
-./mvnw spring-boot:run
+# Validamos existencia de carpeta backend
+if [ -d "backend" ]; then
+    cd backend || exit
+    mvn spring-boot:run
+else
+    echo -e "${RED}❌ ERROR: No se encuentra la carpeta 'backend' en el directorio actual.${NC}"
+    exit 1
+fi
