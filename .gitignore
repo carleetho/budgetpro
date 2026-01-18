@@ -38,3 +38,7 @@ Thumbs.db
 *.iws
 *.iml
 *.ipr
+*.env
+*.iws
+*.iml
+*.ipr
