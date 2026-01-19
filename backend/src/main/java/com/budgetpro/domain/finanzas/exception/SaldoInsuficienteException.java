@@ -26,6 +26,21 @@ public class SaldoInsuficienteException extends RuntimeException {
         this.montoIntentado = montoIntentado;
     }
 
+    /**
+     * Constructor con detalle adicional para proporcionar contexto específico sobre la partida o situación
+     * que causó el saldo insuficiente.
+     * 
+     * Use este constructor cuando necesite incluir información adicional sobre el contexto del error,
+     * como el ID de la partida específica o detalles sobre la operación que falló.
+     * 
+     * Para casos simples de billetera sin contexto adicional, use el constructor básico
+     * {@link #SaldoInsuficienteException(UUID, BigDecimal, BigDecimal)}.
+     * 
+     * @param proyectoId ID del proyecto donde ocurrió el error
+     * @param saldoDisponible Saldo disponible en el momento del error
+     * @param montoRequerido Monto que se intentó usar/retirar
+     * @param detalleAdicional Información adicional de contexto (ej: "Partida 01.01", "Compra #123")
+     */
     public SaldoInsuficienteException(UUID proyectoId, BigDecimal saldoDisponible, BigDecimal montoRequerido, String detalleAdicional) {
         super(String.format(
             "Saldo insuficiente en proyecto %s. Disponible: %s, Requerido: %s. %s",

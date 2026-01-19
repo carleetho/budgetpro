@@ -11,8 +11,11 @@ import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.inventario.service.GestionInventarioService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Servicio de Dominio para procesar compras.
@@ -49,34 +52,14 @@ public class ProcesarCompraService {
     public List<ConsumoPartida> procesar(Compra compra, Billetera billetera) {
         List<ConsumoPartida> consumos = new ArrayList<>();
         
-        List<CompraDetalle> detallesConPartida = new ArrayList<>();
-        List<PartidaId> partidasIds = new ArrayList<>();
-        List<Partida> partidasCargadas = new ArrayList<>();
-        List<java.math.BigDecimal> totalesPorPartida = new ArrayList<>();
-
-        for (CompraDetalle detalle : compra.getDetalles()) {
-            if (detalle.getPartidaId() == null) {
-                continue; // Compra sin partida: no genera consumo presupuestal
-            }
-            PartidaId partidaId = PartidaId.from(detalle.getPartidaId());
-            Partida partida = partidaRepository.findById(partidaId)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Partida no encontrada: %s", detalle.getPartidaId())));
-            detallesConPartida.add(detalle);
-            int index = partidasIds.indexOf(partida.getId());
-            if (index < 0) {
-                partidasIds.add(partida.getId());
-                partidasCargadas.add(partida);
-                totalesPorPartida.add(detalle.getSubtotal());
-            } else {
-                totalesPorPartida.set(index, totalesPorPartida.get(index).add(detalle.getSubtotal()));
-            }
-        }
+        // Agregar totales por partida usando Map para mejor type safety
+        Map<PartidaId, PartidaData> partidasData = agregarTotalesPorPartida(compra);
+        List<CompraDetalle> detallesConPartida = filtrarDetallesConPartida(compra);
 
         // Validar saldos disponibles sin mutar estado (atomicidad)
-        for (int i = 0; i < partidasCargadas.size(); i++) {
-            Partida partida = partidasCargadas.get(i);
-            java.math.BigDecimal totalPartida = totalesPorPartida.get(i);
+        for (Map.Entry<PartidaId, PartidaData> entry : partidasData.entrySet()) {
+            Partida partida = entry.getValue().partida;
+            BigDecimal totalPartida = entry.getValue().total;
             if (totalPartida.compareTo(partida.getSaldoDisponible()) > 0) {
                 throw new SaldoInsuficienteException(
                         compra.getProyectoId(),
@@ -88,9 +71,9 @@ public class ProcesarCompraService {
         }
 
         // Reservar saldo y persistir partidas
-        for (int i = 0; i < partidasCargadas.size(); i++) {
-            Partida partida = partidasCargadas.get(i);
-            java.math.BigDecimal totalPartida = totalesPorPartida.get(i);
+        for (Map.Entry<PartidaId, PartidaData> entry : partidasData.entrySet()) {
+            Partida partida = entry.getValue().partida;
+            BigDecimal totalPartida = entry.getValue().total;
             partida.reservarSaldo(totalPartida);
             partidaRepository.save(partida);
         }
@@ -137,35 +120,81 @@ public class ProcesarCompraService {
     public List<PartidaId> validarSaldoPartidas(Compra compra) {
         List<PartidaId> partidasSinSaldo = new ArrayList<>();
         
-        List<PartidaId> partidasIds = new ArrayList<>();
-        List<Partida> partidasCargadas = new ArrayList<>();
-        List<java.math.BigDecimal> totalesPorPartida = new ArrayList<>();
+        // Reutilizar método helper para agregación
+        Map<PartidaId, PartidaData> partidasData = agregarTotalesPorPartida(compra);
 
-        for (CompraDetalle detalle : compra.getDetalles()) {
-            if (detalle.getPartidaId() == null) {
-                continue;
-            }
-            PartidaId partidaId = PartidaId.from(detalle.getPartidaId());
-            Partida partida = partidaRepository.findById(partidaId)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            String.format("Partida no encontrada: %s", detalle.getPartidaId())));
-            int index = partidasIds.indexOf(partida.getId());
-            if (index < 0) {
-                partidasIds.add(partida.getId());
-                partidasCargadas.add(partida);
-                totalesPorPartida.add(detalle.getSubtotal());
-            } else {
-                totalesPorPartida.set(index, totalesPorPartida.get(index).add(detalle.getSubtotal()));
-            }
-        }
-
-        for (int i = 0; i < partidasCargadas.size(); i++) {
-            Partida partida = partidasCargadas.get(i);
-            if (totalesPorPartida.get(i).compareTo(partida.getSaldoDisponible()) > 0) {
+        for (Map.Entry<PartidaId, PartidaData> entry : partidasData.entrySet()) {
+            Partida partida = entry.getValue().partida;
+            BigDecimal totalPartida = entry.getValue().total;
+            if (totalPartida.compareTo(partida.getSaldoDisponible()) > 0) {
                 partidasSinSaldo.add(partida.getId());
             }
         }
 
         return partidasSinSaldo;
+    }
+
+    /**
+     * Helper method que agrega totales por partida desde los detalles de compra.
+     * 
+     * Este método centraliza la lógica de agregación que se usa tanto en procesar()
+     * como en validarSaldoPartidas(), evitando duplicación de código.
+     * 
+     * @param compra La compra de la cual extraer los detalles
+     * @return Map con PartidaId como clave y PartidaData (partida + total agregado) como valor
+     */
+    private Map<PartidaId, PartidaData> agregarTotalesPorPartida(Compra compra) {
+        Map<PartidaId, PartidaData> partidasData = new HashMap<>();
+
+        for (CompraDetalle detalle : compra.getDetalles()) {
+            if (detalle.getPartidaId() == null) {
+                continue; // Compra sin partida: no genera consumo presupuestal
+            }
+            
+            PartidaId partidaId = PartidaId.from(detalle.getPartidaId());
+            Partida partida = partidaRepository.findById(partidaId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Partida no encontrada: %s", detalle.getPartidaId())));
+            
+            partidasData.compute(partidaId, (key, existing) -> {
+                if (existing == null) {
+                    return new PartidaData(partida, detalle.getSubtotal());
+                } else {
+                    return new PartidaData(partida, existing.total.add(detalle.getSubtotal()));
+                }
+            });
+        }
+
+        return partidasData;
+    }
+
+    /**
+     * Filtra los detalles de compra que tienen partida asignada.
+     * 
+     * @param compra La compra de la cual extraer los detalles
+     * @return Lista de detalles que tienen partidaId no nulo
+     */
+    private List<CompraDetalle> filtrarDetallesConPartida(Compra compra) {
+        List<CompraDetalle> detallesConPartida = new ArrayList<>();
+        for (CompraDetalle detalle : compra.getDetalles()) {
+            if (detalle.getPartidaId() != null) {
+                detallesConPartida.add(detalle);
+            }
+        }
+        return detallesConPartida;
+    }
+
+    /**
+     * Clase interna para agrupar Partida y su total agregado.
+     * Facilita el uso de Map en lugar de listas paralelas.
+     */
+    private static class PartidaData {
+        final Partida partida;
+        final BigDecimal total;
+
+        PartidaData(Partida partida, BigDecimal total) {
+            this.partida = partida;
+            this.total = total;
+        }
     }
 }

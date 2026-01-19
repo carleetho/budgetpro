@@ -6,6 +6,8 @@ import com.budgetpro.domain.catalogo.model.RecursoSearchCriteria;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
 import com.budgetpro.domain.recurso.model.TipoRecurso;
 import com.budgetpro.infrastructure.catalogo.cache.CatalogCache;
+import com.budgetpro.infrastructure.catalogo.observability.CatalogEventLogger;
+import com.budgetpro.infrastructure.catalogo.observability.CatalogMetrics;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,11 +41,17 @@ class CapecoApiAdapterTest {
     @Mock
     private CatalogCache catalogCache;
 
+    @Mock
+    private CatalogMetrics catalogMetrics;
+
+    @Mock
+    private CatalogEventLogger catalogEventLogger;
+
     @Test
     void fetchRecurso_debeMapearRespuesta() {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
-        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache);
+        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache, catalogMetrics, catalogEventLogger);
 
         server.expect(requestTo(BASE_URL + "/recursos/MAT-001"))
                 .andExpect(method(HttpMethod.GET))
@@ -63,7 +71,7 @@ class CapecoApiAdapterTest {
     void fetchRecurso_404_debeLanzarNotFound() {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
-        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache);
+        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache, catalogMetrics, catalogEventLogger);
 
         server.expect(requestTo(BASE_URL + "/recursos/NO-EXISTE"))
                 .andExpect(method(HttpMethod.GET))
@@ -78,7 +86,7 @@ class CapecoApiAdapterTest {
     void searchRecursos_debeFiltrarDesdeApi() {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
-        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache);
+        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache, catalogMetrics, catalogEventLogger);
 
         String url = BASE_URL + "/recursos?catalogSource=CAPECO&query=cemento&tipo=MATERIAL&unidad=BOL&limit=1&offset=0";
         server.expect(requestTo(url))
@@ -105,7 +113,7 @@ class CapecoApiAdapterTest {
     void fetchRecurso_reintentos_debenLanzarServiceException() {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
-        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache);
+        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache, catalogMetrics, catalogEventLogger);
 
         server.expect(times(3), requestTo(BASE_URL + "/recursos/MAT-500"))
                 .andExpect(method(HttpMethod.GET))
@@ -120,7 +128,7 @@ class CapecoApiAdapterTest {
     void isRecursoActive_debeEvaluarEstado() {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(restTemplate);
-        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache);
+        CapecoApiAdapter adapter = new CapecoApiAdapter(restTemplate, BASE_URL, API_KEY, catalogCache, catalogMetrics, catalogEventLogger);
 
         server.expect(requestTo(BASE_URL + "/recursos/MAT-002"))
                 .andExpect(method(HttpMethod.GET))

@@ -1780,7 +1780,7 @@
 - Módulo(s) afectado(s)
   - Arquitectura
 - Origen técnico EXACTO:
-  - archivo: `docs/context/BUSSINES_MANIFESTO.md`
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
   - clase: N/A
   - método o sección: "Decisión Arquitectónica No Negociable"
 - Evidencia:
@@ -1797,7 +1797,7 @@
 - Módulo(s) afectado(s)
   - Presupuesto
 - Origen técnico EXACTO:
-  - archivo: `docs/context/BUSSINES_MANIFESTO.md`
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
   - método o sección: "Principio Supremo: El Presupuesto es Ley"
 - Evidencia:
   - fragmento de código o referencia precisa
@@ -1817,7 +1817,7 @@
   - RRHH
   - Producción
 - Origen técnico EXACTO:
-  - archivo: `docs/context/BUSSINES_MANIFESTO.md`
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
   - método o sección: "Principio Supremo: El Presupuesto es Ley"
 - Evidencia:
   - fragmento de código o referencia precisa
@@ -1833,7 +1833,7 @@
 - Módulo(s) afectado(s)
   - Auditoría
 - Origen técnico EXACTO:
-  - archivo: `docs/context/BUSSINES_MANIFESTO.md`
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
   - método o sección: "Principio de Verdad No Retroactiva"
 - Evidencia:
   - fragmento de código o referencia precisa
@@ -1849,7 +1849,7 @@
 - Módulo(s) afectado(s)
   - Cambios
 - Origen técnico EXACTO:
-  - archivo: `docs/context/BUSSINES_MANIFESTO.md`
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
   - método o sección: "Principio de Excepción Formal"
 - Evidencia:
   - fragmento de código o referencia precisa

@@ -25,6 +25,16 @@ import java.util.UUID;
  */
 public final class Billetera {
 
+    /**
+     * Máximo número de movimientos pendientes de evidencia permitidos antes de bloquear egresos.
+     * 
+     * Regla de negocio CD-04: Si hay más de 3 movimientos sin evidencia, se bloquean nuevos egresos
+     * hasta que se proporcione evidencia para los movimientos pendientes.
+     * 
+     * Este umbral puede ser configurado en el futuro, pero por ahora es una constante de dominio.
+     */
+    private static final int MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA = 3;
+
     private final BilleteraId id;
     private final UUID proyectoId;
     private BigDecimal saldoActual;
@@ -105,11 +115,15 @@ public final class Billetera {
             throw new IllegalArgumentException("El monto del egreso debe ser positivo");
         }
         int pendientesEvidencia = contarMovimientosPendientesEvidencia();
-        if (pendientesEvidencia > 3) {
-            throw new IllegalStateException("No se permiten egresos con más de 3 movimientos pendientes de evidencia.");
+        if (pendientesEvidencia > MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA) {
+            throw new IllegalStateException(
+                    String.format("No se permiten egresos con más de %d movimientos pendientes de evidencia.", 
+                            MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA));
         }
-        if ((evidenciaUrl == null || evidenciaUrl.isBlank()) && pendientesEvidencia >= 3) {
-            throw new IllegalStateException("No se permiten más de 3 movimientos pendientes de evidencia.");
+        if ((evidenciaUrl == null || evidenciaUrl.isBlank()) && pendientesEvidencia >= MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA) {
+            throw new IllegalStateException(
+                    String.format("No se permiten más de %d movimientos pendientes de evidencia.", 
+                            MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA));
         }
 
         // INVARIANTE CRÍTICA: Validar que el saldo no quede negativo
