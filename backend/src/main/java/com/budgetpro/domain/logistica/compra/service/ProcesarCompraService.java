@@ -7,9 +7,16 @@ import com.budgetpro.domain.finanzas.model.Billetera;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
+import com.budgetpro.domain.finanzas.presupuesto.exception.BudgetIntegrityViolationException;
+import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
+import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
+import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityAuditLog;
+import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.inventario.service.GestionInventarioService;
+import com.budgetpro.infrastructure.observability.IntegrityEventLogger;
+import com.budgetpro.infrastructure.observability.IntegrityMetrics;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,35 +28,104 @@ import java.util.Map;
  * Servicio de Dominio para procesar compras.
  * 
  * Orquesta la transacción completa:
+ * - Valida integridad criptográfica del presupuesto (Swiss-Grade)
  * - Valida que las Partidas existan
  * - Valida si las Partidas tienen saldo suficiente
  * - Genera los registros de ConsumoPartida
  * - Descuenta de la Billetera
  * - Registra entrada en Inventario (Kardex físico)
+ * - Actualiza hash de ejecución del presupuesto
+ * 
+ * **Integridad Criptográfica:**
+ * Antes de procesar cualquier compra, se valida la integridad del presupuesto
+ * para prevenir transacciones sobre presupuestos modificados no autorizadamente.
  * 
  * No persiste, solo orquesta la lógica de dominio.
  */
 public class ProcesarCompraService {
 
     private final PartidaRepository partidaRepository;
+    private final PresupuestoRepository presupuestoRepository;
+    private final IntegrityHashService integrityHashService;
+    private final IntegrityAuditLog auditLog;
     private final GestionInventarioService gestionInventarioService;
+    private final IntegrityEventLogger eventLogger;
+    private final IntegrityMetrics metrics;
 
     public ProcesarCompraService(PartidaRepository partidaRepository,
-                                GestionInventarioService gestionInventarioService) {
+                                PresupuestoRepository presupuestoRepository,
+                                IntegrityHashService integrityHashService,
+                                IntegrityAuditLog auditLog,
+                                GestionInventarioService gestionInventarioService,
+                                IntegrityEventLogger eventLogger,
+                                IntegrityMetrics metrics) {
         this.partidaRepository = partidaRepository;
+        this.presupuestoRepository = presupuestoRepository;
+        this.integrityHashService = integrityHashService;
+        this.auditLog = auditLog;
         this.gestionInventarioService = gestionInventarioService;
+        this.eventLogger = eventLogger;
+        this.metrics = metrics;
     }
 
     /**
      * Procesa una compra y genera los consumos presupuestales correspondientes.
+     * 
+     * **CRÍTICO: Validación de Integridad Criptográfica**
+     * Antes de procesar la compra, se valida la integridad del presupuesto para
+     * prevenir transacciones sobre presupuestos modificados no autorizadamente.
      * 
      * @param compra La compra a procesar
      * @param billetera La billetera del proyecto
      * @return Lista de consumos generados
      * @throws IllegalArgumentException si alguna partida no existe
      * @throws com.budgetpro.domain.finanzas.exception.SaldoInsuficienteException si la billetera no tiene saldo suficiente
+     * @throws BudgetIntegrityViolationException si se detecta tampering en el presupuesto
      */
     public List<ConsumoPartida> procesar(Compra compra, Billetera billetera) {
+        // CRÍTICO: Validar integridad criptográfica del presupuesto ANTES de procesar
+        Presupuesto presupuesto = presupuestoRepository.findByProyectoId(compra.getProyectoId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("Presupuesto no encontrado para proyecto: %s", compra.getProyectoId())));
+        
+        // Validar integridad del presupuesto (solo si fue aprobado y tiene hash)
+        if (presupuesto.isAprobado()) {
+            String correlationId = eventLogger.generateCorrelationId();
+            long validationStartTime = System.currentTimeMillis();
+            
+            try {
+                presupuesto.validarIntegridad(integrityHashService);
+                
+                // Registrar validación exitosa en audit log y métricas
+                long validationDuration = System.currentTimeMillis() - validationStartTime;
+                metrics.recordHashValidation(true, validationDuration, "SHA-256-v1");
+                eventLogger.logHashValidation(
+                        correlationId,
+                        presupuesto.getId().getValue(),
+                        true,
+                        validationDuration,
+                        String.format("Purchase approval validation for compra %s", compra.getId().getValue()),
+                        "SHA-256-v1"
+                );
+                auditLog.logHashValidation(presupuesto, null, true, 
+                        String.format("Purchase approval validation for compra %s", compra.getId().getValue()));
+            } catch (BudgetIntegrityViolationException e) {
+                // Registrar violación en audit log, métricas y logging estructurado
+                long validationDuration = System.currentTimeMillis() - validationStartTime;
+                metrics.recordHashValidation(false, validationDuration, "SHA-256-v1");
+                metrics.recordIntegrityViolation(e.getViolationType(), "SHA-256-v1");
+                eventLogger.logIntegrityViolation(
+                        correlationId,
+                        e,
+                        null,
+                        "purchase_approval",
+                        "SHA-256-v1"
+                );
+                auditLog.logIntegrityViolation(e, null);
+                throw e; // Prevenir aprobación de compra sobre presupuesto comprometido
+            }
+        }
+        
         List<ConsumoPartida> consumos = new ArrayList<>();
         
         // Agregar totales por partida usando Map para mejor type safety
@@ -92,11 +168,13 @@ public class ProcesarCompraService {
         }
         
         // Descontar de la billetera
-        // Usar el método egresar que valida saldo y crea el movimiento
+        // Usar el método egresar que valida saldo, integridad y crea el movimiento
         billetera.egresar(
                 compra.getTotal(),
                 String.format("Compra #%s - %s", compra.getId().getValue(), compra.getProveedor()),
-                null // evidenciaUrl opcional
+                null, // evidenciaUrl opcional
+                presupuesto,
+                integrityHashService
         );
         
         // Aprobar la compra
@@ -105,6 +183,13 @@ public class ProcesarCompraService {
         // CRÍTICO: Registrar entrada en Inventario (Kardex físico)
         // Esto actualiza el stock físico y crea movimientos de inventario
         gestionInventarioService.registrarEntradaPorCompra(compra);
+        
+        // Actualizar hash de ejecución del presupuesto después de cambios financieros
+        // Solo si el presupuesto fue aprobado y tiene hash de aprobación
+        if (presupuesto.isAprobado()) {
+            presupuesto.actualizarHashEjecucion(integrityHashService);
+            presupuestoRepository.save(presupuesto);
+        }
         
         return consumos;
     }

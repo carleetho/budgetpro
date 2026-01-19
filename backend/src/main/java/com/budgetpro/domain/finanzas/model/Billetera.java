@@ -1,6 +1,9 @@
 package com.budgetpro.domain.finanzas.model;
 
 import com.budgetpro.domain.finanzas.exception.SaldoInsuficienteException;
+import com.budgetpro.domain.finanzas.presupuesto.exception.BudgetIntegrityViolationException;
+import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
+import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -101,19 +104,36 @@ public final class Billetera {
      * 
      * Crea un movimiento de tipo EGRESO y resta el monto del saldo actual.
      * 
+     * **CRÍTICO: Validación de Integridad Criptográfica**
+     * Antes de permitir el egreso, se valida la integridad del presupuesto para
+     * prevenir transacciones sobre presupuestos modificados no autorizadamente.
+     * 
+     * **Orden de Validaciones:**
+     * 1. Validación de monto (debe ser positivo)
+     * 2. Validación CD-04: Evidencia pendiente (máximo 3 movimientos sin evidencia)
+     * 3. Validación de integridad criptográfica del presupuesto (si está aprobado)
+     * 4. Validación de saldo suficiente
+     * 
      * INVARIANTE CRÍTICA: Si el saldo resultante sería negativo, lanza SaldoInsuficienteException.
      * 
      * @param monto El monto a egresar (debe ser positivo)
      * @param referencia Descripción o referencia del egreso (no puede estar vacía)
      * @param evidenciaUrl URL opcional de evidencia documental
+     * @param presupuesto El presupuesto del proyecto (para validación de integridad)
+     * @param hashService Servicio de hash para validación criptográfica
      * @return El MovimientoCaja creado
      * @throws IllegalArgumentException si el monto no es positivo o la referencia está vacía
+     * @throws IllegalStateException si se viola la regla CD-04 de evidencia pendiente
+     * @throws BudgetIntegrityViolationException si se detecta tampering en el presupuesto
      * @throws SaldoInsuficienteException si el saldo resultante sería negativo
      */
-    public MovimientoCaja egresar(BigDecimal monto, String referencia, String evidenciaUrl) {
+    public MovimientoCaja egresar(BigDecimal monto, String referencia, String evidenciaUrl,
+                                  Presupuesto presupuesto, IntegrityHashService hashService) {
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El monto del egreso debe ser positivo");
         }
+        
+        // Validación CD-04: Evidencia pendiente (antes de validar integridad)
         int pendientesEvidencia = contarMovimientosPendientesEvidencia();
         if (pendientesEvidencia > MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA) {
             throw new IllegalStateException(
@@ -124,6 +144,12 @@ public final class Billetera {
             throw new IllegalStateException(
                     String.format("No se permiten más de %d movimientos pendientes de evidencia.", 
                             MAX_MOVIMIENTOS_PENDIENTES_EVIDENCIA));
+        }
+
+        // CRÍTICO: Validar integridad criptográfica del presupuesto ANTES de permitir egreso
+        // Solo si el presupuesto fue aprobado y tiene hash de integridad
+        if (presupuesto != null && presupuesto.isAprobado()) {
+            presupuesto.validarIntegridad(hashService);
         }
 
         // INVARIANTE CRÍTICA: Validar que el saldo no quede negativo

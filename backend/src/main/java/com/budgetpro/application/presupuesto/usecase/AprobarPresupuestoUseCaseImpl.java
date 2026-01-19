@@ -7,6 +7,7 @@ import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import com.budgetpro.domain.finanzas.presupuesto.service.CalculoPresupuestoService;
+import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,14 @@ public class AprobarPresupuestoUseCaseImpl implements AprobarPresupuestoUseCase 
 
     private final PresupuestoRepository presupuestoRepository;
     private final CalculoPresupuestoService calculoPresupuestoService;
+    private final IntegrityHashService integrityHashService;
 
     public AprobarPresupuestoUseCaseImpl(PresupuestoRepository presupuestoRepository,
-                                         CalculoPresupuestoService calculoPresupuestoService) {
+                                         CalculoPresupuestoService calculoPresupuestoService,
+                                         IntegrityHashService integrityHashService) {
         this.presupuestoRepository = presupuestoRepository;
         this.calculoPresupuestoService = calculoPresupuestoService;
+        this.integrityHashService = integrityHashService;
     }
 
     @Override
@@ -50,8 +54,10 @@ public class AprobarPresupuestoUseCaseImpl implements AprobarPresupuestoUseCase 
         // El cálculo se realiza al consultar el presupuesto, pero aquí validamos que sea posible
         calculoPresupuestoService.calcularCostoTotal(presupuestoId);
 
-        // 5. Aprobar el presupuesto (cambia estado a CONGELADO y marca como contractual)
-        presupuesto.aprobar();
+        // 5. Aprobar el presupuesto (cambia estado a CONGELADO, marca como contractual y genera hashes de integridad)
+        // TODO: Obtener el ID del usuario actual del contexto de seguridad
+        UUID approvedBy = UUID.randomUUID(); // Placeholder - debe obtenerse del contexto de seguridad
+        presupuesto.aprobar(approvedBy, integrityHashService);
 
         // 6. Persistir los cambios
         presupuestoRepository.save(presupuesto);

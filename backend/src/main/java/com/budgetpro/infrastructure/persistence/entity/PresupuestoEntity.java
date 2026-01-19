@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -63,6 +64,22 @@ public class PresupuestoEntity extends AuditEntity {
     @Version
     @Column(name = "version", nullable = false)
     private Integer version;
+
+    // Integrity Hash Fields (Swiss-Grade Budget Sealing)
+    @Column(name = "integrity_hash_approval", length = 64)
+    private String integrityHashApproval;
+
+    @Column(name = "integrity_hash_execution", length = 64)
+    private String integrityHashExecution;
+
+    @Column(name = "integrity_hash_generated_at")
+    private LocalDateTime integrityHashGeneratedAt;
+
+    @Column(name = "integrity_hash_generated_by")
+    private UUID integrityHashGeneratedBy;
+
+    @Column(name = "integrity_hash_algorithm", length = 20)
+    private String integrityHashAlgorithm;
 
     @Transient
     private com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto estadoOriginal;
