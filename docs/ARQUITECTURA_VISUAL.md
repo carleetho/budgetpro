@@ -12,6 +12,17 @@
 2. [Diagrama ER (Entity Relationship)](#2-diagrama-er-entity-relationship)
 3. [Diagrama de Flujo Principal (Happy Path)](#3-diagrama-de-flujo-principal-happy-path)
 4. [Diagrama de Secuencia: Proceso de Estimación](#4-diagrama-de-secuencia-proceso-de-estimación)
+5. [Diagrama de Clases: Estructura de Dominio](#5-diagrama-de-clases-estructura-de-dominio)
+6. [Diagrama de Estados: Ciclo de Vida de Presupuesto](#6-diagrama-de-estados-ciclo-de-vida-de-presupuesto)
+7. [Diagrama de Estados: Ciclo de Vida de Estimación](#7-diagrama-de-estados-ciclo-de-vida-de-estimación)
+8. [Diagrama de Componentes: Arquitectura Hexagonal](#8-diagrama-de-componentes-arquitectura-hexagonal)
+9. [Diagrama de Secuencia: Creación de APU Snapshot desde Catálogo](#9-diagrama-de-secuencia-creación-de-apu-snapshot-desde-catálogo)
+10. [Diagrama de Secuencia: Modificación de Rendimiento](#10-diagrama-de-secuencia-modificación-de-rendimiento)
+11. [Diagrama de Arquitectura: Integración con Catálogos](#11-diagrama-de-arquitectura-integración-con-catálogos)
+12. [Arquitectura de Integridad Criptográfica](#12-arquitectura-de-integridad-criptográfica)
+13. [Notas para el Frontend](#13-notas-para-el-frontend)
+14. [Estrategia de Migración: Legacy → Snapshot](#14-estrategia-de-migración-legacy--snapshot)
+15. [Referencias](#15-referencias)
 
 ---
 
@@ -874,7 +885,7 @@ graph TB
 
 ---
 
-## 12. NOTAS PARA EL FRONTEND
+## 13. NOTAS PARA EL FRONTEND
 
 ### Endpoints Críticos para el Desarrollo
 
@@ -923,7 +934,7 @@ PUT /api/v1/proyectos/estimaciones/{id}/aprobar
 
 ---
 
-## 10. ESTRATEGIA DE MIGRACIÓN: LEGACY → SNAPSHOT
+## 14. ESTRATEGIA DE MIGRACIÓN: LEGACY → SNAPSHOT
 
 ### Fases de Migración
 
@@ -982,7 +993,7 @@ flowchart TD
 
 ---
 
-## 11. REFERENCIAS
+## 15. REFERENCIAS
 
 - **Base URL:** `http://localhost:8080/api/v1`
 - **Content-Type:** `application/json`
@@ -996,6 +1007,223 @@ flowchart TD
 - **Modelo de Dominio:** `docs/DOMAIN_MODEL.md`
 - **Observabilidad:** `docs/OBSERVABILITY_CATALOG.md`
 - **Guía de Migración:** `docs/migration/V6_MIGRATION_GUIDE.md`
+- **Integridad Criptográfica:** `docs/INTEGRITY_IMPLEMENTATION.md`
+- **Runbook Operacional:** `docs/OPERATIONAL_RUNBOOK.md`
+
+---
+
+## 12. ARQUITECTURA DE INTEGRIDAD CRIPTOGRÁFICA
+
+### 11.1. Diagrama de Secuencia: Aprobación de Presupuesto con Sellado Criptográfico
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PresupuestoService
+    participant Presupuesto
+    participant IntegrityHashService
+    participant PartidaRepository
+    participant ApuSnapshotRepository
+    participant IntegrityAuditLog
+    participant IntegrityMetrics
+    
+    User->>PresupuestoService: aprobar(presupuestoId, userId)
+    PresupuestoService->>Presupuesto: aprobar(userId, hashService)
+    
+    Note over Presupuesto: Cambia estado a CONGELADO
+    
+    Presupuesto->>IntegrityHashService: calculateApprovalHash(this)
+    IntegrityHashService->>PartidaRepository: findByPresupuestoId(presupuestoId)
+    PartidaRepository-->>IntegrityHashService: List<Partida>
+    
+    loop Para cada Partida
+        IntegrityHashService->>ApuSnapshotRepository: findByPartidaId(partidaId)
+        ApuSnapshotRepository-->>IntegrityHashService: APUSnapshot
+        IntegrityHashService->>IntegrityHashService: calculatePartidaHash(partida + APU)
+    end
+    
+    IntegrityHashService->>IntegrityHashService: Build Merkle Tree
+    IntegrityHashService->>IntegrityHashService: Calculate SHA-256
+    IntegrityHashService-->>Presupuesto: approvalHash
+    
+    Presupuesto->>IntegrityHashService: calculateExecutionHash(this)
+    IntegrityHashService->>IntegrityHashService: Chain to approvalHash
+    IntegrityHashService->>IntegrityHashService: Include financial state
+    IntegrityHashService->>IntegrityHashService: Calculate SHA-256
+    IntegrityHashService-->>Presupuesto: executionHash
+    
+    Presupuesto->>Presupuesto: Set integrityHashApproval
+    Presupuesto->>Presupuesto: Set integrityHashExecution
+    Presupuesto->>Presupuesto: Set integrityHashGeneratedAt
+    Presupuesto->>Presupuesto: Set integrityHashGeneratedBy
+    
+    PresupuestoService->>IntegrityAuditLog: logHashGeneration(presupuesto)
+    IntegrityAuditLog->>IntegrityMetrics: recordHashGeneration()
+    IntegrityMetrics-->>IntegrityAuditLog: Metrics recorded
+    
+    PresupuestoService-->>User: Budget approved and cryptographically sealed
+```
+
+### 11.2. Diagrama de Secuencia: Validación de Integridad en Aprobación de Compra
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ProcesarCompraService
+    participant Presupuesto
+    participant IntegrityHashService
+    participant IntegrityAuditLog
+    participant IntegrityMetrics
+    participant IntegrityEventLogger
+    participant Billetera
+    
+    User->>ProcesarCompraService: procesar(compra, billetera)
+    ProcesarCompraService->>Presupuesto: findByProyectoId(proyectoId)
+    Presupuesto-->>ProcesarCompraService: Presupuesto
+    
+    alt Presupuesto está aprobado
+        ProcesarCompraService->>Presupuesto: validarIntegridad(hashService)
+        Presupuesto->>IntegrityHashService: calculateApprovalHash(this)
+        IntegrityHashService-->>Presupuesto: currentHash
+        
+        alt Hash válido
+            Presupuesto-->>ProcesarCompraService: Validation OK
+            ProcesarCompraService->>IntegrityAuditLog: logHashValidation(success=true)
+            ProcesarCompraService->>IntegrityEventLogger: logHashValidation(success)
+            ProcesarCompraService->>IntegrityMetrics: recordHashValidation(success)
+            
+            Note over ProcesarCompraService: Procesar compra normalmente
+            
+            ProcesarCompraService->>Billetera: egresar(monto, referencia, evidenciaUrl, presupuesto, hashService)
+            Billetera->>Presupuesto: validarIntegridad(hashService)
+            Presupuesto-->>Billetera: Validation OK
+            Billetera-->>ProcesarCompraService: MovimientoCaja
+            
+            ProcesarCompraService->>Presupuesto: actualizarHashEjecucion(hashService)
+            Presupuesto->>IntegrityHashService: calculateExecutionHash(this)
+            IntegrityHashService-->>Presupuesto: newExecutionHash
+            Presupuesto->>Presupuesto: Set integrityHashExecution
+            
+        else Hash inválido (Tampering detectado)
+            Presupuesto-->>ProcesarCompraService: BudgetIntegrityViolationException
+            ProcesarCompraService->>IntegrityAuditLog: logIntegrityViolation(exception)
+            ProcesarCompraService->>IntegrityEventLogger: logIntegrityViolation(CRITICAL)
+            ProcesarCompraService->>IntegrityMetrics: recordIntegrityViolation()
+            ProcesarCompraService-->>User: Transaction REJECTED - Integrity violation
+        end
+    else Presupuesto no aprobado
+        Note over ProcesarCompraService: No validation needed
+        ProcesarCompraService->>Billetera: egresar(...)
+    end
+```
+
+### 11.3. Diagrama de Arquitectura: Componentes de Integridad
+
+```mermaid
+graph TB
+    subgraph "Domain Layer"
+        Presupuesto[Presupuesto<br/>Aggregate Root]
+        IntegrityHashService[IntegrityHashService<br/>Domain Service]
+        IntegrityAuditLog[IntegrityAuditLog<br/>Domain Service]
+    end
+    
+    subgraph "Infrastructure Layer"
+        IntegrityHashServiceImpl[IntegrityHashServiceImpl<br/>SHA-256 + Merkle Tree]
+        IntegrityMetrics[IntegrityMetrics<br/>Micrometer]
+        IntegrityEventLogger[IntegrityEventLogger<br/>Structured Logging]
+        IntegrityAuditRepository[IntegrityAuditRepository<br/>JPA]
+    end
+    
+    subgraph "Application Layer"
+        ProcesarCompraService[ProcesarCompraService]
+        AprobarPresupuestoUseCase[AprobarPresupuestoUseCase]
+    end
+    
+    subgraph "Persistence"
+        PresupuestoEntity[(presupuesto<br/>+ integrity fields)]
+        IntegrityAuditTable[(presupuesto_integrity_audit)]
+    end
+    
+    subgraph "Observability"
+        Prometheus[Prometheus<br/>Metrics Endpoint]
+        Logs[Structured Logs<br/>JSON Format]
+    end
+    
+    Presupuesto -->|uses| IntegrityHashService
+    Presupuesto -->|uses| IntegrityAuditLog
+    
+    IntegrityHashService -.->|implements| IntegrityHashServiceImpl
+    IntegrityHashServiceImpl -->|uses| IntegrityMetrics
+    IntegrityHashServiceImpl -->|uses| IntegrityEventLogger
+    
+    IntegrityAuditLog -.->|implements| IntegrityAuditRepository
+    IntegrityAuditRepository -->|persists| IntegrityAuditTable
+    
+    ProcesarCompraService -->|validates| Presupuesto
+    AprobarPresupuestoUseCase -->|seals| Presupuesto
+    
+    IntegrityMetrics -->|exports| Prometheus
+    IntegrityEventLogger -->|writes| Logs
+    
+    Presupuesto -->|persisted| PresupuestoEntity
+    
+    style Presupuesto fill:#ffcccc
+    style IntegrityHashService fill:#c8e6c9
+    style IntegrityMetrics fill:#fff9c4
+    style IntegrityEventLogger fill:#fff9c4
+```
+
+### 11.4. Patrón Dual-Hash: Aprobación vs Ejecución
+
+```mermaid
+stateDiagram-v2
+    [*] --> Borrador: Crear Presupuesto
+    
+    Borrador --> Aprobando: aprobar(userId, hashService)
+    
+    state Aprobando {
+        [*] --> GenerarApprovalHash
+        GenerarApprovalHash --> GenerarExecutionHash
+        GenerarExecutionHash --> [*]
+    }
+    
+    Aprobando --> Congelado: Hashes generados
+    
+    state Congelado {
+        [*] --> ApprovalHashInmutable
+        ApprovalHashInmutable --> ExecutionHashDinamico
+        ExecutionHashDinamico --> [*]
+    }
+    
+    Congelado --> Validando: Transacción financiera
+    
+    state Validando {
+        [*] --> ValidarApprovalHash
+        ValidarApprovalHash --> HashValido: Hash coincide
+        ValidarApprovalHash --> Violacion: Hash no coincide
+        HashValido --> ActualizarExecutionHash
+        ActualizarExecutionHash --> [*]
+        Violacion --> [*]
+    }
+    
+    Validando --> Congelado: Hash válido
+    Validando --> [*]: Violación detectada
+    
+    note right of ApprovalHashInmutable
+        Hash de Aprobación:
+        - Estructura inmutable
+        - Merkle Tree de Partidas
+        - APU Snapshots
+        - NO cambia después de aprobación
+    end note
+    
+    note right of ExecutionHashDinamico
+        Hash de Ejecución:
+        - Encadenado a approval hash
+        - Estado financiero actual
+        - Se actualiza después de cada transacción
+    end note
+```
 
 ---
 
