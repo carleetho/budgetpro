@@ -3,11 +3,9 @@ package com.budgetpro.infrastructure.persistence.adapter.compra;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraId;
 import com.budgetpro.domain.logistica.compra.port.out.CompraRepository;
-import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.entity.compra.CompraDetalleEntity;
 import com.budgetpro.infrastructure.persistence.entity.compra.CompraEntity;
 import com.budgetpro.infrastructure.persistence.mapper.compra.CompraMapper;
-import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.compra.CompraJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,13 +26,10 @@ public class CompraRepositoryAdapter implements CompraRepository {
 
     private final CompraJpaRepository jpaRepository;
     private final CompraMapper mapper;
-    private final RecursoJpaRepository recursoJpaRepository;
 
-    public CompraRepositoryAdapter(CompraJpaRepository jpaRepository, CompraMapper mapper,
-                                   RecursoJpaRepository recursoJpaRepository) {
+    public CompraRepositoryAdapter(CompraJpaRepository jpaRepository, CompraMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
-        this.recursoJpaRepository = recursoJpaRepository;
     }
 
     @Override
@@ -52,12 +47,8 @@ public class CompraRepositoryAdapter implements CompraRepository {
             
             jpaRepository.save(existingEntity);
         } else {
-            // Creación: mapear y cargar recursos
+            // Creación: mapear (ya no se necesita cargar recursos, usamos referencias externas)
             CompraEntity newEntity = mapper.toEntity(compra);
-            
-            // Cargar y asignar recursos a los detalles
-            mapper.asignarRecursosADetalles(newEntity, compra);
-            
             jpaRepository.save(newEntity);
         }
     }
@@ -69,12 +60,9 @@ public class CompraRepositoryAdapter implements CompraRepository {
         // Limpiar detalles existentes y agregar los nuevos
         existingEntity.getDetalles().clear();
         
-        // Cargar recursos y crear nuevos detalles
+        // Crear nuevos detalles (ya no se necesita cargar RecursoEntity, usamos referencias externas)
         for (com.budgetpro.domain.logistica.compra.model.CompraDetalle detalleDomain : compra.getDetalles()) {
-            RecursoEntity recursoEntity = recursoJpaRepository.findById(detalleDomain.getRecursoId())
-                    .orElseThrow(() -> new IllegalStateException("Recurso no encontrado: " + detalleDomain.getRecursoId()));
-
-            CompraDetalleEntity detalleEntity = mapper.toDetalleEntity(detalleDomain, existingEntity, recursoEntity);
+            CompraDetalleEntity detalleEntity = mapper.toDetalleEntity(detalleDomain, existingEntity);
             existingEntity.getDetalles().add(detalleEntity);
         }
     }

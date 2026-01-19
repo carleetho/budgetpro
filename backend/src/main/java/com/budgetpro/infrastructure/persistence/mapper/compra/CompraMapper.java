@@ -3,15 +3,11 @@ package com.budgetpro.infrastructure.persistence.mapper.compra;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.compra.model.CompraId;
-import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
-import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.entity.compra.CompraDetalleEntity;
 import com.budgetpro.infrastructure.persistence.entity.compra.CompraEntity;
-import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -20,10 +16,8 @@ import java.util.stream.Collectors;
 @Component
 public class CompraMapper {
 
-    private final RecursoJpaRepository recursoJpaRepository;
-
-    public CompraMapper(RecursoJpaRepository recursoJpaRepository) {
-        this.recursoJpaRepository = recursoJpaRepository;
+    public CompraMapper() {
+        // Ya no se necesita RecursoJpaRepository porque usamos referencias externas
     }
 
     /**
@@ -49,7 +43,7 @@ public class CompraMapper {
 
         // Mapear detalles
         List<CompraDetalleEntity> detallesEntities = compra.getDetalles().stream()
-                .map(detalle -> toDetalleEntity(detalle, entity, null)) // recursoEntity se carga después
+                .map(detalle -> toDetalleEntity(detalle, entity))
                 .collect(Collectors.toList());
         entity.setDetalles(detallesEntities);
 
@@ -59,7 +53,7 @@ public class CompraMapper {
     /**
      * Convierte un CompraDetalle (dominio) a CompraDetalleEntity (persistencia).
      */
-    public CompraDetalleEntity toDetalleEntity(CompraDetalle detalle, CompraEntity compraEntity, RecursoEntity recursoEntity) {
+    public CompraDetalleEntity toDetalleEntity(CompraDetalle detalle, CompraEntity compraEntity) {
         if (detalle == null) {
             return null;
         }
@@ -67,7 +61,8 @@ public class CompraMapper {
         return new CompraDetalleEntity(
             detalle.getId().getValue(),
             compraEntity,
-            recursoEntity, // Debe ser cargado antes de llamar este método
+            detalle.getRecursoExternalId(),
+            detalle.getRecursoNombre(),
             detalle.getPartidaId(),
             detalle.getNaturalezaGasto(),
             detalle.getRelacionContractual(),
@@ -75,7 +70,7 @@ public class CompraMapper {
             detalle.getCantidad(),
             detalle.getPrecioUnitario(),
             detalle.getSubtotal(),
-            null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
+            null // CRÍTICO: null para nuevas entidades, Hibernate lo manejará
         );
     }
 
@@ -112,11 +107,10 @@ public class CompraMapper {
             return null;
         }
 
-        UUID recursoId = entity.getRecurso() != null ? entity.getRecurso().getId() : null;
-
         return CompraDetalle.reconstruir(
             com.budgetpro.domain.logistica.compra.model.CompraDetalleId.from(entity.getId()),
-            recursoId,
+            entity.getRecursoExternalId(),
+            entity.getRecursoNombre(),
             entity.getPartidaId(),
             entity.getNaturalezaGasto(),
             entity.getRelacionContractual(),
@@ -143,21 +137,15 @@ public class CompraMapper {
     }
 
     /**
-     * Asigna los recursos a los detalles de la entidad.
+     * Método obsoleto: Ya no se necesita asignar recursos ya que usamos referencias externas.
+     * Se mantiene por compatibilidad pero no hace nada.
+     * 
+     * @deprecated Los recursos ahora se manejan mediante external_id, no se necesita cargar entidades.
      */
+    @Deprecated
     public void asignarRecursosADetalles(CompraEntity entity, Compra compra) {
-        List<CompraDetalleEntity> detallesEntities = entity.getDetalles();
-        List<CompraDetalle> detallesDomain = compra.getDetalles();
-
-        for (int i = 0; i < detallesEntities.size() && i < detallesDomain.size(); i++) {
-            CompraDetalleEntity detalleEntity = detallesEntities.get(i);
-            CompraDetalle detalleDomain = detallesDomain.get(i);
-
-            RecursoEntity recursoEntity = recursoJpaRepository.findById(detalleDomain.getRecursoId())
-                    .orElseThrow(() -> new IllegalStateException("Recurso no encontrado: " + detalleDomain.getRecursoId()));
-
-            detalleEntity.setRecurso(recursoEntity);
-        }
+        // Ya no es necesario cargar RecursoEntity, los detalles ya tienen recursoExternalId y recursoNombre
+        // Este método se mantiene por compatibilidad pero no hace nada
     }
 
 }

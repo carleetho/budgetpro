@@ -10,8 +10,11 @@ import java.util.UUID;
  * DTO de comando para un detalle de compra.
  */
 public record CompraDetalleCommand(
-        @NotNull(message = "El ID del recurso es obligatorio")
-        UUID recursoId,
+        @NotNull(message = "El ID externo del recurso es obligatorio")
+        String recursoExternalId,
+
+        @NotNull(message = "El nombre del recurso es obligatorio")
+        String recursoNombre,
 
         UUID partidaId,
 

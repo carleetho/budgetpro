@@ -10,7 +10,8 @@ import java.util.UUID;
  * Representa un ítem comprado que está asociado a una partida específica.
  * 
  * Invariantes:
- * - El recursoId no puede ser nulo
+ * - El recursoExternalId no puede ser nulo o vacío
+ * - El recursoNombre no puede ser nulo o vacío
  * - La clasificación es obligatoria
  * - La cantidad no puede ser negativa
  * - El precioUnitario no puede ser negativo
@@ -19,7 +20,8 @@ import java.util.UUID;
 public final class CompraDetalle {
 
     private final CompraDetalleId id;
-    private final UUID recursoId;
+    private final String recursoExternalId; // Referencia externa al recurso (ej. "MAT-001" de catálogo)
+    private final String recursoNombre; // Snapshot del nombre del recurso para display/reporting
     private final UUID partidaId; // Puede ser null si compra es no imputable
     private final NaturalezaGasto naturalezaGasto;
     private final RelacionContractual relacionContractual;
@@ -31,13 +33,14 @@ public final class CompraDetalle {
     /**
      * Constructor privado. Usar factory methods.
      */
-    private CompraDetalle(CompraDetalleId id, UUID recursoId, UUID partidaId,
+    private CompraDetalle(CompraDetalleId id, String recursoExternalId, String recursoNombre, UUID partidaId,
                           NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
                           RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
-        validarInvariantes(recursoId, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
+        validarInvariantes(recursoExternalId, recursoNombre, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
         
         this.id = Objects.requireNonNull(id, "El ID del detalle no puede ser nulo");
-        this.recursoId = Objects.requireNonNull(recursoId, "El recursoId no puede ser nulo");
+        this.recursoExternalId = Objects.requireNonNull(recursoExternalId, "El recursoExternalId no puede ser nulo").trim();
+        this.recursoNombre = Objects.requireNonNull(recursoNombre, "El recursoNombre no puede ser nulo").trim();
         this.partidaId = partidaId;
         this.naturalezaGasto = Objects.requireNonNull(naturalezaGasto, "La naturaleza del gasto es obligatoria");
         this.relacionContractual = Objects.requireNonNull(relacionContractual, "La relación contractual es obligatoria");
@@ -50,21 +53,21 @@ public final class CompraDetalle {
     /**
      * Factory method para crear un nuevo CompraDetalle.
      */
-    public static CompraDetalle crear(CompraDetalleId id, UUID recursoId, UUID partidaId,
+    public static CompraDetalle crear(CompraDetalleId id, String recursoExternalId, String recursoNombre, UUID partidaId,
                                       NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
                                       RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
-        return new CompraDetalle(id, recursoId, partidaId, naturalezaGasto, relacionContractual, rubroInsumo,
+        return new CompraDetalle(id, recursoExternalId, recursoNombre, partidaId, naturalezaGasto, relacionContractual, rubroInsumo,
                 cantidad, precioUnitario);
     }
 
     /**
      * Factory method para reconstruir un CompraDetalle desde persistencia.
      */
-    public static CompraDetalle reconstruir(CompraDetalleId id, UUID recursoId, UUID partidaId,
+    public static CompraDetalle reconstruir(CompraDetalleId id, String recursoExternalId, String recursoNombre, UUID partidaId,
                                             NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
                                             RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario,
                                             BigDecimal subtotal) {
-        CompraDetalle detalle = new CompraDetalle(id, recursoId, partidaId, naturalezaGasto, relacionContractual,
+        CompraDetalle detalle = new CompraDetalle(id, recursoExternalId, recursoNombre, partidaId, naturalezaGasto, relacionContractual,
                 rubroInsumo, cantidad, precioUnitario);
         detalle.subtotal = subtotal != null ? subtotal : detalle.calcularSubtotal();
         return detalle;
@@ -73,11 +76,14 @@ public final class CompraDetalle {
     /**
      * Valida las invariantes del agregado.
      */
-    private void validarInvariantes(UUID recursoId, NaturalezaGasto naturalezaGasto,
+    private void validarInvariantes(String recursoExternalId, String recursoNombre, NaturalezaGasto naturalezaGasto,
                                     RelacionContractual relacionContractual, RubroInsumo rubroInsumo,
                                     BigDecimal cantidad, BigDecimal precioUnitario) {
-        if (recursoId == null) {
-            throw new IllegalArgumentException("El recursoId no puede ser nulo");
+        if (recursoExternalId == null || recursoExternalId.isBlank()) {
+            throw new IllegalArgumentException("El recursoExternalId no puede ser nulo o vacío");
+        }
+        if (recursoNombre == null || recursoNombre.isBlank()) {
+            throw new IllegalArgumentException("El recursoNombre no puede ser nulo o vacío");
         }
         Objects.requireNonNull(naturalezaGasto, "La naturaleza del gasto es obligatoria");
         Objects.requireNonNull(relacionContractual, "La relación contractual es obligatoria");
@@ -131,8 +137,12 @@ public final class CompraDetalle {
         return id;
     }
 
-    public UUID getRecursoId() {
-        return recursoId;
+    public String getRecursoExternalId() {
+        return recursoExternalId;
+    }
+
+    public String getRecursoNombre() {
+        return recursoNombre;
     }
 
     public UUID getPartidaId() {
@@ -178,7 +188,7 @@ public final class CompraDetalle {
 
     @Override
     public String toString() {
-        return String.format("CompraDetalle{id=%s, recursoId=%s, partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}",
-                id, recursoId, partidaId, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario, subtotal);
+        return String.format("CompraDetalle{id=%s, recursoExternalId='%s', recursoNombre='%s', partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}",
+                id, recursoExternalId, recursoNombre, partidaId, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario, subtotal);
     }
 }

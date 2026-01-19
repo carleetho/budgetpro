@@ -49,3 +49,66 @@ app:
 jwt:
   secret: ${JWT_SECRET}
   expiration-hours: ${JWT_EXPIRATION_HOURS}
+
+catalog:
+  provider: ${CATALOG_PROVIDER:capeco}
+  capeco:
+    url: ${CAPECO_API_URL:http://localhost:8081}
+  cache:
+    enabled: ${CATALOG_CACHE_ENABLED:true}
+    warm:
+      sources: ${CATALOG_WARM_SOURCES:CAPECO}
+      limit: ${CATALOG_WARM_LIMIT:100}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+        catalog.api.latency: 0.5, 0.95, 0.99
+        snapshot.creation.duration: 0.5, 0.95, 0.99
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      catalog-api:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  retry:
+    instances:
+      catalog-api:
+        maxAttempts: 3
+        waitDuration: 1s
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - com.budgetpro.domain.catalogo.exception.CatalogServiceException
+          - java.lang.RuntimeException
+        ignoreExceptions:
+          - com.budgetpro.domain.catalogo.exception.CatalogNotFoundException
+  timelimiter:
+    instances:
+      catalog-api:
+        timeoutDuration: 5s
+  ratelimiter:
+    instances:
+      catalog-api:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1m
+        timeoutDuration: 1s

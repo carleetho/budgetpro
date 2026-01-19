@@ -8,7 +8,8 @@ import java.util.UUID;
  */
 public record CompraDetalleResponse(
         UUID id,
-        UUID recursoId,
+        String recursoExternalId,
+        String recursoNombre,
         UUID partidaId,
         com.budgetpro.domain.logistica.compra.model.NaturalezaGasto naturalezaGasto,
         com.budgetpro.domain.logistica.compra.model.RelacionContractual relacionContractual,

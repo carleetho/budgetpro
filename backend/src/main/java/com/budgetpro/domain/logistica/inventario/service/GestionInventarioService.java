@@ -39,14 +39,18 @@ public class GestionInventarioService {
      */
     public void registrarEntradaPorCompra(Compra compra) {
         for (CompraDetalle detalle : compra.getDetalles()) {
+            // TODO: Migrar inventario para usar recursoExternalId en lugar de UUID recursoId
+            // Por ahora, generamos un UUID determinístico desde el externalId para compatibilidad
+            UUID recursoId = generarRecursoIdDesdeExternalId(detalle.getRecursoExternalId());
+            
             // Buscar o crear el InventarioItem para este proyecto + recurso
             InventarioItem inventarioItem = inventarioRepository
-                    .findByProyectoIdAndRecursoId(compra.getProyectoId(), detalle.getRecursoId())
+                    .findByProyectoIdAndRecursoId(compra.getProyectoId(), recursoId)
                     .orElseGet(() -> {
                         // Si no existe, crear uno nuevo
                         InventarioId inventarioId = InventarioId.generate();
                         return InventarioItem.crear(inventarioId, compra.getProyectoId(),
-                                                   detalle.getRecursoId(), null); // ubicacion null por ahora
+                                                   recursoId, null); // ubicacion null por ahora
                     });
 
             // Registrar la entrada usando el método del agregado
@@ -86,5 +90,16 @@ public class GestionInventarioService {
 
         // Persistir el inventario (con sus movimientos nuevos)
         inventarioRepository.save(inventarioItem);
+    }
+
+    /**
+     * Genera un UUID determinístico desde un externalId.
+     * 
+     * TODO: Esto es una solución temporal hasta que el inventario migre a usar externalId.
+     * Usa el hash del externalId para generar un UUID consistente.
+     */
+    private UUID generarRecursoIdDesdeExternalId(String externalId) {
+        // Generar UUID v5 (determinístico) usando el namespace DNS y el externalId
+        return UUID.nameUUIDFromBytes(externalId.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 }

@@ -83,10 +83,14 @@ erDiagram
     APU ||--o{ APU_INSUMO : "contiene"
     APU_INSUMO }o--|| RECURSO : "usa"
     
+    PARTIDA ||--|| APU_SNAPSHOT : "tiene_snapshot"
+    APU_SNAPSHOT ||--o{ APU_INSUMO_SNAPSHOT : "contiene"
+    
     COMPRA ||--o{ COMPRA_DETALLE : "tiene"
-    COMPRA_DETALLE }o--|| RECURSO : "compra"
     COMPRA_DETALLE }o--|| PARTIDA : "imputa"
     COMPRA_DETALLE ||--|| CONSUMO_PARTIDA : "genera"
+    
+    RECURSO ||--|| RECURSO_PROXY : "tiene_proxy"
     
     INVENTARIO_ITEM }o--|| RECURSO : "almacena"
     INVENTARIO_ITEM ||--o{ MOVIMIENTO_INVENTARIO : "registra"
@@ -100,8 +104,8 @@ erDiagram
     AVANCE_FISICO ||--o{ VALUACION : "incluye"
     
     RECURSO ||--o{ APU_INSUMO : "usado_en"
-    RECURSO ||--o{ COMPRA_DETALLE : "comprado_en"
     RECURSO ||--o{ INVENTARIO_ITEM : "almacenado_en"
+    RECURSO ||--|| RECURSO_PROXY : "referenciado_por"
     
     PROYECTO {
         UUID id PK
@@ -143,12 +147,48 @@ erDiagram
         decimal precio_unitario
     }
     
+    APU_SNAPSHOT {
+        UUID id PK
+        UUID partida_id FK "unique"
+        string external_apu_id
+        string catalog_source
+        decimal rendimiento_original
+        decimal rendimiento_vigente
+        boolean rendimiento_modificado
+        UUID rendimiento_modificado_por
+        timestamp rendimiento_modificado_en
+        string unidad_snapshot
+        timestamp snapshot_date
+    }
+    
+    APU_INSUMO_SNAPSHOT {
+        UUID id PK
+        UUID apu_snapshot_id FK
+        string recurso_external_id
+        string recurso_nombre
+        decimal cantidad
+        decimal precio_unitario
+        decimal subtotal
+    }
+    
     RECURSO {
         UUID id PK
         string nombre
         TipoRecurso tipo
         string unidad_base
         EstadoRecurso estado
+    }
+    
+    RECURSO_PROXY {
+        UUID id PK
+        string external_id
+        string catalog_source
+        string nombre_snapshot
+        TipoRecurso tipo_snapshot
+        string unidad_snapshot
+        decimal precio_referencial_snapshot
+        timestamp snapshot_date
+        boolean activo
     }
     
     COMPRA {
@@ -163,7 +203,8 @@ erDiagram
     COMPRA_DETALLE {
         UUID id PK
         UUID compra_id FK
-        UUID recurso_id FK
+        string recurso_external_id
+        string recurso_nombre
         UUID partida_id FK
         decimal cantidad
         decimal precio_unitario
@@ -244,13 +285,18 @@ erDiagram
 1. **Proyecto → Presupuesto** (1:N): Un proyecto puede tener múltiples presupuestos (aunque en MVP solo uno activo).
 2. **Presupuesto → Partida** (1:N): Un presupuesto contiene múltiples partidas en estructura jerárquica (WBS).
 3. **Partida → Partida** (Auto-referencia): Relación padre-hijo para estructura jerárquica.
-4. **Partida → APU** (1:1): Cada partida tiene un único APU (Análisis de Precios Unitarios).
-5. **APU → APU_Insumo** (1:N): Un APU contiene múltiples insumos (Material, Mano de Obra, Equipo).
-6. **APU_Insumo → Recurso** (N:1): Los insumos referencian recursos del catálogo.
-7. **Compra → Compra_Detalle** (1:N): Una compra tiene múltiples detalles.
-8. **Compra_Detalle → Partida** (N:1): Cada detalle se imputa a una partida.
-9. **Compra_Detalle → Consumo_Partida** (1:1): Cada detalle genera un consumo presupuestal.
-10. **Estimación → Detalle_Estimacion** (1:N): Una estimación contiene múltiples detalles por partida.
+4. **Partida → APU** (1:1): Cada partida tiene un único APU legacy (Análisis de Precios Unitarios).
+5. **Partida → APU_Snapshot** (1:1): Cada partida puede tener un snapshot de APU desde catálogo externo.
+6. **APU → APU_Insumo** (1:N): Un APU legacy contiene múltiples insumos (Material, Mano de Obra, Equipo).
+7. **APU_Snapshot → APU_Insumo_Snapshot** (1:N): Un snapshot contiene insumos con referencias externas.
+8. **APU_Insumo → Recurso** (N:1): Los insumos legacy referencian recursos locales.
+9. **APU_Insumo_Snapshot**: Usa `recurso_external_id` (string) en lugar de FK a Recurso.
+10. **Recurso → RecursoProxy** (1:1): Cada recurso local puede tener un proxy a catálogo externo.
+11. **Compra → Compra_Detalle** (1:N): Una compra tiene múltiples detalles.
+12. **Compra_Detalle**: Usa `recurso_external_id` (string) y `recurso_nombre` (snapshot) en lugar de FK a Recurso.
+13. **Compra_Detalle → Partida** (N:1): Cada detalle se imputa a una partida.
+14. **Compra_Detalle → Consumo_Partida** (1:1): Cada detalle genera un consumo presupuestal.
+15. **Estimación → Detalle_Estimacion** (1:N): Una estimación contiene múltiples detalles por partida.
 
 ---
 
@@ -567,6 +613,8 @@ graph TB
         REST[REST Controllers]
         JPA[JPA Entities]
         Adapters[Repository Adapters]
+        CatalogAdapters[Catalog Adapters]
+        Cache[Catalog Cache]
         Config[Spring Config]
     end
     
@@ -579,7 +627,9 @@ graph TB
     subgraph "Domain Layer"
         Aggregates[Aggregates]
         Services[Domain Services]
+        SnapshotService[Snapshot Service]
         PortsOut[Outbound Ports]
+        CatalogPort[Catalog Port]
         VOs[Value Objects]
     end
     
@@ -587,20 +637,28 @@ graph TB
     UseCases --> PortsIn
     UseCases --> Aggregates
     UseCases --> Services
+    UseCases --> SnapshotService
     Adapters --> PortsOut
     Adapters --> JPA
+    CatalogAdapters --> CatalogPort
+    CatalogAdapters --> Cache
     Services --> Aggregates
     Services --> PortsOut
+    SnapshotService --> CatalogPort
     Aggregates --> VOs
     Config --> Services
+    Config --> CatalogAdapters
     
     style REST fill:#ffcccc
     style JPA fill:#ffcccc
     style Adapters fill:#ffcccc
+    style CatalogAdapters fill:#ffcccc
+    style Cache fill:#ffcccc
     style UseCases fill:#ffffcc
     style DTOs fill:#ffffcc
     style Aggregates fill:#ccffcc
     style Services fill:#ccffcc
+    style SnapshotService fill:#ccffcc
     style VOs fill:#ccffcc
 ```
 
@@ -609,9 +667,214 @@ graph TB
 - 🟡 **Amarillo (Application):** Orquesta el dominio
 - 🟢 **Verde (Domain):** Puro, sin dependencias externas
 
+### Integración con Catálogos Externos
+
+```mermaid
+graph LR
+    subgraph "BudgetPro"
+        SnapshotService[SnapshotService]
+        CatalogPort[CatalogPort Interface]
+        CapecoAdapter[CapecoApiAdapter]
+        MockAdapter[MockCatalogAdapter]
+        Cache[CatalogCache]
+    end
+    
+    subgraph "External Catalogs"
+        CapecoAPI[CAPECO API]
+        MockData[Mock Data]
+    end
+    
+    SnapshotService --> CatalogPort
+    CatalogPort --> CapecoAdapter
+    CatalogPort --> MockAdapter
+    CapecoAdapter --> Cache
+    CapecoAdapter --> CapecoAPI
+    MockAdapter --> MockData
+    
+    style SnapshotService fill:#ccffcc
+    style CatalogPort fill:#ccffcc
+    style CapecoAdapter fill:#ffcccc
+    style MockAdapter fill:#ffcccc
+    style Cache fill:#ffcccc
+```
+
 ---
 
-## 9. NOTAS PARA EL FRONTEND
+## 9. DIAGRAMA DE SECUENCIA: CREACIÓN DE APU SNAPSHOT DESDE CATÁLOGO
+
+### Flujo Completo: Crear Snapshot desde Catálogo Externo
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Controller
+    participant SnapshotService
+    participant CatalogPort
+    participant CapecoAdapter
+    participant CatalogCache
+    participant CatalogAPI
+    participant ApuSnapshotRepository
+    participant Database
+
+    User->>Controller: POST /api/v1/partidas/{id}/apu-snapshot
+    Controller->>SnapshotService: createAPUSnapshot(externalApuId, catalogSource)
+    
+    Note over SnapshotService: Genera correlationId para rastreo
+    
+    SnapshotService->>CatalogPort: fetchAPU(externalApuId, catalogSource)
+    CatalogPort->>CapecoAdapter: fetchAPU(externalApuId, catalogSource)
+    
+    CapecoAdapter->>CatalogCache: getApuL2(cacheKey)
+    CatalogCache-->>CapecoAdapter: Optional<APUSnapshot>
+    
+    alt Cache Miss
+        CapecoAdapter->>CatalogAPI: GET /apus/{externalApuId}
+        CatalogAPI-->>CapecoAdapter: CapecoApuResponse
+        
+        Note over CapecoAdapter: Registra métricas: API call, latency
+        
+        CapecoAdapter->>CatalogCache: putApuL2(cacheKey, snapshot)
+        CapecoAdapter-->>CatalogPort: APUSnapshot
+    else Cache Hit
+        CapecoAdapter-->>CatalogPort: APUSnapshot (from cache)
+        Note over CapecoAdapter: Registra métrica: cache hit
+    end
+    
+    CatalogPort-->>SnapshotService: APUSnapshot (from catalog)
+    
+    loop Para cada insumo del APU
+        SnapshotService->>CatalogPort: fetchRecurso(recursoExternalId, catalogSource)
+        CatalogPort->>CapecoAdapter: fetchRecurso(recursoExternalId, catalogSource)
+        
+        CapecoAdapter->>CatalogCache: getRecursoL2(cacheKey)
+        alt Cache Miss
+            CapecoAdapter->>CatalogAPI: GET /recursos/{externalId}
+            CatalogAPI-->>CapecoAdapter: CapecoRecursoResponse
+            CapecoAdapter->>CatalogCache: putRecursoL2(cacheKey, snapshot)
+        end
+        
+        CapecoAdapter-->>CatalogPort: RecursoSnapshot
+        CatalogPort-->>SnapshotService: RecursoSnapshot
+        
+        Note over SnapshotService: Crea APUInsumoSnapshot con<br/>recursoExternalId y recursoNombre
+    end
+    
+    Note over SnapshotService: Registra métricas:<br/>snapshot creation, duration
+    
+    SnapshotService->>ApuSnapshotRepository: save(APUSnapshot)
+    ApuSnapshotRepository->>Database: INSERT apu_snapshot + insumos
+    Database-->>ApuSnapshotRepository: OK
+    ApuSnapshotRepository-->>SnapshotService: APUSnapshot saved
+    
+    SnapshotService-->>Controller: APUSnapshot
+    Controller-->>User: 201 CREATED + APUSnapshotResponse
+```
+
+---
+
+## 10. DIAGRAMA DE SECUENCIA: MODIFICACIÓN DE RENDIMIENTO
+
+### Flujo: Usuario Modifica Rendimiento de APU Snapshot
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Controller
+    participant SnapshotService
+    participant ApuSnapshotRepository
+    participant CatalogEventLogger
+    participant CatalogMetrics
+    participant Database
+
+    User->>Controller: PUT /api/v1/apu-snapshots/{id}/rendimiento
+    Controller->>SnapshotService: actualizarRendimiento(snapshot, nuevoRendimiento, usuarioId)
+    
+    Note over SnapshotService: Genera correlationId
+    
+    SnapshotService->>ApuSnapshotRepository: findById(snapshotId)
+    ApuSnapshotRepository->>Database: SELECT apu_snapshot
+    Database-->>ApuSnapshotRepository: APUSnapshot
+    ApuSnapshotRepository-->>SnapshotService: APUSnapshot
+    
+    Note over SnapshotService: rendimientoAnterior = snapshot.rendimientoVigente
+    
+    SnapshotService->>SnapshotService: snapshot.actualizarRendimiento(nuevoRendimiento, usuarioId)
+    
+    Note over SnapshotService: Actualiza:<br/>- rendimientoVigente = nuevoRendimiento<br/>- rendimientoModificado = true<br/>- rendimientoModificadoPor = usuarioId<br/>- rendimientoModificadoEn = now()
+    
+    SnapshotService->>CatalogMetrics: recordRendimientoOverride(catalogSource)
+    SnapshotService->>CatalogEventLogger: logRendimientoModification(correlationId, ...)
+    
+    Note over CatalogEventLogger: Log estructurado con:<br/>- rendimientoOriginal<br/>- rendimientoAnterior<br/>- rendimientoNuevo<br/>- desviacionOriginal<br/>- cambioAbsoluto
+    
+    SnapshotService->>ApuSnapshotRepository: save(snapshot)
+    ApuSnapshotRepository->>Database: UPDATE apu_snapshot
+    Database-->>ApuSnapshotRepository: OK
+    ApuSnapshotRepository-->>SnapshotService: APUSnapshot updated
+    
+    SnapshotService-->>Controller: OK
+    Controller-->>User: 200 OK
+```
+
+---
+
+## 11. DIAGRAMA DE ARQUITECTURA: INTEGRACIÓN CON CATÁLOGOS
+
+### Flujo Completo de Integración
+
+```mermaid
+graph TB
+    subgraph "BudgetPro Application"
+        subgraph "Domain Layer"
+            SnapshotService[SnapshotService]
+            CatalogPort[CatalogPort Interface]
+        end
+        
+        subgraph "Infrastructure Layer"
+            CapecoAdapter[CapecoApiAdapter]
+            MockAdapter[MockCatalogAdapter]
+            Cache[CatalogCache L1/L2]
+            Metrics[CatalogMetrics]
+            Logger[CatalogEventLogger]
+        end
+        
+        subgraph "Persistence"
+            SnapshotRepo[ApuSnapshotRepository]
+            ProxyRepo[RecursoProxyRepository]
+            Database[(PostgreSQL)]
+        end
+    end
+    
+    subgraph "External Systems"
+        CapecoAPI[CAPECO API]
+    end
+    
+    SnapshotService --> CatalogPort
+    CatalogPort --> CapecoAdapter
+    CatalogPort --> MockAdapter
+    CapecoAdapter --> Cache
+    CapecoAdapter --> CapecoAPI
+    CapecoAdapter --> Metrics
+    CapecoAdapter --> Logger
+    SnapshotService --> Metrics
+    SnapshotService --> Logger
+    SnapshotService --> SnapshotRepo
+    SnapshotService --> ProxyRepo
+    SnapshotRepo --> Database
+    ProxyRepo --> Database
+    
+    style SnapshotService fill:#ccffcc
+    style CatalogPort fill:#ccffcc
+    style CapecoAdapter fill:#ffcccc
+    style MockAdapter fill:#ffcccc
+    style Cache fill:#ffcccc
+    style Metrics fill:#ffcccc
+    style Logger fill:#ffcccc
+```
+
+---
+
+## 12. NOTAS PARA EL FRONTEND
 
 ### Endpoints Críticos para el Desarrollo
 
@@ -660,11 +923,79 @@ PUT /api/v1/proyectos/estimaciones/{id}/aprobar
 
 ---
 
-## 10. REFERENCIAS
+## 10. ESTRATEGIA DE MIGRACIÓN: LEGACY → SNAPSHOT
+
+### Fases de Migración
+
+```mermaid
+flowchart TD
+    Start[Estado Inicial] --> Phase1[Fase 1: Migración de Datos]
+    Phase1 --> Phase2[Fase 2: Dual Write]
+    Phase2 --> Phase3[Fase 3: Solo Snapshots]
+    
+    Phase1 --> LegacyData[(APU Legacy)]
+    Phase1 --> SnapshotData[(APU_SNAPSHOT)]
+    
+    Phase2 --> NewPresupuestos[Nuevos Presupuestos<br/>usan Snapshots]
+    Phase2 --> LegacyPresupuestos[Presupuestos Legacy<br/>usan APU Legacy]
+    
+    Phase3 --> AllSnapshots[Todos usan Snapshots]
+    Phase3 --> Deprecate[Deprecar APU Legacy]
+    
+    style Phase1 fill:#fff9c4
+    style Phase2 fill:#c8e6c9
+    style Phase3 fill:#ffcccc
+```
+
+### Fase 1: Migración de Datos (Completada)
+
+**Objetivo:** Migrar datos legacy a formato snapshot
+
+**Migraciones:**
+- `V5__migrate_recurso_to_proxy.sql`: Migra recursos a RecursoProxy
+- `V6__migrate_apu_to_snapshot.sql`: Migra APUs a APUSnapshot
+
+**Resultado:**
+- Todos los datos legacy tienen snapshots equivalentes
+- `catalog_source = 'BUDGETPRO_LEGACY'`
+- `external_apu_id = 'LEGACY_APU_{uuid}'`
+
+**Ver:** `docs/migration/V6_MIGRATION_GUIDE.md`
+
+### Fase 2: Dual Write (Actual)
+
+**Objetivo:** Nuevos presupuestos usan snapshots, legacy mantiene APU
+
+**Características:**
+- Nuevos presupuestos crean solo snapshots
+- Presupuestos legacy mantienen sus APUs originales
+- Ambos modelos coexisten
+
+### Fase 3: Solo Snapshots (Futuro)
+
+**Objetivo:** Deprecar completamente modelo legacy
+
+**Acciones:**
+- Todos los presupuestos usan snapshots
+- Tablas `apu` y `apu_insumo` se marcan como deprecated
+- Migración final de cualquier dato restante
+
+---
+
+## 11. REFERENCIAS
 
 - **Base URL:** `http://localhost:8080/api/v1`
 - **Content-Type:** `application/json`
 - **Autenticación:** (Por implementar en el futuro)
+
+### Documentación Relacionada
+
+- **Integración de Catálogos:** `docs/CATALOG_INTEGRATION.md`
+- **Semántica de Snapshots:** `docs/SNAPSHOT_SEMANTICS.md`
+- **Modificación de Rendimiento:** `docs/RENDIMIENTO_OVERRIDE.md`
+- **Modelo de Dominio:** `docs/DOMAIN_MODEL.md`
+- **Observabilidad:** `docs/OBSERVABILITY_CATALOG.md`
+- **Guía de Migración:** `docs/migration/V6_MIGRATION_GUIDE.md`
 
 ---
 

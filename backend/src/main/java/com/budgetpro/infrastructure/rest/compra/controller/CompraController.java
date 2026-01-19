@@ -37,7 +37,8 @@ public class CompraController {
         // Mapear detalles del request
         java.util.List<CompraDetalleCommand> detallesCommand = request.detalles().stream()
                 .map(detalle -> new CompraDetalleCommand(
-                    detalle.recursoId(),
+                    detalle.recursoExternalId(),
+                    detalle.recursoNombre(),
                     detalle.partidaId(),
                     detalle.naturalezaGasto(),
                     detalle.relacionContractual(),

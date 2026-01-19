@@ -66,7 +66,8 @@ public class RegistrarCompraUseCaseImpl implements RegistrarCompraUseCase {
         List<CompraDetalle> detalles = command.detalles().stream()
                 .map(detalleCommand -> CompraDetalle.crear(
                         CompraDetalleId.nuevo(),
-                        detalleCommand.recursoId(),
+                        detalleCommand.recursoExternalId(),
+                        detalleCommand.recursoNombre(),
                         detalleCommand.partidaId(),
                         detalleCommand.naturalezaGasto(),
                         detalleCommand.relacionContractual(),
@@ -96,7 +97,8 @@ public class RegistrarCompraUseCaseImpl implements RegistrarCompraUseCase {
         List<CompraDetalleResponse> detallesResponse = compra.getDetalles().stream()
                 .map(detalle -> new CompraDetalleResponse(
                         detalle.getId().getValue(),
-                        detalle.getRecursoId(),
+                        detalle.getRecursoExternalId(),
+                        detalle.getRecursoNombre(),
                         detalle.getPartidaId(),
                         detalle.getNaturalezaGasto(),
                         detalle.getRelacionContractual(),

@@ -20,7 +20,7 @@ import java.util.UUID;
 @Table(name = "compra_detalle",
        indexes = {
            @Index(name = "idx_compra_detalle_compra", columnList = "compra_id"),
-           @Index(name = "idx_compra_detalle_recurso", columnList = "recurso_id"),
+           @Index(name = "idx_compra_detalle_recurso_external", columnList = "recurso_external_id"),
            @Index(name = "idx_compra_detalle_partida", columnList = "partida_id")
        })
 public class CompraDetalleEntity {
@@ -33,9 +33,11 @@ public class CompraDetalleEntity {
     @JoinColumn(name = "compra_id", nullable = false, updatable = false)
     private CompraEntity compra;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recurso_id", nullable = false, updatable = false)
-    private com.budgetpro.infrastructure.persistence.entity.RecursoEntity recurso;
+    @Column(name = "recurso_external_id", nullable = false, length = 255, updatable = false)
+    private String recursoExternalId; // Referencia externa al recurso (ej. "MAT-001")
+
+    @Column(name = "recurso_nombre", nullable = false, length = 500, updatable = false)
+    private String recursoNombre; // Snapshot del nombre del recurso para display/reporting
 
     @Column(name = "partida_id", updatable = false)
     private UUID partidaId; // Puede ser null si no aplica
@@ -85,7 +87,8 @@ public class CompraDetalleEntity {
      * 
      * @param id ID del detalle
      * @param compra CompraEntity asociada
-     * @param recurso RecursoEntity asociado
+     * @param recursoExternalId ID externo del recurso (ej. "MAT-001")
+     * @param recursoNombre Nombre del recurso (snapshot)
      * @param partidaId ID de la partida (imputación presupuestal)
      * @param cantidad Cantidad comprada
      * @param precioUnitario Precio unitario
@@ -93,7 +96,8 @@ public class CompraDetalleEntity {
      * @param version Versión (puede ser null para nuevas entidades)
      */
     public CompraDetalleEntity(UUID id, CompraEntity compra,
-                               com.budgetpro.infrastructure.persistence.entity.RecursoEntity recurso,
+                               String recursoExternalId,
+                               String recursoNombre,
                                UUID partidaId,
                                com.budgetpro.domain.logistica.compra.model.NaturalezaGasto naturalezaGasto,
                                com.budgetpro.domain.logistica.compra.model.RelacionContractual relacionContractual,
@@ -102,7 +106,8 @@ public class CompraDetalleEntity {
                                BigDecimal subtotal, Integer version) {
         this.id = id;
         this.compra = compra;
-        this.recurso = recurso;
+        this.recursoExternalId = recursoExternalId;
+        this.recursoNombre = recursoNombre;
         this.partidaId = partidaId;
         this.naturalezaGasto = naturalezaGasto;
         this.relacionContractual = relacionContractual;
@@ -131,12 +136,20 @@ public class CompraDetalleEntity {
         this.compra = compra;
     }
 
-    public com.budgetpro.infrastructure.persistence.entity.RecursoEntity getRecurso() {
-        return recurso;
+    public String getRecursoExternalId() {
+        return recursoExternalId;
     }
 
-    public void setRecurso(com.budgetpro.infrastructure.persistence.entity.RecursoEntity recurso) {
-        this.recurso = recurso;
+    public void setRecursoExternalId(String recursoExternalId) {
+        this.recursoExternalId = recursoExternalId;
+    }
+
+    public String getRecursoNombre() {
+        return recursoNombre;
+    }
+
+    public void setRecursoNombre(String recursoNombre) {
+        this.recursoNombre = recursoNombre;
     }
 
     public UUID getPartidaId() {

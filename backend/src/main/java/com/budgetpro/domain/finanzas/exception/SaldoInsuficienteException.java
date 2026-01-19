@@ -26,6 +26,16 @@ public class SaldoInsuficienteException extends RuntimeException {
         this.montoIntentado = montoIntentado;
     }
 
+    public SaldoInsuficienteException(UUID proyectoId, BigDecimal saldoDisponible, BigDecimal montoRequerido, String detalleAdicional) {
+        super(String.format(
+            "Saldo insuficiente en proyecto %s. Disponible: %s, Requerido: %s. %s",
+            proyectoId, saldoDisponible, montoRequerido, detalleAdicional
+        ));
+        this.proyectoId = proyectoId;
+        this.saldoActual = saldoDisponible;
+        this.montoIntentado = montoRequerido;
+    }
+
     public UUID getProyectoId() {
         return proyectoId;
     }
@@ -35,6 +45,14 @@ public class SaldoInsuficienteException extends RuntimeException {
     }
 
     public BigDecimal getMontoIntentado() {
+        return montoIntentado;
+    }
+
+    public BigDecimal getSaldoDisponible() {
+        return saldoActual;
+    }
+
+    public BigDecimal getMontoRequerido() {
         return montoIntentado;
     }
 }
