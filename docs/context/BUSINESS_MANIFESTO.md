@@ -110,7 +110,42 @@ ni ignorar esta jerarquía.
 
 ---
 
-## 9. Decisión Arquitectónica No Negociable
+## 9. Principio de Integridad Criptográfica (Swiss-Grade)
+
+El presupuesto aprobado es sellado criptográficamente mediante hashes SHA-256.
+
+### Sellado Dual-Hash
+
+Una vez aprobado, el presupuesto queda protegido por dos hashes:
+
+- **Hash de Aprobación (Inmutable)**: Captura la estructura completa del presupuesto
+  - Atributos del Presupuesto (ID, nombre, proyecto, estado, contractual)
+  - Estructura jerárquica de Partidas (WBS)
+  - APU Snapshots con rendimiento vigente e insumos
+  - Merkle Tree de todas las Partidas para validación eficiente
+  
+- **Hash de Ejecución (Dinámico)**: Captura el estado financiero actual
+  - Encadenado al hash de aprobación (base inmutable)
+  - Estado financiero por Partida (gastos reales, compromisos pendientes)
+  - Se actualiza después de cada transacción financiera
+
+### Garantías de Integridad
+
+- **Inmutabilidad Estructural**: El presupuesto aprobado no puede modificarse estructuralmente
+- **Detección de Tampering**: Cualquier modificación no autorizada se detecta antes de permitir transacciones
+- **Audit Trail Completo**: Todos los eventos de integridad se registran para análisis forense
+- **Validación Preventiva**: Las compras y egresos validan integridad antes de ejecutarse
+
+### Reglas de Negocio
+
+1. **Hard-Freeze Pattern**: Después de aprobación, modificaciones estructurales bloquean transacciones
+2. **Validación Pre-Transacción**: Toda compra o egreso valida integridad antes de ejecutarse
+3. **Actualización de Hash de Ejecución**: Después de cada transacción financiera, el hash de ejecución se recalcula
+4. **Violación = Bloqueo**: Cualquier violación de integridad bloquea la transacción y genera alerta crítica
+
+---
+
+## 10. Decisión Arquitectónica No Negociable
 
 BudgetPro opera exclusivamente en modalidad online.
 

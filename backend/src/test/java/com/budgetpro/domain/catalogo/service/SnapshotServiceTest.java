@@ -9,6 +9,8 @@ import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
 import com.budgetpro.domain.catalogo.port.CatalogPort;
 import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.infrastructure.catalogo.observability.CatalogEventLogger;
+import com.budgetpro.infrastructure.catalogo.observability.CatalogMetrics;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -30,9 +32,15 @@ class SnapshotServiceTest {
     @Mock
     private CatalogPort catalogPort;
 
+    @Mock
+    private CatalogMetrics catalogMetrics;
+
+    @Mock
+    private CatalogEventLogger catalogEventLogger;
+
     @Test
     void createAPUSnapshot_debeConstruirSnapshotCompleto() {
-        SnapshotService service = new SnapshotService(catalogPort);
+        SnapshotService service = new SnapshotService(catalogPort, catalogMetrics, catalogEventLogger);
         UUID partidaId = UUID.randomUUID();
 
         APUSnapshot apuData = APUSnapshot.crear(
@@ -75,7 +83,7 @@ class SnapshotServiceTest {
 
     @Test
     void createAPUSnapshot_recursoInactivo_debeFallar() {
-        SnapshotService service = new SnapshotService(catalogPort);
+        SnapshotService service = new SnapshotService(catalogPort, catalogMetrics, catalogEventLogger);
         UUID partidaId = UUID.randomUUID();
 
         APUSnapshot apuData = APUSnapshot.crear(
@@ -104,7 +112,7 @@ class SnapshotServiceTest {
 
     @Test
     void actualizarRendimiento_debeRegistrarAuditoria() {
-        SnapshotService service = new SnapshotService(catalogPort);
+        SnapshotService service = new SnapshotService(catalogPort, catalogMetrics, catalogEventLogger);
         APUSnapshot snapshot = APUSnapshot.crear(
                 APUSnapshotId.generate(),
                 UUID.randomUUID(),
@@ -125,7 +133,7 @@ class SnapshotServiceTest {
 
     @Test
     void validateRecursoProxy_debeDelegar() {
-        SnapshotService service = new SnapshotService(catalogPort);
+        SnapshotService service = new SnapshotService(catalogPort, catalogMetrics, catalogEventLogger);
         when(catalogPort.isRecursoActive("MAT-001", "CAPECO")).thenReturn(true);
 
         assertTrue(service.validateRecursoProxy("MAT-001", "CAPECO"));
@@ -133,7 +141,7 @@ class SnapshotServiceTest {
 
     @Test
     void createAPUSnapshot_errorCatalogo_debeEnvolver() {
-        SnapshotService service = new SnapshotService(catalogPort);
+        SnapshotService service = new SnapshotService(catalogPort, catalogMetrics, catalogEventLogger);
         when(catalogPort.fetchAPU("APU-ERR", "CAPECO"))
                 .thenThrow(new RuntimeException("down"));
 

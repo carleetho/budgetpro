@@ -11,6 +11,8 @@ import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
+import com.budgetpro.infrastructure.observability.IntegrityEventLogger;
+import com.budgetpro.infrastructure.observability.IntegrityMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +28,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -52,9 +55,15 @@ class IntegrityHashServiceTest {
     private UUID proyectoId;
     private PresupuestoId presupuestoId;
 
+    @Mock
+    private IntegrityMetrics metrics;
+
+    @Mock
+    private IntegrityEventLogger eventLogger;
+
     @BeforeEach
     void setUp() {
-        hashService = new IntegrityHashServiceImpl(partidaRepository, apuSnapshotRepository);
+        hashService = new IntegrityHashServiceImpl(partidaRepository, apuSnapshotRepository, metrics, eventLogger);
 
         proyectoId = UUID.randomUUID();
         presupuestoId = PresupuestoId.from(UUID.randomUUID());
@@ -92,7 +101,7 @@ class IntegrityHashServiceTest {
         );
 
         when(partidaRepository.findByPresupuestoId(any(UUID.class))).thenReturn(new ArrayList<>());
-        when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
+        lenient().when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
 
         // When
         String hash1 = hashService.calculateApprovalHash(presupuesto1);
@@ -106,7 +115,7 @@ class IntegrityHashServiceTest {
     void calculateApprovalHash_debeManejarPresupuestoSinPartidas() {
         // Given
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(new ArrayList<>());
-        when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
+        lenient().when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
 
         // When
         String hash = hashService.calculateApprovalHash(presupuesto);
@@ -220,7 +229,7 @@ class IntegrityHashServiceTest {
 
         List<Partida> partidas = crearPartidasSimples(2);
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidas);
-        when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
+        lenient().when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
 
         // When
         String executionHash = hashService.calculateExecutionHash(presupuesto);
@@ -268,7 +277,7 @@ class IntegrityHashServiceTest {
 
         List<Partida> partidas = crearPartidasConEstadoFinanciero();
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidas);
-        when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
+        lenient().when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
 
         // When
         String hash1 = hashService.calculateExecutionHash(presupuesto);

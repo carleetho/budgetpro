@@ -6,6 +6,8 @@ import com.budgetpro.domain.catalogo.port.ApuSnapshotRepository;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
+import com.budgetpro.infrastructure.observability.IntegrityEventLogger;
+import com.budgetpro.infrastructure.observability.IntegrityMetrics;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -37,14 +39,21 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
 
     private static final String ALGORITHM = "SHA-256";
     private static final String VERSION = "v1";
+    private static final String ALGORITHM_VERSION = "SHA-256-v1";
 
     private final PartidaRepository partidaRepository;
     private final ApuSnapshotRepository apuSnapshotRepository;
+    private final IntegrityMetrics metrics;
+    private final IntegrityEventLogger eventLogger;
 
     public IntegrityHashServiceImpl(PartidaRepository partidaRepository,
-                                    ApuSnapshotRepository apuSnapshotRepository) {
+                                    ApuSnapshotRepository apuSnapshotRepository,
+                                    IntegrityMetrics metrics,
+                                    IntegrityEventLogger eventLogger) {
         this.partidaRepository = Objects.requireNonNull(partidaRepository, "PartidaRepository no puede ser nulo");
         this.apuSnapshotRepository = Objects.requireNonNull(apuSnapshotRepository, "ApuSnapshotRepository no puede ser nulo");
+        this.metrics = Objects.requireNonNull(metrics, "IntegrityMetrics no puede ser nulo");
+        this.eventLogger = Objects.requireNonNull(eventLogger, "IntegrityEventLogger no puede ser nulo");
     }
 
     /**
@@ -61,6 +70,9 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
     @Override
     public String calculateApprovalHash(Presupuesto presupuesto) {
         Objects.requireNonNull(presupuesto, "El presupuesto no puede ser nulo");
+
+        long startTime = System.currentTimeMillis();
+        String correlationId = eventLogger.generateCorrelationId();
 
         StringBuilder data = new StringBuilder();
 
@@ -79,7 +91,22 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
         // Metadata (versión del algoritmo para future-proofing)
         data.append(VERSION);
 
-        return calculateSHA256(data.toString());
+        String hash = calculateSHA256(data.toString());
+        
+        // Record metrics and logging
+        long duration = System.currentTimeMillis() - startTime;
+        metrics.recordHashGeneration(duration, partidas.size(), "approval_hash", ALGORITHM_VERSION);
+        eventLogger.logHashGeneration(
+                correlationId,
+                presupuesto.getId().getValue(),
+                hash,
+                null, // execution hash not calculated yet
+                duration,
+                partidas.size(),
+                ALGORITHM_VERSION
+        );
+
+        return hash;
     }
 
     /**
@@ -102,6 +129,9 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
             throw new IllegalStateException("Cannot calculate execution hash without approval hash");
         }
 
+        long startTime = System.currentTimeMillis();
+        String correlationId = eventLogger.generateCorrelationId();
+
         StringBuilder data = new StringBuilder();
 
         // Chain to approval hash (base immutable)
@@ -119,7 +149,22 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
         // Timestamp for change detection
         data.append(LocalDateTime.now().toString());
 
-        return calculateSHA256(data.toString());
+        String hash = calculateSHA256(data.toString());
+        
+        // Record metrics and logging
+        long duration = System.currentTimeMillis() - startTime;
+        metrics.recordHashGeneration(duration, partidas.size(), "execution_hash", ALGORITHM_VERSION);
+        eventLogger.logHashGeneration(
+                correlationId,
+                presupuesto.getId().getValue(),
+                presupuesto.getIntegrityHashApproval(),
+                hash,
+                duration,
+                partidas.size(),
+                ALGORITHM_VERSION
+        );
+
+        return hash;
     }
 
     /**
