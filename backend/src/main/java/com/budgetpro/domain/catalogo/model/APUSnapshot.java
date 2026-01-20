@@ -1,5 +1,7 @@
 package com.budgetpro.domain.catalogo.model;
 
+import com.budgetpro.domain.catalogo.service.CalculoApuDinamicoService;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -173,13 +175,32 @@ public final class APUSnapshot {
     }
 
     /**
-     * Calcula el costo total usando el rendimiento vigente.
+     * Calcula el costo total usando el rendimiento vigente (método legacy).
+     * Para nuevos APUs con cálculo dinámico, usar calcularCostoTotal(CalculoApuDinamicoService, String).
      */
     public BigDecimal calcularCostoTotal() {
         BigDecimal base = insumos.stream()
                 .map(APUInsumoSnapshot::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return base.multiply(rendimientoVigente);
+    }
+
+    /**
+     * Calcula el costo total usando el servicio de cálculo dinámico con fórmulas de ingeniería civil.
+     * Respeta el orden de dependencias: MATERIAL, MANO_OBRA, EQUIPO_MAQUINA → EQUIPO_HERRAMIENTA
+     * 
+     * @param calculoService El servicio de cálculo dinámico
+     * @param monedaProyecto La moneda del proyecto para normalización
+     * @return El costo total calculado dinámicamente
+     */
+    public BigDecimal calcularCostoTotal(CalculoApuDinamicoService calculoService, String monedaProyecto) {
+        if (calculoService == null) {
+            throw new IllegalArgumentException("El servicio de cálculo no puede ser nulo");
+        }
+        if (monedaProyecto == null || monedaProyecto.isBlank()) {
+            throw new IllegalArgumentException("La moneda del proyecto no puede estar vacía");
+        }
+        return calculoService.calcularCostoTotalAPU(this, monedaProyecto);
     }
 
     public BigDecimal getDesviacionRendimiento() {
