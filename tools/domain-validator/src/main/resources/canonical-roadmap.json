@@ -1,0 +1,334 @@
+{
+  "roadmap": {
+    "version": "1.0.0",
+    "generated_at": "2026-01-21T00:00:00Z",
+    "description": "Canonical development roadmap for BudgetPro modules based on construction domain causality",
+    "modules": [
+      {
+        "id": "proyecto",
+        "name": "Proyecto",
+        "phase": "foundation",
+        "priority": "CRITICAL",
+        "dependencies": [],
+        "enables": ["presupuesto", "compras", "inventarios", "rrhh", "estimacion", "tiempo"],
+        "constraints": [
+          {
+            "type": "state",
+            "rule": "Project must be ACTIVO for execution modules",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.proyecto.model.Proyecto",
+            "required": true
+          },
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.model.Billetera",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "presupuesto",
+        "name": "Presupuesto",
+        "phase": "foundation",
+        "priority": "CRITICAL",
+        "dependencies": ["proyecto"],
+        "enables": ["tiempo", "compras", "inventarios", "rrhh", "estimacion", "evm", "cambios"],
+        "constraints": [
+          {
+            "type": "temporal_coupling",
+            "rule": "Budget freeze MUST trigger Schedule freeze",
+            "severity": "critical",
+            "coupled_with": "tiempo"
+          },
+          {
+            "type": "state_transition",
+            "rule": "BORRADOR → CONGELADO generates immutable snapshot",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto",
+            "required": true
+          },
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.partida.model.Partida",
+            "required": true
+          },
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.catalogo.model.APUSnapshot",
+            "required": true
+          },
+          {
+            "type": "state_machine_exists",
+            "target": "EstadoPresupuesto",
+            "required_states": ["BORRADOR", "CONGELADO", "INVALIDADO"]
+          },
+          {
+            "type": "service_exists",
+            "target": "com.budgetpro.domain.finanzas.presupuesto.service",
+            "required_methods": ["aprobar", "congelar"]
+          }
+        ]
+      },
+      {
+        "id": "tiempo",
+        "name": "Tiempo",
+        "phase": "foundation",
+        "priority": "CRITICAL",
+        "dependencies": ["presupuesto"],
+        "enables": ["rrhh", "evm"],
+        "constraints": [
+          {
+            "type": "temporal_coupling",
+            "rule": "Schedule freeze MUST occur with Budget freeze",
+            "severity": "critical",
+            "coupled_with": "presupuesto"
+          },
+          {
+            "type": "data_integrity",
+            "rule": "No activities without associated Partidas",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada",
+            "required": true
+          },
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra",
+            "required": true
+          },
+          {
+            "type": "relationship_exists",
+            "source": "ActividadProgramada",
+            "target": "Partida",
+            "cardinality": "many-to-many"
+          }
+        ]
+      },
+      {
+        "id": "compras",
+        "name": "Compras",
+        "phase": "execution",
+        "priority": "HIGH",
+        "dependencies": ["presupuesto", "proyecto"],
+        "enables": ["inventarios", "evm"],
+        "constraints": [
+          {
+            "type": "state",
+            "rule": "Presupuesto.estado === CONGELADO",
+            "severity": "critical"
+          },
+          {
+            "type": "state",
+            "rule": "Proyecto.estado === ACTIVO",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.logistica.compra.model.Compra",
+            "required": true
+          },
+          {
+            "type": "enum_exists",
+            "target": "NaturalezaGasto",
+            "required_values": ["GASTO_DIRECTO_PARTIDA", "GASTO_GENERAL_OBRA", "GASTO_ADMINISTRATIVO"]
+          },
+          {
+            "type": "reference_exists",
+            "source": "Compra",
+            "target": "Presupuesto",
+            "field": "presupuesto_id"
+          }
+        ]
+      },
+      {
+        "id": "inventarios",
+        "name": "Inventarios",
+        "phase": "execution",
+        "priority": "HIGH",
+        "dependencies": ["compras", "presupuesto"],
+        "enables": ["evm"],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.logistica.inventario.model",
+            "required": true
+          },
+          {
+            "type": "reference_exists",
+            "source": "Inventario",
+            "target": "Compra",
+            "field": "compra_id"
+          }
+        ]
+      },
+      {
+        "id": "rrhh",
+        "name": "RRHH",
+        "phase": "execution",
+        "priority": "HIGH",
+        "dependencies": ["tiempo", "presupuesto"],
+        "enables": ["evm"],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.rrhh.model",
+            "required": false
+          }
+        ]
+      },
+      {
+        "id": "estimacion",
+        "name": "Estimación",
+        "phase": "execution",
+        "priority": "HIGH",
+        "dependencies": ["presupuesto", "proyecto"],
+        "enables": ["evm"],
+        "constraints": [
+          {
+            "type": "state",
+            "rule": "Presupuesto.estado === CONGELADO",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.estimacion.model.Estimacion",
+            "required": true
+          },
+          {
+            "type": "reference_exists",
+            "source": "Estimacion",
+            "target": "Presupuesto",
+            "field": "presupuesto_id"
+          },
+          {
+            "type": "reference_exists",
+            "source": "Estimacion",
+            "target": "Billetera",
+            "field": "billetera_id"
+          }
+        ]
+      },
+      {
+        "id": "evm",
+        "name": "EVM",
+        "phase": "analysis",
+        "priority": "MEDIUM",
+        "dependencies": ["presupuesto", "tiempo", "compras", "estimacion"],
+        "enables": [],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "service_exists",
+            "target": "com.budgetpro.domain.finanzas.control.service",
+            "required_methods": ["calcularEVM"]
+          }
+        ]
+      },
+      {
+        "id": "cambios",
+        "name": "Cambios",
+        "phase": "analysis",
+        "priority": "MEDIUM",
+        "dependencies": ["presupuesto"],
+        "enables": [],
+        "constraints": [
+          {
+            "type": "state",
+            "rule": "Presupuesto.estado === CONGELADO",
+            "severity": "critical"
+          }
+        ],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.reajuste.model",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "alertas",
+        "name": "Alertas",
+        "phase": "analysis",
+        "priority": "LOW",
+        "dependencies": ["compras", "inventarios", "rrhh", "estimacion"],
+        "enables": [],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.alertas.model.AlertaParametrica",
+            "required": true
+          },
+          {
+            "type": "service_exists",
+            "target": "com.budgetpro.domain.finanzas.alertas.service.AnalizadorParametricoService",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "billetera",
+        "name": "Billetera",
+        "phase": "foundation",
+        "priority": "CRITICAL",
+        "dependencies": ["proyecto"],
+        "enables": ["estimacion"],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.model.Billetera",
+            "required": true
+          },
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.finanzas.model.MovimientoCaja",
+            "required": true
+          }
+        ]
+      },
+      {
+        "id": "catalogo",
+        "name": "Catálogo",
+        "phase": "foundation",
+        "priority": "HIGH",
+        "dependencies": [],
+        "enables": ["presupuesto", "compras"],
+        "constraints": [],
+        "validation_rules": [
+          {
+            "type": "entity_exists",
+            "target": "com.budgetpro.domain.catalogo.model.RecursoProxy",
+            "required": true
+          },
+          {
+            "type": "port_exists",
+            "target": "com.budgetpro.domain.catalogo.port.CatalogPort",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

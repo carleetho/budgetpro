@@ -1,113 +1,167 @@
-# feat(REQ-1): Implement Swiss-Grade Budget Integrity with Cryptographic Sealing
+# feat(REQ-2): Implement Motor de Cálculo y Explosión de Insumos con Validación de Presupuesto
 
 ## Description
 
-This PR implements a complete Swiss-Grade Budget Integrity system with cryptographic sealing using dual SHA-256 hashing and Merkle tree validation. The implementation ensures that approved budgets are cryptographically sealed and any tampering is detected before allowing financial transactions.
+This PR implements a complete dynamic calculation engine for APUs (Análisis de Precios Unitarios) using civil engineering formulas, replacing static price storage with real-time calculation based on engineering principles. The implementation includes unit normalization, cascade recalculation, and budget explosion capabilities.
 
 ## Related Requirement
 
-**REQ-1**: Convert Product Vision Into Actionable Technical Specifications
+**REQ-2**: Motor de Cálculo y Explosión de Insumos con Validación de Presupuesto
 
 ## What Was Implemented
 
 ### Domain Layer
-- ✅ Added integrity hash fields to `Presupuesto` aggregate root (approval, execution, metadata)
-- ✅ Implemented hard-freeze pattern preventing structural modifications after approval
-- ✅ Added integrity validation to `Billetera.egresar()` before allowing expenses
-- ✅ Created `IntegrityAuditEntry` domain model for audit trail
-- ✅ Created `IntegrityAuditLog` domain service for logging all integrity events
-- ✅ Created `BudgetIntegrityViolationException` with forensic context
+- ✅ Extended `APUInsumoSnapshot` with dynamic calculation fields (tipoRecurso, unidades, pricing, etc.)
+- ✅ Created `ComposicionCuadrillaSnapshot` value object for composite crew calculation
+- ✅ Extended `APUSnapshot` with `calcularCostoTotal(CalculoApuDinamicoService, String)` method
+- ✅ Maintained backward compatibility with legacy `calcularCostoTotal()` method
+- ✅ Added validation for desperdicio (0-1) and porcentajeManoObra (0-1)
+- ✅ Extended `TipoRecurso` enum with `EQUIPO_MAQUINA` and `EQUIPO_HERRAMIENTA` (deprecated `EQUIPO`)
+
+### Domain Services
+- ✅ Implemented `CalculoApuDinamicoService` with civil engineering formulas:
+  - **MATERIAL**: `Precio × Aporte × (1 + Desperdicio) × TipoCambio`
+  - **MANO_OBRA**: `(CostoDíaCuadrilla / Rendimiento) × Aporte`
+  - **EQUIPO_MAQUINA**: `CostoHora × (HorasUso / Rendimiento)`
+  - **EQUIPO_HERRAMIENTA**: `CostoTotalMO × Porcentaje`
+- ✅ Implemented dependency-ordered calculation (MATERIAL, MANO_OBRA, EQUIPO_MAQUINA → EQUIPO_HERRAMIENTA)
+- ✅ Implemented unit normalization system (unidadAporte → unidadBase → unidadCompra)
+- ✅ Implemented currency normalization with exchange rate handling
+
+### Application Layer
+- ✅ Created `ActualizarRendimientoUseCase` for updating APU performance with cascade recalculation
+- ✅ Created `ExplotarInsumosPresupuestoUseCase` for budget explosion with unit normalization
+- ✅ Integrated integrity hash validation for approved budgets
+- ✅ Added automatic execution hash update after performance changes
 
 ### Infrastructure Layer
-- ✅ Implemented `IntegrityHashService` with SHA-256 and Merkle tree algorithm
-- ✅ Added `IntegrityMetrics` component for Prometheus metrics collection
-- ✅ Added `IntegrityEventLogger` component for structured logging with MDC
-- ✅ Updated `PresupuestoEntity` JPA mapping with integrity hash columns
-- ✅ Updated `PresupuestoMapper` for bidirectional conversion of integrity fields
-- ✅ Created `IntegrityAuditRepository` port interface
+- ✅ Extended `ApuInsumoSnapshotEntity` with all new calculation fields
+- ✅ Created `ComposicionCuadrillaSnapshotEntity` with proper JPA relationships
+- ✅ Updated `ApuInsumoSnapshotMapper` for bidirectional mapping of all fields
+- ✅ Created `ComposicionCuadrillaSnapshotMapper` for crew composition mapping
+- ✅ Added database indexes for performance
 
-### Integration
-- ✅ Integrated integrity validation into `ProcesarCompraService` before purchase approval
-- ✅ Integrated integrity validation into `Billetera.egresar()` before expense transactions
-- ✅ Update execution hash after successful financial transactions
-- ✅ Configured Prometheus metrics endpoint with integrity-specific percentiles
+### REST API Layer
+- ✅ Created `PUT /api/v1/apu/{apuSnapshotId}/rendimiento` endpoint
+- ✅ Created `GET /api/v1/presupuestos/{presupuestoId}/explosion-insumos` endpoint
+- ✅ Created `ActualizarRendimientoRequest` DTO with validation
+- ✅ Integrated use cases with REST controllers
 
 ### Testing
-- ✅ Added comprehensive unit tests for `IntegrityHashService` (17 tests)
-- ✅ Added unit tests for `IntegrityAuditLog` service (12 tests)
-- ✅ Added integration tests for complete integrity workflow (6 tests)
-- ✅ Updated existing tests to include new integrity dependencies
-- ✅ Added test cases for tampering detection scenarios
+- ✅ Added comprehensive unit tests for `CalculoApuDinamicoService` (10+ tests)
+- ✅ Added unit tests for `ActualizarRendimientoUseCaseImpl` (5 tests)
+- ✅ Added unit tests for `ExplotarInsumosPresupuestoUseCaseImpl` (5 tests)
+- ✅ Tested all resource types (MATERIAL, MANO_OBRA, EQUIPO_MAQUINA, EQUIPO_HERRAMIENTA)
+- ✅ Tested unit normalization scenarios (BOL → KG conversion)
+- ✅ Tested cascade recalculation when performance changes
+- ✅ Tested integrity validation for approved budgets
 
 ### Documentation
-- ✅ Updated `BUSINESS_MANIFESTO.md` with Swiss-Grade integrity principles
-- ✅ Added integrity architecture diagrams to `ARQUITECTURA_VISUAL.md` (4 Mermaid diagrams)
-- ✅ Created `INTEGRITY_IMPLEMENTATION.md` with complete technical guide
-- ✅ Created `OPERATIONAL_RUNBOOK.md` with violation response procedures
-
-### Database
-- ✅ Added integrity hash columns to `presupuesto` table (5 new columns)
-- ✅ Created `presupuesto_integrity_audit` table for complete audit trail
-- ✅ Added indexes for efficient querying of audit events
+- ✅ Created `CALCULO_DINAMICO.md` with complete formula documentation and examples
+- ✅ Created `MIGRATION_GUIDE.md` for migrating legacy APUs to dynamic calculation
+- ✅ Added JavaDoc to all public methods explaining formulas
+- ✅ Updated PR description to reflect REQ-2 implementation
 
 ## Key Features
 
-### Dual-Hash Pattern
-- **Approval Hash (Immutable)**: Captures complete budget structure at approval time
-- **Execution Hash (Dynamic)**: Tracks financial execution state, updates after transactions
+### Dynamic Calculation Engine
+- **White-Box Calculation**: Uses engineering formulas instead of static prices
+- **Real-Time Recalculation**: Automatically recalculates when parameters change
+- **Dependency Management**: Respects calculation order (MATERIAL → MANO_OBRA → EQUIPO_HERRAMIENTA)
 
-### Merkle Tree Implementation
-- Efficient O(n log n) aggregation of all Partidas
-- Deterministic ordering for consistency
-- Includes APU snapshots in hash calculation
+### Unit Normalization System
+- **Three-Level Units**: unidadAporte → unidadBase → unidadCompra
+- **Automatic Conversion**: Normalizes before summing to avoid "Fatal Unit Error"
+- **Purchase Rounding**: Rounds up quantities (can't buy 0.3 bags)
 
-### Integrity Validation
-- Validates approval hash before purchase approval
-- Validates approval hash before expense transactions
-- Automatically blocks transactions on tampering detection
+### Cascade Recalculation
+- **Performance Updates**: Changing rendimiento triggers automatic recalculation
+- **Dependency Chain**: MO changes → Herramienta recalculates automatically
+- **Integrity Preservation**: Updates execution hash for approved budgets
 
-### Monitoring & Observability
-- Metrics exported to Prometheus (`budget.integrity.*`)
-- Structured logging with correlation IDs
-- Complete audit trail in database
+### Budget Explosion
+- **Leaf Partidas Only**: Processes only partidas without children in WBS
+- **Resource Aggregation**: Groups resources by type (MATERIAL, MANO_OBRA, etc.)
+- **Unit Compatibility**: Validates that same resources use compatible base units
 
 ## Testing
 
 All tests passing:
-- ✅ 17 unit tests for `IntegrityHashService`
-- ✅ 12 unit tests for `IntegrityAuditLog`
-- ✅ 6 integration tests for complete workflow
-- ✅ Updated existing tests (35+ tests total)
+- ✅ 10+ unit tests for `CalculoApuDinamicoService`
+- ✅ 5 unit tests for `ActualizarRendimientoUseCaseImpl`
+- ✅ 5 unit tests for `ExplotarInsumosPresupuestoUseCaseImpl`
+- ✅ Integration with integrity system validated
 
 ## Performance
 
-- Hash generation: <100ms for 100 partidas
-- Hash validation: <100ms
-- Merkle tree: O(n log n) complexity
+- Calculation: <10ms per APU
+- Explosion: <100ms for 100 partidas
+- Normalization: O(n) complexity
 
 ## Breaking Changes
 
-None. This is a new feature that doesn't break existing functionality.
+None. This implementation maintains full backward compatibility:
+- Legacy APUs (without tipoRecurso) continue to work
+- Legacy `calcularCostoTotal()` method preserved
+- New fields are nullable for legacy data
 
 ## Checklist
 
 - [x] Code compiles without errors
 - [x] All tests passing
-- [x] Documentation updated
-- [x] Metrics configured
-- [x] Database migrations included
-- [x] No breaking changes
+- [x] Documentation created (CALCULO_DINAMICO.md, MIGRATION_GUIDE.md)
+- [x] REST endpoints implemented
+- [x] Backward compatibility maintained
+- [x] Integrity validation integrated
+- [x] Unit normalization implemented
+- [x] Cascade recalculation working
 
 ## Files Changed
 
-- **24 files modified**
-- **3,377 lines added**
-- **57 lines removed**
-- **10 new files created**
+- **Domain Model**: `APUInsumoSnapshot`, `APUSnapshot`, `ComposicionCuadrillaSnapshot`
+- **Domain Service**: `CalculoApuDinamicoService`
+- **Use Cases**: `ActualizarRendimientoUseCase`, `ExplotarInsumosPresupuestoUseCase`
+- **REST Controllers**: `ApuController`, `PresupuestoController`
+- **Persistence**: `ApuInsumoSnapshotEntity`, `ComposicionCuadrillaSnapshotEntity`, Mappers
+- **Documentation**: `CALCULO_DINAMICO.md`, `MIGRATION_GUIDE.md`
+
+## API Endpoints
+
+### Update APU Performance
+```
+PUT /api/v1/apu/{apuSnapshotId}/rendimiento
+Body: {
+  "nuevoRendimiento": 30.00,
+  "usuarioId": "uuid"
+}
+Response: 204 No Content
+```
+
+### Explode Budget Resources
+```
+GET /api/v1/presupuestos/{presupuestoId}/explosion-insumos
+Response: {
+  "recursosPorTipo": {
+    "MATERIAL": [
+      {
+        "recursoExternalId": "MAT-001",
+        "recursoNombre": "Cemento",
+        "cantidadTotal": 975,
+        "unidad": "BOL",
+        "cantidadBase": 41377.5,
+        "factorConversion": 42.5
+      }
+    ],
+    "MANO_OBRA": [...],
+    "EQUIPO_MAQUINA": [...]
+  }
+}
+```
 
 ## Next Steps
 
 - [ ] Review and merge
 - [ ] Deploy to staging
-- [ ] Monitor metrics in production
-- [ ] Set up alerts for integrity violations
+- [ ] Migrate legacy APUs (gradual migration recommended)
+- [ ] Monitor calculation performance
+- [ ] Gather feedback from engineering team
