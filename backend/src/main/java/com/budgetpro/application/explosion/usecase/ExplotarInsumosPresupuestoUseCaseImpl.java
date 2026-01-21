@@ -146,10 +146,12 @@ public class ExplotarInsumosPresupuestoUseCaseImpl implements ExplotarInsumosPre
         );
 
         // Validar que las unidades base sean compatibles
-        if (!recursoAgregado.unidadBase.equals(insumo.getUnidadBase())) {
+        // Normalizar ambos valores: null se trata como "UN" (default para legacy APUs)
+        String unidadBaseInsumo = insumo.getUnidadBase() != null ? insumo.getUnidadBase() : "UN";
+        if (!recursoAgregado.unidadBase.equals(unidadBaseInsumo)) {
             throw new IllegalArgumentException(
                     String.format("Unidades incompatibles para recurso %s: %s vs %s",
-                            recursoExternalId, recursoAgregado.unidadBase, insumo.getUnidadBase()));
+                            recursoExternalId, recursoAgregado.unidadBase, unidadBaseInsumo));
         }
 
         // Agregar cantidad normalizada
@@ -171,6 +173,13 @@ public class ExplotarInsumosPresupuestoUseCaseImpl implements ExplotarInsumosPre
             BigDecimal factorConversion = recurso.factorConversion != null 
                     ? recurso.factorConversion 
                     : BigDecimal.ONE;
+
+            // Validar que el factor de conversión sea positivo para evitar división por cero
+            if (factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException(
+                        String.format("El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
+                                recurso.recursoExternalId, factorConversion));
+            }
 
             BigDecimal cantidadEnUnidadCompra = recurso.cantidadTotalBase.divide(
                     factorConversion, PRECISION_CALCULO, ROUNDING_MODE);
@@ -220,6 +229,13 @@ public class ExplotarInsumosPresupuestoUseCaseImpl implements ExplotarInsumosPre
             this.recursoNombre = recursoNombre;
             this.unidadBase = unidadBase != null ? unidadBase : "UN";
             this.unidadCompra = unidadCompra;
+            
+            // Validar que el factor de conversión sea positivo si no es null
+            if (factorConversion != null && factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException(
+                        String.format("El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
+                                recursoExternalId, factorConversion));
+            }
             this.factorConversion = factorConversion != null ? factorConversion : BigDecimal.ONE;
             this.tipoRecurso = tipoRecurso;
             this.cantidadTotalBase = BigDecimal.ZERO;
