@@ -2,7 +2,8 @@ package com.budgetpro.validator.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +36,12 @@ public class ValidationResult {
     @JsonProperty("module_statuses")
     private List<ModuleStatus> moduleStatuses;
 
+    private static final DateTimeFormatter ISO_8601_FORMATTER = 
+        DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC);
+    
     public ValidationResult() {
         this.validationId = UUID.randomUUID().toString();
-        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        this.timestamp = ISO_8601_FORMATTER.format(Instant.now());
         this.violations = new ArrayList<>();
         this.moduleStatuses = new ArrayList<>();
         this.canonicalVersion = "1.0.0";
@@ -135,6 +139,20 @@ public class ValidationResult {
             case WARNINGS -> 2;
             case ERROR -> 3;
         };
+    }
+
+    /**
+     * Calcula el código de salida considerando modo estricto.
+     * En modo estricto, las advertencias también bloquean (exit code 1).
+     * 
+     * @param strict Si true, las advertencias bloquean el merge
+     * @return 0 si PASSED, 1 si CRITICAL_VIOLATIONS o (strict && WARNINGS), 2 si WARNINGS, 3 si ERROR
+     */
+    public int getExitCode(boolean strict) {
+        if (strict && status == ValidationStatus.WARNINGS) {
+            return 1; // Bloquear en modo estricto
+        }
+        return getExitCode();
     }
 
     /**

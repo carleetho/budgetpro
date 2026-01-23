@@ -60,26 +60,66 @@ aunque el trabajo sea real.
 
 ## 4. Congelamiento del Cronograma (LÍNEA BASE)
 
-### 4.1 Congelamiento
+### 4.1 Congelamiento Automático
 
 Al momento en que un Presupuesto
 pasa a estado CONGELADO,
-el sistema DEBE:
+el sistema DEBE automáticamente:
 
 - congelar el Cronograma asociado,
 - generar un Snapshot temporal inmutable,
 - almacenar:
-  - fechas,
-  - duraciones,
-  - secuencia,
-  - calendarios.
+  - fechas (fechaInicio, fechaFinEstimada, fechas de actividades),
+  - duraciones (duracionTotalDias, duraciones de actividades),
+  - secuencia (orden y dependencias entre actividades),
+  - calendarios (estructura preparada para futuras extensiones).
+
+**Acoplamiento Temporal:**
+El congelamiento del Presupuesto y del Cronograma
+es una operación atómica. Si el Cronograma no puede congelarse,
+el Presupuesto NO se aprueba (rollback transaccional).
+
+**Prerrequisitos para Congelamiento:**
+- El ProgramaObra debe existir para el proyecto
+- El ProgramaObra debe tener fechaInicio y fechaFinEstimada definidas
+- El ProgramaObra no debe estar ya congelado
 
 El Cronograma congelado
 forma parte de la Línea Base contractual.
 
 ---
 
-### 4.2 Inmutabilidad
+### 4.2 Mecanismo de Freeze
+
+**Implementación Técnica:**
+
+El mecanismo de freeze se implementa mediante:
+
+1. **Campo de Estado:**
+   - `congelado` (Boolean): Indica si el cronograma está congelado
+   - `congeladoAt` (LocalDateTime): Timestamp del congelamiento
+   - `congeladoBy` (UUID): Usuario que aprobó el congelamiento
+   - `snapshotAlgorithm` (String): Versión del algoritmo de snapshot ("v1")
+
+2. **Método de Congelamiento:**
+   - `ProgramaObra.congelar(UUID approvedBy)`: Congela el cronograma
+   - Valida que existan fechaInicio y fechaFinEstimada
+   - Captura metadata del congelamiento
+   - Operación irreversible (no hay método de descongelamiento)
+
+3. **Guards de Freeze:**
+   - `actualizarFechas()`: Lanza `CronogramaCongeladoException` si está congelado
+   - `actualizarFechaFinDesdeActividades()`: Lanza `CronogramaCongeladoException` si está congelado
+   - Todos los métodos de mutación verifican el estado de congelamiento
+
+4. **Generación de Snapshot:**
+   - `CronogramaService.congelarPorPresupuesto()`: Orquesta el congelamiento
+   - `SnapshotGeneratorService`: Serializa datos temporales a JSON
+   - `CronogramaSnapshot`: Entidad inmutable que preserva el baseline
+
+---
+
+### 4.3 Inmutabilidad
 
 - El Cronograma congelado NO se edita.
 - Cualquier cambio posterior
@@ -89,6 +129,11 @@ forma parte de la Línea Base contractual.
 
 Modificar tiempos sin trazabilidad
 es violación grave del sistema.
+
+**Excepción de Dominio:**
+- `CronogramaCongeladoException`: Se lanza cuando se intenta modificar
+  un cronograma congelado. Incluye el ID del programa de obra y
+  la operación intentada.
 
 ---
 

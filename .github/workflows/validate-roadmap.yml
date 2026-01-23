@@ -1,0 +1,161 @@
+name: Validate Canonical Roadmap
+
+on:
+  pull_request:
+    paths:
+      - 'backend/src/**'
+      - 'tools/domain-validator/**'
+      - '.github/workflows/validate-roadmap.yml'
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  validate-roadmap:
+    name: Validate Module Development Order
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build domain validator
+        working-directory: tools/domain-validator
+        run: |
+          mvn clean package -DskipTests
+
+      - name: Run domain validator
+        id: validate
+        working-directory: tools/domain-validator
+        continue-on-error: true
+        run: |
+          java -jar target/domain-validator-1.0.0-SNAPSHOT.jar \
+            validate \
+            --repo-path ../../backend \
+            --strict \
+            --output-format json \
+            --output-file validation-report.json
+          
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "status=passed" >> $GITHUB_OUTPUT
+          elif [ $EXIT_CODE -eq 1 ]; then
+            echo "status=critical_violations" >> $GITHUB_OUTPUT
+          elif [ $EXIT_CODE -eq 2 ]; then
+            echo "status=warnings" >> $GITHUB_OUTPUT
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: tools/domain-validator/validation-report.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Parse validation report
+        id: parse-report
+        if: always()
+        working-directory: tools/domain-validator
+        run: |
+          if [ -f validation-report.json ]; then
+            # Extraer información del reporte JSON usando jq
+            CRITICAL_COUNT=$(jq '[.violations[] | select(.severity == "CRITICAL")] | length' validation-report.json || echo "0")
+            WARNING_COUNT=$(jq '[.violations[] | select(.severity == "WARNING")] | length' validation-report.json || echo "0")
+            TOTAL_VIOLATIONS=$(jq '.violations | length' validation-report.json || echo "0")
+            STATUS=$(jq -r '.status' validation-report.json || echo "ERROR")
+            
+            echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+            echo "warning_count=$WARNING_COUNT" >> $GITHUB_OUTPUT
+            echo "total_violations=$TOTAL_VIOLATIONS" >> $GITHUB_OUTPUT
+            echo "validation_status=$STATUS" >> $GITHUB_OUTPUT
+          else
+            echo "critical_count=0" >> $GITHUB_OUTPUT
+            echo "warning_count=0" >> $GITHUB_OUTPUT
+            echo "total_violations=0" >> $GITHUB_OUTPUT
+            echo "validation_status=ERROR" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Format PR comment
+        id: format-comment
+        if: always() && github.event_name == 'pull_request'
+        working-directory: tools/domain-validator
+        run: |
+          if [ -f validation-report.json ]; then
+            COMMENT=$(bash scripts/pr-comment.sh validation-report.json)
+            echo "comment<<EOF" >> $GITHUB_OUTPUT
+            echo "$COMMENT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "comment=❌ Error: No se pudo generar el reporte de validación." >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR comment
+        if: always() && github.event_name == 'pull_request' && steps.format-comment.outputs.comment != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `${{ steps.format-comment.outputs.comment }}`;
+            const exitCode = ${{ steps.validate.outputs.exit_code }};
+            const status = `${{ steps.parse-report.outputs.validation_status }}`;
+            
+            // Buscar comentario existente del bot
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(c => 
+              c.user.type === 'Bot' && 
+              c.body.includes('## 📋 Validación del Roadmap Canónico')
+            );
+            
+            const commentBody = comment;
+            
+            if (botComment) {
+              // Actualizar comentario existente
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Crear nuevo comentario
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+      - name: Fail on critical violations
+        if: steps.validate.outputs.exit_code == 1
+        run: |
+          echo "❌ Violaciones críticas detectadas. El merge está bloqueado."
+          echo "Por favor, revisa las violaciones y corrige los problemas antes de continuar."
+          exit 1
+
+      - name: Warn on warnings
+        if: steps.validate.outputs.exit_code == 2
+        run: |
+          echo "⚠️ Advertencias detectadas. El merge está permitido pero se recomienda revisar."
+          echo "Por favor, revisa las advertencias en el comentario del PR."

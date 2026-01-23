@@ -1,0 +1,347 @@
+{
+  "exitCode" : 1,
+  "validation_id" : "ee4ec137-678a-4770-b77d-dc10557daed0",
+  "timestamp" : "2026-01-23T03:33:30.099994488Z",
+  "repository_path" : "/home/wazoox/Desktop/budgetpro-backend/backend",
+  "canonical_version" : "1.0.0",
+  "status" : "CRITICAL_VIOLATIONS",
+  "violations" : [ {
+    "module_id" : "tiempo",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'tiempo' requiere que el módulo 'presupuesto' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'presupuesto' antes de continuar con 'tiempo'. Cadena de dependencias: proyecto → → → presupuesto",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "presupuesto",
+      "dependency_chain" : "proyecto → → → presupuesto"
+    }
+  }, {
+    "module_id" : "tiempo",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'tiempo' está en desarrollo pero su dependencia 'presupuesto' no está completa (IN_PROGRESS). Se recomienda completar 'presupuesto' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'presupuesto' antes de continuar con 'tiempo'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "presupuesto"
+    }
+  }, {
+    "module_id" : "compras",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'compras' requiere que el módulo 'presupuesto' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'presupuesto' antes de continuar con 'compras'. Cadena de dependencias: proyecto → → → presupuesto",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "presupuesto",
+      "dependency_chain" : "proyecto → → → presupuesto"
+    }
+  }, {
+    "module_id" : "compras",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'compras' está en desarrollo pero su dependencia 'presupuesto' no está completa (IN_PROGRESS). Se recomienda completar 'presupuesto' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'presupuesto' antes de continuar con 'compras'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "presupuesto"
+    }
+  }, {
+    "module_id" : "estimacion",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'estimacion' requiere que el módulo 'presupuesto' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'presupuesto' antes de continuar con 'estimacion'. Cadena de dependencias: proyecto → → → presupuesto",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "presupuesto",
+      "dependency_chain" : "proyecto → → → presupuesto"
+    }
+  }, {
+    "module_id" : "estimacion",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'estimacion' está en desarrollo pero su dependencia 'presupuesto' no está completa (IN_PROGRESS). Se recomienda completar 'presupuesto' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'presupuesto' antes de continuar con 'estimacion'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "presupuesto"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'evm' requiere que el módulo 'presupuesto' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'presupuesto' antes de continuar con 'evm'. Cadena de dependencias: proyecto → → → presupuesto",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "presupuesto",
+      "dependency_chain" : "proyecto → → → presupuesto"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'evm' requiere que el módulo 'tiempo' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'tiempo' antes de continuar con 'evm'. Cadena de dependencias: proyecto → → → presupuesto → → → tiempo",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "tiempo",
+      "dependency_chain" : "proyecto → → → presupuesto → → → tiempo"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'evm' requiere que el módulo 'compras' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'compras' antes de continuar con 'evm'. Cadena de dependencias: proyecto → → → presupuesto → → → compras",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "compras",
+      "dependency_chain" : "proyecto → → → presupuesto → → → compras"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'evm' requiere que el módulo 'estimacion' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'estimacion' antes de continuar con 'evm'. Cadena de dependencias: proyecto → → → presupuesto → → → estimacion",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "estimacion",
+      "dependency_chain" : "proyecto → → → presupuesto → → → estimacion"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'evm' está en desarrollo pero su dependencia 'presupuesto' no está completa (IN_PROGRESS). Se recomienda completar 'presupuesto' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'presupuesto' antes de continuar con 'evm'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "presupuesto"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'evm' está en desarrollo pero su dependencia 'tiempo' no está completa (IN_PROGRESS). Se recomienda completar 'tiempo' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'tiempo' antes de continuar con 'evm'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "tiempo"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'evm' está en desarrollo pero su dependencia 'compras' no está completa (IN_PROGRESS). Se recomienda completar 'compras' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'compras' antes de continuar con 'evm'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "compras"
+    }
+  }, {
+    "module_id" : "evm",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'evm' está en desarrollo pero su dependencia 'estimacion' no está completa (IN_PROGRESS). Se recomienda completar 'estimacion' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'estimacion' antes de continuar con 'evm'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "estimacion"
+    }
+  }, {
+    "module_id" : "cambios",
+    "severity" : "CRITICAL",
+    "type" : "STATE_DEPENDENCY",
+    "message" : "Módulo 'cambios' requiere que Presupuesto esté en estado 'CONGELADO'",
+    "suggestion" : "Asegurar que Presupuesto alcance el estado 'CONGELADO' antes de usar 'cambios'",
+    "blocking" : true,
+    "context" : {
+      "required_state" : "CONGELADO",
+      "entity" : "Presupuesto"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'alertas' requiere que el módulo 'compras' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'compras' antes de continuar con 'alertas'. Cadena de dependencias: proyecto → → → presupuesto → → → compras",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "compras",
+      "dependency_chain" : "proyecto → → → presupuesto → → → compras"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'alertas' requiere que el módulo 'inventarios' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'inventarios' antes de continuar con 'alertas'. Cadena de dependencias: proyecto → → → presupuesto → → → compras → → → inventarios",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "inventarios",
+      "dependency_chain" : "proyecto → → → presupuesto → → → compras → → → inventarios"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'alertas' requiere que el módulo 'rrhh' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'rrhh' antes de continuar con 'alertas'. Cadena de dependencias: proyecto → → → presupuesto → → → tiempo → → → rrhh",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "rrhh",
+      "dependency_chain" : "proyecto → → → presupuesto → → → tiempo → → → rrhh"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "CRITICAL",
+    "type" : "DATA_DEPENDENCY",
+    "message" : "Módulo 'alertas' requiere que el módulo 'estimacion' esté implementado",
+    "suggestion" : "Implementar primero el módulo 'estimacion' antes de continuar con 'alertas'. Cadena de dependencias: proyecto → → → presupuesto → → → estimacion",
+    "blocking" : true,
+    "context" : {
+      "missing_module" : "estimacion",
+      "dependency_chain" : "proyecto → → → presupuesto → → → estimacion"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'alertas' está en desarrollo pero su dependencia 'compras' no está completa (IN_PROGRESS). Se recomienda completar 'compras' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'compras' antes de continuar con 'alertas'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "compras"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'alertas' está en desarrollo pero su dependencia 'inventarios' no está completa (NOT_STARTED). Se recomienda completar 'inventarios' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'inventarios' antes de continuar con 'alertas'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "inventarios"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'alertas' está en desarrollo pero su dependencia 'rrhh' no está completa (NOT_STARTED). Se recomienda completar 'rrhh' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'rrhh' antes de continuar con 'alertas'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "rrhh"
+    }
+  }, {
+    "module_id" : "alertas",
+    "severity" : "WARNING",
+    "type" : "BUSINESS_LOGIC",
+    "message" : "Módulo 'alertas' está en desarrollo pero su dependencia 'estimacion' no está completa (IN_PROGRESS). Se recomienda completar 'estimacion' primero para evitar problemas de integración.",
+    "suggestion" : "Completar implementación de 'estimacion' antes de continuar con 'alertas'",
+    "blocking" : false,
+    "context" : {
+      "missing_module" : "estimacion"
+    }
+  }, {
+    "module_id" : "presupuesto",
+    "severity" : "WARNING",
+    "type" : "TEMPORAL_DEPENDENCY",
+    "message" : "Módulos Presupuesto y Tiempo implementados pero falta mecanismo de freeze acoplado",
+    "suggestion" : "Implementar métodos de freeze acoplados: cuando Presupuesto.congelar() se ejecuta, debe disparar automáticamente ProgramaObra.congelar() usando eventos de dominio o transacciones",
+    "blocking" : false,
+    "context" : {
+      "coupled_module" : "tiempo",
+      "rule" : "Baseline principle: Budget + Schedule must freeze together"
+    }
+  } ],
+  "module_statuses" : [ {
+    "module_id" : "proyecto",
+    "implementation_status" : "COMPLETE",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.model.Billetera", "com.budgetpro.domain.finanzas.model.BilleteraId", "com.budgetpro.domain.finanzas.port.out.BilleteraRepository", "com.budgetpro.domain.proyecto.model.ProyectoId", "com.budgetpro.domain.proyecto.model.Proyecto", "com.budgetpro.domain.proyecto.port.out.ProyectoRepository" ],
+    "detected_services" : [ ],
+    "detected_endpoints" : [ "GET ", "GET ", "POST " ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "presupuesto",
+    "implementation_status" : "IN_PROGRESS",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto", "com.budgetpro.domain.finanzas.presupuesto.model.IntegrityAuditEntry", "com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId", "com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository", "com.budgetpro.domain.finanzas.partida.model.PartidaId", "com.budgetpro.domain.finanzas.partida.model.Partida", "com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository", "com.budgetpro.domain.finanzas.alertas.model.AnalisisPresupuesto", "com.budgetpro.domain.finanzas.consumo.model.ConsumoPartida", "com.budgetpro.domain.finanzas.consumo.model.ConsumoPartidaId", "com.budgetpro.domain.finanzas.consumo.port.out.ConsumoPartidaRepository", "com.budgetpro.domain.finanzas.control.service.DatosControlPartida", "com.budgetpro.domain.finanzas.reajuste.model.DetalleReajustePartidaId", "com.budgetpro.domain.finanzas.reajuste.model.DetalleReajustePartida", "com.budgetpro.domain.logistica.compra.service.PartidaData" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.alertas.service.DatosPartida", "com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashServiceImpl", "com.budgetpro.domain.logistica.compra.service.PartidaData", "com.budgetpro.domain.finanzas.presupuesto.service.PresupuestoService", "com.budgetpro.domain.finanzas.control.service.DatosControlPartida", "com.budgetpro.domain.finanzas.presupuesto.service.CalculoPresupuestoService", "com.budgetpro.domain.finanzas.presupuesto.service.IntegrityAuditLog" ],
+    "detected_endpoints" : [ "POST ", "POST ", "GET ", "GET ", "GET " ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "tiempo",
+    "implementation_status" : "IN_PROGRESS",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.cronograma.model.ProgramaObraId", "com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra", "com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramadaId", "com.budgetpro.domain.finanzas.cronograma.model.CronogramaSnapshot", "com.budgetpro.domain.finanzas.cronograma.model.CronogramaSnapshotId", "com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada", "com.budgetpro.domain.finanzas.cronograma.port.out.CronogramaSnapshotRepository", "com.budgetpro.domain.finanzas.cronograma.port.out.ProgramaObraRepository" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.cronograma.service.SnapshotGeneratorService", "com.budgetpro.domain.finanzas.cronograma.service.CalculoCronogramaService", "com.budgetpro.domain.finanzas.cronograma.service.CronogramaService" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "compras",
+    "implementation_status" : "IN_PROGRESS",
+    "detected_entities" : [ "com.budgetpro.domain.logistica.compra.model.CompraDetalleId", "com.budgetpro.domain.logistica.compra.model.CompraId", "com.budgetpro.domain.logistica.compra.model.CompraDetalle", "com.budgetpro.domain.logistica.compra.model.Compra", "com.budgetpro.domain.logistica.compra.service.PartidaData", "com.budgetpro.domain.logistica.compra.port.out.CompraRepository" ],
+    "detected_services" : [ "com.budgetpro.domain.logistica.compra.service.ProcesarCompraService", "com.budgetpro.domain.logistica.compra.service.PartidaData" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "inventarios",
+    "implementation_status" : "NOT_STARTED",
+    "detected_entities" : [ "com.budgetpro.domain.logistica.inventario.model.MovimientoInventario", "com.budgetpro.domain.logistica.inventario.model.MovimientoInventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioItem", "com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository" ],
+    "detected_services" : [ "com.budgetpro.domain.logistica.inventario.service.GestionInventarioService" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "rrhh",
+    "implementation_status" : "NOT_STARTED",
+    "detected_entities" : [ ],
+    "detected_services" : [ ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ "tiempo" ]
+  }, {
+    "module_id" : "estimacion",
+    "implementation_status" : "IN_PROGRESS",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.estimacion.model.DetalleEstimacion", "com.budgetpro.domain.finanzas.estimacion.model.Estimacion", "com.budgetpro.domain.finanzas.estimacion.model.DetalleEstimacionId", "com.budgetpro.domain.finanzas.estimacion.model.EstimacionId", "com.budgetpro.domain.finanzas.estimacion.port.out.EstimacionRepository", "com.budgetpro.domain.finanzas.reajuste.model.EstimacionReajusteId", "com.budgetpro.domain.finanzas.reajuste.model.EstimacionReajuste" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.estimacion.service.GeneradorEstimacionService" ],
+    "detected_endpoints" : [ "POST ", "PUT " ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "evm",
+    "implementation_status" : "COMPLETE",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.control.service.DatosControlPartida" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.control.service.AgregacionControlCostosService", "com.budgetpro.domain.finanzas.control.service.DatosControlPartida", "com.budgetpro.domain.finanzas.avance.service.ControlAvanceService" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ "tiempo" ]
+  }, {
+    "module_id" : "cambios",
+    "implementation_status" : "NOT_STARTED",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.reajuste.model.IndicePrecios", "com.budgetpro.domain.finanzas.reajuste.model.DetalleReajustePartidaId", "com.budgetpro.domain.finanzas.reajuste.model.EstimacionReajusteId", "com.budgetpro.domain.finanzas.reajuste.model.EstimacionReajuste", "com.budgetpro.domain.finanzas.reajuste.model.DetalleReajustePartida", "com.budgetpro.domain.finanzas.reajuste.model.IndicePreciosId" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.reajuste.service.CalculadorReajusteService" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "alertas",
+    "implementation_status" : "COMPLETE",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.sobrecosto.model.AnalisisSobrecostoId", "com.budgetpro.domain.finanzas.sobrecosto.model.AnalisisSobrecosto", "com.budgetpro.domain.finanzas.sobrecosto.port.out.AnalisisSobrecostoRepository", "com.budgetpro.domain.finanzas.alertas.model.AlertaParametrica", "com.budgetpro.domain.finanzas.alertas.model.AnalisisPresupuesto", "com.budgetpro.domain.finanzas.alertas.service.AnalizadorParametricoService" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.alertas.service.DatosPartida", "com.budgetpro.domain.finanzas.alertas.service.DatosApuInsumo", "com.budgetpro.domain.finanzas.alertas.service.AnalizadorParametricoService", "com.budgetpro.domain.finanzas.alertas.service.DatosRecurso", "com.budgetpro.domain.finanzas.sobrecosto.service.AlertaInteligencia", "com.budgetpro.domain.finanzas.alertas.service.DatosAnalisis" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ "rrhh" ]
+  }, {
+    "module_id" : "billetera",
+    "implementation_status" : "COMPLETE",
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.model.MovimientoCaja", "com.budgetpro.domain.finanzas.model.Billetera", "com.budgetpro.domain.finanzas.model.BilleteraId", "com.budgetpro.domain.finanzas.port.out.BilleteraRepository" ],
+    "detected_services" : [ ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  }, {
+    "module_id" : "catalogo",
+    "implementation_status" : "COMPLETE",
+    "detected_entities" : [ "com.budgetpro.domain.catalogo.model.APUSnapshotId", "com.budgetpro.domain.catalogo.model.APUInsumoSnapshotId", "com.budgetpro.domain.catalogo.model.APUSnapshot", "com.budgetpro.domain.catalogo.model.RecursoSearchCriteria", "com.budgetpro.domain.catalogo.model.RecursoProxy", "com.budgetpro.domain.catalogo.model.RecursoProxyId", "com.budgetpro.domain.catalogo.model.APUInsumoSnapshot", "com.budgetpro.domain.finanzas.apu.model.ApuInsumo", "com.budgetpro.domain.finanzas.apu.model.APU", "com.budgetpro.domain.finanzas.apu.model.ApuId", "com.budgetpro.domain.finanzas.apu.model.ApuInsumoId", "com.budgetpro.domain.finanzas.apu.port.out.ApuRepository", "com.budgetpro.domain.recurso.model.Recurso", "com.budgetpro.domain.recurso.model.RecursoId" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.cronograma.service.SnapshotGeneratorService", "com.budgetpro.domain.finanzas.alertas.service.DatosApuInsumo", "com.budgetpro.domain.finanzas.alertas.service.DatosRecurso", "com.budgetpro.domain.catalogo.service.CalculoApuDinamicoService", "com.budgetpro.domain.catalogo.service.SnapshotService" ],
+    "detected_endpoints" : [ ],
+    "missing_dependencies" : [ ]
+  } ]
+}

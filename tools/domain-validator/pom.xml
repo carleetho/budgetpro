@@ -24,6 +24,7 @@
         <picocli.version>4.7.5</picocli.version>
         <jackson.version>2.15.2</jackson.version>
         <junit.version>5.10.0</junit.version>
+        <javaparser.version>3.25.4</javaparser.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,19 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- JavaParser for static code analysis -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>${javaparser.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>${javaparser.version}</version>
         </dependency>
 
         <!-- Testing -->
@@ -77,20 +91,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Picocli Code Generator -->
-            <plugin>
-                <groupId>info.picocli</groupId>
-                <artifactId>picocli-codegen</artifactId>
-                <version>${picocli.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            
 
             <!-- Maven Shade Plugin for executable JAR -->
             <plugin>

@@ -171,6 +171,83 @@ Representa una estimación de avance de obra para cobro.
 - `APROBADA`: Aprobada, genera ingreso en billetera
 - `PAGADA`: Ya fue pagada
 
+### 10. ProgramaObra
+
+**Agregado Root:** `ProgramaObra`  
+**Ubicación:** `com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra`
+
+Representa el programa de obra (cronograma) de un proyecto.
+
+**Entidades:**
+- `ProgramaObra` (Root)
+- `ActividadProgramada` (Entity)
+
+**Relaciones:**
+- 1:1 con `Proyecto`
+- 1:N con `ActividadProgramada`
+- 1:1 con `CronogramaSnapshot` (cuando está congelado)
+
+**Estados:**
+- `NO_CONGELADO`: En edición, fechas pueden modificarse
+- `CONGELADO`: Baseline establecido, fechas inmutables
+
+**Mecanismo de Freeze:**
+- Campo `congelado` (Boolean) indica estado de congelamiento
+- Metadata: `congeladoAt`, `congeladoBy`, `snapshotAlgorithm`
+- Método `congelar(UUID approvedBy)`: Congela el cronograma
+- Guards: `actualizarFechas()` y `actualizarFechaFinDesdeActividades()` 
+  lanzan `CronogramaCongeladoException` si está congelado
+
+**Acoplamiento Temporal:**
+- Cuando `Presupuesto` se aprueba (CONGELADO), `ProgramaObra` 
+  se congela automáticamente
+- Ambas operaciones son atómicas (mismo contexto transaccional)
+- Si el cronograma no puede congelarse, el presupuesto NO se aprueba
+
+### 11. ActividadProgramada
+
+**Agregado Root:** `ActividadProgramada`  
+**Ubicación:** `com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada`
+
+Representa una actividad programada en el cronograma.
+
+**Relaciones:**
+- N:1 con `ProgramaObra`
+- 1:1 con `Partida` (a través de `partidaId`)
+
+**Características:**
+- Fechas: `fechaInicio`, `fechaFin`
+- Duración: `duracionDias` (calculada)
+- Dependencias: `predecesoras` (lista de UUIDs de actividades predecesoras)
+- Tipo de dependencia: Fin-Inicio (simple)
+
+### 12. CronogramaSnapshot
+
+**Agregado Root:** `CronogramaSnapshot`  
+**Ubicación:** `com.budgetpro.domain.finanzas.cronograma.model.CronogramaSnapshot`
+
+Representa un snapshot inmutable del baseline temporal del cronograma.
+
+**Relaciones:**
+- 1:1 con `ProgramaObra` (un snapshot por cronograma congelado)
+- Many-to-one con `Presupuesto` (múltiples snapshots si hay re-baseline)
+
+**Características:**
+- **Inmutable:** Todos los campos son final, no hay setters
+- **Almacenamiento JSONB:** Datos temporales complejos almacenados como JSON
+  - `fechasJson`: Fechas del programa y actividades
+  - `duracionesJson`: Duraciones del programa y actividades
+  - `secuenciaJson`: Secuencia y dependencias entre actividades
+  - `calendariosJson`: Calendarios y restricciones temporales
+- **Metadata:**
+  - `snapshotDate`: Fecha y hora de creación del snapshot
+  - `snapshotAlgorithm`: Versión del algoritmo ("TEMPORAL-SNAPSHOT-v1")
+
+**Propósito:**
+- Preservar el baseline temporal inmutable cuando se congela el cronograma
+- Permitir comparación entre baseline y estado actual
+- Soportar análisis de desviaciones temporales
+
 ## Diagrama de Relaciones
 
 ```mermaid
@@ -178,6 +255,7 @@ erDiagram
     PROYECTO ||--o{ PRESUPUESTO : "tiene"
     PROYECTO ||--o{ COMPRA : "realiza"
     PROYECTO ||--|| BILLETERA : "tiene"
+    PROYECTO ||--|| PROGRAMA_OBRA : "tiene"
     
     PRESUPUESTO ||--o{ PARTIDA : "contiene"
     PRESUPUESTO ||--|| ANALISIS_SOBRECOSTO : "tiene"
@@ -196,6 +274,11 @@ erDiagram
     COMPRA ||--o{ COMPRA_DETALLE : "tiene"
     COMPRA_DETALLE }o--|| PARTIDA : "imputa"
     COMPRA_DETALLE ||--|| CONSUMO_PARTIDA : "genera"
+    
+    PROGRAMA_OBRA ||--o{ ACTIVIDAD_PROGRAMADA : "contiene"
+    PROGRAMA_OBRA ||--|| CRONOGRAMA_SNAPSHOT : "tiene_baseline"
+    ACTIVIDAD_PROGRAMADA }o--|| PARTIDA : "asociada"
+    PRESUPUESTO ||--o{ CRONOGRAMA_SNAPSHOT : "tiene_baseline"
     
     PROYECTO ||--o{ ESTIMACION : "genera"
     ESTIMACION ||--o{ DETALLE_ESTIMACION : "tiene"
