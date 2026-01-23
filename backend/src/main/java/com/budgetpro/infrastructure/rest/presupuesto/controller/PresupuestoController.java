@@ -2,6 +2,8 @@ package com.budgetpro.infrastructure.rest.presupuesto.controller;
 
 import com.budgetpro.application.control.dto.ReporteControlCostosResponse;
 import com.budgetpro.application.control.port.in.ConsultarControlCostosUseCase;
+import com.budgetpro.application.explosion.dto.ExplosionInsumosResponse;
+import com.budgetpro.application.explosion.port.in.ExplotarInsumosPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.dto.CrearPresupuestoCommand;
 import com.budgetpro.application.presupuesto.dto.PresupuestoResponse;
 import com.budgetpro.application.presupuesto.port.in.AprobarPresupuestoUseCase;
@@ -24,15 +26,18 @@ public class PresupuestoController {
     private final AprobarPresupuestoUseCase aprobarPresupuestoUseCase;
     private final ConsultarPresupuestoUseCase consultarPresupuestoUseCase;
     private final ConsultarControlCostosUseCase consultarControlCostosUseCase;
+    private final ExplotarInsumosPresupuestoUseCase explotarInsumosPresupuestoUseCase;
 
     public PresupuestoController(CrearPresupuestoUseCase crearPresupuestoUseCase,
                                  AprobarPresupuestoUseCase aprobarPresupuestoUseCase,
                                  ConsultarPresupuestoUseCase consultarPresupuestoUseCase,
-                                 ConsultarControlCostosUseCase consultarControlCostosUseCase) {
+                                 ConsultarControlCostosUseCase consultarControlCostosUseCase,
+                                 ExplotarInsumosPresupuestoUseCase explotarInsumosPresupuestoUseCase) {
         this.crearPresupuestoUseCase = crearPresupuestoUseCase;
         this.aprobarPresupuestoUseCase = aprobarPresupuestoUseCase;
         this.consultarPresupuestoUseCase = consultarPresupuestoUseCase;
         this.consultarControlCostosUseCase = consultarControlCostosUseCase;
+        this.explotarInsumosPresupuestoUseCase = explotarInsumosPresupuestoUseCase;
     }
 
     /**
@@ -89,6 +94,19 @@ public class PresupuestoController {
     @GetMapping("/{presupuestoId}/control-costos")
     public ResponseEntity<ReporteControlCostosResponse> consultarControlCostos(@PathVariable UUID presupuestoId) {
         ReporteControlCostosResponse response = consultarControlCostosUseCase.consultar(presupuestoId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Explota los insumos de un presupuesto, agregando cantidades totales normalizadas por unidad base.
+     * Solo considera partidas hoja (sin hijos en WBS) y agrupa recursos por tipo.
+     * 
+     * @param presupuestoId El ID del presupuesto
+     * @return ResponseEntity con la explosión de insumos agrupada por tipo de recurso y código HTTP 200 OK
+     */
+    @GetMapping("/{presupuestoId}/explosion-insumos")
+    public ResponseEntity<ExplosionInsumosResponse> explotarInsumos(@PathVariable UUID presupuestoId) {
+        ExplosionInsumosResponse response = explotarInsumosPresupuestoUseCase.ejecutar(presupuestoId);
         return ResponseEntity.ok(response);
     }
 }
