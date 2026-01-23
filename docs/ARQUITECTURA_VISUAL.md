@@ -110,7 +110,9 @@ erDiagram
     DETALLE_ESTIMACION }o--|| PARTIDA : "estima"
     
     PROGRAMA_OBRA ||--o{ ACTIVIDAD_PROGRAMADA : "contiene"
+    PROGRAMA_OBRA ||--|| CRONOGRAMA_SNAPSHOT : "tiene_baseline"
     ACTIVIDAD_PROGRAMADA ||--o{ DEPENDENCIA_ACTIVIDAD : "depende"
+    PRESUPUESTO ||--o{ CRONOGRAMA_SNAPSHOT : "tiene_baseline"
     
     AVANCE_FISICO ||--o{ VALUACION : "incluye"
     
@@ -1014,7 +1016,90 @@ flowchart TD
 
 ## 12. ARQUITECTURA DE INTEGRIDAD CRIPTOGRÁFICA
 
-### 11.1. Diagrama de Secuencia: Aprobación de Presupuesto con Sellado Criptográfico
+### 11.1. Diagrama de Secuencia: Aprobación de Presupuesto con Acoplamiento Temporal
+
+Este diagrama muestra cómo la aprobación del Presupuesto automáticamente congela el Cronograma, estableciendo el baseline del proyecto.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PresupuestoService
+    participant PresupuestoRepository
+    participant Presupuesto
+    participant ProgramaObraRepository
+    participant ProgramaObra
+    participant CronogramaService
+    participant ActividadProgramadaRepository
+    participant SnapshotGeneratorService
+    participant CronogramaSnapshotRepository
+    participant IntegrityHashService
+
+    User->>PresupuestoService: aprobar(presupuestoId, userId)
+    
+    PresupuestoService->>PresupuestoRepository: findById(presupuestoId)
+    PresupuestoRepository-->>PresupuestoService: Presupuesto
+    Presupuesto-->>PresupuestoService: Presupuesto (BORRADOR)
+    
+    Note over PresupuestoService: Validar prerrequisitos
+    
+    PresupuestoService->>ProgramaObraRepository: findByProyectoId(proyectoId)
+    alt No existe ProgramaObra
+        ProgramaObraRepository-->>PresupuestoService: Optional.empty()
+        PresupuestoService-->>User: PresupuestoSinCronogramaException
+    else Existe ProgramaObra
+        ProgramaObraRepository-->>PresupuestoService: ProgramaObra
+        
+        Note over PresupuestoService: Aprobar Presupuesto (genera hashes)
+        PresupuestoService->>Presupuesto: aprobar(userId, hashService)
+        Presupuesto->>IntegrityHashService: calculateApprovalHash(this)
+        IntegrityHashService-->>Presupuesto: approvalHash
+        Presupuesto->>IntegrityHashService: calculateExecutionHash(this)
+        IntegrityHashService-->>Presupuesto: executionHash
+        Note over Presupuesto: Estado: CONGELADO
+        
+        Note over PresupuestoService: Congelar Cronograma (baseline temporal)
+        PresupuestoService->>CronogramaService: congelarPorPresupuesto(proyectoId, presupuestoId, userId)
+        
+        CronogramaService->>ProgramaObra: congelar(userId)
+        Note over ProgramaObra: congelado = true
+        
+        CronogramaService->>ActividadProgramadaRepository: findByProgramaObraId(programaObraId)
+        ActividadProgramadaRepository-->>CronogramaService: List<ActividadProgramada>
+        
+        CronogramaService->>SnapshotGeneratorService: generarFechasJson(programaObra, actividades)
+        SnapshotGeneratorService-->>CronogramaService: fechasJson
+        
+        CronogramaService->>SnapshotGeneratorService: generarDuracionesJson(programaObra, actividades)
+        SnapshotGeneratorService-->>CronogramaService: duracionesJson
+        
+        CronogramaService->>SnapshotGeneratorService: generarSecuenciaJson(actividades)
+        SnapshotGeneratorService-->>CronogramaService: secuenciaJson
+        
+        CronogramaService->>SnapshotGeneratorService: generarCalendariosJson()
+        SnapshotGeneratorService-->>CronogramaService: calendariosJson
+        
+        CronogramaService->>CronogramaSnapshot: crear(id, programaObraId, presupuestoId, ...)
+        CronogramaSnapshot-->>CronogramaService: CronogramaSnapshot
+        
+        CronogramaService->>ProgramaObraRepository: save(programaObra)
+        CronogramaService->>CronogramaSnapshotRepository: save(snapshot)
+        
+        CronogramaService-->>PresupuestoService: CronogramaSnapshot
+        
+        PresupuestoService->>PresupuestoRepository: save(presupuesto)
+        
+        Note over PresupuestoService,ProgramaObra: Baseline establecido:<br/>Presupuesto (CONGELADO) + Cronograma (CONGELADO)
+        
+        PresupuestoService-->>User: Baseline establecido (Presupuesto + Cronograma congelados)
+    end
+```
+
+**Notas importantes:**
+- La operación es **atómica**: si el cronograma no puede congelarse, el presupuesto NO se aprueba (rollback)
+- El snapshot captura todos los datos temporales en formato JSONB
+- Ambos estados (Presupuesto y Cronograma) se persisten en la misma transacción
+
+### 11.2. Diagrama de Secuencia: Aprobación de Presupuesto con Sellado Criptográfico
 
 ```mermaid
 sequenceDiagram

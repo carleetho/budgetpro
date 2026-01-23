@@ -146,7 +146,7 @@
           {
             "type": "enum_exists",
             "target": "NaturalezaGasto",
-            "required_values": ["GASTO_DIRECTO_PARTIDA", "GASTO_GENERAL_OBRA", "GASTO_ADMINISTRATIVO"]
+            "required_values": ["DIRECTO_PARTIDA", "GENERAL_OBRA", "ADMINISTRATIVO"]
           },
           {
             "type": "reference_exists",
