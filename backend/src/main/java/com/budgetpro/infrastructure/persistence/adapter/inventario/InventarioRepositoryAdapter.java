@@ -1,10 +1,12 @@
 package com.budgetpro.infrastructure.persistence.adapter.inventario;
 
+import com.budgetpro.domain.logistica.bodega.model.BodegaId;
 import com.budgetpro.domain.logistica.inventario.model.InventarioId;
 import com.budgetpro.domain.logistica.inventario.model.InventarioItem;
 import com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository;
 import com.budgetpro.infrastructure.persistence.entity.inventario.InventarioItemEntity;
 import com.budgetpro.infrastructure.persistence.mapper.inventario.InventarioMapper;
+import com.budgetpro.infrastructure.persistence.repository.bodega.BodegaJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.inventario.InventarioItemJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +26,14 @@ import java.util.stream.Collectors;
 public class InventarioRepositoryAdapter implements InventarioRepository {
 
     private final InventarioItemJpaRepository jpaRepository;
+    private final BodegaJpaRepository bodegaJpaRepository;
     private final InventarioMapper mapper;
 
-    public InventarioRepositoryAdapter(InventarioItemJpaRepository jpaRepository, InventarioMapper mapper) {
+    public InventarioRepositoryAdapter(InventarioItemJpaRepository jpaRepository,
+                                       BodegaJpaRepository bodegaJpaRepository,
+                                       InventarioMapper mapper) {
         this.jpaRepository = jpaRepository;
+        this.bodegaJpaRepository = bodegaJpaRepository;
         this.mapper = mapper;
     }
 
@@ -42,8 +48,11 @@ public class InventarioRepositoryAdapter implements InventarioRepository {
             mapper.updateEntity(existingEntity, item);
             jpaRepository.save(existingEntity);
         } else {
-            // Creación: mapear y guardar
-            InventarioItemEntity newEntity = mapper.toEntity(item);
+            // Creación: cargar BodegaEntity, mapear y guardar
+            var bodegaEntity = bodegaJpaRepository.findById(item.getBodegaId().getValue())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Bodega no encontrada: " + item.getBodegaId().getValue()));
+            InventarioItemEntity newEntity = mapper.toEntity(item, bodegaEntity);
             jpaRepository.save(newEntity);
         }
         
@@ -71,5 +80,17 @@ public class InventarioRepositoryAdapter implements InventarioRepository {
         return jpaRepository.findByProyectoId(proyectoId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<InventarioItem> findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(
+            UUID proyectoId, String recursoExternalId, String unidadBase, BodegaId bodegaId) {
+        if (bodegaId == null) {
+            return Optional.empty();
+        }
+        return jpaRepository.findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodega_Id(
+                        proyectoId, recursoExternalId, unidadBase, bodegaId.getValue())
+                .map(mapper::toDomain);
     }
 }

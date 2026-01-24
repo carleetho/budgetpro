@@ -241,6 +241,63 @@ public final class InventarioItem {
     }
 
     /**
+     * Registra una SALIDA de material por requisición.
+     * 
+     * Similar a egresar() pero crea MovimientoInventario con referencias a requisición
+     * para trazabilidad completa del despacho.
+     * 
+     * @param cantidad Cantidad a egresar (debe ser positiva)
+     * @param requisicionId ID de la requisición
+     * @param requisicionItemId ID del ítem de requisición
+     * @param partidaId ID de la partida presupuestal (imputación AC)
+     * @param referencia Descripción o referencia de la salida
+     * @return El MovimientoInventario creado
+     * @throws IllegalArgumentException si la cantidad no es positiva o la referencia está vacía
+     * @throws CantidadInsuficienteException si no hay suficiente stock
+     */
+    public MovimientoInventario egresarPorRequisicion(BigDecimal cantidad, UUID requisicionId,
+                                                       UUID requisicionItemId, UUID partidaId,
+                                                       String referencia) {
+        if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La cantidad de salida debe ser positiva");
+        }
+        if (referencia == null || referencia.isBlank()) {
+            throw new IllegalArgumentException("La referencia no puede estar vacía");
+        }
+        if (requisicionId == null) {
+            throw new IllegalArgumentException("El requisicionId no puede ser nulo");
+        }
+        if (requisicionItemId == null) {
+            throw new IllegalArgumentException("El requisicionItemId no puede ser nulo");
+        }
+
+        // Validar stock suficiente
+        if (this.cantidadFisica.compareTo(cantidad) < 0) {
+            throw new CantidadInsuficienteException(
+                String.format("Stock insuficiente. Disponible: %s, Requerido: %s",
+                            this.cantidadFisica, cantidad)
+            );
+        }
+
+        // Crear movimiento con referencias a requisición
+        MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
+        MovimientoInventario movimiento = MovimientoInventario.crearSalidaConRequisicion(
+            movimientoId, this.id.getValue(), cantidad, this.costoPromedio,
+            requisicionId, requisicionItemId, partidaId, referencia
+        );
+
+        // Actualizar cantidad física
+        this.cantidadFisica = this.cantidadFisica.subtract(cantidad);
+        this.ultimaActualizacion = LocalDateTime.now();
+        this.version = this.version + 1;
+
+        // Agregar movimiento a la lista de nuevos
+        this.movimientosNuevos.add(movimiento);
+
+        return movimiento;
+    }
+
+    /**
      * Actualiza la ubicación en el almacén.
      * 
      * @deprecated Usar bodegaId en su lugar. Este método se mantiene para compatibilidad durante migración.

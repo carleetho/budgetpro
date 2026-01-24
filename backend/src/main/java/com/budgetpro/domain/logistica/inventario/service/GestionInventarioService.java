@@ -1,8 +1,8 @@
 package com.budgetpro.domain.logistica.inventario.service;
 
+import com.budgetpro.domain.logistica.backlog.service.BacklogService;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
-import com.budgetpro.domain.logistica.inventario.model.InventarioId;
 import com.budgetpro.domain.logistica.inventario.model.InventarioItem;
 import com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository;
 
@@ -10,60 +10,57 @@ import java.util.UUID;
 
 /**
  * Servicio de Dominio para gestionar el inventario.
- * 
+ *
  * Responsabilidad:
- * - Registrar entradas de material por compras
+ * - Registrar entradas de material por compras (vía InventarioSnapshotService, Authority by PO)
  * - Registrar salidas de material por consumos
  * - Asegurar que el stock físico se actualiza correctamente
- * 
+ *
  * No persiste, solo orquesta la lógica de dominio.
  */
 public class GestionInventarioService {
 
     private final InventarioRepository inventarioRepository;
+    private final InventarioSnapshotService inventarioSnapshotService;
+    private final BacklogService backlogService;
 
-    public GestionInventarioService(InventarioRepository inventarioRepository) {
+    public GestionInventarioService(InventarioRepository inventarioRepository,
+                                    InventarioSnapshotService inventarioSnapshotService,
+                                    BacklogService backlogService) {
         this.inventarioRepository = inventarioRepository;
+        this.inventarioSnapshotService = inventarioSnapshotService;
+        this.backlogService = backlogService;
     }
 
     /**
      * Registra la entrada de material al inventario cuando se aprueba una compra.
+     *
+     * Para cada detalle: find-or-create vía InventarioSnapshotService (snapshot catálogo,
+     * detección de cambio de unidad, Authority by PO), ingresar() y persistir.
      * 
-     * Para cada detalle de la compra:
-     * - Busca o crea el InventarioItem del proyecto + recurso
-     * - Registra la entrada usando el método ingresar() del agregado
-     * - El agregado calcula el costo promedio ponderado automáticamente
-     * 
+     * Después de registrar la entrada, resuelve el backlog para ese recurso.
+     *
      * @param compra La compra aprobada con sus detalles
-     * @throws IllegalArgumentException si el proyecto o recurso no existe
+     * @throws IllegalArgumentException si no hay bodega por defecto o el recurso no existe en catálogo
      */
     public void registrarEntradaPorCompra(Compra compra) {
         for (CompraDetalle detalle : compra.getDetalles()) {
-            // TODO: Migrar inventario para usar recursoExternalId en lugar de UUID recursoId
-            // Por ahora, generamos un UUID determinístico desde el externalId para compatibilidad
-            UUID recursoId = generarRecursoIdDesdeExternalId(detalle.getRecursoExternalId());
-            
-            // Buscar o crear el InventarioItem para este proyecto + recurso
-            InventarioItem inventarioItem = inventarioRepository
-                    .findByProyectoIdAndRecursoId(compra.getProyectoId(), recursoId)
-                    .orElseGet(() -> {
-                        // Si no existe, crear uno nuevo
-                        InventarioId inventarioId = InventarioId.generate();
-                        return InventarioItem.crear(inventarioId, compra.getProyectoId(),
-                                                   recursoId, null); // ubicacion null por ahora
-                    });
+            InventarioItem inventarioItem = inventarioSnapshotService.crearDesdeCompra(compra, detalle);
 
-            // Registrar la entrada usando el método del agregado
-            // El agregado calcula el costo promedio y crea el movimiento automáticamente
             inventarioItem.ingresar(
                     detalle.getCantidad(),
                     detalle.getPrecioUnitario(),
-                    detalle.getId().getValue(), // compraDetalleId para trazabilidad
+                    detalle.getId().getValue(),
                     String.format("Entrada por compra #%s - %s", compra.getId().getValue(), compra.getProveedor())
             );
 
-            // Persistir el inventario (con sus movimientos nuevos)
             inventarioRepository.save(inventarioItem);
+
+            // Resolver backlog para este recurso cuando llega stock
+            String unidad = detalle.getUnidad() != null && !detalle.getUnidad().isBlank()
+                    ? detalle.getUnidad().trim()
+                    : inventarioItem.getUnidadBase();
+            backlogService.resolverBacklog(compra.getProyectoId(), detalle.getRecursoExternalId(), unidad);
         }
     }
 
@@ -92,14 +89,4 @@ public class GestionInventarioService {
         inventarioRepository.save(inventarioItem);
     }
 
-    /**
-     * Genera un UUID determinístico desde un externalId.
-     * 
-     * TODO: Esto es una solución temporal hasta que el inventario migre a usar externalId.
-     * Usa el hash del externalId para generar un UUID consistente.
-     */
-    private UUID generarRecursoIdDesdeExternalId(String externalId) {
-        // Generar UUID v5 (determinístico) usando el namespace DNS y el externalId
-        return UUID.nameUUIDFromBytes(externalId.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    }
 }

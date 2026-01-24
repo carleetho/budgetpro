@@ -107,6 +107,12 @@ public class InventarioMapper {
             movimiento.getCostoUnitario(),
             movimiento.getCostoTotal(),
             movimiento.getCompraDetalleId(),
+            movimiento.getRequisicionId(),
+            movimiento.getRequisicionItemId(),
+            movimiento.getPartidaId(),
+            movimiento.getTransferenciaId(),
+            movimiento.getActividadId(),
+            movimiento.getJustificacion(),
             movimiento.getReferencia(),
             movimiento.getFechaHora(),
             null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
@@ -165,6 +171,12 @@ public class InventarioMapper {
             entity.getCostoUnitario(),
             entity.getCostoTotal(),
             entity.getCompraDetalleId(),
+            entity.getRequisicionId(),
+            entity.getRequisicionItemId(),
+            entity.getPartidaId(),
+            entity.getTransferenciaId(),
+            entity.getActividadId(),
+            entity.getJustificacion(),
             entity.getReferencia(),
             entity.getFechaHora()
         );
