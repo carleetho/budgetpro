@@ -16,6 +16,9 @@ public record CompraDetalleRequest(
         @NotNull(message = "El nombre del recurso es obligatorio")
         String recursoNombre,
 
+        /** Unidad en que llega la compra (Authority by PO). Si null, se usa la unidad del catálogo. */
+        String unidad,
+
         UUID partidaId,
 
         @NotNull(message = "La naturaleza del gasto es obligatoria")

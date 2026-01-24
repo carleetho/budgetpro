@@ -28,7 +28,11 @@ public class ProgramaObraMapper {
             programaObra.getFechaInicio(),
             programaObra.getFechaFinEstimada(),
             programaObra.getDuracionTotalDias(),
-            null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
+            null, // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
+            programaObra.estaCongelado(),
+            programaObra.getCongeladoAt(),
+            programaObra.getCongeladoBy(),
+            programaObra.getSnapshotAlgorithm()
         );
     }
 
@@ -46,7 +50,11 @@ public class ProgramaObraMapper {
             entity.getFechaInicio(),
             entity.getFechaFinEstimada(),
             entity.getDuracionTotalDias(),
-            entity.getVersion() != null ? entity.getVersion().longValue() : 0L
+            entity.getVersion() != null ? entity.getVersion().longValue() : 0L,
+            entity.getCongelado(),
+            entity.getCongeladoAt(),
+            entity.getCongeladoBy(),
+            entity.getSnapshotAlgorithm()
         );
     }
 
@@ -59,6 +67,11 @@ public class ProgramaObraMapper {
         existingEntity.setFechaInicio(programaObra.getFechaInicio());
         existingEntity.setFechaFinEstimada(programaObra.getFechaFinEstimada());
         existingEntity.setDuracionTotalDias(programaObra.getDuracionTotalDias());
+        // Freeze state fields
+        existingEntity.setCongelado(programaObra.estaCongelado());
+        existingEntity.setCongeladoAt(programaObra.getCongeladoAt());
+        existingEntity.setCongeladoBy(programaObra.getCongeladoBy());
+        existingEntity.setSnapshotAlgorithm(programaObra.getSnapshotAlgorithm());
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
         // CRÍTICO: NO se toca proyectoId (es inmutable después de crear)
     }
