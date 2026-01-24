@@ -9,6 +9,7 @@ import com.budgetpro.domain.finanzas.cronograma.port.out.ActividadProgramadaRepo
 import com.budgetpro.domain.finanzas.cronograma.port.out.CronogramaSnapshotRepository;
 import com.budgetpro.domain.finanzas.cronograma.port.out.ProgramaObraRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
+import com.budgetpro.shared.validation.JsonSchemaValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +49,9 @@ class CronogramaServiceTest {
     @Mock
     private CronogramaSnapshotRepository snapshotRepository;
 
+    @Mock
+    private JsonSchemaValidator jsonSchemaValidator;
+
     private SnapshotGeneratorService snapshotGeneratorService;
     private CronogramaService cronogramaService;
 
@@ -66,7 +70,8 @@ class CronogramaServiceTest {
                 programaObraRepository,
                 actividadProgramadaRepository,
                 snapshotRepository,
-                snapshotGeneratorService
+                snapshotGeneratorService,
+                jsonSchemaValidator
         );
 
         proyectoId = UUID.randomUUID();

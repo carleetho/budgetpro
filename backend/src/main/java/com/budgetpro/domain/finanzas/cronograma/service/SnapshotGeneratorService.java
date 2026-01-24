@@ -2,6 +2,7 @@ package com.budgetpro.domain.finanzas.cronograma.service;
 
 import com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada;
 import com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra;
+import com.budgetpro.shared.validation.JsonSchemaValidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
  * - Serializar datos temporales del cronograma a JSON
  * - Capturar fechas, duraciones, secuencia y calendarios
  * - Producir JSON válido y parseable para almacenamiento en JSONB
+ * - Validar que los JSON generados cumplan con los esquemas definidos
  * 
  * **Formato de Snapshot:**
  * - fechasJson: Fechas del programa y todas las actividades
@@ -29,11 +31,24 @@ import java.util.UUID;
 public class SnapshotGeneratorService {
 
     private final ObjectMapper objectMapper;
+    private final JsonSchemaValidator jsonSchemaValidator;
 
     public SnapshotGeneratorService() {
         this.objectMapper = new ObjectMapper();
         // Configurar ObjectMapper para manejar LocalDate correctamente
         this.objectMapper.findAndRegisterModules();
+        this.jsonSchemaValidator = null; // Sin validación si no se proporciona validador
+    }
+
+    /**
+     * Constructor con validador de esquemas JSON.
+     * 
+     * @param jsonSchemaValidator Validador opcional para validar esquemas JSON
+     */
+    public SnapshotGeneratorService(JsonSchemaValidator jsonSchemaValidator) {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules();
+        this.jsonSchemaValidator = jsonSchemaValidator;
     }
 
     /**
@@ -72,7 +87,14 @@ public class SnapshotGeneratorService {
         }
         fechasData.put("actividades", actividadesFechas);
 
-        return serializarAJson(fechasData);
+        String json = serializarAJson(fechasData);
+        
+        // Validar esquema si el validador está disponible
+        if (jsonSchemaValidator != null) {
+            jsonSchemaValidator.validateFechasSnapshot(json);
+        }
+        
+        return json;
     }
 
     /**
@@ -107,7 +129,14 @@ public class SnapshotGeneratorService {
         }
         duracionesData.put("actividades", actividadesDuraciones);
 
-        return serializarAJson(duracionesData);
+        String json = serializarAJson(duracionesData);
+        
+        // Validar esquema si el validador está disponible
+        if (jsonSchemaValidator != null) {
+            jsonSchemaValidator.validateDuracionesSnapshot(json);
+        }
+        
+        return json;
     }
 
     /**
@@ -144,7 +173,14 @@ public class SnapshotGeneratorService {
         }
         secuenciaData.put("actividades", actividadesSecuencia);
 
-        return serializarAJson(secuenciaData);
+        String json = serializarAJson(secuenciaData);
+        
+        // Validar esquema si el validador está disponible
+        if (jsonSchemaValidator != null) {
+            jsonSchemaValidator.validateSecuenciaSnapshot(json);
+        }
+        
+        return json;
     }
 
     /**
@@ -162,7 +198,14 @@ public class SnapshotGeneratorService {
         calendariosData.put("diasFestivos", new ArrayList<>());
         calendariosData.put("restricciones", new ArrayList<>());
         
-        return serializarAJson(calendariosData);
+        String json = serializarAJson(calendariosData);
+        
+        // Validar esquema si el validador está disponible
+        if (jsonSchemaValidator != null) {
+            jsonSchemaValidator.validateCalendariosSnapshot(json);
+        }
+        
+        return json;
     }
 
     /**

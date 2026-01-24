@@ -30,4 +30,11 @@ public interface InventarioItemJpaRepository extends JpaRepository<InventarioIte
      * @return Lista de items de inventario del proyecto
      */
     List<InventarioItemEntity> findByProyectoId(UUID proyectoId);
+
+    /**
+     * Busca por proyecto, recurso externo, unidad base y bodega.
+     * Para find-or-create con variantes de unidad (KG vs LIBRAS coexisten).
+     */
+    Optional<InventarioItemEntity> findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodega_Id(
+            UUID proyectoId, String recursoExternalId, String unidadBase, UUID bodegaId);
 }

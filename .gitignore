@@ -33,18 +33,28 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .vite/
-# Secretos y archivos de IDE específicos
+
+# --- Secretos y Credenciales ---
+# Archivos de entorno (NUNCA commitear)
 *.env
-*.iws
-*.iml
-*.ipr
-*.env
-*.iws
-*.iml
-*.ipr
-**/db/migration/*.sql
-backend/RESEND_API_KEY.env
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
 database.env
+backend/RESEND_API_KEY.env
+
+# --- Archivos de IDE específicos ---
+*.iws
+*.iml
+*.ipr
+
+# --- Base de datos y datos locales ---
+# **/db/migration/*.sql
 backend/.docker/
+.docker/postgres-data/
+
+# --- Documentación y recursos ---
 knowledge_base/
 backend/target/

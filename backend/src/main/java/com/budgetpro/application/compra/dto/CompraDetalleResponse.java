@@ -10,6 +10,7 @@ public record CompraDetalleResponse(
         UUID id,
         String recursoExternalId,
         String recursoNombre,
+        String unidad,
         UUID partidaId,
         com.budgetpro.domain.logistica.compra.model.NaturalezaGasto naturalezaGasto,
         com.budgetpro.domain.logistica.compra.model.RelacionContractual relacionContractual,

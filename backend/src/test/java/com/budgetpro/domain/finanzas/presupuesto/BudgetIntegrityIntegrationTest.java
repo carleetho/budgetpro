@@ -452,6 +452,7 @@ class BudgetIntegrityIntegrationTest extends AbstractIntegrationTest {
                 CompraDetalleId.nuevo(),
                 "MAT-001",
                 "Cemento Portland",
+                "BOL", // unidad (Authority by PO)
                 partidaId,
                 NaturalezaGasto.DIRECTO_PARTIDA,
                 RelacionContractual.CONTRACTUAL,

@@ -8,6 +8,7 @@ import com.budgetpro.domain.finanzas.cronograma.port.out.ActividadProgramadaRepo
 import com.budgetpro.domain.finanzas.cronograma.port.out.CronogramaSnapshotRepository;
 import com.budgetpro.domain.finanzas.cronograma.port.out.ProgramaObraRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
+import com.budgetpro.shared.validation.JsonSchemaValidator;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,16 +43,22 @@ public class CronogramaService {
     private final ActividadProgramadaRepository actividadProgramadaRepository;
     private final CronogramaSnapshotRepository snapshotRepository;
     private final SnapshotGeneratorService snapshotGeneratorService;
+    private final JsonSchemaValidator jsonSchemaValidator;
 
     public CronogramaService(
             ProgramaObraRepository programaObraRepository,
             ActividadProgramadaRepository actividadProgramadaRepository,
             CronogramaSnapshotRepository snapshotRepository,
-            SnapshotGeneratorService snapshotGeneratorService) {
+            SnapshotGeneratorService snapshotGeneratorService,
+            JsonSchemaValidator jsonSchemaValidator) {
         this.programaObraRepository = Objects.requireNonNull(programaObraRepository, "El repositorio de programa de obra no puede ser nulo");
         this.actividadProgramadaRepository = Objects.requireNonNull(actividadProgramadaRepository, "El repositorio de actividades no puede ser nulo");
         this.snapshotRepository = Objects.requireNonNull(snapshotRepository, "El repositorio de snapshots no puede ser nulo");
-        this.snapshotGeneratorService = Objects.requireNonNull(snapshotGeneratorService, "El servicio de generación de snapshots no puede ser nulo");
+        this.jsonSchemaValidator = jsonSchemaValidator; // Opcional: puede ser null si no se proporciona
+        // Si no se proporciona SnapshotGeneratorService, crear uno con el validador
+        this.snapshotGeneratorService = snapshotGeneratorService != null 
+            ? snapshotGeneratorService 
+            : new SnapshotGeneratorService(jsonSchemaValidator);
     }
 
     /**
@@ -65,10 +72,22 @@ public class CronogramaService {
      * 5. Genera el snapshot con todos los datos temporales
      * 6. Persiste tanto el ProgramaObra congelado como el snapshot
      * 
-     * **Nota sobre transacciones:**
-     * La persistencia atómica (freeze + snapshot) debe manejarse en la capa de aplicación
-     * o infraestructura mediante transacciones. Este servicio asume que ambas operaciones
-     * se ejecutan en el mismo contexto transaccional.
+ * **Estrategia de Transacciones:**
+ * 
+ * Este servicio NO tiene @Transactional porque participa en la transacción iniciada
+ * por la capa de aplicación a través de PresupuestoService.
+ * 
+ * **Flujo Transaccional:**
+ * 1. Use Case (@Transactional) → PresupuestoService.aprobar() → este método
+ * 2. Todas las operaciones (congelar ProgramaObra + persistir snapshot) se ejecutan
+ *    en la misma transacción
+ * 3. Si cualquier operación falla, toda la transacción hace rollback automáticamente
+ * 
+ * **Garantía de Atomicidad:**
+ * El congelamiento del ProgramaObra y la persistencia del snapshot son atómicos:
+ * - Si `programaObraRepository.save()` falla → rollback completo
+ * - Si `snapshotRepository.save()` falla → rollback completo (ProgramaObra no se congela)
+ * - Si la generación del snapshot falla → rollback completo
      * 
      * @param proyectoId ID del proyecto
      * @param presupuestoId ID del presupuesto asociado
@@ -109,11 +128,20 @@ public class CronogramaService {
         // 5. Obtener todas las actividades del cronograma
         List<ActividadProgramada> actividades = actividadProgramadaRepository.findByProgramaObraId(programaObra.getId().getValue());
 
-        // 6. Generar los datos JSON del snapshot
+        // 6. Generar los datos JSON del snapshot (con validación automática si el validador está disponible)
         String fechasJson = snapshotGeneratorService.generarFechasJson(programaObra, actividades);
         String duracionesJson = snapshotGeneratorService.generarDuracionesJson(programaObra, actividades);
         String secuenciaJson = snapshotGeneratorService.generarSecuenciaJson(actividades);
         String calendariosJson = snapshotGeneratorService.generarCalendariosJson();
+        
+        // Validación adicional explícita si el validador está disponible
+        // (la validación también se hace en SnapshotGeneratorService, pero esta es una capa extra de seguridad)
+        if (jsonSchemaValidator != null) {
+            jsonSchemaValidator.validateFechasSnapshot(fechasJson);
+            jsonSchemaValidator.validateDuracionesSnapshot(duracionesJson);
+            jsonSchemaValidator.validateSecuenciaSnapshot(secuenciaJson);
+            jsonSchemaValidator.validateCalendariosSnapshot(calendariosJson);
+        }
 
         // 7. Crear el snapshot
         CronogramaSnapshotId snapshotId = CronogramaSnapshotId.nuevo();
