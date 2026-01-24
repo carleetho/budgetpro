@@ -41,9 +41,9 @@ jobs:
         run: |
           java -jar target/domain-validator-1.0.0-SNAPSHOT.jar \
             validate \
-            --repo-path ../../backend \
-            --strict \
-            --output-format json \
+            --repo-path ../../backend \ 
+            --strict \ 
+            --output-format json \ 
             --output-file validation-report.json
           
           EXIT_CODE=$?
@@ -111,9 +111,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const comment = `${{ steps.format-comment.outputs.comment }}`;
-            const exitCode = ${{ steps.validate.outputs.exit_code }};
-            const status = `${{ steps.parse-report.outputs.validation_status }}`;
+            const comment = JSON.parse('${{ toJson(steps.format-comment.outputs.comment) }}');
+            const exitCode = Number('${{ steps.validate.outputs.exit_code }}') || 0;
+            const status = '${{ steps.parse-report.outputs.validation_status }}';
             
             // Buscar comentario existente del bot
             const { data: comments } = await github.rest.issues.listComments({
@@ -158,4 +158,4 @@ jobs:
         if: steps.validate.outputs.exit_code == 2
         run: |
           echo "⚠️ Advertencias detectadas. El merge está permitido pero se recomienda revisar."
-          echo "Por favor, revisa las advertencias en el comentario del PR."
+          echo "Por favor, revisa las advertencias en el comentario del PR.";
