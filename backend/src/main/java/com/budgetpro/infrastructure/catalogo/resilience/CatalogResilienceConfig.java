@@ -38,7 +38,6 @@ public class CatalogResilienceConfig {
     public RetryConfig catalogRetryConfig() {
         return RetryConfig.custom()
                 .maxAttempts(3) // Máximo 3 intentos
-                .waitDuration(Duration.ofSeconds(1)) // Espera inicial de 1s
                 .intervalFunction(io.github.resilience4j.core.IntervalFunction.ofExponentialBackoff(
                         Duration.ofSeconds(1), 2.0)) // Backoff exponencial (1s, 2s, 4s)
                 .retryExceptions(CatalogServiceException.class, RuntimeException.class)

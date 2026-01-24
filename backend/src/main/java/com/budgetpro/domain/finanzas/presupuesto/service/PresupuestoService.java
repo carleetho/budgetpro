@@ -35,9 +35,29 @@ import java.util.UUID;
  * - Si el cronograma no puede congelarse, el presupuesto NO se aprueba (rollback)
  * - Ambas operaciones deben ser atómicas (mismo contexto transaccional)
  * 
- * **Nota sobre Transacciones:**
- * La atomicidad debe manejarse en la capa de aplicación mediante @Transactional.
- * Este servicio asume que todas las operaciones se ejecutan en el mismo contexto transaccional.
+ * **Estrategia de Transacciones:**
+ * 
+ * Este servicio NO tiene @Transactional porque debe participar en la transacción iniciada
+ * por la capa de aplicación (use case). La atomicidad se garantiza así:
+ * 
+ * 1. **Capa de Aplicación (Use Case):**
+ *    - `AprobarPresupuestoUseCaseImpl.aprobar()` tiene @Transactional(rollbackFor = Exception.class)
+ *    - Inicia la transacción que engloba todo el proceso
+ * 
+ * 2. **Capa de Dominio (Este Servicio):**
+ *    - `PresupuestoService.aprobar()` NO tiene @Transactional
+ *    - Participa en la transacción del use case (propagación REQUIRED por defecto)
+ *    - Llama a `CronogramaService.congelarPorPresupuesto()` que también participa en la misma transacción
+ * 
+ * 3. **Rollback Automático:**
+ *    - Si `presupuesto.aprobar()` falla → rollback completo
+ *    - Si `cronogramaService.congelarPorPresupuesto()` falla → rollback completo
+ *    - Si `presupuestoRepository.save()` falla → rollback completo
+ *    - Cualquier RuntimeException no capturada provoca rollback automático
+ * 
+ * **Garantía de Atomicidad:**
+ * Todas las operaciones (aprobación de presupuesto, congelamiento de cronograma, persistencia)
+ * se ejecutan en la misma transacción, garantizando que o todas se completan o ninguna.
  * 
  * Contexto: Presupuesto & Baseline
  */
@@ -79,9 +99,9 @@ public class PresupuestoService {
      * Si cualquiera de las operaciones falla (presupuesto o cronograma),
      * toda la transacción debe hacer rollback. No se permite estado parcial.
      * 
-     * **Nota sobre Transacciones:**
-     * Este método debe ejecutarse dentro de un contexto transaccional (@Transactional)
-     * en la capa de aplicación para garantizar atomicidad.
+ * **Transaccionalidad:**
+ * Este método debe ejecutarse dentro de un contexto transaccional iniciado en la capa de aplicación.
+ * Ver documentación de la clase para detalles sobre la estrategia de transacciones.
      * 
      * @param presupuestoId ID del presupuesto a aprobar
      * @param approvedBy ID del usuario que aprueba el presupuesto

@@ -52,6 +52,31 @@ public class ProgramaObraEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // Freeze state fields
+    /**
+     * Indica si el cronograma ha sido congelado (baseline establecido).
+     */
+    @Column(name = "congelado", nullable = false)
+    private Boolean congelado;
+
+    /**
+     * Timestamp de cuando se congeló el cronograma.
+     */
+    @Column(name = "congelado_at")
+    private LocalDateTime congeladoAt;
+
+    /**
+     * ID del usuario que congeló el cronograma.
+     */
+    @Column(name = "congelado_by")
+    private UUID congeladoBy;
+
+    /**
+     * Versión del algoritmo usado para generar el snapshot del cronograma.
+     */
+    @Column(name = "snapshot_algorithm", length = 50)
+    private String snapshotAlgorithm;
+
     /**
      * Constructor protegido para JPA.
      * CRÍTICO: Acepta version = null. Hibernate inicializará la versión automáticamente.
@@ -70,6 +95,28 @@ public class ProgramaObraEntity {
         this.fechaFinEstimada = fechaFinEstimada;
         this.duracionTotalDias = duracionTotalDias;
         this.version = version; // CRÍTICO: Acepta null, Hibernate lo manejará
+        this.congelado = false; // Por defecto no está congelado
+        this.congeladoAt = null;
+        this.congeladoBy = null;
+        this.snapshotAlgorithm = null;
+    }
+
+    /**
+     * Constructor completo con campos de freeze.
+     */
+    public ProgramaObraEntity(UUID id, UUID proyectoId, LocalDate fechaInicio,
+                              LocalDate fechaFinEstimada, Integer duracionTotalDias, Integer version,
+                              Boolean congelado, LocalDateTime congeladoAt, UUID congeladoBy, String snapshotAlgorithm) {
+        this.id = id;
+        this.proyectoId = proyectoId;
+        this.fechaInicio = fechaInicio;
+        this.fechaFinEstimada = fechaFinEstimada;
+        this.duracionTotalDias = duracionTotalDias;
+        this.version = version;
+        this.congelado = congelado != null ? congelado : false;
+        this.congeladoAt = congeladoAt;
+        this.congeladoBy = congeladoBy;
+        this.snapshotAlgorithm = snapshotAlgorithm;
     }
 
     // Getters y Setters
@@ -136,5 +183,39 @@ public class ProgramaObraEntity {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // Freeze state getters and setters
+
+    public Boolean getCongelado() {
+        return congelado;
+    }
+
+    public void setCongelado(Boolean congelado) {
+        this.congelado = congelado;
+    }
+
+    public LocalDateTime getCongeladoAt() {
+        return congeladoAt;
+    }
+
+    public void setCongeladoAt(LocalDateTime congeladoAt) {
+        this.congeladoAt = congeladoAt;
+    }
+
+    public UUID getCongeladoBy() {
+        return congeladoBy;
+    }
+
+    public void setCongeladoBy(UUID congeladoBy) {
+        this.congeladoBy = congeladoBy;
+    }
+
+    public String getSnapshotAlgorithm() {
+        return snapshotAlgorithm;
+    }
+
+    public void setSnapshotAlgorithm(String snapshotAlgorithm) {
+        this.snapshotAlgorithm = snapshotAlgorithm;
     }
 }
