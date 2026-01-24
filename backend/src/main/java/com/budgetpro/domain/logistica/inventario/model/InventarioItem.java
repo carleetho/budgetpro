@@ -1,5 +1,6 @@
 package com.budgetpro.domain.logistica.inventario.model;
 
+import com.budgetpro.domain.logistica.bodega.model.BodegaId;
 import com.budgetpro.domain.logistica.inventario.exception.CantidadInsuficienteException;
 
 import java.math.BigDecimal;
@@ -12,24 +13,39 @@ import java.util.UUID;
 /**
  * Aggregate Root del agregado INVENTARIO.
  * 
- * Representa el stock físico de un recurso en un proyecto.
+ * Representa el stock físico de un recurso en un proyecto y bodega específica.
  * 
- * Un registro por Proyecto + Recurso (relación 1:1 lógica, identificado por proyectoId + recursoId).
+ * Un registro por Proyecto + Recurso + UnidadBase + Bodega (relación única).
  * 
  * Invariantes Críticas:
  * - La cantidadFisica NUNCA puede ser negativa
  * - Todo movimiento genera un registro en el Kardex (MovimientoInventario)
  * - El costoPromedio se calcula ponderadamente cuando hay entradas
  * - No existe stock sin movimiento
+ * - Los campos snapshot (nombre, clasificacion, unidadBase) son inmutables después de creación
  */
 public final class InventarioItem {
 
     private final InventarioId id;
     private final UUID proyectoId;
-    private final UUID recursoId;
+    
+    @Deprecated
+    private final UUID recursoId; // Mantener para compatibilidad durante migración
+    
+    private final String recursoExternalId; // ID externo del recurso (ej. "MAT-001")
+    private final BodegaId bodegaId; // FK a la bodega donde está el inventario
+    
+    // Campos snapshot (inmutables después de creación)
+    private final String nombre; // Nombre del recurso al momento de creación
+    private final String clasificacion; // Clasificación del recurso (snapshot)
+    private final String unidadBase; // Unidad base del recurso (snapshot)
+    
     private BigDecimal cantidadFisica; // Stock actual
     private BigDecimal costoPromedio; // Costo promedio ponderado
-    private String ubicacion; // Ubicación en el almacén
+    
+    @Deprecated
+    private String ubicacion; // DEPRECATED: Usar bodegaId en su lugar. Mantener para compatibilidad.
+    
     private LocalDateTime ultimaActualizacion;
     private Long version;
 
@@ -39,15 +55,33 @@ public final class InventarioItem {
     /**
      * Constructor privado. Usar factory methods.
      */
-    private InventarioItem(InventarioId id, UUID proyectoId, UUID recursoId,
+    private InventarioItem(InventarioId id, UUID proyectoId, UUID recursoId, String recursoExternalId,
+                           BodegaId bodegaId, String nombre, String clasificacion, String unidadBase,
                            BigDecimal cantidadFisica, BigDecimal costoPromedio,
                            String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
         this.id = Objects.requireNonNull(id, "El ID del inventario no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
-        this.recursoId = Objects.requireNonNull(recursoId, "El recursoId no puede ser nulo");
+        this.recursoId = recursoId; // Puede ser null durante migración
+        if (recursoExternalId == null || recursoExternalId.isBlank()) {
+            throw new IllegalArgumentException("El recursoExternalId no puede estar en blanco");
+        }
+        this.recursoExternalId = recursoExternalId.trim();
+        this.bodegaId = Objects.requireNonNull(bodegaId, "El bodegaId es obligatorio");
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del recurso no puede estar en blanco");
+        }
+        this.nombre = nombre.trim();
+        if (clasificacion == null || clasificacion.isBlank()) {
+            throw new IllegalArgumentException("La clasificación no puede estar en blanco");
+        }
+        this.clasificacion = clasificacion.trim();
+        if (unidadBase == null || unidadBase.isBlank()) {
+            throw new IllegalArgumentException("La unidad base no puede estar en blanco");
+        }
+        this.unidadBase = unidadBase.trim();
         this.cantidadFisica = cantidadFisica != null ? cantidadFisica : BigDecimal.ZERO;
         this.costoPromedio = costoPromedio != null ? costoPromedio : BigDecimal.ZERO;
-        this.ubicacion = ubicacion;
+        this.ubicacion = ubicacion; // DEPRECATED
         this.ultimaActualizacion = ultimaActualizacion != null ? ultimaActualizacion : LocalDateTime.now();
         this.version = version != null ? version : 0L;
         this.movimientosNuevos = new ArrayList<>();
@@ -59,21 +93,47 @@ public final class InventarioItem {
     }
 
     /**
-     * Factory method para crear un nuevo item de inventario (stock inicial en ZERO).
+     * Factory method para crear un nuevo item de inventario con snapshot completo.
+     * 
+     * @param id Identificador único del inventario
+     * @param proyectoId ID del proyecto
+     * @param recursoExternalId ID externo del recurso (ej. "MAT-001")
+     * @param bodegaId ID de la bodega donde se almacena
+     * @param nombre Nombre del recurso (snapshot inmutable)
+     * @param clasificacion Clasificación del recurso (snapshot inmutable)
+     * @param unidadBase Unidad base del recurso (snapshot inmutable)
+     * @return Nuevo InventarioItem con stock inicial en ZERO
      */
+    public static InventarioItem crearConSnapshot(InventarioId id, UUID proyectoId, String recursoExternalId,
+                                                   BodegaId bodegaId, String nombre, String clasificacion, String unidadBase) {
+        return new InventarioItem(id, proyectoId, null, recursoExternalId, bodegaId, nombre, clasificacion, unidadBase,
+                                 BigDecimal.ZERO, BigDecimal.ZERO, null, LocalDateTime.now(), 0L);
+    }
+
+    /**
+     * Factory method para crear un nuevo item de inventario (stock inicial en ZERO).
+     * 
+     * @deprecated Usar crearConSnapshot() en su lugar. Este método se mantiene para compatibilidad durante migración.
+     */
+    @Deprecated
     public static InventarioItem crear(InventarioId id, UUID proyectoId, UUID recursoId, String ubicacion) {
-        return new InventarioItem(id, proyectoId, recursoId, BigDecimal.ZERO, BigDecimal.ZERO,
-                                 ubicacion, LocalDateTime.now(), 0L);
+        // Para compatibilidad: crear con valores por defecto para campos nuevos
+        // Esto requiere que se migre después a crearConSnapshot()
+        throw new UnsupportedOperationException(
+            "Usar crearConSnapshot() con recursoExternalId, bodegaId y campos snapshot. " +
+            "Este método está deprecado y no debe usarse en nuevo código."
+        );
     }
 
     /**
      * Factory method para reconstruir un item de inventario desde persistencia.
      */
-    public static InventarioItem reconstruir(InventarioId id, UUID proyectoId, UUID recursoId,
+    public static InventarioItem reconstruir(InventarioId id, UUID proyectoId, UUID recursoId, String recursoExternalId,
+                                             BodegaId bodegaId, String nombre, String clasificacion, String unidadBase,
                                              BigDecimal cantidadFisica, BigDecimal costoPromedio,
                                              String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
-        return new InventarioItem(id, proyectoId, recursoId, cantidadFisica, costoPromedio,
-                                 ubicacion, ultimaActualizacion, version);
+        return new InventarioItem(id, proyectoId, recursoId, recursoExternalId, bodegaId, nombre, clasificacion, unidadBase,
+                                 cantidadFisica, costoPromedio, ubicacion, ultimaActualizacion, version);
     }
 
     /**
@@ -182,7 +242,10 @@ public final class InventarioItem {
 
     /**
      * Actualiza la ubicación en el almacén.
+     * 
+     * @deprecated Usar bodegaId en su lugar. Este método se mantiene para compatibilidad durante migración.
      */
+    @Deprecated
     public void actualizarUbicacion(String nuevaUbicacion) {
         this.ubicacion = nuevaUbicacion;
         this.ultimaActualizacion = LocalDateTime.now();
@@ -206,8 +269,32 @@ public final class InventarioItem {
         return proyectoId;
     }
 
+    /**
+     * @deprecated Usar getRecursoExternalId() en su lugar. Este método se mantiene para compatibilidad durante migración.
+     */
+    @Deprecated
     public UUID getRecursoId() {
         return recursoId;
+    }
+
+    public String getRecursoExternalId() {
+        return recursoExternalId;
+    }
+
+    public BodegaId getBodegaId() {
+        return bodegaId;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getClasificacion() {
+        return clasificacion;
+    }
+
+    public String getUnidadBase() {
+        return unidadBase;
     }
 
     public BigDecimal getCantidadFisica() {
@@ -218,6 +305,10 @@ public final class InventarioItem {
         return costoPromedio;
     }
 
+    /**
+     * @deprecated Usar getBodegaId() en su lugar. Este método se mantiene para compatibilidad durante migración.
+     */
+    @Deprecated
     public String getUbicacion() {
         return ubicacion;
     }
@@ -256,7 +347,7 @@ public final class InventarioItem {
 
     @Override
     public String toString() {
-        return String.format("InventarioItem{id=%s, proyectoId=%s, recursoId=%s, cantidadFisica=%s, costoPromedio=%s}",
-                           id, proyectoId, recursoId, cantidadFisica, costoPromedio);
+        return String.format("InventarioItem{id=%s, proyectoId=%s, recursoExternalId=%s, bodegaId=%s, nombre=%s, cantidadFisica=%s, costoPromedio=%s}",
+                           id, proyectoId, recursoExternalId, bodegaId, nombre, cantidadFisica, costoPromedio);
     }
 }
