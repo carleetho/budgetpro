@@ -51,7 +51,7 @@ backend/RESEND_API_KEY.env
 *.ipr
 
 # --- Base de datos y datos locales ---
-**/db/migration/*.sql
+# **/db/migration/*.sql
 backend/.docker/
 .docker/postgres-data/
 

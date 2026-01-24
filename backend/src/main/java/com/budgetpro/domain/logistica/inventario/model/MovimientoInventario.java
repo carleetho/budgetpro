@@ -6,9 +6,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Entidad interna del agregado InventarioItem que representa un movimiento en el Kardex.
+ * Entidad interna del agregado InventarioItem que representa un movimiento en
+ * el Kardex.
  * 
- * Cada entrada o salida queda registrada de forma inmutable para trazabilidad completa.
+ * Cada entrada o salida queda registrada de forma inmutable para trazabilidad
+ * completa.
  */
 public final class MovimientoInventario {
 
@@ -22,7 +24,8 @@ public final class MovimientoInventario {
     private final UUID requisicionId; // Opcional: ID de la requisición (solo para SALIDA_CONSUMO)
     private final UUID requisicionItemId; // Opcional: ID del ítem de requisición (solo para SALIDA_CONSUMO)
     private final UUID partidaId; // Opcional: Partida presupuestal (imputación AC)
-    private final UUID transferenciaId; // Opcional: ID para vincular transferencias (SALIDA_TRANSFERENCIA <-> ENTRADA_TRANSFERENCIA)
+    private final UUID transferenciaId; // Opcional: ID para vincular transferencias (SALIDA_TRANSFERENCIA <->
+                                        // ENTRADA_TRANSFERENCIA)
     private final UUID actividadId; // Opcional: ID de actividad (placeholder para validación temporal futura)
     private final String justificacion; // Opcional: Justificación detallada (obligatoria para AJUSTE, min 20 chars)
     private final String referencia; // Descripción o referencia del movimiento
@@ -32,11 +35,11 @@ public final class MovimientoInventario {
      * Constructor privado. Usar factory methods.
      */
     private MovimientoInventario(MovimientoInventarioId id, UUID inventarioItemId,
-                                  TipoMovimientoInventario tipo, BigDecimal cantidad,
-                                  BigDecimal costoUnitario, BigDecimal costoTotal,
-                                  UUID compraDetalleId, UUID requisicionId, UUID requisicionItemId,
-                                  UUID partidaId, UUID transferenciaId, UUID actividadId,
-                                  String justificacion, String referencia, LocalDateTime fechaHora) {
+            TipoMovimientoInventario tipo, BigDecimal cantidad,
+            BigDecimal costoUnitario, BigDecimal costoTotal,
+            UUID compraDetalleId, UUID requisicionId, UUID requisicionItemId,
+            UUID partidaId, UUID transferenciaId, UUID actividadId,
+            String justificacion, String referencia, LocalDateTime fechaHora) {
         this.id = Objects.requireNonNull(id, "El ID del movimiento no puede ser nulo");
         this.inventarioItemId = Objects.requireNonNull(inventarioItemId, "El inventarioItemId no puede ser nulo");
         this.tipo = Objects.requireNonNull(tipo, "El tipo de movimiento no puede ser nulo");
@@ -52,7 +55,7 @@ public final class MovimientoInventario {
         this.justificacion = justificacion != null ? justificacion.trim() : null;
         this.referencia = Objects.requireNonNull(referencia, "La referencia no puede ser nula");
         this.fechaHora = Objects.requireNonNull(fechaHora, "La fecha y hora no puede ser nula");
-        
+
         // Validaciones de negocio
         if (cantidad.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser positiva");
@@ -63,14 +66,15 @@ public final class MovimientoInventario {
         if (referencia.isBlank()) {
             throw new IllegalArgumentException("La referencia no puede estar vacía");
         }
-        
+
         // Validación: justificacion obligatoria y >= 20 chars cuando tipo = AJUSTE
         if (tipo == TipoMovimientoInventario.AJUSTE) {
             if (justificacion == null || justificacion.isBlank()) {
                 throw new IllegalArgumentException("La justificación es obligatoria para movimientos de tipo AJUSTE");
             }
             if (justificacion.trim().length() < 20) {
-                throw new IllegalArgumentException("La justificación debe tener al menos 20 caracteres para movimientos de tipo AJUSTE");
+                throw new IllegalArgumentException(
+                        "La justificación debe tener al menos 20 caracteres para movimientos de tipo AJUSTE");
             }
         }
     }
@@ -83,10 +87,9 @@ public final class MovimientoInventario {
             BigDecimal costoUnitario, UUID compraDetalleId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.ENTRADA_COMPRA,
-            cantidad, costoUnitario, costoTotal, compraDetalleId, null, null,
-            null, null, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.ENTRADA_COMPRA,
+                cantidad, costoUnitario, costoTotal, compraDetalleId, null, null,
+                null, null, null, null, referencia, LocalDateTime.now());
     }
 
     /**
@@ -97,14 +100,14 @@ public final class MovimientoInventario {
             BigDecimal costoUnitario, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.SALIDA_CONSUMO,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, null, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.SALIDA_CONSUMO,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, null, null, null, referencia, LocalDateTime.now());
     }
 
     /**
-     * Factory method para crear un movimiento de salida por consumo con referencia a requisición.
+     * Factory method para crear un movimiento de salida por consumo con referencia
+     * a requisición.
      */
     public static MovimientoInventario crearSalidaConRequisicion(
             MovimientoInventarioId id, UUID inventarioItemId, BigDecimal cantidad,
@@ -112,26 +115,25 @@ public final class MovimientoInventario {
             UUID partidaId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.SALIDA_CONSUMO,
-            cantidad, costoUnitario, costoTotal, null, requisicionId, requisicionItemId,
-            partidaId, null, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.SALIDA_CONSUMO,
+                cantidad, costoUnitario, costoTotal, null, requisicionId, requisicionItemId,
+                partidaId, null, null, null, referencia, LocalDateTime.now());
     }
 
     /**
      * Factory method para crear un ajuste de inventario.
      * 
-     * @param justificacion Justificación detallada (obligatoria, mínimo 20 caracteres)
+     * @param justificacion Justificación detallada (obligatoria, mínimo 20
+     *                      caracteres)
      */
     public static MovimientoInventario crearAjuste(
             MovimientoInventarioId id, UUID inventarioItemId, BigDecimal cantidad,
             BigDecimal costoUnitario, String justificacion, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.AJUSTE,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, null, null, justificacion, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.AJUSTE,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, null, null, justificacion, referencia, LocalDateTime.now());
     }
 
     /**
@@ -142,10 +144,9 @@ public final class MovimientoInventario {
             BigDecimal costoUnitario, UUID transferenciaId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.SALIDA_TRANSFERENCIA,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, transferenciaId, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.SALIDA_TRANSFERENCIA,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, transferenciaId, null, null, referencia, LocalDateTime.now());
     }
 
     /**
@@ -156,10 +157,9 @@ public final class MovimientoInventario {
             BigDecimal costoUnitario, UUID transferenciaId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.ENTRADA_TRANSFERENCIA,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, transferenciaId, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.ENTRADA_TRANSFERENCIA,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, transferenciaId, null, null, referencia, LocalDateTime.now());
     }
 
     /**
@@ -167,27 +167,26 @@ public final class MovimientoInventario {
      */
     public static MovimientoInventario crearSalidaPrestamo(
             MovimientoInventarioId id, UUID inventarioItemId, BigDecimal cantidad,
-            BigDecimal costoUnitario, String referencia) {
+            BigDecimal costoUnitario, UUID transferenciaId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.SALIDA_PRESTAMO,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, null, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.SALIDA_PRESTAMO,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, transferenciaId, null, null, referencia, LocalDateTime.now());
     }
 
     /**
-     * Factory method para crear un movimiento de entrada por devolución de préstamo.
+     * Factory method para crear un movimiento de entrada por devolución de
+     * préstamo.
      */
     public static MovimientoInventario crearEntradaPrestamo(
             MovimientoInventarioId id, UUID inventarioItemId, BigDecimal cantidad,
-            BigDecimal costoUnitario, String referencia) {
+            BigDecimal costoUnitario, UUID transferenciaId, String referencia) {
         BigDecimal costoTotal = cantidad.multiply(costoUnitario);
         return new MovimientoInventario(
-            id, inventarioItemId, TipoMovimientoInventario.ENTRADA_PRESTAMO,
-            cantidad, costoUnitario, costoTotal, null, null, null,
-            null, null, null, null, referencia, LocalDateTime.now()
-        );
+                id, inventarioItemId, TipoMovimientoInventario.ENTRADA_PRESTAMO,
+                cantidad, costoUnitario, costoTotal, null, null, null,
+                null, transferenciaId, null, null, referencia, LocalDateTime.now());
     }
 
     /**
@@ -200,10 +199,9 @@ public final class MovimientoInventario {
             UUID partidaId, UUID transferenciaId, UUID actividadId,
             String justificacion, String referencia, LocalDateTime fechaHora) {
         return new MovimientoInventario(
-            id, inventarioItemId, tipo, cantidad, costoUnitario, costoTotal,
-            compraDetalleId, requisicionId, requisicionItemId, partidaId,
-            transferenciaId, actividadId, justificacion, referencia, fechaHora
-        );
+                id, inventarioItemId, tipo, cantidad, costoUnitario, costoTotal,
+                compraDetalleId, requisicionId, requisicionItemId, partidaId,
+                transferenciaId, actividadId, justificacion, referencia, fechaHora);
     }
 
     // Getters
@@ -270,21 +268,23 @@ public final class MovimientoInventario {
 
     public boolean esEntrada() {
         return tipo == TipoMovimientoInventario.ENTRADA_COMPRA ||
-               tipo == TipoMovimientoInventario.ENTRADA_TRANSFERENCIA ||
-               tipo == TipoMovimientoInventario.ENTRADA_PRESTAMO ||
-               tipo == TipoMovimientoInventario.AJUSTE;
+                tipo == TipoMovimientoInventario.ENTRADA_TRANSFERENCIA ||
+                tipo == TipoMovimientoInventario.ENTRADA_PRESTAMO ||
+                tipo == TipoMovimientoInventario.AJUSTE;
     }
 
     public boolean esSalida() {
         return tipo == TipoMovimientoInventario.SALIDA_CONSUMO ||
-               tipo == TipoMovimientoInventario.SALIDA_TRANSFERENCIA ||
-               tipo == TipoMovimientoInventario.SALIDA_PRESTAMO;
+                tipo == TipoMovimientoInventario.SALIDA_TRANSFERENCIA ||
+                tipo == TipoMovimientoInventario.SALIDA_PRESTAMO;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         MovimientoInventario that = (MovimientoInventario) o;
         return Objects.equals(id, that.id);
     }
@@ -297,6 +297,6 @@ public final class MovimientoInventario {
     @Override
     public String toString() {
         return String.format("MovimientoInventario{id=%s, tipo=%s, cantidad=%s, fechaHora=%s}",
-                           id, tipo, cantidad, fechaHora);
+                id, tipo, cantidad, fechaHora);
     }
 }
