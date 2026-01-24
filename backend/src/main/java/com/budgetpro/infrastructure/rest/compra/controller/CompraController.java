@@ -39,6 +39,7 @@ public class CompraController {
                 .map(detalle -> new CompraDetalleCommand(
                     detalle.recursoExternalId(),
                     detalle.recursoNombre(),
+                    detalle.unidad(),
                     detalle.partidaId(),
                     detalle.naturalezaGasto(),
                     detalle.relacionContractual(),

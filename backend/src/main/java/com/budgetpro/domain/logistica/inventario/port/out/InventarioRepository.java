@@ -1,5 +1,6 @@
 package com.budgetpro.domain.logistica.inventario.port.out;
 
+import com.budgetpro.domain.logistica.bodega.model.BodegaId;
 import com.budgetpro.domain.logistica.inventario.model.InventarioId;
 import com.budgetpro.domain.logistica.inventario.model.InventarioItem;
 
@@ -27,6 +28,19 @@ public interface InventarioRepository {
      * @return Optional con el item de inventario si existe, vacío en caso contrario
      */
     Optional<InventarioItem> findByProyectoIdAndRecursoId(UUID proyectoId, UUID recursoId);
+
+    /**
+     * Busca un item de inventario por proyecto, recurso externo, unidad base y bodega.
+     * Usado para find-or-create con variantes de unidad (KG vs LIBRAS coexisten).
+     * 
+     * @param proyectoId ID del proyecto
+     * @param recursoExternalId ID externo del recurso (ej. "MAT-001")
+     * @param unidadBase Unidad base del recurso (snapshot)
+     * @param bodegaId ID de la bodega
+     * @return Optional con el item si existe, vacío en caso contrario
+     */
+    Optional<InventarioItem> findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(
+            UUID proyectoId, String recursoExternalId, String unidadBase, BodegaId bodegaId);
 
     /**
      * Busca todos los items de inventario de un proyecto.

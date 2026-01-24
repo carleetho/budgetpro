@@ -164,6 +164,7 @@ class ProcesarCompraIntegrationTest extends AbstractIntegrationTest {
                 CompraDetalleId.nuevo(),
                 "MAT-001", // recursoExternalId
                 "Cemento Portland", // recursoNombre
+                "BOL", // unidad (Authority by PO)
                 partidaId,
                 NaturalezaGasto.DIRECTO_PARTIDA,
                 RelacionContractual.CONTRACTUAL,

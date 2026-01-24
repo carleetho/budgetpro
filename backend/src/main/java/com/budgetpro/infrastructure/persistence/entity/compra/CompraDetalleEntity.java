@@ -39,6 +39,9 @@ public class CompraDetalleEntity {
     @Column(name = "recurso_nombre", nullable = false, length = 500, updatable = false)
     private String recursoNombre; // Snapshot del nombre del recurso para display/reporting
 
+    @Column(name = "unidad", length = 20, updatable = false)
+    private String unidad; // Unidad en que llega la compra (Authority by PO). Null = usar catálogo.
+
     @Column(name = "partida_id", updatable = false)
     private UUID partidaId; // Puede ser null si no aplica
 
@@ -89,6 +92,7 @@ public class CompraDetalleEntity {
      * @param compra CompraEntity asociada
      * @param recursoExternalId ID externo del recurso (ej. "MAT-001")
      * @param recursoNombre Nombre del recurso (snapshot)
+     * @param unidad Unidad en que llega la compra (Authority by PO). Null = usar catálogo.
      * @param partidaId ID de la partida (imputación presupuestal)
      * @param cantidad Cantidad comprada
      * @param precioUnitario Precio unitario
@@ -98,6 +102,7 @@ public class CompraDetalleEntity {
     public CompraDetalleEntity(UUID id, CompraEntity compra,
                                String recursoExternalId,
                                String recursoNombre,
+                               String unidad,
                                UUID partidaId,
                                com.budgetpro.domain.logistica.compra.model.NaturalezaGasto naturalezaGasto,
                                com.budgetpro.domain.logistica.compra.model.RelacionContractual relacionContractual,
@@ -108,6 +113,7 @@ public class CompraDetalleEntity {
         this.compra = compra;
         this.recursoExternalId = recursoExternalId;
         this.recursoNombre = recursoNombre;
+        this.unidad = unidad;
         this.partidaId = partidaId;
         this.naturalezaGasto = naturalezaGasto;
         this.relacionContractual = relacionContractual;
@@ -150,6 +156,14 @@ public class CompraDetalleEntity {
 
     public void setRecursoNombre(String recursoNombre) {
         this.recursoNombre = recursoNombre;
+    }
+
+    public String getUnidad() {
+        return unidad;
+    }
+
+    public void setUnidad(String unidad) {
+        this.unidad = unidad;
     }
 
     public UUID getPartidaId() {
