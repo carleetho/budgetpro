@@ -152,6 +152,13 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
+        <!-- JSON Schema Validation -->
+        <dependency>
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

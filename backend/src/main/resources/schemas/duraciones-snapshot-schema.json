@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Duraciones Snapshot Schema",
+  "description": "Esquema para validar la estructura de duraciones del cronograma en snapshots",
+  "type": "object",
+  "required": ["duracionTotalDias", "actividades"],
+  "properties": {
+    "duracionTotalDias": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Duración total del programa en días (puede ser null)"
+    },
+    "actividades": {
+      "type": "array",
+      "description": "Lista de duraciones de actividades",
+      "items": {
+        "type": "object",
+        "required": ["id", "partidaId", "duracionDias"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID único de la actividad (UUID)"
+          },
+          "partidaId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID de la partida asociada (UUID)"
+          },
+          "duracionDias": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Duración de la actividad en días (debe ser >= 0)"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

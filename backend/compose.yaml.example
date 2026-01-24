@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     container_name: budgetpro-db
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-budgetpro}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: budgetpro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
