@@ -6,6 +6,7 @@ import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuSnapshotEntity;
 import com.budgetpro.infrastructure.persistence.mapper.ApuInsumoSnapshotMapper;
 import com.budgetpro.infrastructure.persistence.mapper.ApuSnapshotMapper;
+import com.budgetpro.infrastructure.persistence.mapper.ComposicionCuadrillaSnapshotMapper;
 import com.budgetpro.infrastructure.persistence.repository.ApuSnapshotJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({"NullAway", "null"})
+@SuppressWarnings({ "NullAway", "null" })
 @ExtendWith(MockitoExtension.class)
 class ApuSnapshotRepositoryAdapterTest {
 
@@ -34,20 +35,14 @@ class ApuSnapshotRepositoryAdapterTest {
     @Mock
     private PartidaJpaRepository partidaJpaRepository;
 
-    private final ApuSnapshotMapper mapper = new ApuSnapshotMapper(new ApuInsumoSnapshotMapper());
+    private final ApuSnapshotMapper mapper = new ApuSnapshotMapper(
+            new ApuInsumoSnapshotMapper(new ComposicionCuadrillaSnapshotMapper()));
 
-    @SuppressWarnings({"NullAway", "Nullness"})
+    @SuppressWarnings({ "NullAway", "Nullness" })
     @Test
     void save_nuevoDebePersistir() {
-        APUSnapshot snapshot = APUSnapshot.crear(
-                APUSnapshotId.generate(),
-                UUID.randomUUID(),
-                "APU-EXT-1",
-                "CAT-A",
-                new BigDecimal("2.0"),
-                "UND",
-                LocalDateTime.now()
-        );
+        APUSnapshot snapshot = APUSnapshot.crear(APUSnapshotId.generate(), UUID.randomUUID(), "APU-EXT-1", "CAT-A",
+                new BigDecimal("2.0"), "UND", LocalDateTime.now());
 
         PartidaEntity partidaEntity = new PartidaEntity();
         partidaEntity.setId(Objects.requireNonNull(snapshot.getPartidaId()));
@@ -59,13 +54,14 @@ class ApuSnapshotRepositoryAdapterTest {
         when(jpaRepository.save(org.mockito.ArgumentMatchers.<ApuSnapshotEntity>notNull()))
                 .thenAnswer(invocation -> Objects.requireNonNull(invocation.getArgument(0)));
 
-        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository, mapper);
+        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository,
+                mapper);
         APUSnapshot saved = adapter.save(snapshot);
 
         assertEquals(snapshot.getExternalApuId(), saved.getExternalApuId());
     }
 
-    @SuppressWarnings({"NullAway", "Nullness"})
+    @SuppressWarnings({ "NullAway", "Nullness" })
     @Test
     void findByPartidaId_debeMapear() {
         ApuSnapshotEntity entity = new ApuSnapshotEntity();
@@ -84,14 +80,15 @@ class ApuSnapshotRepositoryAdapterTest {
         when(jpaRepository.findByPartidaId(UUID.fromString("00000000-0000-0000-0000-000000000001")))
                 .thenReturn(Optional.of(entity));
 
-        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository, mapper);
+        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository,
+                mapper);
         Optional<APUSnapshot> found = adapter.findByPartidaId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
 
         assertTrue(found.isPresent());
         assertEquals("APU-EXT-2", found.get().getExternalApuId());
     }
 
-    @SuppressWarnings({"NullAway", "Nullness"})
+    @SuppressWarnings({ "NullAway", "Nullness" })
     @Test
     void findModificados_debeMapearLista() {
         ApuSnapshotEntity entity = new ApuSnapshotEntity();
@@ -110,7 +107,8 @@ class ApuSnapshotRepositoryAdapterTest {
 
         when(jpaRepository.findByRendimientoModificadoTrue()).thenReturn(List.of(entity));
 
-        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository, mapper);
+        ApuSnapshotRepositoryAdapter adapter = new ApuSnapshotRepositoryAdapter(jpaRepository, partidaJpaRepository,
+                mapper);
         List<APUSnapshot> results = adapter.findModificados();
 
         assertEquals(1, results.size());
