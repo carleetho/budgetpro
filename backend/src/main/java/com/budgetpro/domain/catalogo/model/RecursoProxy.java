@@ -9,17 +9,14 @@ import java.util.Objects;
 /**
  * Aggregate Root del agregado RECURSO_PROXY.
  *
- * Representa un proxy de recurso para catálogos externos con semántica de snapshot.
- * Los campos snapshot capturan el estado del catálogo en un punto de tiempo
- * y no deben mutar una vez creado el proxy.
+ * Representa un proxy de recurso para catálogos externos con semántica de
+ * snapshot. Los campos snapshot capturan el estado del catálogo en un punto de
+ * tiempo y no deben mutar una vez creado el proxy.
  *
- * Invariantes:
- * - externalId y catalogSource no pueden estar vacíos
- * - nombreSnapshot no puede estar vacío
- * - tipoSnapshot no puede ser nulo
- * - unidadSnapshot no puede estar vacía
- * - precioSnapshot no puede ser nulo ni negativo
- * - snapshotDate no puede ser nula
+ * Invariantes: - externalId y catalogSource no pueden estar vacíos -
+ * nombreSnapshot no puede estar vacío - tipoSnapshot no puede ser nulo -
+ * unidadSnapshot no puede estar vacía - precioSnapshot no puede ser nulo ni
+ * negativo - snapshotDate no puede ser nula
  */
 public final class RecursoProxy {
 
@@ -32,19 +29,14 @@ public final class RecursoProxy {
     private final BigDecimal precioSnapshot;
     private final LocalDateTime snapshotDate;
     private EstadoProxy estado;
+    private BigDecimal costoReal;
     private final Long version;
 
-    private RecursoProxy(RecursoProxyId id,
-                         String externalId,
-                         String catalogSource,
-                         String nombreSnapshot,
-                         TipoRecurso tipoSnapshot,
-                         String unidadSnapshot,
-                         BigDecimal precioSnapshot,
-                         LocalDateTime snapshotDate,
-                         EstadoProxy estado,
-                         Long version) {
-        validarInvariantes(externalId, catalogSource, nombreSnapshot, tipoSnapshot, unidadSnapshot, precioSnapshot, snapshotDate);
+    private RecursoProxy(RecursoProxyId id, String externalId, String catalogSource, String nombreSnapshot,
+            TipoRecurso tipoSnapshot, String unidadSnapshot, BigDecimal precioSnapshot, LocalDateTime snapshotDate,
+            EstadoProxy estado, BigDecimal costoReal, Long version) {
+        validarInvariantes(externalId, catalogSource, nombreSnapshot, tipoSnapshot, unidadSnapshot, precioSnapshot,
+                snapshotDate);
 
         this.id = Objects.requireNonNull(id, "El ID del recurso proxy no puede ser nulo");
         this.externalId = externalId.trim();
@@ -55,62 +47,25 @@ public final class RecursoProxy {
         this.precioSnapshot = precioSnapshot;
         this.snapshotDate = snapshotDate;
         this.estado = estado != null ? estado : EstadoProxy.ACTIVO;
+        this.costoReal = costoReal;
         this.version = version != null ? version : 0L;
     }
 
-    public static RecursoProxy crear(RecursoProxyId id,
-                                     String externalId,
-                                     String catalogSource,
-                                     String nombreSnapshot,
-                                     TipoRecurso tipoSnapshot,
-                                     String unidadSnapshot,
-                                     BigDecimal precioSnapshot,
-                                     LocalDateTime snapshotDate) {
-        return new RecursoProxy(
-                id,
-                externalId,
-                catalogSource,
-                nombreSnapshot,
-                tipoSnapshot,
-                unidadSnapshot,
-                precioSnapshot,
-                snapshotDate,
-                EstadoProxy.ACTIVO,
-                0L
-        );
+    public static RecursoProxy crear(RecursoProxyId id, String externalId, String catalogSource, String nombreSnapshot,
+            TipoRecurso tipoSnapshot, String unidadSnapshot, BigDecimal precioSnapshot, LocalDateTime snapshotDate) {
+        return new RecursoProxy(id, externalId, catalogSource, nombreSnapshot, tipoSnapshot, unidadSnapshot,
+                precioSnapshot, snapshotDate, EstadoProxy.ACTIVO, null, 0L);
     }
 
-    public static RecursoProxy reconstruir(RecursoProxyId id,
-                                           String externalId,
-                                           String catalogSource,
-                                           String nombreSnapshot,
-                                           TipoRecurso tipoSnapshot,
-                                           String unidadSnapshot,
-                                           BigDecimal precioSnapshot,
-                                           LocalDateTime snapshotDate,
-                                           EstadoProxy estado,
-                                           Long version) {
-        return new RecursoProxy(
-                id,
-                externalId,
-                catalogSource,
-                nombreSnapshot,
-                tipoSnapshot,
-                unidadSnapshot,
-                precioSnapshot,
-                snapshotDate,
-                estado,
-                version
-        );
+    public static RecursoProxy reconstruir(RecursoProxyId id, String externalId, String catalogSource,
+            String nombreSnapshot, TipoRecurso tipoSnapshot, String unidadSnapshot, BigDecimal precioSnapshot,
+            LocalDateTime snapshotDate, EstadoProxy estado, BigDecimal costoReal, Long version) {
+        return new RecursoProxy(id, externalId, catalogSource, nombreSnapshot, tipoSnapshot, unidadSnapshot,
+                precioSnapshot, snapshotDate, estado, costoReal, version);
     }
 
-    private void validarInvariantes(String externalId,
-                                    String catalogSource,
-                                    String nombreSnapshot,
-                                    TipoRecurso tipoSnapshot,
-                                    String unidadSnapshot,
-                                    BigDecimal precioSnapshot,
-                                    LocalDateTime snapshotDate) {
+    private void validarInvariantes(String externalId, String catalogSource, String nombreSnapshot,
+            TipoRecurso tipoSnapshot, String unidadSnapshot, BigDecimal precioSnapshot, LocalDateTime snapshotDate) {
         if (externalId == null || externalId.isBlank()) {
             throw new IllegalArgumentException("El externalId no puede estar vacío");
         }
@@ -135,10 +90,18 @@ public final class RecursoProxy {
     }
 
     /**
-     * Marca el proxy como OBSOLETO cuando el recurso ya no existe en el catálogo externo.
+     * Marca el proxy como OBSOLETO cuando el recurso ya no existe en el catálogo
+     * externo.
      */
     public void marcarObsoleto() {
         this.estado = EstadoProxy.OBSOLETO;
+    }
+
+    public void actualizarCostoReal(BigDecimal nuevoCostoReal) {
+        if (nuevoCostoReal != null && nuevoCostoReal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El costo real no puede ser negativo");
+        }
+        this.costoReal = nuevoCostoReal;
     }
 
     // Getters
@@ -171,6 +134,17 @@ public final class RecursoProxy {
         return precioSnapshot;
     }
 
+    /**
+     * Alias para precioSnapshot según requerimiento de negocio.
+     */
+    public BigDecimal getCostoEstimado() {
+        return precioSnapshot;
+    }
+
+    public BigDecimal getCostoReal() {
+        return costoReal;
+    }
+
     public LocalDateTime getSnapshotDate() {
         return snapshotDate;
     }
@@ -189,8 +163,10 @@ public final class RecursoProxy {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RecursoProxy that = (RecursoProxy) o;
         return Objects.equals(id, that.id);
     }
@@ -202,16 +178,9 @@ public final class RecursoProxy {
 
     @Override
     public String toString() {
-        return "RecursoProxy{" +
-                "id=" + id +
-                ", externalId='" + externalId + '\'' +
-                ", catalogSource='" + catalogSource + '\'' +
-                ", nombreSnapshot='" + nombreSnapshot + '\'' +
-                ", tipoSnapshot=" + tipoSnapshot +
-                ", unidadSnapshot='" + unidadSnapshot + '\'' +
-                ", precioSnapshot=" + precioSnapshot +
-                ", snapshotDate=" + snapshotDate +
-                ", estado=" + estado +
-                '}';
+        return "RecursoProxy{" + "id=" + id + ", externalId='" + externalId + '\'' + ", catalogSource='" + catalogSource
+                + '\'' + ", nombreSnapshot='" + nombreSnapshot + '\'' + ", tipoSnapshot=" + tipoSnapshot
+                + ", unidadSnapshot='" + unidadSnapshot + '\'' + ", precioSnapshot=" + precioSnapshot + ", costoReal="
+                + costoReal + ", snapshotDate=" + snapshotDate + ", estado=" + estado + '}';
     }
 }
