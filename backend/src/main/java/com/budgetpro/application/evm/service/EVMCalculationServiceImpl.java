@@ -117,6 +117,8 @@ public class EVMCalculationServiceImpl implements EVMCalculationService {
     }
 
     private BigDecimal calcularPVProRata(UUID proyectoId, LocalDateTime fechaCorte, BigDecimal bac) {
+        // TODO: AC9 - Implementar cálculo basado en calendario (días hábiles/feriados)
+        // para mayor precisión
         return programaObraRepository.findByProyectoId(proyectoId).map(programa -> {
             if (programa.getFechaInicio() == null || programa.getFechaFinEstimada() == null) {
                 return BigDecimal.ZERO;
