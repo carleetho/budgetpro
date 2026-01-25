@@ -74,6 +74,14 @@ jobs:
         working-directory: tools/domain-validator
         run: |
           if [ -f validation-report.json ]; then
+            # Verify JSON validity first
+            if ! jq empty validation-report.json > /dev/null 2>&1; then
+              echo "❌ Error: validation-report.json found but contains invalid JSON."
+              cat validation-report.json
+              echo "validation_status=ERROR" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+
             # Extraer información del reporte JSON usando jq
             CRITICAL_COUNT=$(jq '[.violations[] | select(.severity == "CRITICAL")] | length' validation-report.json || echo "0")
             WARNING_COUNT=$(jq '[.violations[] | select(.severity == "WARNING")] | length' validation-report.json || echo "0")
