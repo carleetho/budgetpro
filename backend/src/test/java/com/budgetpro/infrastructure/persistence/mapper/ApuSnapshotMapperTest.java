@@ -17,26 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ApuSnapshotMapperTest {
 
-    private final ApuSnapshotMapper mapper = new ApuSnapshotMapper(new ApuInsumoSnapshotMapper());
+    private final ApuSnapshotMapper mapper = new ApuSnapshotMapper(
+            new ApuInsumoSnapshotMapper(new ComposicionCuadrillaSnapshotMapper()));
 
     @Test
     void toEntity_y_toDomain_debenPreservarDatos() {
-        APUSnapshot snapshot = APUSnapshot.crear(
-                APUSnapshotId.generate(),
-                UUID.randomUUID(),
-                "APU-EXT-1",
-                "CATALOGO-A",
-                new BigDecimal("1.5"),
-                "UND",
-                LocalDateTime.now()
-        );
-        snapshot.agregarInsumo(APUInsumoSnapshot.crear(
-                APUInsumoSnapshotId.generate(),
-                "EXT-REC-1",
-                "Arena",
-                new BigDecimal("2.0"),
-                new BigDecimal("8.00")
-        ));
+        APUSnapshot snapshot = APUSnapshot.crear(APUSnapshotId.generate(), UUID.randomUUID(), "APU-EXT-1", "CATALOGO-A",
+                new BigDecimal("1.5"), "UND", LocalDateTime.now());
+        snapshot.agregarInsumo(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "EXT-REC-1", "Arena",
+                new BigDecimal("2.0"), new BigDecimal("8.00")));
 
         PartidaEntity partidaEntity = new PartidaEntity();
         partidaEntity.setId(snapshot.getPartidaId());
