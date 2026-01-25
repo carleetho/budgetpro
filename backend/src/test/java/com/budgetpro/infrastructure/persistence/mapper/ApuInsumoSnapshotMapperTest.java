@@ -13,17 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ApuInsumoSnapshotMapperTest {
 
-    private final ApuInsumoSnapshotMapper mapper = new ApuInsumoSnapshotMapper();
+    private final ApuInsumoSnapshotMapper mapper = new ApuInsumoSnapshotMapper(
+            new ComposicionCuadrillaSnapshotMapper());
 
     @Test
     void toEntity_y_toDomain_debenPreservarDatos() {
-        APUInsumoSnapshot domain = APUInsumoSnapshot.crear(
-                APUInsumoSnapshotId.generate(),
-                "EXT-REC-1",
-                "Cemento Gris",
-                new BigDecimal("2.5"),
-                new BigDecimal("10.00")
-        );
+        APUInsumoSnapshot domain = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "EXT-REC-1", "Cemento Gris",
+                new BigDecimal("2.5"), new BigDecimal("10.00"));
         ApuSnapshotEntity apuSnapshotEntity = new ApuSnapshotEntity();
         apuSnapshotEntity.setId(UUID.randomUUID());
         UUID createdBy = UUID.randomUUID();

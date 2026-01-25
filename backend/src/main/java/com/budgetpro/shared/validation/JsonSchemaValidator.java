@@ -15,25 +15,21 @@ import java.util.Objects;
 /**
  * Validador de esquemas JSON para snapshots de cronograma.
  * 
- * Valida que los JSON generados cumplan con los esquemas definidos
- * antes de persistirlos en la base de datos.
+ * Valida que los JSON generados cumplan con los esquemas definidos antes de
+ * persistirlos en la base de datos.
  * 
- * **Esquemas soportados:**
- * - fechas-snapshot-schema.json: Estructura de fechas del cronograma
- * - duraciones-snapshot-schema.json: Estructura de duraciones
- * - secuencia-snapshot-schema.json: Estructura de secuencia y dependencias
- * - calendarios-snapshot-schema.json: Estructura de calendarios
+ * **Esquemas soportados:** - fechas-snapshot-schema.json: Estructura de fechas
+ * del cronograma - duraciones-snapshot-schema.json: Estructura de duraciones -
+ * secuencia-snapshot-schema.json: Estructura de secuencia y dependencias -
+ * calendarios-snapshot-schema.json: Estructura de calendarios
  * 
- * **Uso:**
- * ```java
- * validator.validateFechasSnapshot(jsonString);
- * ```
+ * **Uso:** ```java validator.validateFechasSnapshot(jsonString); ```
  */
 @Component
 public class JsonSchemaValidator {
 
     private static final String SCHEMAS_PATH = "schemas/";
-    
+
     private final Schema fechasSchema;
     private final Schema duracionesSchema;
     private final Schema secuenciaSchema;
@@ -94,17 +90,20 @@ public class JsonSchemaValidator {
      * Valida un JSON contra un esquema específico.
      * 
      * @param jsonString JSON string a validar
-     * @param schema Esquema contra el cual validar
-     * @param fieldName Nombre del campo para mensajes de error
+     * @param schema     Esquema contra el cual validar
+     * @param fieldName  Nombre del campo para mensajes de error
      * @throws IllegalArgumentException si el JSON no cumple con el esquema
      */
     private void validate(String jsonString, Schema schema, String fieldName) {
-        Objects.requireNonNull(jsonString, "El JSON no puede ser nulo");
-        Objects.requireNonNull(schema, "El esquema no puede ser nulo");
-        
+        if (jsonString == null) {
+            throw new IllegalArgumentException("El JSON no puede ser nulo");
+        }
+        if (schema == null) {
+            throw new IllegalArgumentException("El esquema no puede ser nulo");
+        }
+
         if (jsonString.isBlank()) {
-            throw new IllegalArgumentException(
-                String.format("El JSON de %s no puede estar vacío", fieldName));
+            throw new IllegalArgumentException(String.format("El JSON de %s no puede estar vacío", fieldName));
         }
 
         try {
@@ -112,11 +111,11 @@ public class JsonSchemaValidator {
             schema.validate(jsonObject);
         } catch (org.json.JSONException e) {
             throw new IllegalArgumentException(
-                String.format("El JSON de %s no es válido: %s", fieldName, e.getMessage()), e);
+                    String.format("El JSON de %s no es válido: %s", fieldName, e.getMessage()), e);
         } catch (ValidationException e) {
             String errorMessage = buildValidationErrorMessage(e, fieldName);
             throw new IllegalArgumentException(
-                String.format("El JSON de %s no cumple con el esquema: %s", fieldName, errorMessage), e);
+                    String.format("El JSON de %s no cumple con el esquema: %s", fieldName, errorMessage), e);
         }
     }
 
@@ -126,14 +125,14 @@ public class JsonSchemaValidator {
     private String buildValidationErrorMessage(ValidationException e, String fieldName) {
         StringBuilder message = new StringBuilder();
         message.append(e.getMessage());
-        
+
         if (!e.getCausingExceptions().isEmpty()) {
             message.append(" - Errores: ");
             for (ValidationException causingException : e.getCausingExceptions()) {
                 message.append(causingException.getMessage()).append("; ");
             }
         }
-        
+
         return message.toString();
     }
 
@@ -146,7 +145,7 @@ public class JsonSchemaValidator {
      */
     private Schema loadSchema(String schemaFileName) throws IOException {
         ClassPathResource resource = new ClassPathResource(SCHEMAS_PATH + schemaFileName);
-        
+
         try (InputStream inputStream = resource.getInputStream()) {
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
             return SchemaLoader.load(rawSchema);
