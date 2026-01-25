@@ -29,14 +29,11 @@ import java.util.UUID;
  * Entidad JPA para la tabla recurso_proxy.
  */
 @Entity
-@Table(name = "recurso_proxy",
-       uniqueConstraints = @UniqueConstraint(name = "uq_recurso_proxy_external",
-                                             columnNames = {"external_id", "catalog_source"}),
-       indexes = {
-           @Index(name = "idx_recurso_proxy_external", columnList = "external_id, catalog_source"),
-           @Index(name = "idx_recurso_proxy_estado", columnList = "estado"),
-           @Index(name = "idx_recurso_proxy_tipo", columnList = "tipo_snapshot")
-       })
+@Table(name = "recurso_proxy", uniqueConstraints = @UniqueConstraint(name = "uq_recurso_proxy_external", columnNames = {
+        "external_id", "catalog_source" }), indexes = {
+                @Index(name = "idx_recurso_proxy_external", columnList = "external_id, catalog_source"),
+                @Index(name = "idx_recurso_proxy_estado", columnList = "estado"),
+                @Index(name = "idx_recurso_proxy_tipo", columnList = "tipo_snapshot") })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -82,6 +79,10 @@ public class RecursoProxyEntity extends AuditEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoProxy estado = EstadoProxy.ACTIVO;
+
+    @Digits(integer = 15, fraction = 4)
+    @Column(name = "costo_real", precision = 19, scale = 4)
+    private BigDecimal costoReal;
 
     @Version
     @Column(name = "version", nullable = false)
