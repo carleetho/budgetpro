@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * Mapper para convertir entre RecursoProxy (dominio) y RecursoProxyEntity (persistencia).
+ * Mapper para convertir entre RecursoProxy (dominio) y RecursoProxyEntity
+ * (persistencia).
  */
 @Component
 public class RecursoProxyMapper {
@@ -31,6 +32,7 @@ public class RecursoProxyMapper {
         entity.setPrecioSnapshot(recursoProxy.getPrecioSnapshot());
         entity.setSnapshotDate(recursoProxy.getSnapshotDate());
         entity.setEstado(recursoProxy.getEstado());
+        entity.setCostoReal(recursoProxy.getCostoReal());
         entity.setVersion(recursoProxy.getVersion());
         entity.setCreatedBy(createdBy);
         return entity;
@@ -41,17 +43,9 @@ public class RecursoProxyMapper {
             return null;
         }
 
-        return RecursoProxy.reconstruir(
-                RecursoProxyId.of(entity.getId()),
-                entity.getExternalId(),
-                entity.getCatalogSource(),
-                entity.getNombreSnapshot(),
-                entity.getTipoSnapshot(),
-                entity.getUnidadSnapshot(),
-                entity.getPrecioSnapshot(),
-                entity.getSnapshotDate(),
-                entity.getEstado(),
-                entity.getVersion()
-        );
+        return RecursoProxy.reconstruir(RecursoProxyId.of(entity.getId()), entity.getExternalId(),
+                entity.getCatalogSource(), entity.getNombreSnapshot(), entity.getTipoSnapshot(),
+                entity.getUnidadSnapshot(), entity.getPrecioSnapshot(), entity.getSnapshotDate(), entity.getEstado(),
+                entity.getCostoReal(), entity.getVersion());
     }
 }

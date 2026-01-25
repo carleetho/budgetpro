@@ -1,0 +1,15 @@
+{
+  "exitCode" : 3,
+  "validation_id" : "1f0aa8d0-69af-4b78-b353-6e2678032d92",
+  "timestamp" : "2026-01-24T06:32:43.760068209Z",
+  "repository_path" : "unknown",
+  "canonical_version" : "1.0.0",
+  "status" : "ERROR",
+  "violations" : [ {
+    "module_id" : "SYSTEM",
+    "severity" : "CRITICAL",
+    "message" : "Critical internal error: Simulated Crash",
+    "blocking" : false
+  } ],
+  "module_statuses" : [ ]
+}
