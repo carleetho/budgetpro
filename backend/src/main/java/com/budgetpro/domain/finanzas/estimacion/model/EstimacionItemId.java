@@ -3,19 +3,19 @@ package com.budgetpro.domain.finanzas.estimacion.model;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class EstimacionId {
+public final class EstimacionItemId {
     private final UUID value;
 
-    private EstimacionId(UUID value) {
-        this.value = Objects.requireNonNull(value, "El ID de la estimación no puede ser nulo");
+    private EstimacionItemId(UUID value) {
+        this.value = Objects.requireNonNull(value, "El ID del item de estimación no puede ser nulo");
     }
 
-    public static EstimacionId of(UUID value) {
-        return new EstimacionId(value);
+    public static EstimacionItemId of(UUID value) {
+        return new EstimacionItemId(value);
     }
 
-    public static EstimacionId random() {
-        return new EstimacionId(UUID.randomUUID());
+    public static EstimacionItemId random() {
+        return new EstimacionItemId(UUID.randomUUID());
     }
 
     public UUID getValue() {
@@ -28,7 +28,7 @@ public final class EstimacionId {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        EstimacionId that = (EstimacionId) o;
+        EstimacionItemId that = (EstimacionItemId) o;
         return Objects.equals(value, that.value);
     }
 
