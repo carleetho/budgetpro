@@ -1,7 +1,7 @@
 package com.budgetpro.infrastructure.persistence.entity.catalogo;
 
 import com.budgetpro.domain.catalogo.model.EstadoProxy;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.AuditEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

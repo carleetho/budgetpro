@@ -3,7 +3,7 @@ package com.budgetpro.domain.catalogo.service;
 import com.budgetpro.domain.catalogo.model.APUInsumoSnapshot;
 import com.budgetpro.domain.catalogo.model.APUInsumoSnapshotId;
 import com.budgetpro.domain.catalogo.model.ComposicionCuadrillaSnapshot;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

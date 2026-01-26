@@ -2,6 +2,7 @@ package com.budgetpro.infrastructure.persistence.mapper;
 
 import com.budgetpro.domain.catalogo.model.APUInsumoSnapshot;
 import com.budgetpro.domain.catalogo.model.APUInsumoSnapshotId;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuInsumoSnapshotEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuSnapshotEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ComposicionCuadrillaSnapshotEntity;

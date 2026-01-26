@@ -14,7 +14,7 @@ import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

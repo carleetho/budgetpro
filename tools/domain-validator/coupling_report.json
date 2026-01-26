@@ -1,0 +1,543 @@
+{
+  "metadata": {
+    "total_files_analyzed": 213,
+    "total_violations_found": 45,
+    "identified_aggregates": {
+      "catalogo": [
+        "APUInsumoSnapshot",
+        "APUSnapshot",
+        "RecursoProxy"
+      ],
+      "finanzas": [
+        "DetalleReajustePartida",
+        "ConfiguracionLaboral",
+        "AvanceFisico",
+        "EVMSnapshot",
+        "CronogramaSnapshot",
+        "DetalleEstimacion",
+        "Billetera",
+        "ProgramaObra",
+        "ConsumoPartida",
+        "ActividadProgramada",
+        "EstimacionReajuste",
+        "ApuInsumo",
+        "Valuacion",
+        "AnalisisSobrecosto",
+        "IndicePrecios",
+        "Estimacion",
+        "Partida",
+        "Presupuesto"
+      ],
+      "rrhh": [
+        "Cuadrilla",
+        "Nomina",
+        "AsignacionProyecto",
+        "Empleado",
+        "CuadrillaMiembro"
+      ],
+      "proyecto": [
+        "Proyecto"
+      ],
+      "logistica": [
+        "RequisicionItem",
+        "Cuadrilla",
+        "Requisicion",
+        "MovimientoInventario",
+        "RequerimientoCompra",
+        "FrenteTrabajo",
+        "Compra",
+        "Bodega",
+        "Almacen",
+        "MovimientoAlmacen",
+        "CompraDetalle"
+      ],
+      "recurso": [
+        "Recurso"
+      ]
+    }
+  },
+  "summary_per_context": {
+    "catalogo": 4,
+    "finanzas": 23,
+    "rrhh": 2,
+    "logistica": 16
+  },
+  "violations": [
+    {
+      "context": "catalogo",
+      "file": "SnapshotService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/service/SnapshotService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.catalogo.model.APUInsumoSnapshot;",
+          "description": "Import of aggregate root 'APUInsumoSnapshot'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 7,
+          "content": "import com.budgetpro.domain.catalogo.model.APUSnapshot;",
+          "description": "Import of aggregate root 'APUSnapshot'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "catalogo",
+      "file": "CalculoApuDinamicoService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/service/CalculoApuDinamicoService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.catalogo.model.APUInsumoSnapshot;",
+          "description": "Import of aggregate root 'APUInsumoSnapshot'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.catalogo.model.APUSnapshot;",
+          "description": "Import of aggregate root 'APUSnapshot'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "ControlAvanceService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/service/ControlAvanceService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.avance.model.AvanceFisico;",
+          "description": "Import of aggregate root 'AvanceFisico'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.partida.model.Partida;",
+          "description": "Import of aggregate root 'Partida'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "PresupuestoService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/PresupuestoService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.CronogramaSnapshot;",
+          "description": "Import of aggregate root 'CronogramaSnapshot'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 7,
+          "content": "import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;",
+          "description": "Import of aggregate root 'Presupuesto'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "IntegrityAuditLog.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityAuditLog.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;",
+          "description": "Import of aggregate root 'Presupuesto'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "CalculoPresupuestoService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/CalculoPresupuestoService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.partida.model.Partida;",
+          "description": "Import of aggregate root 'Partida'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "IntegrityHashService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityHashService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;",
+          "description": "Import of aggregate root 'Presupuesto'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "CalculoCronogramaService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CalculoCronogramaService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada;",
+          "description": "Import of aggregate root 'ActividadProgramada'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra;",
+          "description": "Import of aggregate root 'ProgramaObra'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "SnapshotGeneratorService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/SnapshotGeneratorService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada;",
+          "description": "Import of aggregate root 'ActividadProgramada'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra;",
+          "description": "Import of aggregate root 'ProgramaObra'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "CronogramaService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CronogramaService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada;",
+          "description": "Import of aggregate root 'ActividadProgramada'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.CronogramaSnapshot;",
+          "description": "Import of aggregate root 'CronogramaSnapshot'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 6,
+          "content": "import com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra;",
+          "description": "Import of aggregate root 'ProgramaObra'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "Billetera.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/Billetera.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;",
+          "description": "Import of aggregate root 'Presupuesto'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "InteligenciaMaquinariaService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/InteligenciaMaquinariaService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.finanzas.apu.model.ApuInsumo;",
+          "description": "Import of aggregate root 'ApuInsumo'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "CalculadoraPrecioVentaService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalculadoraPrecioVentaService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.sobrecosto.model.AnalisisSobrecosto;",
+          "description": "Import of aggregate root 'AnalisisSobrecosto'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "CalcularSalarioRealService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalcularSalarioRealService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;",
+          "description": "Import of aggregate root 'ConfiguracionLaboral'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.recurso.model.Recurso;",
+          "description": "Import of aggregate root 'Recurso'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "AgregacionControlCostosService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/control/service/AgregacionControlCostosService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartida;",
+          "description": "Import of aggregate root 'ConsumoPartida'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 6,
+          "content": "import com.budgetpro.domain.finanzas.partida.model.Partida;",
+          "description": "Import of aggregate root 'Partida'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "finanzas",
+      "file": "GeneradorEstimacionService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.estimacion.model.DetalleEstimacion;",
+          "description": "Import of aggregate root 'DetalleEstimacion'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.finanzas.estimacion.model.Estimacion;",
+          "description": "Import of aggregate root 'Estimacion'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "rrhh",
+      "file": "CalculadorFSR.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/service/CalculadorFSR.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;",
+          "description": "Import of aggregate root 'ConfiguracionLaboral'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.rrhh.model.Empleado;",
+          "description": "Import of aggregate root 'Empleado'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "DespachoRequisicionService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/service/DespachoRequisicionService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 14,
+          "content": "import com.budgetpro.domain.logistica.requisicion.model.Requisicion;",
+          "description": "Import of aggregate root 'Requisicion'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 16,
+          "content": "import com.budgetpro.domain.logistica.requisicion.model.RequisicionItem;",
+          "description": "Import of aggregate root 'RequisicionItem'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "BacklogService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/service/BacklogService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.logistica.backlog.model.RequerimientoCompra;",
+          "description": "Import of aggregate root 'RequerimientoCompra'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 11,
+          "content": "import com.budgetpro.domain.logistica.requisicion.model.Requisicion;",
+          "description": "Import of aggregate root 'Requisicion'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "ProcesarCompraService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartida;",
+          "description": "Import of aggregate root 'ConsumoPartida'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 6,
+          "content": "import com.budgetpro.domain.finanzas.model.Billetera;",
+          "description": "Import of aggregate root 'Billetera'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 8,
+          "content": "import com.budgetpro.domain.finanzas.partida.model.Partida;",
+          "description": "Import of aggregate root 'Partida'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 16,
+          "content": "import com.budgetpro.domain.logistica.compra.model.Compra;",
+          "description": "Import of aggregate root 'Compra'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 17,
+          "content": "import com.budgetpro.domain.logistica.compra.model.CompraDetalle;",
+          "description": "Import of aggregate root 'CompraDetalle'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "GestionInventarioService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/GestionInventarioService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 4,
+          "content": "import com.budgetpro.domain.logistica.compra.model.Compra;",
+          "description": "Import of aggregate root 'Compra'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 5,
+          "content": "import com.budgetpro.domain.logistica.compra.model.CompraDetalle;",
+          "description": "Import of aggregate root 'CompraDetalle'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 13,
+          "content": "import com.budgetpro.domain.logistica.inventario.model.MovimientoInventario;",
+          "description": "Import of aggregate root 'MovimientoInventario'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "InventarioSnapshotService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/InventarioSnapshotService.java",
+      "violations": [
+        {
+          "type": "CROSS_CONTEXT_IMPORT",
+          "severity": "HIGH",
+          "line_number": 3,
+          "content": "import com.budgetpro.domain.catalogo.model.RecursoSnapshot;",
+          "description": "Direct import of entity 'RecursoSnapshot' from context 'catalogo'. Use IDs and Ports."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 7,
+          "content": "import com.budgetpro.domain.logistica.compra.model.Compra;",
+          "description": "Import of aggregate root 'Compra'. Aggregates must only reference each other by ID."
+        },
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 8,
+          "content": "import com.budgetpro.domain.logistica.compra.model.CompraDetalle;",
+          "description": "Import of aggregate root 'CompraDetalle'. Aggregates must only reference each other by ID."
+        }
+      ]
+    },
+    {
+      "context": "logistica",
+      "file": "TransferenciaService.java",
+      "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/service/TransferenciaService.java",
+      "violations": [
+        {
+          "type": "AGGREGATE_COUPLING",
+          "severity": "HIGH",
+          "line_number": 6,
+          "content": "import com.budgetpro.domain.logistica.inventario.model.MovimientoInventario;",
+          "description": "Import of aggregate root 'MovimientoInventario'. Aggregates must only reference each other by ID."
+        }
+      ]
+    }
+  ]
+}

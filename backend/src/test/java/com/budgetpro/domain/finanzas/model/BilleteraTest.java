@@ -35,27 +35,14 @@ class BilleteraTest {
     @BeforeEach
     void setUp() {
         proyectoId = UUID.randomUUID();
-        presupuestoNoAprobado = Presupuesto.crear(
-                PresupuestoId.from(UUID.randomUUID()),
-                proyectoId,
-                "Presupuesto No Aprobado"
-        );
-        
+        presupuestoNoAprobado = Presupuesto.crear(PresupuestoId.from(UUID.randomUUID()), proyectoId,
+                "Presupuesto No Aprobado");
+
         String approvalHash = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
         String executionHash = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210";
-        presupuestoAprobado = Presupuesto.reconstruir(
-                PresupuestoId.from(UUID.randomUUID()),
-                proyectoId,
-                "Presupuesto Aprobado",
-                EstadoPresupuesto.CONGELADO,
-                true,
-                1L,
-                approvalHash,
-                executionHash,
-                java.time.LocalDateTime.now(),
-                UUID.randomUUID(),
-                "SHA-256-v1"
-        );
+        presupuestoAprobado = Presupuesto.reconstruir(PresupuestoId.from(UUID.randomUUID()), proyectoId,
+                "Presupuesto Aprobado", EstadoPresupuesto.CONGELADO, true, 1L, approvalHash, executionHash,
+                java.time.LocalDateTime.now(), UUID.randomUUID(), "SHA-256-v1");
     }
 
     @Test
@@ -63,13 +50,13 @@ class BilleteraTest {
         Billetera billetera = Billetera.crear(BilleteraId.generate(), proyectoId);
         billetera.ingresar(new BigDecimal("1000.00"), "Ingreso base", "http://evidencia/ok");
 
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado, hashService);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado.getId(), true);
 
         assertEquals(3, billetera.contarMovimientosPendientesEvidencia());
-        assertThrows(IllegalStateException.class,
-                () -> billetera.egresar(new BigDecimal("50.00"), "Egreso 4", null, presupuestoNoAprobado, hashService));
+        assertThrows(IllegalStateException.class, () -> billetera.egresar(new BigDecimal("50.00"), "Egreso 4", null,
+                presupuestoNoAprobado.getId(), true));
     }
 
     @Test
@@ -77,11 +64,12 @@ class BilleteraTest {
         Billetera billetera = Billetera.crear(BilleteraId.generate(), proyectoId);
         billetera.ingresar(new BigDecimal("1000.00"), "Ingreso base", "http://evidencia/ok");
 
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado, hashService);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado.getId(), true);
 
-        billetera.egresar(new BigDecimal("50.00"), "Egreso 4", "http://evidencia/ok", presupuestoNoAprobado, hashService);
+        billetera.egresar(new BigDecimal("50.00"), "Egreso 4", "http://evidencia/ok", presupuestoNoAprobado.getId(),
+                true);
 
         assertEquals(3, billetera.contarMovimientosPendientesEvidencia());
     }
@@ -91,17 +79,13 @@ class BilleteraTest {
         Billetera billetera = Billetera.crear(BilleteraId.generate(), proyectoId);
         billetera.ingresar(new BigDecimal("10000.00"), "Ingreso base", "http://evidencia/ok");
 
-        // Mock hash service para que retorne el mismo hash que el presupuesto tiene almacenado
+        // Mock hash service para que retorne el mismo hash que el presupuesto tiene
+        // almacenado
         when(hashService.calculateApprovalHash(presupuestoAprobado))
                 .thenReturn(presupuestoAprobado.getIntegrityHashApproval());
 
-        MovimientoCaja movimiento = billetera.egresar(
-                new BigDecimal("1000.00"),
-                "Test expense",
-                "http://evidence.com/doc.pdf",
-                presupuestoAprobado,
-                hashService
-        );
+        MovimientoCaja movimiento = billetera.egresar(new BigDecimal("1000.00"), "Test expense",
+                "http://evidence.com/doc.pdf", presupuestoAprobado.getId(), true);
 
         assertNotNull(movimiento);
         assertEquals(new BigDecimal("9000.00"), billetera.getSaldoActual());
@@ -112,18 +96,14 @@ class BilleteraTest {
         Billetera billetera = Billetera.crear(BilleteraId.generate(), proyectoId);
         billetera.ingresar(new BigDecimal("10000.00"), "Ingreso base", "http://evidencia/ok");
 
-        // Simular violación de integridad: el hash calculado no coincide con el almacenado
+        // Simular violación de integridad: el hash calculado no coincide con el
+        // almacenado
         when(hashService.calculateApprovalHash(presupuestoAprobado))
                 .thenReturn("tampered_hash_123456789012345678901234567890123456789012345678901234567890");
 
         assertThrows(BudgetIntegrityViolationException.class, () -> {
-            billetera.egresar(
-                    new BigDecimal("1000.00"),
-                    "Test expense",
-                    "http://evidence.com/doc.pdf",
-                    presupuestoAprobado,
-                    hashService
-            );
+            billetera.egresar(new BigDecimal("1000.00"), "Test expense", "http://evidence.com/doc.pdf",
+                    presupuestoAprobado.getId(), false);
         });
 
         // Verificar que el saldo no cambió
@@ -136,13 +116,8 @@ class BilleteraTest {
         billetera.ingresar(new BigDecimal("10000.00"), "Ingreso base", "http://evidencia/ok");
 
         // Presupuesto no aprobado no requiere validación de integridad
-        MovimientoCaja movimiento = billetera.egresar(
-                new BigDecimal("1000.00"),
-                "Test expense",
-                "http://evidence.com/doc.pdf",
-                presupuestoNoAprobado,
-                hashService
-        );
+        MovimientoCaja movimiento = billetera.egresar(new BigDecimal("1000.00"), "Test expense",
+                "http://evidence.com/doc.pdf", presupuestoNoAprobado.getId(), true);
 
         assertNotNull(movimiento);
         assertEquals(new BigDecimal("9000.00"), billetera.getSaldoActual());
@@ -154,44 +129,34 @@ class BilleteraTest {
         billetera.ingresar(new BigDecimal("10000.00"), "Ingreso base", "http://evidencia/ok");
 
         // Crear 3 movimientos pendientes de evidencia (máximo permitido)
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado, hashService);
-        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado, hashService);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 1", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 2", null, presupuestoNoAprobado.getId(), true);
+        billetera.egresar(new BigDecimal("100.00"), "Egreso 3", null, presupuestoNoAprobado.getId(), true);
 
         assertEquals(3, billetera.contarMovimientosPendientesEvidencia());
 
-        // Mock hash service (aunque no debería llegar a validar hash porque CD-04 bloquea primero)
+        // Mock hash service (aunque no debería llegar a validar hash porque CD-04
+        // bloquea primero)
         // Usar lenient() porque este stub no se usará si CD-04 falla primero
         lenient().when(hashService.calculateApprovalHash(any(Presupuesto.class)))
                 .thenReturn(presupuestoAprobado.getIntegrityHashApproval());
 
-        // Debe fallar en CD-04 antes de validar hash (intentar crear 4to movimiento sin evidencia)
+        // Debe fallar en CD-04 antes de validar hash (intentar crear 4to movimiento sin
+        // evidencia)
         assertThrows(IllegalStateException.class, () -> {
-            billetera.egresar(
-                    new BigDecimal("1000.00"),
-                    "Test",
-                    null, // Sin evidencia, debería fallar en CD-04
-                    presupuestoAprobado,
-                    hashService
-            );
+            billetera.egresar(new BigDecimal("1000.00"), "Test", null, // Sin evidencia, debería fallar en CD-04
+                    presupuestoAprobado.getId(), true);
         });
     }
 
     @Test
-    void egresar_conPresupuestoNull_debePermitirEgreso() {
+    void egresar_conPresupuestoNull_debeRechazar() {
         Billetera billetera = Billetera.crear(BilleteraId.generate(), proyectoId);
         billetera.ingresar(new BigDecimal("10000.00"), "Ingreso base", "http://evidencia/ok");
 
-        // Presupuesto null no requiere validación de integridad
-        MovimientoCaja movimiento = billetera.egresar(
-                new BigDecimal("1000.00"),
-                "Test expense",
-                "http://evidence.com/doc.pdf",
-                null,
-                hashService
-        );
-
-        assertNotNull(movimiento);
-        assertEquals(new BigDecimal("9000.00"), billetera.getSaldoActual());
+        // Presupuesto null ahora debe rechazar porque se requiere el ID para auditoría
+        assertThrows(NullPointerException.class, () -> {
+            billetera.egresar(new BigDecimal("1000.00"), "Test expense", "http://evidence.com/doc.pdf", null, true);
+        });
     }
 }

@@ -1,6 +1,6 @@
 package com.budgetpro.domain.catalogo.model;
 
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 
 import java.util.Objects;
 

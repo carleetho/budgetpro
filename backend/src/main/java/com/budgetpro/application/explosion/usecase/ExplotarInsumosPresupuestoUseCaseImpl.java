@@ -11,7 +11,7 @@ import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,220 +25,203 @@ import java.util.stream.Collectors;
 /**
  * Implementación del caso de uso para explotar insumos de un presupuesto.
  * 
- * Agrega las cantidades totales de recursos necesarios para ejecutar el presupuesto completo,
- * normalizando unidades antes de sumar para evitar el "Error Fatal de Unidades".
+ * Agrega las cantidades totales de recursos necesarios para ejecutar el
+ * presupuesto completo, normalizando unidades antes de sumar para evitar el
+ * "Error Fatal de Unidades".
  */
 @Service
 public class ExplotarInsumosPresupuestoUseCaseImpl implements ExplotarInsumosPresupuestoUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(ExplotarInsumosPresupuestoUseCaseImpl.class);
-    private static final int PRECISION_CALCULO = 10;
-    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
+        private static final Logger log = LoggerFactory.getLogger(ExplotarInsumosPresupuestoUseCaseImpl.class);
+        private static final int PRECISION_CALCULO = 10;
+        private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 
-    private final PresupuestoRepository presupuestoRepository;
-    private final PartidaRepository partidaRepository;
-    private final ApuSnapshotRepository apuSnapshotRepository;
+        private final PresupuestoRepository presupuestoRepository;
+        private final PartidaRepository partidaRepository;
+        private final ApuSnapshotRepository apuSnapshotRepository;
 
-    public ExplotarInsumosPresupuestoUseCaseImpl(
-            PresupuestoRepository presupuestoRepository,
-            PartidaRepository partidaRepository,
-            ApuSnapshotRepository apuSnapshotRepository) {
-        this.presupuestoRepository = presupuestoRepository;
-        this.partidaRepository = partidaRepository;
-        this.apuSnapshotRepository = apuSnapshotRepository;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ExplosionInsumosResponse ejecutar(UUID presupuestoId) {
-        // 1. Validar que el presupuesto existe
-        presupuestoRepository.findById(PresupuestoId.from(presupuestoId))
-                .orElseThrow(() -> new PresupuestoNoEncontradoException(presupuestoId));
-
-        // 2. Obtener todas las partidas del presupuesto
-        List<Partida> partidas = partidaRepository.findByPresupuestoId(presupuestoId);
-
-        if (partidas.isEmpty()) {
-            log.warn("Presupuesto {} no tiene partidas", presupuestoId);
-            return new ExplosionInsumosResponse(Collections.emptyMap());
+        public ExplotarInsumosPresupuestoUseCaseImpl(PresupuestoRepository presupuestoRepository,
+                        PartidaRepository partidaRepository, ApuSnapshotRepository apuSnapshotRepository) {
+                this.presupuestoRepository = presupuestoRepository;
+                this.partidaRepository = partidaRepository;
+                this.apuSnapshotRepository = apuSnapshotRepository;
         }
 
-        // 3. Identificar partidas hoja (sin hijos en WBS)
-        Map<UUID, List<Partida>> hijosPorPadre = partidas.stream()
-                .filter(p -> p.getPadreId() != null)
-                .collect(Collectors.groupingBy(Partida::getPadreId));
+        @Override
+        @Transactional(readOnly = true)
+        public ExplosionInsumosResponse ejecutar(UUID presupuestoId) {
+                // 1. Validar que el presupuesto existe
+                presupuestoRepository.findById(PresupuestoId.from(presupuestoId))
+                                .orElseThrow(() -> new PresupuestoNoEncontradoException(presupuestoId));
 
-        List<Partida> partidasHoja = partidas.stream()
-                .filter(partida -> {
-                    List<Partida> hijos = hijosPorPadre.get(partida.getId().getValue());
-                    return hijos == null || hijos.isEmpty();
-                })
-                .collect(Collectors.toList());
+                // 2. Obtener todas las partidas del presupuesto
+                List<Partida> partidas = partidaRepository.findByPresupuestoId(presupuestoId);
 
-        log.debug("Encontradas {} partidas hoja de {} partidas totales", partidasHoja.size(), partidas.size());
+                if (partidas.isEmpty()) {
+                        log.warn("Presupuesto {} no tiene partidas", presupuestoId);
+                        return new ExplosionInsumosResponse(Collections.emptyMap());
+                }
 
-        // 4. Agregar cantidades de insumos normalizadas
-        Map<String, RecursoAgregado> recursosAgregados = new HashMap<>();
+                // 3. Identificar partidas hoja (sin hijos en WBS)
+                Map<UUID, List<Partida>> hijosPorPadre = partidas.stream().filter(p -> p.getPadreId() != null)
+                                .collect(Collectors.groupingBy(Partida::getPadreId));
 
-        for (Partida partidaHoja : partidasHoja) {
-            UUID partidaId = partidaHoja.getId().getValue();
-            
-            // Obtener APU de la partida hoja
-            Optional<APUSnapshot> apuSnapshotOpt = apuSnapshotRepository.findByPartidaId(partidaId);
-            
-            if (apuSnapshotOpt.isEmpty()) {
-                log.warn("Partida hoja {} no tiene APU asociado, se omite de la explosión", partidaId);
-                continue;
-            }
+                List<Partida> partidasHoja = partidas.stream().filter(partida -> {
+                        List<Partida> hijos = hijosPorPadre.get(partida.getId().getValue());
+                        return hijos == null || hijos.isEmpty();
+                }).collect(Collectors.toList());
 
-            APUSnapshot apuSnapshot = apuSnapshotOpt.get();
-            BigDecimal metrado = partidaHoja.getMetrado();
+                log.debug("Encontradas {} partidas hoja de {} partidas totales", partidasHoja.size(), partidas.size());
 
-            // Procesar cada insumo del APU
-            for (APUInsumoSnapshot insumo : apuSnapshot.getInsumos()) {
-                procesarInsumo(insumo, metrado, recursosAgregados);
-            }
+                // 4. Agregar cantidades de insumos normalizadas
+                Map<String, RecursoAgregado> recursosAgregados = new HashMap<>();
+
+                for (Partida partidaHoja : partidasHoja) {
+                        UUID partidaId = partidaHoja.getId().getValue();
+
+                        // Obtener APU de la partida hoja
+                        Optional<APUSnapshot> apuSnapshotOpt = apuSnapshotRepository.findByPartidaId(partidaId);
+
+                        if (apuSnapshotOpt.isEmpty()) {
+                                log.warn("Partida hoja {} no tiene APU asociado, se omite de la explosión", partidaId);
+                                continue;
+                        }
+
+                        APUSnapshot apuSnapshot = apuSnapshotOpt.get();
+                        BigDecimal metrado = partidaHoja.getMetrado();
+
+                        // Procesar cada insumo del APU
+                        for (APUInsumoSnapshot insumo : apuSnapshot.getInsumos()) {
+                                procesarInsumo(insumo, metrado, recursosAgregados);
+                        }
+                }
+
+                // 5. Agrupar por tipo de recurso y construir respuesta
+                Map<String, List<RecursoAgregadoDTO>> recursosPorTipo = agruparPorTipo(recursosAgregados);
+
+                return new ExplosionInsumosResponse(recursosPorTipo);
         }
 
-        // 5. Agrupar por tipo de recurso y construir respuesta
-        Map<String, List<RecursoAgregadoDTO>> recursosPorTipo = agruparPorTipo(recursosAgregados);
+        /**
+         * Procesa un insumo, normalizando su cantidad a unidad base y agregándola al
+         * mapa de recursos.
+         */
+        private void procesarInsumo(APUInsumoSnapshot insumo, BigDecimal metrado,
+                        Map<String, RecursoAgregado> recursosAgregados) {
+                String recursoExternalId = insumo.getRecursoExternalId();
+                BigDecimal aporteUnitario = insumo.getAporteUnitario() != null ? insumo.getAporteUnitario()
+                                : insumo.getCantidad();
 
-        return new ExplosionInsumosResponse(recursosPorTipo);
-    }
+                if (aporteUnitario == null || aporteUnitario.compareTo(BigDecimal.ZERO) == 0) {
+                        log.debug("Insumo {} tiene aporte unitario cero o nulo, se omite", recursoExternalId);
+                        return;
+                }
 
-    /**
-     * Procesa un insumo, normalizando su cantidad a unidad base y agregándola al mapa de recursos.
-     */
-    private void procesarInsumo(APUInsumoSnapshot insumo, BigDecimal metrado, Map<String, RecursoAgregado> recursosAgregados) {
-        String recursoExternalId = insumo.getRecursoExternalId();
-        BigDecimal aporteUnitario = insumo.getAporteUnitario() != null 
-                ? insumo.getAporteUnitario() 
-                : insumo.getCantidad();
-        
-        if (aporteUnitario == null || aporteUnitario.compareTo(BigDecimal.ZERO) == 0) {
-            log.debug("Insumo {} tiene aporte unitario cero o nulo, se omite", recursoExternalId);
-            return;
+                // Calcular cantidad en unidad de aporte: metrado × aporteUnitario
+                BigDecimal cantidadEnUnidadAporte = metrado.multiply(aporteUnitario).setScale(PRECISION_CALCULO,
+                                ROUNDING_MODE);
+
+                // Normalizar a unidad base: cantidad × factorConversionUnidadBase
+                BigDecimal factorConversion = insumo.getFactorConversionUnidadBase() != null
+                                ? insumo.getFactorConversionUnidadBase()
+                                : BigDecimal.ONE;
+
+                BigDecimal cantidadEnUnidadBase = cantidadEnUnidadAporte.multiply(factorConversion)
+                                .setScale(PRECISION_CALCULO, ROUNDING_MODE);
+
+                // Obtener o crear recurso agregado
+                RecursoAgregado recursoAgregado = recursosAgregados.computeIfAbsent(recursoExternalId,
+                                k -> new RecursoAgregado(insumo.getRecursoExternalId(), insumo.getRecursoNombre(),
+                                                insumo.getUnidadBase(), insumo.getUnidadCompra(),
+                                                insumo.getFactorConversionUnidadBase(), insumo.getTipoRecurso()));
+
+                // Validar que las unidades base sean compatibles
+                // Normalizar ambos valores: null se trata como "UN" (default para legacy APUs)
+                String unidadBaseInsumo = insumo.getUnidadBase() != null ? insumo.getUnidadBase() : "UN";
+                if (!recursoAgregado.unidadBase.equals(unidadBaseInsumo)) {
+                        throw new IllegalArgumentException(String.format(
+                                        "Unidades incompatibles para recurso %s: %s vs %s", recursoExternalId,
+                                        recursoAgregado.unidadBase, unidadBaseInsumo));
+                }
+
+                // Agregar cantidad normalizada
+                recursoAgregado.cantidadTotalBase = recursoAgregado.cantidadTotalBase.add(cantidadEnUnidadBase);
         }
 
-        // Calcular cantidad en unidad de aporte: metrado × aporteUnitario
-        BigDecimal cantidadEnUnidadAporte = metrado.multiply(aporteUnitario)
-                .setScale(PRECISION_CALCULO, ROUNDING_MODE);
+        /**
+         * Agrupa los recursos agregados por tipo y convierte a DTOs.
+         */
+        private Map<String, List<RecursoAgregadoDTO>> agruparPorTipo(Map<String, RecursoAgregado> recursosAgregados) {
+                Map<String, List<RecursoAgregadoDTO>> recursosPorTipo = new TreeMap<>();
 
-        // Normalizar a unidad base: cantidad × factorConversionUnidadBase
-        BigDecimal factorConversion = insumo.getFactorConversionUnidadBase() != null
-                ? insumo.getFactorConversionUnidadBase()
-                : BigDecimal.ONE;
+                for (RecursoAgregado recurso : recursosAgregados.values()) {
+                        String tipoRecurso = recurso.tipoRecurso != null ? recurso.tipoRecurso.name() : "OTROS";
 
-        BigDecimal cantidadEnUnidadBase = cantidadEnUnidadAporte.multiply(factorConversion)
-                .setScale(PRECISION_CALCULO, ROUNDING_MODE);
+                        // Convertir de unidad base a unidad de compra
+                        BigDecimal factorConversion = recurso.factorConversion != null ? recurso.factorConversion
+                                        : BigDecimal.ONE;
 
-        // Obtener o crear recurso agregado
-        RecursoAgregado recursoAgregado = recursosAgregados.computeIfAbsent(
-                recursoExternalId,
-                k -> new RecursoAgregado(
-                        insumo.getRecursoExternalId(),
-                        insumo.getRecursoNombre(),
-                        insumo.getUnidadBase(),
-                        insumo.getUnidadCompra(),
-                        insumo.getFactorConversionUnidadBase(),
-                        insumo.getTipoRecurso()
-                )
-        );
+                        // Validar que el factor de conversión sea positivo para evitar división por
+                        // cero
+                        if (factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
+                                throw new IllegalArgumentException(String.format(
+                                                "El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
+                                                recurso.recursoExternalId, factorConversion));
+                        }
 
-        // Validar que las unidades base sean compatibles
-        // Normalizar ambos valores: null se trata como "UN" (default para legacy APUs)
-        String unidadBaseInsumo = insumo.getUnidadBase() != null ? insumo.getUnidadBase() : "UN";
-        if (!recursoAgregado.unidadBase.equals(unidadBaseInsumo)) {
-            throw new IllegalArgumentException(
-                    String.format("Unidades incompatibles para recurso %s: %s vs %s",
-                            recursoExternalId, recursoAgregado.unidadBase, unidadBaseInsumo));
+                        BigDecimal cantidadEnUnidadCompra = recurso.cantidadTotalBase.divide(factorConversion,
+                                        PRECISION_CALCULO, ROUNDING_MODE);
+
+                        // Redondear hacia arriba (no puedes comprar 0.3 bolsas)
+                        BigDecimal cantidadCompraRedondeada = cantidadEnUnidadCompra.setScale(0, RoundingMode.UP)
+                                        .max(BigDecimal.ONE); // Mínimo 1 unidad
+
+                        String unidadCompra = recurso.unidadCompra != null && !recurso.unidadCompra.isBlank()
+                                        ? recurso.unidadCompra
+                                        : recurso.unidadBase;
+
+                        RecursoAgregadoDTO dto = new RecursoAgregadoDTO(recurso.recursoExternalId,
+                                        recurso.recursoNombre, cantidadCompraRedondeada, unidadCompra,
+                                        recurso.cantidadTotalBase, factorConversion);
+
+                        recursosPorTipo.computeIfAbsent(tipoRecurso, k -> new ArrayList<>()).add(dto);
+                }
+
+                // Ordenar recursos dentro de cada tipo alfabéticamente
+                recursosPorTipo.values()
+                                .forEach(lista -> lista.sort(Comparator.comparing(RecursoAgregadoDTO::recursoNombre)));
+
+                return recursosPorTipo;
         }
 
-        // Agregar cantidad normalizada
-        recursoAgregado.cantidadTotalBase = recursoAgregado.cantidadTotalBase.add(cantidadEnUnidadBase);
-    }
+        /**
+         * Clase interna para acumular cantidades de un recurso durante la explosión.
+         */
+        private static class RecursoAgregado {
+                final String recursoExternalId;
+                final String recursoNombre;
+                final String unidadBase;
+                final String unidadCompra;
+                final BigDecimal factorConversion;
+                final TipoRecurso tipoRecurso;
+                BigDecimal cantidadTotalBase;
 
-    /**
-     * Agrupa los recursos agregados por tipo y convierte a DTOs.
-     */
-    private Map<String, List<RecursoAgregadoDTO>> agruparPorTipo(Map<String, RecursoAgregado> recursosAgregados) {
-        Map<String, List<RecursoAgregadoDTO>> recursosPorTipo = new TreeMap<>();
+                RecursoAgregado(String recursoExternalId, String recursoNombre, String unidadBase, String unidadCompra,
+                                BigDecimal factorConversion, TipoRecurso tipoRecurso) {
+                        this.recursoExternalId = recursoExternalId;
+                        this.recursoNombre = recursoNombre;
+                        this.unidadBase = unidadBase != null ? unidadBase : "UN";
+                        this.unidadCompra = unidadCompra;
 
-        for (RecursoAgregado recurso : recursosAgregados.values()) {
-            String tipoRecurso = recurso.tipoRecurso != null 
-                    ? recurso.tipoRecurso.name() 
-                    : "OTROS";
-
-            // Convertir de unidad base a unidad de compra
-            BigDecimal factorConversion = recurso.factorConversion != null 
-                    ? recurso.factorConversion 
-                    : BigDecimal.ONE;
-
-            // Validar que el factor de conversión sea positivo para evitar división por cero
-            if (factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException(
-                        String.format("El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
-                                recurso.recursoExternalId, factorConversion));
-            }
-
-            BigDecimal cantidadEnUnidadCompra = recurso.cantidadTotalBase.divide(
-                    factorConversion, PRECISION_CALCULO, ROUNDING_MODE);
-
-            // Redondear hacia arriba (no puedes comprar 0.3 bolsas)
-            BigDecimal cantidadCompraRedondeada = cantidadEnUnidadCompra.setScale(0, RoundingMode.UP)
-                    .max(BigDecimal.ONE); // Mínimo 1 unidad
-
-            String unidadCompra = recurso.unidadCompra != null && !recurso.unidadCompra.isBlank()
-                    ? recurso.unidadCompra
-                    : recurso.unidadBase;
-
-            RecursoAgregadoDTO dto = new RecursoAgregadoDTO(
-                    recurso.recursoExternalId,
-                    recurso.recursoNombre,
-                    cantidadCompraRedondeada,
-                    unidadCompra,
-                    recurso.cantidadTotalBase,
-                    factorConversion
-            );
-
-            recursosPorTipo.computeIfAbsent(tipoRecurso, k -> new ArrayList<>()).add(dto);
+                        // Validar que el factor de conversión sea positivo si no es null
+                        if (factorConversion != null && factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
+                                throw new IllegalArgumentException(String.format(
+                                                "El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
+                                                recursoExternalId, factorConversion));
+                        }
+                        this.factorConversion = factorConversion != null ? factorConversion : BigDecimal.ONE;
+                        this.tipoRecurso = tipoRecurso;
+                        this.cantidadTotalBase = BigDecimal.ZERO;
+                }
         }
-
-        // Ordenar recursos dentro de cada tipo alfabéticamente
-        recursosPorTipo.values().forEach(lista -> 
-                lista.sort(Comparator.comparing(RecursoAgregadoDTO::recursoNombre)));
-
-        return recursosPorTipo;
-    }
-
-    /**
-     * Clase interna para acumular cantidades de un recurso durante la explosión.
-     */
-    private static class RecursoAgregado {
-        final String recursoExternalId;
-        final String recursoNombre;
-        final String unidadBase;
-        final String unidadCompra;
-        final BigDecimal factorConversion;
-        final TipoRecurso tipoRecurso;
-        BigDecimal cantidadTotalBase;
-
-        RecursoAgregado(String recursoExternalId, String recursoNombre, String unidadBase,
-                       String unidadCompra, BigDecimal factorConversion, TipoRecurso tipoRecurso) {
-            this.recursoExternalId = recursoExternalId;
-            this.recursoNombre = recursoNombre;
-            this.unidadBase = unidadBase != null ? unidadBase : "UN";
-            this.unidadCompra = unidadCompra;
-            
-            // Validar que el factor de conversión sea positivo si no es null
-            if (factorConversion != null && factorConversion.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException(
-                        String.format("El factor de conversión debe ser positivo para el recurso %s (valor: %s)",
-                                recursoExternalId, factorConversion));
-            }
-            this.factorConversion = factorConversion != null ? factorConversion : BigDecimal.ONE;
-            this.tipoRecurso = tipoRecurso;
-            this.cantidadTotalBase = BigDecimal.ZERO;
-        }
-    }
 }

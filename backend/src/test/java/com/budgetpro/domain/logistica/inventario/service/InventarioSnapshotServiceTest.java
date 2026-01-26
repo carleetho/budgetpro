@@ -13,7 +13,7 @@ import com.budgetpro.domain.logistica.compra.model.RelacionContractual;
 import com.budgetpro.domain.logistica.compra.model.RubroInsumo;
 import com.budgetpro.domain.logistica.inventario.model.InventarioItem;
 import com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

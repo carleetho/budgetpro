@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
+@Component("rrhhConfiguracionLaboralRepositoryAdapter")
 public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLaboralRepositoryPort {
 
     private final ConfiguracionLaboralExtendidaJpaRepository repository;
