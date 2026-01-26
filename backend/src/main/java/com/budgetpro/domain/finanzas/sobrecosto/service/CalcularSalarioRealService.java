@@ -3,7 +3,7 @@ package com.budgetpro.domain.finanzas.sobrecosto.service;
 import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
 import com.budgetpro.domain.finanzas.sobrecosto.port.out.ConfiguracionLaboralRepository;
 import com.budgetpro.domain.recurso.model.Recurso;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 
 import java.math.BigDecimal;
 import java.util.UUID;

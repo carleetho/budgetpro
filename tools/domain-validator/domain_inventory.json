@@ -1,0 +1,1116 @@
+{
+  "metadata": {
+    "base_path": "../..",
+    "domain_path": "../../backend/src/main/java/com/budgetpro/domain",
+    "total_files": 213,
+    "expected_contexts": [
+      "finanzas",
+      "catalogo",
+      "logistica",
+      "rrhh",
+      "recurso",
+      "shared",
+      "proyecto"
+    ],
+    "discovered_contexts": [
+      "finanzas",
+      "catalogo",
+      "proyecto",
+      "logistica",
+      "recurso",
+      "shared",
+      "rrhh"
+    ],
+    "missing_contexts": []
+  },
+  "metrics": {
+    "catalogo": 17,
+    "finanzas": 94,
+    "rrhh": 23,
+    "proyecto": 4,
+    "logistica": 68,
+    "shared": 4,
+    "recurso": 3
+  },
+  "inventory": {
+    "catalogo": [
+      {
+        "name": "ComposicionCuadrillaSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/ComposicionCuadrillaSnapshot.java",
+        "relative_path": "catalogo/model/ComposicionCuadrillaSnapshot.java"
+      },
+      {
+        "name": "RecursoSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoSnapshot.java",
+        "relative_path": "catalogo/model/RecursoSnapshot.java"
+      },
+      {
+        "name": "APUSnapshotId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/APUSnapshotId.java",
+        "relative_path": "catalogo/model/APUSnapshotId.java"
+      },
+      {
+        "name": "APUInsumoSnapshotId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/APUInsumoSnapshotId.java",
+        "relative_path": "catalogo/model/APUInsumoSnapshotId.java"
+      },
+      {
+        "name": "EstadoProxy.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/EstadoProxy.java",
+        "relative_path": "catalogo/model/EstadoProxy.java"
+      },
+      {
+        "name": "APUSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/APUSnapshot.java",
+        "relative_path": "catalogo/model/APUSnapshot.java"
+      },
+      {
+        "name": "RecursoSearchCriteria.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoSearchCriteria.java",
+        "relative_path": "catalogo/model/RecursoSearchCriteria.java"
+      },
+      {
+        "name": "RecursoProxy.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoProxy.java",
+        "relative_path": "catalogo/model/RecursoProxy.java"
+      },
+      {
+        "name": "RecursoProxyId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoProxyId.java",
+        "relative_path": "catalogo/model/RecursoProxyId.java"
+      },
+      {
+        "name": "APUInsumoSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/model/APUInsumoSnapshot.java",
+        "relative_path": "catalogo/model/APUInsumoSnapshot.java"
+      },
+      {
+        "name": "SnapshotService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/service/SnapshotService.java",
+        "relative_path": "catalogo/service/SnapshotService.java"
+      },
+      {
+        "name": "CalculoApuDinamicoService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/service/CalculoApuDinamicoService.java",
+        "relative_path": "catalogo/service/CalculoApuDinamicoService.java"
+      },
+      {
+        "name": "CatalogPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/port/CatalogPort.java",
+        "relative_path": "catalogo/port/CatalogPort.java"
+      },
+      {
+        "name": "RecursoProxyRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/port/RecursoProxyRepository.java",
+        "relative_path": "catalogo/port/RecursoProxyRepository.java"
+      },
+      {
+        "name": "ApuSnapshotRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/port/ApuSnapshotRepository.java",
+        "relative_path": "catalogo/port/ApuSnapshotRepository.java"
+      },
+      {
+        "name": "CatalogServiceException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/exception/CatalogServiceException.java",
+        "relative_path": "catalogo/exception/CatalogServiceException.java"
+      },
+      {
+        "name": "CatalogNotFoundException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/catalogo/exception/CatalogNotFoundException.java",
+        "relative_path": "catalogo/exception/CatalogNotFoundException.java"
+      }
+    ],
+    "finanzas": [
+      {
+        "name": "EstadoValuacion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/EstadoValuacion.java",
+        "relative_path": "finanzas/avance/model/EstadoValuacion.java"
+      },
+      {
+        "name": "ValuacionId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/ValuacionId.java",
+        "relative_path": "finanzas/avance/model/ValuacionId.java"
+      },
+      {
+        "name": "Valuacion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/Valuacion.java",
+        "relative_path": "finanzas/avance/model/Valuacion.java"
+      },
+      {
+        "name": "AvanceFisico.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java",
+        "relative_path": "finanzas/avance/model/AvanceFisico.java"
+      },
+      {
+        "name": "AvanceFisicoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisicoId.java",
+        "relative_path": "finanzas/avance/model/AvanceFisicoId.java"
+      },
+      {
+        "name": "ControlAvanceService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/service/ControlAvanceService.java",
+        "relative_path": "finanzas/avance/service/ControlAvanceService.java"
+      },
+      {
+        "name": "AvanceFisicoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/port/out/AvanceFisicoRepository.java",
+        "relative_path": "finanzas/avance/port/out/AvanceFisicoRepository.java"
+      },
+      {
+        "name": "ValuacionRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/avance/port/out/ValuacionRepository.java",
+        "relative_path": "finanzas/avance/port/out/ValuacionRepository.java"
+      },
+      {
+        "name": "TipoMovimientoAnticipo.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/model/TipoMovimientoAnticipo.java",
+        "relative_path": "finanzas/anticipo/model/TipoMovimientoAnticipo.java"
+      },
+      {
+        "name": "AnticipoMovimiento.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/model/AnticipoMovimiento.java",
+        "relative_path": "finanzas/anticipo/model/AnticipoMovimiento.java"
+      },
+      {
+        "name": "AnticipoMovimientoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/port/out/AnticipoMovimientoRepository.java",
+        "relative_path": "finanzas/anticipo/port/out/AnticipoMovimientoRepository.java"
+      },
+      {
+        "name": "EstadoPresupuesto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/EstadoPresupuesto.java",
+        "relative_path": "finanzas/presupuesto/model/EstadoPresupuesto.java"
+      },
+      {
+        "name": "Presupuesto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/Presupuesto.java",
+        "relative_path": "finanzas/presupuesto/model/Presupuesto.java"
+      },
+      {
+        "name": "IntegrityAuditEntry.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/IntegrityAuditEntry.java",
+        "relative_path": "finanzas/presupuesto/model/IntegrityAuditEntry.java"
+      },
+      {
+        "name": "PresupuestoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/PresupuestoId.java",
+        "relative_path": "finanzas/presupuesto/model/PresupuestoId.java"
+      },
+      {
+        "name": "PresupuestoService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/PresupuestoService.java",
+        "relative_path": "finanzas/presupuesto/service/PresupuestoService.java"
+      },
+      {
+        "name": "IntegrityAuditLog.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityAuditLog.java",
+        "relative_path": "finanzas/presupuesto/service/IntegrityAuditLog.java"
+      },
+      {
+        "name": "CalculoPresupuestoService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/CalculoPresupuestoService.java",
+        "relative_path": "finanzas/presupuesto/service/CalculoPresupuestoService.java"
+      },
+      {
+        "name": "IntegrityHashService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityHashService.java",
+        "relative_path": "finanzas/presupuesto/service/IntegrityHashService.java"
+      },
+      {
+        "name": "ObservabilityPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/port/out/ObservabilityPort.java",
+        "relative_path": "finanzas/presupuesto/port/out/ObservabilityPort.java"
+      },
+      {
+        "name": "IntegrityAuditRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/port/out/IntegrityAuditRepository.java",
+        "relative_path": "finanzas/presupuesto/port/out/IntegrityAuditRepository.java"
+      },
+      {
+        "name": "PresupuestoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/port/out/PresupuestoRepository.java",
+        "relative_path": "finanzas/presupuesto/port/out/PresupuestoRepository.java"
+      },
+      {
+        "name": "PresupuestoSinCronogramaException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/exception/PresupuestoSinCronogramaException.java",
+        "relative_path": "finanzas/presupuesto/exception/PresupuestoSinCronogramaException.java"
+      },
+      {
+        "name": "BudgetIntegrityViolationException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/exception/BudgetIntegrityViolationException.java",
+        "relative_path": "finanzas/presupuesto/exception/BudgetIntegrityViolationException.java"
+      },
+      {
+        "name": "ProgramaObraId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObraId.java",
+        "relative_path": "finanzas/cronograma/model/ProgramaObraId.java"
+      },
+      {
+        "name": "ProgramaObra.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java",
+        "relative_path": "finanzas/cronograma/model/ProgramaObra.java"
+      },
+      {
+        "name": "ActividadProgramadaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramadaId.java",
+        "relative_path": "finanzas/cronograma/model/ActividadProgramadaId.java"
+      },
+      {
+        "name": "CronogramaSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/CronogramaSnapshot.java",
+        "relative_path": "finanzas/cronograma/model/CronogramaSnapshot.java"
+      },
+      {
+        "name": "CronogramaSnapshotId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/CronogramaSnapshotId.java",
+        "relative_path": "finanzas/cronograma/model/CronogramaSnapshotId.java"
+      },
+      {
+        "name": "ActividadProgramada.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java",
+        "relative_path": "finanzas/cronograma/model/ActividadProgramada.java"
+      },
+      {
+        "name": "CalculoCronogramaService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CalculoCronogramaService.java",
+        "relative_path": "finanzas/cronograma/service/CalculoCronogramaService.java"
+      },
+      {
+        "name": "SnapshotGeneratorService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/SnapshotGeneratorService.java",
+        "relative_path": "finanzas/cronograma/service/SnapshotGeneratorService.java"
+      },
+      {
+        "name": "CronogramaService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CronogramaService.java",
+        "relative_path": "finanzas/cronograma/service/CronogramaService.java"
+      },
+      {
+        "name": "ConsultaDuracionProyectoPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ConsultaDuracionProyectoPort.java",
+        "relative_path": "finanzas/cronograma/port/out/ConsultaDuracionProyectoPort.java"
+      },
+      {
+        "name": "ActividadProgramadaRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ActividadProgramadaRepository.java",
+        "relative_path": "finanzas/cronograma/port/out/ActividadProgramadaRepository.java"
+      },
+      {
+        "name": "CronogramaSnapshotRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/CronogramaSnapshotRepository.java",
+        "relative_path": "finanzas/cronograma/port/out/CronogramaSnapshotRepository.java"
+      },
+      {
+        "name": "ProgramaObraRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ProgramaObraRepository.java",
+        "relative_path": "finanzas/cronograma/port/out/ProgramaObraRepository.java"
+      },
+      {
+        "name": "CronogramaCongeladoException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/exception/CronogramaCongeladoException.java",
+        "relative_path": "finanzas/cronograma/exception/CronogramaCongeladoException.java"
+      },
+      {
+        "name": "MovimientoCaja.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/MovimientoCaja.java",
+        "relative_path": "finanzas/model/MovimientoCaja.java"
+      },
+      {
+        "name": "EstadoMovimientoCaja.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/EstadoMovimientoCaja.java",
+        "relative_path": "finanzas/model/EstadoMovimientoCaja.java"
+      },
+      {
+        "name": "Billetera.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/Billetera.java",
+        "relative_path": "finanzas/model/Billetera.java"
+      },
+      {
+        "name": "BilleteraId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/BilleteraId.java",
+        "relative_path": "finanzas/model/BilleteraId.java"
+      },
+      {
+        "name": "TipoMovimiento.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/model/TipoMovimiento.java",
+        "relative_path": "finanzas/model/TipoMovimiento.java"
+      },
+      {
+        "name": "ConfiguracionLaboral.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java",
+        "relative_path": "finanzas/sobrecosto/model/ConfiguracionLaboral.java"
+      },
+      {
+        "name": "AnalisisSobrecostoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecostoId.java",
+        "relative_path": "finanzas/sobrecosto/model/AnalisisSobrecostoId.java"
+      },
+      {
+        "name": "AnalisisSobrecosto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecosto.java",
+        "relative_path": "finanzas/sobrecosto/model/AnalisisSobrecosto.java"
+      },
+      {
+        "name": "ConfiguracionLaboralId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboralId.java",
+        "relative_path": "finanzas/sobrecosto/model/ConfiguracionLaboralId.java"
+      },
+      {
+        "name": "InteligenciaMaquinariaService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/InteligenciaMaquinariaService.java",
+        "relative_path": "finanzas/sobrecosto/service/InteligenciaMaquinariaService.java"
+      },
+      {
+        "name": "CalculadoraPrecioVentaService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalculadoraPrecioVentaService.java",
+        "relative_path": "finanzas/sobrecosto/service/CalculadoraPrecioVentaService.java"
+      },
+      {
+        "name": "CalcularSalarioRealService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalcularSalarioRealService.java",
+        "relative_path": "finanzas/sobrecosto/service/CalcularSalarioRealService.java"
+      },
+      {
+        "name": "ConfiguracionLaboralRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/port/out/ConfiguracionLaboralRepository.java",
+        "relative_path": "finanzas/sobrecosto/port/out/ConfiguracionLaboralRepository.java"
+      },
+      {
+        "name": "AnalisisSobrecostoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/port/out/AnalisisSobrecostoRepository.java",
+        "relative_path": "finanzas/sobrecosto/port/out/AnalisisSobrecostoRepository.java"
+      },
+      {
+        "name": "ApuInsumo.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuInsumo.java",
+        "relative_path": "finanzas/apu/model/ApuInsumo.java"
+      },
+      {
+        "name": "APU.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/APU.java",
+        "relative_path": "finanzas/apu/model/APU.java"
+      },
+      {
+        "name": "ApuId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuId.java",
+        "relative_path": "finanzas/apu/model/ApuId.java"
+      },
+      {
+        "name": "ApuInsumoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuInsumoId.java",
+        "relative_path": "finanzas/apu/model/ApuInsumoId.java"
+      },
+      {
+        "name": "ApuRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/apu/port/out/ApuRepository.java",
+        "relative_path": "finanzas/apu/port/out/ApuRepository.java"
+      },
+      {
+        "name": "BilleteraRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/port/out/BilleteraRepository.java",
+        "relative_path": "finanzas/port/out/BilleteraRepository.java"
+      },
+      {
+        "name": "PartidaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/PartidaId.java",
+        "relative_path": "finanzas/partida/model/PartidaId.java"
+      },
+      {
+        "name": "Partida.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/Partida.java",
+        "relative_path": "finanzas/partida/model/Partida.java"
+      },
+      {
+        "name": "PartidaRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/partida/port/out/PartidaRepository.java",
+        "relative_path": "finanzas/partida/port/out/PartidaRepository.java"
+      },
+      {
+        "name": "SaldoInsuficienteException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/exception/SaldoInsuficienteException.java",
+        "relative_path": "finanzas/exception/SaldoInsuficienteException.java"
+      },
+      {
+        "name": "EVMSnapshot.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/evm/model/EVMSnapshot.java",
+        "relative_path": "finanzas/evm/model/EVMSnapshot.java"
+      },
+      {
+        "name": "EVMSnapshotId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/evm/model/EVMSnapshotId.java",
+        "relative_path": "finanzas/evm/model/EVMSnapshotId.java"
+      },
+      {
+        "name": "EVMSnapshotRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/evm/port/out/EVMSnapshotRepository.java",
+        "relative_path": "finanzas/evm/port/out/EVMSnapshotRepository.java"
+      },
+      {
+        "name": "TipoAlertaParametrica.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/TipoAlertaParametrica.java",
+        "relative_path": "finanzas/alertas/model/TipoAlertaParametrica.java"
+      },
+      {
+        "name": "AlertaParametrica.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/AlertaParametrica.java",
+        "relative_path": "finanzas/alertas/model/AlertaParametrica.java"
+      },
+      {
+        "name": "AnalisisPresupuesto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/AnalisisPresupuesto.java",
+        "relative_path": "finanzas/alertas/model/AnalisisPresupuesto.java"
+      },
+      {
+        "name": "NivelAlerta.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/NivelAlerta.java",
+        "relative_path": "finanzas/alertas/model/NivelAlerta.java"
+      },
+      {
+        "name": "AnalizadorParametricoService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java",
+        "relative_path": "finanzas/alertas/service/AnalizadorParametricoService.java"
+      },
+      {
+        "name": "AnalisisPresupuestoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/alertas/port/out/AnalisisPresupuestoRepository.java",
+        "relative_path": "finanzas/alertas/port/out/AnalisisPresupuestoRepository.java"
+      },
+      {
+        "name": "TipoConsumo.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/TipoConsumo.java",
+        "relative_path": "finanzas/consumo/model/TipoConsumo.java"
+      },
+      {
+        "name": "ConsumoPartida.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartida.java",
+        "relative_path": "finanzas/consumo/model/ConsumoPartida.java"
+      },
+      {
+        "name": "ConsumoPartidaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartidaId.java",
+        "relative_path": "finanzas/consumo/model/ConsumoPartidaId.java"
+      },
+      {
+        "name": "ConsumoPartidaRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/consumo/port/out/ConsumoPartidaRepository.java",
+        "relative_path": "finanzas/consumo/port/out/ConsumoPartidaRepository.java"
+      },
+      {
+        "name": "AgregacionControlCostosService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/control/service/AgregacionControlCostosService.java",
+        "relative_path": "finanzas/control/service/AgregacionControlCostosService.java"
+      },
+      {
+        "name": "DetalleEstimacion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacion.java",
+        "relative_path": "finanzas/estimacion/model/DetalleEstimacion.java"
+      },
+      {
+        "name": "Estimacion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java",
+        "relative_path": "finanzas/estimacion/model/Estimacion.java"
+      },
+      {
+        "name": "DetalleEstimacionId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacionId.java",
+        "relative_path": "finanzas/estimacion/model/DetalleEstimacionId.java"
+      },
+      {
+        "name": "EstimacionId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionId.java",
+        "relative_path": "finanzas/estimacion/model/EstimacionId.java"
+      },
+      {
+        "name": "EstadoEstimacion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstadoEstimacion.java",
+        "relative_path": "finanzas/estimacion/model/EstadoEstimacion.java"
+      },
+      {
+        "name": "GeneradorEstimacionService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java",
+        "relative_path": "finanzas/estimacion/service/GeneradorEstimacionService.java"
+      },
+      {
+        "name": "EstimacionRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/out/EstimacionRepository.java",
+        "relative_path": "finanzas/estimacion/port/out/EstimacionRepository.java"
+      },
+      {
+        "name": "IndicePrecios.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/IndicePrecios.java",
+        "relative_path": "finanzas/reajuste/model/IndicePrecios.java"
+      },
+      {
+        "name": "DetalleReajustePartidaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/DetalleReajustePartidaId.java",
+        "relative_path": "finanzas/reajuste/model/DetalleReajustePartidaId.java"
+      },
+      {
+        "name": "TipoIndicePrecios.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/TipoIndicePrecios.java",
+        "relative_path": "finanzas/reajuste/model/TipoIndicePrecios.java"
+      },
+      {
+        "name": "EstadoEstimacionReajuste.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstadoEstimacionReajuste.java",
+        "relative_path": "finanzas/reajuste/model/EstadoEstimacionReajuste.java"
+      },
+      {
+        "name": "EstimacionReajusteId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstimacionReajusteId.java",
+        "relative_path": "finanzas/reajuste/model/EstimacionReajusteId.java"
+      },
+      {
+        "name": "EstimacionReajuste.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstimacionReajuste.java",
+        "relative_path": "finanzas/reajuste/model/EstimacionReajuste.java"
+      },
+      {
+        "name": "DetalleReajustePartida.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/DetalleReajustePartida.java",
+        "relative_path": "finanzas/reajuste/model/DetalleReajustePartida.java"
+      },
+      {
+        "name": "IndicePreciosId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/IndicePreciosId.java",
+        "relative_path": "finanzas/reajuste/model/IndicePreciosId.java"
+      },
+      {
+        "name": "CalculadorReajusteService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/service/CalculadorReajusteService.java",
+        "relative_path": "finanzas/reajuste/service/CalculadorReajusteService.java"
+      },
+      {
+        "name": "IndicePreciosRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/port/out/IndicePreciosRepository.java",
+        "relative_path": "finanzas/reajuste/port/out/IndicePreciosRepository.java"
+      },
+      {
+        "name": "EstimacionReajusteRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/port/out/EstimacionReajusteRepository.java",
+        "relative_path": "finanzas/reajuste/port/out/EstimacionReajusteRepository.java"
+      }
+    ],
+    "rrhh": [
+      {
+        "name": "CuadrillaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaId.java",
+        "relative_path": "rrhh/model/CuadrillaId.java"
+      },
+      {
+        "name": "Contacto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/Contacto.java",
+        "relative_path": "rrhh/model/Contacto.java"
+      },
+      {
+        "name": "HistorialId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/HistorialId.java",
+        "relative_path": "rrhh/model/HistorialId.java"
+      },
+      {
+        "name": "AsistenciaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/AsistenciaId.java",
+        "relative_path": "rrhh/model/AsistenciaId.java"
+      },
+      {
+        "name": "Empleado.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/Empleado.java",
+        "relative_path": "rrhh/model/Empleado.java"
+      },
+      {
+        "name": "NominaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/NominaId.java",
+        "relative_path": "rrhh/model/NominaId.java"
+      },
+      {
+        "name": "EstadoEmpleado.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoEmpleado.java",
+        "relative_path": "rrhh/model/EstadoEmpleado.java"
+      },
+      {
+        "name": "AsignacionProyectoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionProyectoId.java",
+        "relative_path": "rrhh/model/AsignacionProyectoId.java"
+      },
+      {
+        "name": "EmpleadoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/EmpleadoId.java",
+        "relative_path": "rrhh/model/EmpleadoId.java"
+      },
+      {
+        "name": "DetalleNomina.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/DetalleNomina.java",
+        "relative_path": "rrhh/model/DetalleNomina.java"
+      },
+      {
+        "name": "Nomina.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/Nomina.java",
+        "relative_path": "rrhh/model/Nomina.java"
+      },
+      {
+        "name": "Cuadrilla.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/Cuadrilla.java",
+        "relative_path": "rrhh/model/Cuadrilla.java"
+      },
+      {
+        "name": "AsignacionProyecto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionProyecto.java",
+        "relative_path": "rrhh/model/AsignacionProyecto.java"
+      },
+      {
+        "name": "HistorialLaboral.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/HistorialLaboral.java",
+        "relative_path": "rrhh/model/HistorialLaboral.java"
+      },
+      {
+        "name": "EstadoAsistencia.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoAsistencia.java",
+        "relative_path": "rrhh/model/EstadoAsistencia.java"
+      },
+      {
+        "name": "CuadrillaMiembroId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaMiembroId.java",
+        "relative_path": "rrhh/model/CuadrillaMiembroId.java"
+      },
+      {
+        "name": "EstadoCuadrilla.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoCuadrilla.java",
+        "relative_path": "rrhh/model/EstadoCuadrilla.java"
+      },
+      {
+        "name": "CuadrillaMiembro.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaMiembro.java",
+        "relative_path": "rrhh/model/CuadrillaMiembro.java"
+      },
+      {
+        "name": "AsistenciaRegistro.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/AsistenciaRegistro.java",
+        "relative_path": "rrhh/model/AsistenciaRegistro.java"
+      },
+      {
+        "name": "AsignacionActividad.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionActividad.java",
+        "relative_path": "rrhh/model/AsignacionActividad.java"
+      },
+      {
+        "name": "TipoEmpleado.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/TipoEmpleado.java",
+        "relative_path": "rrhh/model/TipoEmpleado.java"
+      },
+      {
+        "name": "ConfiguracionLaboralExtendida.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/model/ConfiguracionLaboralExtendida.java",
+        "relative_path": "rrhh/model/ConfiguracionLaboralExtendida.java"
+      },
+      {
+        "name": "CalculadorFSR.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/rrhh/service/CalculadorFSR.java",
+        "relative_path": "rrhh/service/CalculadorFSR.java"
+      }
+    ],
+    "proyecto": [
+      {
+        "name": "EstadoProyecto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/proyecto/model/EstadoProyecto.java",
+        "relative_path": "proyecto/model/EstadoProyecto.java"
+      },
+      {
+        "name": "ProyectoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/proyecto/model/ProyectoId.java",
+        "relative_path": "proyecto/model/ProyectoId.java"
+      },
+      {
+        "name": "Proyecto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/proyecto/model/Proyecto.java",
+        "relative_path": "proyecto/model/Proyecto.java"
+      },
+      {
+        "name": "ProyectoRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/proyecto/port/out/ProyectoRepository.java",
+        "relative_path": "proyecto/port/out/ProyectoRepository.java"
+      }
+    ],
+    "logistica": [
+      {
+        "name": "RegistroKardex.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/RegistroKardex.java",
+        "relative_path": "logistica/almacen/model/RegistroKardex.java"
+      },
+      {
+        "name": "TipoMovimientoAlmacen.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/TipoMovimientoAlmacen.java",
+        "relative_path": "logistica/almacen/model/TipoMovimientoAlmacen.java"
+      },
+      {
+        "name": "AlmacenId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/AlmacenId.java",
+        "relative_path": "logistica/almacen/model/AlmacenId.java"
+      },
+      {
+        "name": "MovimientoAlmacen.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/MovimientoAlmacen.java",
+        "relative_path": "logistica/almacen/model/MovimientoAlmacen.java"
+      },
+      {
+        "name": "MovimientoAlmacenId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/MovimientoAlmacenId.java",
+        "relative_path": "logistica/almacen/model/MovimientoAlmacenId.java"
+      },
+      {
+        "name": "Almacen.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/Almacen.java",
+        "relative_path": "logistica/almacen/model/Almacen.java"
+      },
+      {
+        "name": "GestionKardexService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/service/GestionKardexService.java",
+        "relative_path": "logistica/almacen/service/GestionKardexService.java"
+      },
+      {
+        "name": "RegistroKardexRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/RegistroKardexRepository.java",
+        "relative_path": "logistica/almacen/port/out/RegistroKardexRepository.java"
+      },
+      {
+        "name": "AlmacenRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/AlmacenRepository.java",
+        "relative_path": "logistica/almacen/port/out/AlmacenRepository.java"
+      },
+      {
+        "name": "MovimientoAlmacenRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/MovimientoAlmacenRepository.java",
+        "relative_path": "logistica/almacen/port/out/MovimientoAlmacenRepository.java"
+      },
+      {
+        "name": "RequisicionItemId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionItemId.java",
+        "relative_path": "logistica/requisicion/model/RequisicionItemId.java"
+      },
+      {
+        "name": "RequisicionId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionId.java",
+        "relative_path": "logistica/requisicion/model/RequisicionId.java"
+      },
+      {
+        "name": "EstadoRequisicion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/EstadoRequisicion.java",
+        "relative_path": "logistica/requisicion/model/EstadoRequisicion.java"
+      },
+      {
+        "name": "RequisicionItem.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionItem.java",
+        "relative_path": "logistica/requisicion/model/RequisicionItem.java"
+      },
+      {
+        "name": "Requisicion.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/Requisicion.java",
+        "relative_path": "logistica/requisicion/model/Requisicion.java"
+      },
+      {
+        "name": "DespachoRequisicionService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/service/DespachoRequisicionService.java",
+        "relative_path": "logistica/requisicion/service/DespachoRequisicionService.java"
+      },
+      {
+        "name": "DespachoItem.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/service/DespachoItem.java",
+        "relative_path": "logistica/requisicion/service/DespachoItem.java"
+      },
+      {
+        "name": "RequisicionRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/port/out/RequisicionRepository.java",
+        "relative_path": "logistica/requisicion/port/out/RequisicionRepository.java"
+      },
+      {
+        "name": "UsuarioNoAutorizadoException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/exception/UsuarioNoAutorizadoException.java",
+        "relative_path": "logistica/requisicion/exception/UsuarioNoAutorizadoException.java"
+      },
+      {
+        "name": "RequisicionNoAprobadaException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/requisicion/exception/RequisicionNoAprobadaException.java",
+        "relative_path": "logistica/requisicion/exception/RequisicionNoAprobadaException.java"
+      },
+      {
+        "name": "EstadoRequerimiento.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/EstadoRequerimiento.java",
+        "relative_path": "logistica/backlog/model/EstadoRequerimiento.java"
+      },
+      {
+        "name": "PrioridadCompra.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/PrioridadCompra.java",
+        "relative_path": "logistica/backlog/model/PrioridadCompra.java"
+      },
+      {
+        "name": "RequerimientoCompraId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/RequerimientoCompraId.java",
+        "relative_path": "logistica/backlog/model/RequerimientoCompraId.java"
+      },
+      {
+        "name": "RequerimientoCompra.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/RequerimientoCompra.java",
+        "relative_path": "logistica/backlog/model/RequerimientoCompra.java"
+      },
+      {
+        "name": "BacklogService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/service/BacklogService.java",
+        "relative_path": "logistica/backlog/service/BacklogService.java"
+      },
+      {
+        "name": "RequerimientoCompraRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/backlog/port/out/RequerimientoCompraRepository.java",
+        "relative_path": "logistica/backlog/port/out/RequerimientoCompraRepository.java"
+      },
+      {
+        "name": "CompraDetalleId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraDetalleId.java",
+        "relative_path": "logistica/compra/model/CompraDetalleId.java"
+      },
+      {
+        "name": "CompraId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraId.java",
+        "relative_path": "logistica/compra/model/CompraId.java"
+      },
+      {
+        "name": "RubroInsumo.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/RubroInsumo.java",
+        "relative_path": "logistica/compra/model/RubroInsumo.java"
+      },
+      {
+        "name": "CompraDetalle.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraDetalle.java",
+        "relative_path": "logistica/compra/model/CompraDetalle.java"
+      },
+      {
+        "name": "Compra.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/Compra.java",
+        "relative_path": "logistica/compra/model/Compra.java"
+      },
+      {
+        "name": "EstadoCompra.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/EstadoCompra.java",
+        "relative_path": "logistica/compra/model/EstadoCompra.java"
+      },
+      {
+        "name": "RelacionContractual.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/RelacionContractual.java",
+        "relative_path": "logistica/compra/model/RelacionContractual.java"
+      },
+      {
+        "name": "NaturalezaGasto.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/model/NaturalezaGasto.java",
+        "relative_path": "logistica/compra/model/NaturalezaGasto.java"
+      },
+      {
+        "name": "ProcesarCompraService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java",
+        "relative_path": "logistica/compra/service/ProcesarCompraService.java"
+      },
+      {
+        "name": "CompraRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/compra/port/out/CompraRepository.java",
+        "relative_path": "logistica/compra/port/out/CompraRepository.java"
+      },
+      {
+        "name": "MovimientoInventario.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/MovimientoInventario.java",
+        "relative_path": "logistica/inventario/model/MovimientoInventario.java"
+      },
+      {
+        "name": "MovimientoInventarioId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/MovimientoInventarioId.java",
+        "relative_path": "logistica/inventario/model/MovimientoInventarioId.java"
+      },
+      {
+        "name": "TipoMovimientoInventario.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/TipoMovimientoInventario.java",
+        "relative_path": "logistica/inventario/model/TipoMovimientoInventario.java"
+      },
+      {
+        "name": "InventarioId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/InventarioId.java",
+        "relative_path": "logistica/inventario/model/InventarioId.java"
+      },
+      {
+        "name": "InventarioItem.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/InventarioItem.java",
+        "relative_path": "logistica/inventario/model/InventarioItem.java"
+      },
+      {
+        "name": "GestionInventarioService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/GestionInventarioService.java",
+        "relative_path": "logistica/inventario/service/GestionInventarioService.java"
+      },
+      {
+        "name": "InventarioSnapshotService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/InventarioSnapshotService.java",
+        "relative_path": "logistica/inventario/service/InventarioSnapshotService.java"
+      },
+      {
+        "name": "ImputacionService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/ImputacionService.java",
+        "relative_path": "logistica/inventario/service/ImputacionService.java"
+      },
+      {
+        "name": "InventarioRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/InventarioRepository.java",
+        "relative_path": "logistica/inventario/port/out/InventarioRepository.java"
+      },
+      {
+        "name": "ConsumoPartidaRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/ConsumoPartidaRepository.java",
+        "relative_path": "logistica/inventario/port/out/ConsumoPartidaRepository.java"
+      },
+      {
+        "name": "PartidaValidator.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/PartidaValidator.java",
+        "relative_path": "logistica/inventario/port/out/PartidaValidator.java"
+      },
+      {
+        "name": "AcPublisher.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/AcPublisher.java",
+        "relative_path": "logistica/inventario/port/out/AcPublisher.java"
+      },
+      {
+        "name": "BudgetAlertPublisher.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/BudgetAlertPublisher.java",
+        "relative_path": "logistica/inventario/port/out/BudgetAlertPublisher.java"
+      },
+      {
+        "name": "PartidaRepository.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/PartidaRepository.java",
+        "relative_path": "logistica/inventario/port/out/PartidaRepository.java"
+      },
+      {
+        "name": "ExcesoRecepcionException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/ExcesoRecepcionException.java",
+        "relative_path": "logistica/inventario/exception/ExcesoRecepcionException.java"
+      },
+      {
+        "name": "ImputacionObligatoriaException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/ImputacionObligatoriaException.java",
+        "relative_path": "logistica/inventario/exception/ImputacionObligatoriaException.java"
+      },
+      {
+        "name": "CantidadInsuficienteException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/CantidadInsuficienteException.java",
+        "relative_path": "logistica/inventario/exception/CantidadInsuficienteException.java"
+      },
+      {
+        "name": "MaterialConsumed.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/event/MaterialConsumed.java",
+        "relative_path": "logistica/inventario/event/MaterialConsumed.java"
+      },
+      {
+        "name": "BudgetAlertEvent.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/inventario/event/BudgetAlertEvent.java",
+        "relative_path": "logistica/inventario/event/BudgetAlertEvent.java"
+      },
+      {
+        "name": "TransferenciaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/model/TransferenciaId.java",
+        "relative_path": "logistica/transferencia/model/TransferenciaId.java"
+      },
+      {
+        "name": "TransferenciaService.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/service/TransferenciaService.java",
+        "relative_path": "logistica/transferencia/service/TransferenciaService.java"
+      },
+      {
+        "name": "ExcepcionValidator.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/port/out/ExcepcionValidator.java",
+        "relative_path": "logistica/transferencia/port/out/ExcepcionValidator.java"
+      },
+      {
+        "name": "TransferenciaEventPublisher.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/port/out/TransferenciaEventPublisher.java",
+        "relative_path": "logistica/transferencia/port/out/TransferenciaEventPublisher.java"
+      },
+      {
+        "name": "ExcepcionNoEncontradaException.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/exception/ExcepcionNoEncontradaException.java",
+        "relative_path": "logistica/transferencia/exception/ExcepcionNoEncontradaException.java"
+      },
+      {
+        "name": "MaterialTransferredBetweenProjects.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/transferencia/event/MaterialTransferredBetweenProjects.java",
+        "relative_path": "logistica/transferencia/event/MaterialTransferredBetweenProjects.java"
+      },
+      {
+        "name": "CuadrillaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/CuadrillaId.java",
+        "relative_path": "logistica/organizacion/model/CuadrillaId.java"
+      },
+      {
+        "name": "Cuadrilla.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/Cuadrilla.java",
+        "relative_path": "logistica/organizacion/model/Cuadrilla.java"
+      },
+      {
+        "name": "FrenteTrabajo.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/FrenteTrabajo.java",
+        "relative_path": "logistica/organizacion/model/FrenteTrabajo.java"
+      },
+      {
+        "name": "FrenteTrabajoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/FrenteTrabajoId.java",
+        "relative_path": "logistica/organizacion/model/FrenteTrabajoId.java"
+      },
+      {
+        "name": "BodegaId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/bodega/model/BodegaId.java",
+        "relative_path": "logistica/bodega/model/BodegaId.java"
+      },
+      {
+        "name": "Bodega.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/bodega/model/Bodega.java",
+        "relative_path": "logistica/bodega/model/Bodega.java"
+      },
+      {
+        "name": "DefaultBodegaPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/logistica/bodega/port/out/DefaultBodegaPort.java",
+        "relative_path": "logistica/bodega/port/out/DefaultBodegaPort.java"
+      }
+    ],
+    "shared": [
+      {
+        "name": "TipoRecurso.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/shared/model/TipoRecurso.java",
+        "relative_path": "shared/model/TipoRecurso.java"
+      },
+      {
+        "name": "JsonSerializerPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/shared/port/out/JsonSerializerPort.java",
+        "relative_path": "shared/port/out/JsonSerializerPort.java"
+      },
+      {
+        "name": "ObservabilityPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/shared/port/out/ObservabilityPort.java",
+        "relative_path": "shared/port/out/ObservabilityPort.java"
+      },
+      {
+        "name": "SecurityPort.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/shared/port/out/SecurityPort.java",
+        "relative_path": "shared/port/out/SecurityPort.java"
+      }
+    ],
+    "recurso": [
+      {
+        "name": "Recurso.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/recurso/model/Recurso.java",
+        "relative_path": "recurso/model/Recurso.java"
+      },
+      {
+        "name": "EstadoRecurso.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/recurso/model/EstadoRecurso.java",
+        "relative_path": "recurso/model/EstadoRecurso.java"
+      },
+      {
+        "name": "RecursoId.java",
+        "path": "../../backend/src/main/java/com/budgetpro/domain/recurso/model/RecursoId.java",
+        "relative_path": "recurso/model/RecursoId.java"
+      }
+    ]
+  }
+}

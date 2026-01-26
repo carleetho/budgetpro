@@ -15,25 +15,21 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Servicio de Dominio para orquestar operaciones de congelamiento del cronograma
- * y generación de snapshots (baseline temporal).
+ * Servicio de Dominio para orquestar operaciones de congelamiento del
+ * cronograma y generación de snapshots (baseline temporal).
  * 
- * Responsabilidad:
- * - Orquestar la operación de congelamiento del ProgramaObra
- * - Generar snapshots inmutables del estado temporal
- * - Validar prerrequisitos antes del congelamiento
- * - Persistir el estado congelado y el snapshot de forma atómica
- * - Proporcionar métodos de consulta para cronogramas congelados
+ * Responsabilidad: - Orquestar la operación de congelamiento del ProgramaObra -
+ * Generar snapshots inmutables del estado temporal - Validar prerrequisitos
+ * antes del congelamiento - Persistir el estado congelado y el snapshot de
+ * forma atómica - Proporcionar métodos de consulta para cronogramas congelados
  * 
- * **Operaciones:**
- * - congelarPorPresupuesto(): Congela el cronograma y genera snapshot
- * - findByProyectoId(): Busca el cronograma de un proyecto
- * - estaCongelado(): Verifica si un cronograma está congelado
+ * **Operaciones:** - congelarPorPresupuesto(): Congela el cronograma y genera
+ * snapshot - findByProyectoId(): Busca el cronograma de un proyecto -
+ * estaCongelado(): Verifica si un cronograma está congelado
  * 
- * **Validaciones:**
- * - El ProgramaObra debe existir para el proyecto
- * - El ProgramaObra debe tener fechaInicio y fechaFinEstimada
- * - El PresupuestoId debe ser válido
+ * **Validaciones:** - El ProgramaObra debe existir para el proyecto - El
+ * ProgramaObra debe tener fechaInicio y fechaFinEstimada - El PresupuestoId
+ * debe ser válido
  * 
  * Contexto: Cronograma & Baseline
  */
@@ -45,56 +41,57 @@ public class CronogramaService {
     private final SnapshotGeneratorService snapshotGeneratorService;
     private final JsonSchemaValidator jsonSchemaValidator;
 
-    public CronogramaService(
-            ProgramaObraRepository programaObraRepository,
+    public CronogramaService(ProgramaObraRepository programaObraRepository,
             ActividadProgramadaRepository actividadProgramadaRepository,
-            CronogramaSnapshotRepository snapshotRepository,
-            SnapshotGeneratorService snapshotGeneratorService,
+            CronogramaSnapshotRepository snapshotRepository, SnapshotGeneratorService snapshotGeneratorService,
             JsonSchemaValidator jsonSchemaValidator) {
-        this.programaObraRepository = Objects.requireNonNull(programaObraRepository, "El repositorio de programa de obra no puede ser nulo");
-        this.actividadProgramadaRepository = Objects.requireNonNull(actividadProgramadaRepository, "El repositorio de actividades no puede ser nulo");
-        this.snapshotRepository = Objects.requireNonNull(snapshotRepository, "El repositorio de snapshots no puede ser nulo");
+        this.programaObraRepository = Objects.requireNonNull(programaObraRepository,
+                "El repositorio de programa de obra no puede ser nulo");
+        this.actividadProgramadaRepository = Objects.requireNonNull(actividadProgramadaRepository,
+                "El repositorio de actividades no puede ser nulo");
+        this.snapshotRepository = Objects.requireNonNull(snapshotRepository,
+                "El repositorio de snapshots no puede ser nulo");
         this.jsonSchemaValidator = jsonSchemaValidator; // Opcional: puede ser null si no se proporciona
         // Si no se proporciona SnapshotGeneratorService, crear uno con el validador
-        this.snapshotGeneratorService = snapshotGeneratorService != null 
-            ? snapshotGeneratorService 
-            : new SnapshotGeneratorService(jsonSchemaValidator);
+        this.snapshotGeneratorService = snapshotGeneratorService != null ? snapshotGeneratorService
+                : new SnapshotGeneratorService(
+                        (com.budgetpro.domain.shared.port.out.JsonSerializerPort) jsonSchemaValidator,
+                        jsonSchemaValidator);
     }
 
     /**
-     * Congela el cronograma de un proyecto y genera un snapshot inmutable del baseline temporal.
+     * Congela el cronograma de un proyecto y genera un snapshot inmutable del
+     * baseline temporal.
      * 
-     * Este método orquesta la operación completa de congelamiento:
-     * 1. Valida que el ProgramaObra exista para el proyecto
-     * 2. Valida que el ProgramaObra tenga fechas válidas
-     * 3. Congela el ProgramaObra (marca como congelado)
-     * 4. Obtiene todas las actividades del cronograma
-     * 5. Genera el snapshot con todos los datos temporales
-     * 6. Persiste tanto el ProgramaObra congelado como el snapshot
+     * Este método orquesta la operación completa de congelamiento: 1. Valida que el
+     * ProgramaObra exista para el proyecto 2. Valida que el ProgramaObra tenga
+     * fechas válidas 3. Congela el ProgramaObra (marca como congelado) 4. Obtiene
+     * todas las actividades del cronograma 5. Genera el snapshot con todos los
+     * datos temporales 6. Persiste tanto el ProgramaObra congelado como el snapshot
      * 
- * **Estrategia de Transacciones:**
- * 
- * Este servicio NO tiene @Transactional porque participa en la transacción iniciada
- * por la capa de aplicación a través de PresupuestoService.
- * 
- * **Flujo Transaccional:**
- * 1. Use Case (@Transactional) → PresupuestoService.aprobar() → este método
- * 2. Todas las operaciones (congelar ProgramaObra + persistir snapshot) se ejecutan
- *    en la misma transacción
- * 3. Si cualquier operación falla, toda la transacción hace rollback automáticamente
- * 
- * **Garantía de Atomicidad:**
- * El congelamiento del ProgramaObra y la persistencia del snapshot son atómicos:
- * - Si `programaObraRepository.save()` falla → rollback completo
- * - Si `snapshotRepository.save()` falla → rollback completo (ProgramaObra no se congela)
- * - Si la generación del snapshot falla → rollback completo
+     * **Estrategia de Transacciones:**
      * 
-     * @param proyectoId ID del proyecto
+     * Este servicio NO tiene @Transactional porque participa en la transacción
+     * iniciada por la capa de aplicación a través de PresupuestoService.
+     * 
+     * **Flujo Transaccional:** 1. Use Case (@Transactional) →
+     * PresupuestoService.aprobar() → este método 2. Todas las operaciones (congelar
+     * ProgramaObra + persistir snapshot) se ejecutan en la misma transacción 3. Si
+     * cualquier operación falla, toda la transacción hace rollback automáticamente
+     * 
+     * **Garantía de Atomicidad:** El congelamiento del ProgramaObra y la
+     * persistencia del snapshot son atómicos: - Si `programaObraRepository.save()`
+     * falla → rollback completo - Si `snapshotRepository.save()` falla → rollback
+     * completo (ProgramaObra no se congela) - Si la generación del snapshot falla →
+     * rollback completo
+     * 
+     * @param proyectoId    ID del proyecto
      * @param presupuestoId ID del presupuesto asociado
-     * @param approvedBy ID del usuario que aprueba el congelamiento
+     * @param approvedBy    ID del usuario que aprueba el congelamiento
      * @return El snapshot generado
      * @throws IllegalArgumentException si algún parámetro es nulo
-     * @throws IllegalStateException si el ProgramaObra no existe o no tiene fechas válidas
+     * @throws IllegalStateException    si el ProgramaObra no existe o no tiene
+     *                                  fechas válidas
      */
     public CronogramaSnapshot congelarPorPresupuesto(UUID proyectoId, PresupuestoId presupuestoId, UUID approvedBy) {
         Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
@@ -108,12 +105,12 @@ public class CronogramaService {
 
         // 2. Validar que el ProgramaObra tiene fechas válidas
         if (programaObra.getFechaInicio() == null) {
-            throw new IllegalStateException(
-                    String.format("No se puede congelar el cronograma del proyecto %s: falta fecha de inicio", proyectoId));
+            throw new IllegalStateException(String
+                    .format("No se puede congelar el cronograma del proyecto %s: falta fecha de inicio", proyectoId));
         }
         if (programaObra.getFechaFinEstimada() == null) {
-            throw new IllegalStateException(
-                    String.format("No se puede congelar el cronograma del proyecto %s: falta fecha de fin estimada", proyectoId));
+            throw new IllegalStateException(String.format(
+                    "No se puede congelar el cronograma del proyecto %s: falta fecha de fin estimada", proyectoId));
         }
 
         // 3. Validar que el ProgramaObra no esté ya congelado
@@ -126,16 +123,19 @@ public class CronogramaService {
         programaObra.congelar(approvedBy);
 
         // 5. Obtener todas las actividades del cronograma
-        List<ActividadProgramada> actividades = actividadProgramadaRepository.findByProgramaObraId(programaObra.getId().getValue());
+        List<ActividadProgramada> actividades = actividadProgramadaRepository
+                .findByProgramaObraId(programaObra.getId().getValue());
 
-        // 6. Generar los datos JSON del snapshot (con validación automática si el validador está disponible)
+        // 6. Generar los datos JSON del snapshot (con validación automática si el
+        // validador está disponible)
         String fechasJson = snapshotGeneratorService.generarFechasJson(programaObra, actividades);
         String duracionesJson = snapshotGeneratorService.generarDuracionesJson(programaObra, actividades);
         String secuenciaJson = snapshotGeneratorService.generarSecuenciaJson(actividades);
         String calendariosJson = snapshotGeneratorService.generarCalendariosJson();
-        
+
         // Validación adicional explícita si el validador está disponible
-        // (la validación también se hace en SnapshotGeneratorService, pero esta es una capa extra de seguridad)
+        // (la validación también se hace en SnapshotGeneratorService, pero esta es una
+        // capa extra de seguridad)
         if (jsonSchemaValidator != null) {
             jsonSchemaValidator.validateFechasSnapshot(fechasJson);
             jsonSchemaValidator.validateDuracionesSnapshot(duracionesJson);
@@ -145,15 +145,8 @@ public class CronogramaService {
 
         // 7. Crear el snapshot
         CronogramaSnapshotId snapshotId = CronogramaSnapshotId.nuevo();
-        CronogramaSnapshot snapshot = CronogramaSnapshot.crear(
-                snapshotId,
-                programaObra.getId(),
-                presupuestoId,
-                fechasJson,
-                duracionesJson,
-                secuenciaJson,
-                calendariosJson
-        );
+        CronogramaSnapshot snapshot = CronogramaSnapshot.crear(snapshotId, programaObra.getId(), presupuestoId,
+                fechasJson, duracionesJson, secuenciaJson, calendariosJson);
 
         // 8. Persistir el ProgramaObra congelado y el snapshot
         // Nota: La atomicidad debe manejarse en la capa de aplicación/infraestructura
@@ -184,10 +177,8 @@ public class CronogramaService {
      */
     public boolean estaCongelado(UUID proyectoId) {
         Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
-        
-        return programaObraRepository.findByProyectoId(proyectoId)
-                .map(ProgramaObra::estaCongelado)
-                .orElse(false);
+
+        return programaObraRepository.findByProyectoId(proyectoId).map(ProgramaObra::estaCongelado).orElse(false);
     }
 
     /**
@@ -199,9 +190,8 @@ public class CronogramaService {
      */
     public java.util.Optional<CronogramaSnapshot> findSnapshotByProyectoId(UUID proyectoId) {
         Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
-        
-        return programaObraRepository.findByProyectoId(proyectoId)
-                .map(ProgramaObra::getId)
+
+        return programaObraRepository.findByProyectoId(proyectoId).map(ProgramaObra::getId)
                 .flatMap(snapshotRepository::findByProgramaObraId);
     }
 }

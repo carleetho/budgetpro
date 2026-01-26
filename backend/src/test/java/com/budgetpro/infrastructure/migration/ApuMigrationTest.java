@@ -11,7 +11,7 @@ import com.budgetpro.infrastructure.persistence.repository.apu.ApuInsumoJpaRepos
 import com.budgetpro.infrastructure.persistence.repository.apu.ApuJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.ApuInsumoSnapshotJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.ApuSnapshotJpaRepository;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

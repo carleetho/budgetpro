@@ -5,7 +5,7 @@ import com.budgetpro.domain.catalogo.exception.CatalogServiceException;
 import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.model.RecursoSearchCriteria;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

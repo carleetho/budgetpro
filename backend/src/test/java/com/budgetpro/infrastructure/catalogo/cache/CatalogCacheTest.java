@@ -3,7 +3,7 @@ package com.budgetpro.infrastructure.catalogo.cache;
 import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.CacheManager;

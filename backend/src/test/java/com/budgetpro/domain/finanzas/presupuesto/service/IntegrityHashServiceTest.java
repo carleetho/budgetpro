@@ -11,8 +11,10 @@ import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
+import com.budgetpro.domain.shared.port.out.ObservabilityPort;
 import com.budgetpro.infrastructure.observability.IntegrityEventLogger;
 import com.budgetpro.infrastructure.observability.IntegrityMetrics;
+import com.budgetpro.infrastructure.service.finanzas.IntegrityHashServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,11 +36,9 @@ import static org.mockito.Mockito.when;
 /**
  * Tests unitarios para IntegrityHashServiceImpl.
  * 
- * Verifica:
- * - Determinismo de hashing (mismo input → mismo hash)
- * - Merkle tree con diferentes números de partidas
- * - Execution hash encadenado al approval hash
- * - Manejo de casos edge (sin partidas, sin APUs)
+ * Verifica: - Determinismo de hashing (mismo input → mismo hash) - Merkle tree
+ * con diferentes números de partidas - Execution hash encadenado al approval
+ * hash - Manejo de casos edge (sin partidas, sin APUs)
  */
 @ExtendWith(MockitoExtension.class)
 class IntegrityHashServiceTest {
@@ -56,14 +56,11 @@ class IntegrityHashServiceTest {
     private PresupuestoId presupuestoId;
 
     @Mock
-    private IntegrityMetrics metrics;
-
-    @Mock
-    private IntegrityEventLogger eventLogger;
+    private ObservabilityPort observability;
 
     @BeforeEach
     void setUp() {
-        hashService = new IntegrityHashServiceImpl(partidaRepository, apuSnapshotRepository, metrics, eventLogger);
+        hashService = new IntegrityHashServiceImpl(partidaRepository, apuSnapshotRepository, observability);
 
         proyectoId = UUID.randomUUID();
         presupuestoId = PresupuestoId.from(UUID.randomUUID());
@@ -89,16 +86,10 @@ class IntegrityHashServiceTest {
     @Test
     void calculateApprovalHash_debeIncluirAtributosPresupuesto() {
         // Given
-        Presupuesto presupuesto1 = Presupuesto.crear(
-                PresupuestoId.from(UUID.randomUUID()),
-                proyectoId,
-                "Presupuesto 1"
-        );
-        Presupuesto presupuesto2 = Presupuesto.crear(
-                PresupuestoId.from(UUID.randomUUID()),
-                proyectoId,
-                "Presupuesto 2"
-        );
+        Presupuesto presupuesto1 = Presupuesto.crear(PresupuestoId.from(UUID.randomUUID()), proyectoId,
+                "Presupuesto 1");
+        Presupuesto presupuesto2 = Presupuesto.crear(PresupuestoId.from(UUID.randomUUID()), proyectoId,
+                "Presupuesto 2");
 
         when(partidaRepository.findByPresupuestoId(any(UUID.class))).thenReturn(new ArrayList<>());
         lenient().when(apuSnapshotRepository.findByPartidaId(any(UUID.class))).thenReturn(Optional.empty());
@@ -164,8 +155,7 @@ class IntegrityHashServiceTest {
         assertEquals(64, hashConAPU.length());
 
         // Verificar que sin APU el hash es diferente
-        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue()))
-                .thenReturn(Optional.empty());
+        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue())).thenReturn(Optional.empty());
         String hashSinAPU = hashService.calculateApprovalHash(presupuesto);
         assertNotEquals(hashConAPU, hashSinAPU, "Incluir APU debe cambiar el hash");
     }
@@ -180,14 +170,12 @@ class IntegrityHashServiceTest {
         APUSnapshot apu2 = crearAPUSnapshotConRendimientoDiferente(partida.getId().getValue());
 
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidas);
-        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue()))
-                .thenReturn(Optional.of(apu1));
+        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue())).thenReturn(Optional.of(apu1));
 
         // When
         String hash1 = hashService.calculateApprovalHash(presupuesto);
 
-        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue()))
-                .thenReturn(Optional.of(apu2));
+        when(apuSnapshotRepository.findByPartidaId(partida.getId().getValue())).thenReturn(Optional.of(apu2));
         String hash2 = hashService.calculateApprovalHash(presupuesto);
 
         // Then
@@ -197,11 +185,8 @@ class IntegrityHashServiceTest {
     @Test
     void calculateExecutionHash_debeLanzarExcepcionSiNoHayApprovalHash() {
         // Given
-        Presupuesto presupuestoSinHash = Presupuesto.crear(
-                PresupuestoId.from(UUID.randomUUID()),
-                proyectoId,
-                "Sin Hash"
-        );
+        Presupuesto presupuestoSinHash = Presupuesto.crear(PresupuestoId.from(UUID.randomUUID()), proyectoId,
+                "Sin Hash");
 
         // When/Then
         assertThrows(IllegalStateException.class, () -> {
@@ -213,19 +198,9 @@ class IntegrityHashServiceTest {
     void calculateExecutionHash_debeEncadenarAlApprovalHash() {
         // Given
         String approvalHash = "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890ab";
-        presupuesto = Presupuesto.reconstruir(
-                presupuestoId,
-                proyectoId,
-                "Presupuesto Test",
-                EstadoPresupuesto.CONGELADO,
-                true,
-                0L,
-                approvalHash,
-                null,
-                LocalDateTime.now(),
-                UUID.randomUUID(),
-                "SHA-256-v1"
-        );
+        presupuesto = Presupuesto.reconstruir(presupuestoId, proyectoId, "Presupuesto Test",
+                EstadoPresupuesto.CONGELADO, true, 0L, approvalHash, null, LocalDateTime.now(), UUID.randomUUID(),
+                "SHA-256-v1");
 
         List<Partida> partidas = crearPartidasSimples(2);
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidas);
@@ -240,19 +215,9 @@ class IntegrityHashServiceTest {
 
         // Verificar que cambiar approval hash cambia execution hash
         String approvalHash2 = "x9y8z7w6v5u4321098765432109876543210987654321098765432109876543210987";
-        presupuesto = Presupuesto.reconstruir(
-                presupuestoId,
-                proyectoId,
-                "Presupuesto Test",
-                EstadoPresupuesto.CONGELADO,
-                true,
-                0L,
-                approvalHash2,
-                null,
-                LocalDateTime.now(),
-                UUID.randomUUID(),
-                "SHA-256-v1"
-        );
+        presupuesto = Presupuesto.reconstruir(presupuestoId, proyectoId, "Presupuesto Test",
+                EstadoPresupuesto.CONGELADO, true, 0L, approvalHash2, null, LocalDateTime.now(), UUID.randomUUID(),
+                "SHA-256-v1");
         String executionHash2 = hashService.calculateExecutionHash(presupuesto);
         assertNotEquals(executionHash, executionHash2, "Cambiar approval hash debe cambiar execution hash");
     }
@@ -261,19 +226,9 @@ class IntegrityHashServiceTest {
     void calculateExecutionHash_debeIncluirEstadoFinancieroPartidas() {
         // Given
         String approvalHash = "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890ab";
-        presupuesto = Presupuesto.reconstruir(
-                presupuestoId,
-                proyectoId,
-                "Presupuesto Test",
-                EstadoPresupuesto.CONGELADO,
-                true,
-                0L,
-                approvalHash,
-                null,
-                LocalDateTime.now(),
-                UUID.randomUUID(),
-                "SHA-256-v1"
-        );
+        presupuesto = Presupuesto.reconstruir(presupuestoId, proyectoId, "Presupuesto Test",
+                EstadoPresupuesto.CONGELADO, true, 0L, approvalHash, null, LocalDateTime.now(), UUID.randomUUID(),
+                "SHA-256-v1");
 
         List<Partida> partidas = crearPartidasConEstadoFinanciero();
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidas);
@@ -287,12 +242,14 @@ class IntegrityHashServiceTest {
         assertEquals(64, hash1.length());
 
         // Cambiar estado financiero debe cambiar el hash
-        // (Nota: En un test real, necesitaríamos modificar las partidas, pero como son inmutables,
+        // (Nota: En un test real, necesitaríamos modificar las partidas, pero como son
+        // inmutables,
         // simulamos cambiando los valores retornados)
         List<Partida> partidasModificadas = crearPartidasConEstadoFinancieroModificado();
         when(partidaRepository.findByPresupuestoId(presupuestoId.getValue())).thenReturn(partidasModificadas);
         String hash2 = hashService.calculateExecutionHash(presupuesto);
-        // El hash puede ser igual si el timestamp es el mismo, pero los valores financieros son diferentes
+        // El hash puede ser igual si el timestamp es el mismo, pero los valores
+        // financieros son diferentes
         // En producción, el timestamp cambia, así que el hash será diferente
     }
 
@@ -336,14 +293,8 @@ class IntegrityHashServiceTest {
     private List<Partida> crearPartidasSimples(int cantidad) {
         List<Partida> partidas = new ArrayList<>();
         for (int i = 0; i < cantidad; i++) {
-            Partida partida = Partida.crearRaiz(
-                    PartidaId.from(UUID.randomUUID()),
-                    presupuestoId.getValue(),
-                    String.format("01.%02d", i + 1),
-                    "Descripción " + i,
-                    "UND",
-                    new BigDecimal("10.0")
-            );
+            Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(),
+                    String.format("01.%02d", i + 1), "Descripción " + i, "UND", new BigDecimal("10.0"));
             partida.actualizarPresupuestoAsignado(new BigDecimal("100.0").multiply(new BigDecimal(i + 1)));
             partidas.add(partida);
         }
@@ -351,36 +302,16 @@ class IntegrityHashServiceTest {
     }
 
     private Partida crearPartidaConAPU() {
-        return Partida.crearRaiz(
-                PartidaId.from(UUID.randomUUID()),
-                presupuestoId.getValue(),
-                "01.01",
-                "Partida con APU",
-                "UND",
-                new BigDecimal("1.0")
-        );
+        return Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(), "01.01",
+                "Partida con APU", "UND", new BigDecimal("1.0"));
     }
 
     private APUSnapshot crearAPUSnapshot(UUID partidaId) {
-        List<APUInsumoSnapshot> insumos = List.of(
-                APUInsumoSnapshot.crear(
-                        APUInsumoSnapshotId.generate(),
-                        "REC-001",
-                        "Cemento",
-                        new BigDecimal("10.0"),
-                        new BigDecimal("25.50")
-                )
-        );
+        List<APUInsumoSnapshot> insumos = List.of(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "REC-001",
+                "Cemento", new BigDecimal("10.0"), new BigDecimal("25.50")));
 
-        return APUSnapshot.crear(
-                APUSnapshotId.generate(),
-                partidaId,
-                "APU-001",
-                "CAPECO",
-                new BigDecimal("2.0"),
-                "UND",
-                LocalDateTime.now()
-        );
+        return APUSnapshot.crear(APUSnapshotId.generate(), partidaId, "APU-001", "CAPECO", new BigDecimal("2.0"), "UND",
+                LocalDateTime.now());
     }
 
     private APUSnapshot crearAPUSnapshotConRendimientoDiferente(UUID partidaId) {
@@ -390,14 +321,8 @@ class IntegrityHashServiceTest {
     }
 
     private List<Partida> crearPartidasConEstadoFinanciero() {
-        Partida partida = Partida.crearRaiz(
-                PartidaId.from(UUID.randomUUID()),
-                presupuestoId.getValue(),
-                "01.01",
-                "Partida con gastos",
-                "UND",
-                new BigDecimal("1.0")
-        );
+        Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(), "01.01",
+                "Partida con gastos", "UND", new BigDecimal("1.0"));
         partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
         partida.actualizarGastosReales(new BigDecimal("200.0"));
         partida.actualizarCompromisosPendientes(new BigDecimal("100.0"));
@@ -405,14 +330,8 @@ class IntegrityHashServiceTest {
     }
 
     private List<Partida> crearPartidasConEstadoFinancieroModificado() {
-        Partida partida = Partida.crearRaiz(
-                PartidaId.from(UUID.randomUUID()),
-                presupuestoId.getValue(),
-                "01.01",
-                "Partida con gastos modificados",
-                "UND",
-                new BigDecimal("1.0")
-        );
+        Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(), "01.01",
+                "Partida con gastos modificados", "UND", new BigDecimal("1.0"));
         partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
         partida.actualizarGastosReales(new BigDecimal("300.0")); // Diferente
         partida.actualizarCompromisosPendientes(new BigDecimal("150.0")); // Diferente

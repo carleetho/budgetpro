@@ -1,7 +1,7 @@
 package com.budgetpro.infrastructure.persistence.entity;
 
 import com.budgetpro.domain.recurso.model.EstadoRecurso;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -20,18 +20,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Entidad JPA que mapea la tabla `recurso` del ERD físico.
- * Representa la persistencia del agregado Recurso del dominio.
+ * Entidad JPA que mapea la tabla `recurso` del ERD físico. Representa la
+ * persistencia del agregado Recurso del dominio.
  */
 @Entity
-@Table(name = "recurso", 
-       uniqueConstraints = {
-           @UniqueConstraint(name = "uq_recurso_nombre", columnNames = "nombre_normalizado")
-       },
-       indexes = {
-           @Index(name = "idx_recurso_tipo", columnList = "tipo"),
-           @Index(name = "idx_recurso_estado", columnList = "estado")
-       })
+@Table(name = "recurso", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_recurso_nombre", columnNames = "nombre_normalizado") }, indexes = {
+                @Index(name = "idx_recurso_tipo", columnList = "tipo"),
+                @Index(name = "idx_recurso_estado", columnList = "estado") })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -82,9 +78,8 @@ public class RecursoEntity extends AuditEntity {
     /**
      * Constructor de compatibilidad para mapeos existentes.
      */
-    public RecursoEntity(UUID id, String nombre, String nombreNormalizado, TipoRecurso tipo,
-                         String unidadBase, Map<String, Object> atributos, EstadoRecurso estado,
-                         UUID createdBy) {
+    public RecursoEntity(UUID id, String nombre, String nombreNormalizado, TipoRecurso tipo, String unidadBase,
+            Map<String, Object> atributos, EstadoRecurso estado, UUID createdBy) {
         this.id = id;
         this.nombre = nombre;
         this.nombreNormalizado = nombreNormalizado;

@@ -4,7 +4,7 @@ import com.budgetpro.domain.catalogo.exception.CatalogNotFoundException;
 import com.budgetpro.domain.catalogo.exception.CatalogServiceException;
 import com.budgetpro.domain.catalogo.model.RecursoSearchCriteria;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.catalogo.cache.CatalogCache;
 import com.budgetpro.infrastructure.catalogo.observability.CatalogEventLogger;
 import com.budgetpro.infrastructure.catalogo.observability.CatalogMetrics;
