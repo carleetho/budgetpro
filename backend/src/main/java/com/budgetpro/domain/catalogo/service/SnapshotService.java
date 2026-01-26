@@ -8,10 +8,7 @@ import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
 import com.budgetpro.domain.catalogo.port.CatalogPort;
-import com.budgetpro.infrastructure.catalogo.observability.CatalogEventLogger;
-import com.budgetpro.infrastructure.catalogo.observability.CatalogMetrics;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.budgetpro.domain.shared.port.out.ObservabilityPort;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,24 +18,18 @@ import java.util.UUID;
 /**
  * Servicio de dominio para crear snapshots desde catálogos externos.
  */
-@Service
-@Transactional
 public class SnapshotService {
 
     private final CatalogPort catalogPort;
-    private final CatalogMetrics catalogMetrics;
-    private final CatalogEventLogger catalogEventLogger;
+    private final ObservabilityPort observability;
 
-    public SnapshotService(CatalogPort catalogPort,
-                          CatalogMetrics catalogMetrics,
-                          CatalogEventLogger catalogEventLogger) {
+    public SnapshotService(CatalogPort catalogPort, ObservabilityPort observability) {
         this.catalogPort = catalogPort;
-        this.catalogMetrics = catalogMetrics;
-        this.catalogEventLogger = catalogEventLogger;
+        this.observability = observability;
     }
 
     public APUSnapshot createAPUSnapshot(String externalApuId, String catalogSource) {
-        String correlationId = catalogEventLogger.generateCorrelationId();
+        String correlationId = observability.generateCorrelationId();
         long startTime = System.currentTimeMillis();
 
         if (externalApuId == null || externalApuId.isBlank()) {
@@ -50,17 +41,11 @@ public class SnapshotService {
 
         try {
             APUSnapshot apuData = catalogPort.fetchAPU(externalApuId, catalogSource);
-            UUID partidaId = Objects.requireNonNull(apuData.getPartidaId(), "El partidaId del catálogo no puede ser nulo");
+            UUID partidaId = Objects.requireNonNull(apuData.getPartidaId(),
+                    "El partidaId del catálogo no puede ser nulo");
 
-            APUSnapshot snapshot = APUSnapshot.crear(
-                    APUSnapshotId.generate(),
-                    partidaId,
-                    externalApuId,
-                    catalogSource,
-                    apuData.getRendimientoOriginal(),
-                    apuData.getUnidadSnapshot(),
-                    LocalDateTime.now()
-            );
+            APUSnapshot snapshot = APUSnapshot.crear(APUSnapshotId.generate(), partidaId, externalApuId, catalogSource,
+                    apuData.getRendimientoOriginal(), apuData.getUnidadSnapshot(), LocalDateTime.now());
 
             for (APUInsumoSnapshot insumo : apuData.getInsumos()) {
                 String recursoExternalId = insumo.getRecursoExternalId();
@@ -69,60 +54,42 @@ public class SnapshotService {
                 }
 
                 RecursoSnapshot recursoSnapshot = catalogPort.fetchRecurso(recursoExternalId, catalogSource);
-                APUInsumoSnapshot insumoSnapshot = APUInsumoSnapshot.crear(
-                        APUInsumoSnapshotId.generate(),
-                        recursoSnapshot.externalId(),
-                        recursoSnapshot.nombre(),
-                        insumo.getCantidad(),
-                        recursoSnapshot.precioReferencial()
-                );
+                APUInsumoSnapshot insumoSnapshot = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(),
+                        recursoSnapshot.externalId(), recursoSnapshot.nombre(), insumo.getCantidad(),
+                        recursoSnapshot.precioReferencial());
                 snapshot.agregarInsumo(insumoSnapshot);
             }
 
             long durationMs = System.currentTimeMillis() - startTime;
             int insumosCount = snapshot.getInsumos().size();
-            catalogMetrics.recordSnapshotCreation(durationMs, catalogSource, insumosCount);
-            catalogEventLogger.logSnapshotCreation(
-                    correlationId,
-                    snapshot.getId().getValue(),
-                    externalApuId,
-                    catalogSource,
-                    durationMs,
-                    insumosCount
-            );
+            observability.recordMetrics("catalog.snapshot.creation", (double) durationMs, "source", catalogSource);
+            observability.logEvent("SNAPSHOT_CREATED", String.format("Snapshot %s created from %s in %dms",
+                    snapshot.getId().getValue(), catalogSource, durationMs));
 
             return snapshot;
         } catch (CatalogNotFoundException | CatalogServiceException e) {
-            long durationMs = System.currentTimeMillis() - startTime;
-            catalogEventLogger.logCatalogError(correlationId, catalogSource, "createAPUSnapshot", externalApuId, e);
+            observability.logError(correlationId, catalogSource, "createAPUSnapshot", externalApuId, e);
             throw e;
         } catch (RuntimeException e) {
-            long durationMs = System.currentTimeMillis() - startTime;
-            catalogEventLogger.logCatalogError(correlationId, catalogSource, "createAPUSnapshot", externalApuId, e);
+            observability.logError(correlationId, catalogSource, "createAPUSnapshot", externalApuId, e);
             throw new CatalogServiceException(catalogSource, "Error al crear snapshot desde catálogo", e);
         }
     }
 
     public void actualizarRendimiento(APUSnapshot snapshot, BigDecimal nuevoRendimiento, UUID usuarioId) {
-        String correlationId = catalogEventLogger.generateCorrelationId();
         Objects.requireNonNull(snapshot, "El snapshot no puede ser nulo");
-        
+
         BigDecimal rendimientoAnterior = snapshot.getRendimientoVigente();
         BigDecimal rendimientoOriginal = snapshot.getRendimientoOriginal();
-        
+
         snapshot.actualizarRendimiento(nuevoRendimiento, usuarioId);
-        
+
         // Solo registrar si realmente cambió
         if (rendimientoAnterior.compareTo(nuevoRendimiento) != 0) {
-            catalogMetrics.recordRendimientoOverride(snapshot.getCatalogSource());
-            catalogEventLogger.logRendimientoModification(
-                    correlationId,
-                    snapshot.getId().getValue(),
-                    rendimientoOriginal,
-                    rendimientoAnterior,
-                    nuevoRendimiento,
-                    usuarioId
-            );
+            observability.recordMetrics("catalog.rendimiento.override", 1.0, "source", snapshot.getCatalogSource());
+            observability.logEvent("RENDIMIENTO_MODIFIED",
+                    String.format("Rendimiento on snapshot %s changed from %s to %s", snapshot.getId().getValue(),
+                            rendimientoAnterior, nuevoRendimiento));
         }
     }
 

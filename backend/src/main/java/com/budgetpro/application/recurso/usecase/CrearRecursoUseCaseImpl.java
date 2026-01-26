@@ -7,7 +7,7 @@ import com.budgetpro.application.recurso.port.in.CrearRecursoUseCase;
 import com.budgetpro.application.recurso.port.out.RecursoRepository;
 import com.budgetpro.domain.recurso.model.Recurso;
 import com.budgetpro.domain.recurso.model.RecursoId;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -15,11 +15,9 @@ import org.springframework.validation.annotation.Validated;
 /**
  * Implementación del caso de uso para crear un nuevo recurso.
  * 
- * Responsabilidades:
- * - Orquestar el flujo de creación de recursos
- * - Validar reglas de aplicación (duplicados, etc.)
- * - Coordinar entre el dominio y la persistencia
- * - Controlar transacciones
+ * Responsabilidades: - Orquestar el flujo de creación de recursos - Validar
+ * reglas de aplicación (duplicados, etc.) - Coordinar entre el dominio y la
+ * persistencia - Controlar transacciones
  * 
  * NO contiene lógica de negocio profunda (eso está en el Agregado Recurso).
  */
@@ -54,20 +52,13 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
         Recurso nuevoRecurso;
         if (command.esProvisional()) {
             // Usar factory method para recurso provisional (estado EN_REVISION)
-            nuevoRecurso = Recurso.crearProvisional(
-                nuevoId,
-                command.nombre(), // El dominio normalizará el nombre automáticamente
-                tipoRecurso,
-                command.unidadBase()
-            );
+            nuevoRecurso = Recurso.crearProvisional(nuevoId, command.nombre(), // El dominio normalizará el nombre
+                                                                               // automáticamente
+                    tipoRecurso, command.unidadBase());
         } else {
             // Usar factory method para recurso normal (estado ACTIVO)
-            nuevoRecurso = Recurso.crear(
-                nuevoId,
-                command.nombre(), // El dominio normalizará el nombre automáticamente
-                tipoRecurso,
-                command.unidadBase()
-            );
+            nuevoRecurso = Recurso.crear(nuevoId, command.nombre(), // El dominio normalizará el nombre automáticamente
+                    tipoRecurso, command.unidadBase());
         }
 
         // 6. Agregar atributos adicionales si existen
@@ -83,8 +74,8 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
     }
 
     /**
-     * Normaliza el nombre del recurso según las reglas de negocio.
-     * Usa la misma lógica que el dominio (Trim + UpperCase + espacios múltiples).
+     * Normaliza el nombre del recurso según las reglas de negocio. Usa la misma
+     * lógica que el dominio (Trim + UpperCase + espacios múltiples).
      * 
      * @param nombre El nombre a normalizar
      * @return El nombre normalizado
@@ -93,9 +84,7 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del recurso no puede estar vacío");
         }
-        return nombre.trim()
-                     .toUpperCase()
-                     .replaceAll("\\s+", " ");
+        return nombre.trim().toUpperCase().replaceAll("\\s+", " ");
     }
 
     /**
@@ -112,9 +101,8 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
         try {
             return TipoRecurso.valueOf(tipoStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                "Tipo de recurso inválido: " + tipoStr + ". Valores válidos: " +
-                java.util.Arrays.toString(TipoRecurso.values()), e);
+            throw new IllegalArgumentException("Tipo de recurso inválido: " + tipoStr + ". Valores válidos: "
+                    + java.util.Arrays.toString(TipoRecurso.values()), e);
         }
     }
 
@@ -125,11 +113,7 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
      * @return El DTO de respuesta
      */
     private RecursoResponse toResponse(Recurso recurso) {
-        return new RecursoResponse(
-            recurso.getId().getValue(),
-            recurso.getNombre(),
-            recurso.getTipo().name(),
-            recurso.getEstado().name()
-        );
+        return new RecursoResponse(recurso.getId().getValue(), recurso.getNombre(), recurso.getTipo().name(),
+                recurso.getEstado().name());
     }
 }

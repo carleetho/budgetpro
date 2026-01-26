@@ -1,6 +1,6 @@
 package com.budgetpro.infrastructure.persistence.entity.catalogo;
 
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.AuditEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,11 +31,9 @@ import java.util.UUID;
  * Entidad JPA para la tabla apu_insumo_snapshot.
  */
 @Entity
-@Table(name = "apu_insumo_snapshot",
-       indexes = {
-           @Index(name = "idx_apu_insumo_snapshot_apu", columnList = "apu_snapshot_id"),
-           @Index(name = "idx_apu_insumo_snapshot_recurso", columnList = "recurso_external_id")
-       })
+@Table(name = "apu_insumo_snapshot", indexes = {
+        @Index(name = "idx_apu_insumo_snapshot_apu", columnList = "apu_snapshot_id"),
+        @Index(name = "idx_apu_insumo_snapshot_recurso", columnList = "recurso_external_id") })
 @Getter
 @Setter
 @NoArgsConstructor

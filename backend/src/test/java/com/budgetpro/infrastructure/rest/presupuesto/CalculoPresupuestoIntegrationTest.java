@@ -121,7 +121,7 @@ class CalculoPresupuestoIntegrationTest extends AbstractIntegrationTest {
             recursoIdValue,
             "CEMENTO PORTLAND",
             "CEMENTO PORTLAND",
-            com.budgetpro.domain.recurso.model.TipoRecurso.MATERIAL,
+            com.budgetpro.domain.shared.model.TipoRecurso.MATERIAL,
             "BOLSA",
             null,
             com.budgetpro.domain.recurso.model.EstadoRecurso.ACTIVO,

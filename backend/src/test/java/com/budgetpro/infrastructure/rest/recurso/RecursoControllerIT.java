@@ -1,7 +1,7 @@
 package com.budgetpro.infrastructure.rest.recurso;
 
 import com.budgetpro.application.recurso.dto.RecursoResponse;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.AbstractIntegrationTest;
 import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;

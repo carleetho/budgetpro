@@ -26,7 +26,7 @@ import java.util.Objects;
  * **Uso:** ```java validator.validateFechasSnapshot(jsonString); ```
  */
 @Component
-public class JsonSchemaValidator {
+public class JsonSchemaValidator implements com.budgetpro.domain.shared.port.out.JsonSerializerPort {
 
     private static final String SCHEMAS_PATH = "schemas/";
 
@@ -150,5 +150,18 @@ public class JsonSchemaValidator {
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
             return SchemaLoader.load(rawSchema);
         }
+    }
+
+    @Override
+    public String toJson(Object object) {
+        if (object == null) {
+            return "{}";
+        }
+        return new JSONObject(object).toString();
+    }
+
+    @Override
+    public <T> T fromJson(String json, Class<T> clazz) {
+        throw new UnsupportedOperationException("Deserialization not implemented in JsonSchemaValidator");
     }
 }
