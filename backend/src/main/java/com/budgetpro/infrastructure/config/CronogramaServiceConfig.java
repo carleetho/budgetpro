@@ -10,29 +10,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuración para crear los beans de CronogramaService y SnapshotGeneratorService.
+ * Configuración para crear los beans de CronogramaService y
+ * SnapshotGeneratorService.
  */
 @Configuration
 public class CronogramaServiceConfig {
 
     @Bean
-    public SnapshotGeneratorService snapshotGeneratorService() {
-        return new SnapshotGeneratorService();
+    public SnapshotGeneratorService snapshotGeneratorService(JsonSchemaValidator jsonSchemaValidator) {
+        return new SnapshotGeneratorService(jsonSchemaValidator, jsonSchemaValidator);
     }
 
     @Bean
-    public CronogramaService cronogramaService(
-            ProgramaObraRepository programaObraRepository,
+    public CronogramaService cronogramaService(ProgramaObraRepository programaObraRepository,
             ActividadProgramadaRepository actividadProgramadaRepository,
             CronogramaSnapshotRepository cronogramaSnapshotRepository,
-            SnapshotGeneratorService snapshotGeneratorService,
-            JsonSchemaValidator jsonSchemaValidator) {
-        return new CronogramaService(
-                programaObraRepository,
-                actividadProgramadaRepository,
-                cronogramaSnapshotRepository,
-                snapshotGeneratorService,
-                jsonSchemaValidator
-        );
+            SnapshotGeneratorService snapshotGeneratorService, JsonSchemaValidator jsonSchemaValidator) {
+        return new CronogramaService(programaObraRepository, actividadProgramadaRepository,
+                cronogramaSnapshotRepository, snapshotGeneratorService, jsonSchemaValidator);
     }
 }

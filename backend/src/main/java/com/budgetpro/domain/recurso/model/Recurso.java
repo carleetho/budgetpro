@@ -3,15 +3,14 @@ package com.budgetpro.domain.recurso.model;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 
 /**
- * Aggregate Root del agregado RECURSO.
- * Representa un único concepto económico global en todo BUDGETPRO.
+ * Aggregate Root del agregado RECURSO. Representa un único concepto económico
+ * global en todo BUDGETPRO.
  * 
- * Invariantes:
- * - El nombre debe estar normalizado y no puede estar vacío
- * - El tipo no puede ser nulo
- * - La unidadBase no puede estar vacía
+ * Invariantes: - El nombre debe estar normalizado y no puede estar vacío - El
+ * tipo no puede ser nulo - La unidadBase no puede estar vacía
  * 
  * Este es el núcleo del "Shared Kernel — Catálogo de Recursos".
  */
@@ -27,10 +26,10 @@ public final class Recurso {
     /**
      * Constructor privado. Usar factory methods o builder.
      */
-    private Recurso(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase, 
-                   Map<String, Object> atributos, EstadoRecurso estado) {
+    private Recurso(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase, Map<String, Object> atributos,
+            EstadoRecurso estado) {
         validarInvariantes(nombre, tipo, unidadBase);
-        
+
         this.id = Objects.requireNonNull(id, "El ID del recurso no puede ser nulo");
         this.nombre = normalizarNombre(nombre);
         this.tipo = tipo;
@@ -47,33 +46,36 @@ public final class Recurso {
     }
 
     /**
-     * Factory method para crear un Recurso con atributos adicionales y estado ACTIVO por defecto.
+     * Factory method para crear un Recurso con atributos adicionales y estado
+     * ACTIVO por defecto.
      */
     public static Recurso crear(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase,
-                                Map<String, Object> atributos) {
+            Map<String, Object> atributos) {
         return new Recurso(id, nombre, tipo, unidadBase, atributos, EstadoRecurso.ACTIVO);
     }
 
     /**
      * Factory method para crear un Recurso provisional con estado EN_REVISION.
-     * Usado en el Wireflow 1 cuando se requiere crear un recurso durante una compra directa.
+     * Usado en el Wireflow 1 cuando se requiere crear un recurso durante una compra
+     * directa.
      */
     public static Recurso crearProvisional(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase) {
         return new Recurso(id, nombre, tipo, unidadBase, null, EstadoRecurso.EN_REVISION);
     }
 
     /**
-     * Factory method para crear un Recurso provisional con atributos y estado EN_REVISION.
+     * Factory method para crear un Recurso provisional con atributos y estado
+     * EN_REVISION.
      */
     public static Recurso crearProvisional(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase,
-                                           Map<String, Object> atributos) {
+            Map<String, Object> atributos) {
         return new Recurso(id, nombre, tipo, unidadBase, atributos, EstadoRecurso.EN_REVISION);
     }
 
     /**
-     * Normaliza el nombre del recurso según la regla de negocio:
-     * Trim + UpperCase + reemplazar espacios múltiples por uno solo.
-     * Ejemplo: "  cemento   gris " -> "CEMENTO GRIS"
+     * Normaliza el nombre del recurso según la regla de negocio: Trim + UpperCase +
+     * reemplazar espacios múltiples por uno solo. Ejemplo: " cemento gris " ->
+     * "CEMENTO GRIS"
      * 
      * @param nombre El nombre a normalizar
      * @return El nombre normalizado
@@ -82,9 +84,7 @@ public final class Recurso {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del recurso no puede estar vacío");
         }
-        return nombre.trim()
-                     .toUpperCase()
-                     .replaceAll("\\s+", " ");
+        return nombre.trim().toUpperCase().replaceAll("\\s+", " ");
     }
 
     /**
@@ -103,8 +103,9 @@ public final class Recurso {
     }
 
     /**
-     * Actualiza el nombre del recurso aplicando normalización automática.
-     * El nombre se normaliza según: Trim + UpperCase + reemplazar espacios múltiples por uno solo.
+     * Actualiza el nombre del recurso aplicando normalización automática. El nombre
+     * se normaliza según: Trim + UpperCase + reemplazar espacios múltiples por uno
+     * solo.
      */
     public void actualizarNombre(String nuevoNombre) {
         this.nombre = normalizarNombre(nuevoNombre);
@@ -202,8 +203,10 @@ public final class Recurso {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Recurso recurso = (Recurso) o;
         return Objects.equals(id, recurso.id);
     }
@@ -215,12 +218,7 @@ public final class Recurso {
 
     @Override
     public String toString() {
-        return "Recurso{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", tipo=" + tipo +
-                ", unidadBase='" + unidadBase + '\'' +
-                ", estado=" + estado +
-                '}';
+        return "Recurso{" + "id=" + id + ", nombre='" + nombre + '\'' + ", tipo=" + tipo + ", unidadBase='" + unidadBase
+                + '\'' + ", estado=" + estado + '}';
     }
 }

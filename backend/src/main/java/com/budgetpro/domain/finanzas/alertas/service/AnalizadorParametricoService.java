@@ -4,7 +4,7 @@ import com.budgetpro.domain.finanzas.alertas.model.AlertaParametrica;
 import com.budgetpro.domain.finanzas.alertas.model.AnalisisPresupuesto;
 import com.budgetpro.domain.finanzas.alertas.model.NivelAlerta;
 import com.budgetpro.domain.finanzas.alertas.model.TipoAlertaParametrica;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

@@ -1,7 +1,7 @@
 package com.budgetpro.infrastructure.migration;
 
 import com.budgetpro.domain.recurso.model.EstadoRecurso;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.RecursoProxyEntity;
 import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;

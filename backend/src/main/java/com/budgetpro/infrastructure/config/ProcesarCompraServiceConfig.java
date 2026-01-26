@@ -14,27 +14,18 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Configuración para crear el bean de ProcesarCompraService.
  * 
- * Incluye dependencias para validación de integridad criptográfica del presupuesto.
+ * Incluye dependencias para validación de integridad criptográfica del
+ * presupuesto.
  */
 @Configuration
 public class ProcesarCompraServiceConfig {
 
     @Bean
     public ProcesarCompraService procesarCompraService(PartidaRepository partidaRepository,
-                                                       PresupuestoRepository presupuestoRepository,
-                                                       IntegrityHashService integrityHashService,
-                                                       IntegrityAuditLog auditLog,
-                                                       GestionInventarioService gestionInventarioService,
-                                                       IntegrityEventLogger eventLogger,
-                                                       IntegrityMetrics metrics) {
-        return new ProcesarCompraService(
-                partidaRepository,
-                presupuestoRepository,
-                integrityHashService,
-                auditLog,
-                gestionInventarioService,
-                eventLogger,
-                metrics
-        );
+            PresupuestoRepository presupuestoRepository, IntegrityHashService integrityHashService,
+            IntegrityAuditLog auditLog, GestionInventarioService gestionInventarioService,
+            com.budgetpro.domain.shared.port.out.ObservabilityPort observability) {
+        return new ProcesarCompraService(partidaRepository, presupuestoRepository, integrityHashService, auditLog,
+                gestionInventarioService, observability);
     }
 }

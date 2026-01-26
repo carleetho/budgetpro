@@ -2,7 +2,7 @@ package com.budgetpro.infrastructure.persistence.mapper;
 
 import com.budgetpro.domain.catalogo.model.RecursoProxy;
 import com.budgetpro.domain.catalogo.model.RecursoProxyId;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.RecursoProxyEntity;
 import org.junit.jupiter.api.Test;
 

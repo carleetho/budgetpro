@@ -15,17 +15,17 @@ import java.util.UUID;
 /**
  * Adaptador de persistencia para ConfiguracionLaboralRepository.
  * 
- * CRÍTICO: NO se hacen validaciones manuales de versión.
- * Hibernate maneja el Optimistic Locking automáticamente con @Version.
+ * CRÍTICO: NO se hacen validaciones manuales de versión. Hibernate maneja el
+ * Optimistic Locking automáticamente con @Version.
  */
-@Component
+@Component("sobrecostoConfiguracionLaboralRepositoryAdapter")
 public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLaboralRepository {
 
     private final ConfiguracionLaboralJpaRepository jpaRepository;
     private final ConfiguracionLaboralMapper mapper;
 
     public ConfiguracionLaboralRepositoryAdapter(ConfiguracionLaboralJpaRepository jpaRepository,
-                                                ConfiguracionLaboralMapper mapper) {
+            ConfiguracionLaboralMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }
@@ -33,8 +33,9 @@ public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLabor
     @Override
     @Transactional
     public void save(ConfiguracionLaboral configuracion) {
-        Optional<ConfiguracionLaboralEntity> existingEntityOpt = jpaRepository.findById(configuracion.getId().getValue());
-        
+        Optional<ConfiguracionLaboralEntity> existingEntityOpt = jpaRepository
+                .findById(configuracion.getId().getValue());
+
         if (existingEntityOpt.isPresent()) {
             // Actualización: actualizar campos
             ConfiguracionLaboralEntity existingEntity = existingEntityOpt.get();
@@ -50,21 +51,18 @@ public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLabor
     @Override
     @Transactional(readOnly = true)
     public Optional<ConfiguracionLaboral> findById(ConfiguracionLaboralId id) {
-        return jpaRepository.findById(id.getValue())
-                .map(mapper::toDomain);
+        return jpaRepository.findById(id.getValue()).map(mapper::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ConfiguracionLaboral> findGlobal() {
-        return jpaRepository.findGlobal()
-                .map(mapper::toDomain);
+        return jpaRepository.findGlobal().map(mapper::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ConfiguracionLaboral> findByProyectoId(UUID proyectoId) {
-        return jpaRepository.findByProyectoId(proyectoId)
-                .map(mapper::toDomain);
+        return jpaRepository.findByProyectoId(proyectoId).map(mapper::toDomain);
     }
 }

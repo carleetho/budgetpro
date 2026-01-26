@@ -9,7 +9,7 @@ import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.domain.catalogo.model.RecursoSearchCriteria;
 import com.budgetpro.domain.catalogo.model.RecursoSnapshot;
 import com.budgetpro.domain.catalogo.port.CatalogPort;
-import com.budgetpro.domain.recurso.model.TipoRecurso;
+import com.budgetpro.domain.shared.model.TipoRecurso;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +25,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
- * Adaptador mock para catálogos externos.
- * Usa datos en memoria para pruebas y fase de dual-write.
+ * Adaptador mock para catálogos externos. Usa datos en memoria para pruebas y
+ * fase de dual-write.
  */
 @Component
-@Profile({"test", "mock"})
+@Profile({ "test", "mock" })
 public class MockCatalogAdapter implements CatalogPort {
 
     private static final UUID MOCK_PARTIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
@@ -65,19 +65,16 @@ public class MockCatalogAdapter implements CatalogPort {
         verificarFalloForzado();
 
         List<RecursoSnapshot> base = recursosPorClave.values().stream()
-                .filter(snapshot -> snapshot.catalogSource().equals(catalogSource))
-                .collect(Collectors.toList());
+                .filter(snapshot -> snapshot.catalogSource().equals(catalogSource)).collect(Collectors.toList());
 
         if (criteria == null) {
             return base;
         }
 
-        return base.stream()
-                .filter(snapshot -> matchesQuery(snapshot, criteria))
+        return base.stream().filter(snapshot -> matchesQuery(snapshot, criteria))
                 .filter(snapshot -> matchesTipo(snapshot, criteria))
                 .filter(snapshot -> matchesUnidad(snapshot, criteria))
-                .limit(criteria.getLimit() != null ? criteria.getLimit() : base.size())
-                .collect(Collectors.toList());
+                .limit(criteria.getLimit() != null ? criteria.getLimit() : base.size()).collect(Collectors.toList());
     }
 
     @Override
@@ -120,50 +117,19 @@ public class MockCatalogAdapter implements CatalogPort {
     }
 
     private void cargarDatosBase() {
-        RecursoSnapshot cemento = new RecursoSnapshot(
-                "MAT-001",
-                "CAPECO",
-                "CEMENTO PORTLAND TIPO I",
-                TipoRecurso.MATERIAL,
-                "BOL",
-                new BigDecimal("25.50"),
-                LocalDateTime.now()
-        );
-        RecursoSnapshot acero = new RecursoSnapshot(
-                "MAT-002",
-                "CAPECO",
-                "ACERO CORRUGADO 3/8\"",
-                TipoRecurso.MATERIAL,
-                "KG",
-                new BigDecimal("4.20"),
-                LocalDateTime.now()
-        );
+        RecursoSnapshot cemento = new RecursoSnapshot("MAT-001", "CAPECO", "CEMENTO PORTLAND TIPO I",
+                TipoRecurso.MATERIAL, "BOL", new BigDecimal("25.50"), LocalDateTime.now());
+        RecursoSnapshot acero = new RecursoSnapshot("MAT-002", "CAPECO", "ACERO CORRUGADO 3/8\"", TipoRecurso.MATERIAL,
+                "KG", new BigDecimal("4.20"), LocalDateTime.now());
         recursosPorClave.put(buildKey(cemento.externalId(), cemento.catalogSource()), cemento);
         recursosPorClave.put(buildKey(acero.externalId(), acero.catalogSource()), acero);
 
-        APUSnapshot apu = APUSnapshot.crear(
-                APUSnapshotId.generate(),
-                MOCK_PARTIDA_ID,
-                "APU-001",
-                "CAPECO",
-                new BigDecimal("1.0"),
-                "UND",
-                LocalDateTime.now()
-        );
-        APUInsumoSnapshot insumo1 = APUInsumoSnapshot.crear(
-                APUInsumoSnapshotId.generate(),
-                "MAT-001",
-                "CEMENTO PORTLAND TIPO I",
-                new BigDecimal("2.0"),
-                new BigDecimal("25.50")
-        );
-        APUInsumoSnapshot insumo2 = APUInsumoSnapshot.crear(
-                APUInsumoSnapshotId.generate(),
-                "MAT-002",
-                "ACERO CORRUGADO 3/8\"",
-                new BigDecimal("3.5"),
-                new BigDecimal("4.20")
-        );
+        APUSnapshot apu = APUSnapshot.crear(APUSnapshotId.generate(), MOCK_PARTIDA_ID, "APU-001", "CAPECO",
+                new BigDecimal("1.0"), "UND", LocalDateTime.now());
+        APUInsumoSnapshot insumo1 = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-001",
+                "CEMENTO PORTLAND TIPO I", new BigDecimal("2.0"), new BigDecimal("25.50"));
+        APUInsumoSnapshot insumo2 = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-002",
+                "ACERO CORRUGADO 3/8\"", new BigDecimal("3.5"), new BigDecimal("4.20"));
         apu.agregarInsumo(insumo1);
         apu.agregarInsumo(insumo2);
         apusPorClave.put(buildKey("APU-001", "CAPECO"), apu);

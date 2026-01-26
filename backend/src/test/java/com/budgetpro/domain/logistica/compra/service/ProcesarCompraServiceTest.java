@@ -13,6 +13,7 @@ import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityAuditLog;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
+import com.budgetpro.domain.shared.port.out.ObservabilityPort;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalleId;
@@ -63,17 +64,14 @@ class ProcesarCompraServiceTest {
         private GestionInventarioService gestionInventarioService;
 
         @Mock
-        private com.budgetpro.infrastructure.observability.IntegrityEventLogger eventLogger;
-
-        @Mock
-        private com.budgetpro.infrastructure.observability.IntegrityMetrics metrics;
+        private ObservabilityPort observability;
 
         private ProcesarCompraService service;
 
         @BeforeEach
         void setUp() {
                 service = new ProcesarCompraService(partidaRepository, presupuestoRepository, integrityHashService,
-                                auditLog, gestionInventarioService, eventLogger, metrics);
+                                auditLog, gestionInventarioService, observability);
         }
 
         @Test

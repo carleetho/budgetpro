@@ -4,19 +4,20 @@ import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartida;
 import com.budgetpro.domain.finanzas.consumo.model.ConsumoPartidaId;
 import com.budgetpro.domain.finanzas.exception.SaldoInsuficienteException;
 import com.budgetpro.domain.finanzas.model.Billetera;
+import com.budgetpro.domain.finanzas.model.BilleteraId;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.domain.finanzas.presupuesto.exception.BudgetIntegrityViolationException;
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
+import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityAuditLog;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.inventario.service.GestionInventarioService;
-import com.budgetpro.infrastructure.observability.IntegrityEventLogger;
-import com.budgetpro.infrastructure.observability.IntegrityMetrics;
+import com.budgetpro.domain.shared.port.out.ObservabilityPort;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,20 +47,17 @@ public class ProcesarCompraService {
     private final IntegrityHashService integrityHashService;
     private final IntegrityAuditLog auditLog;
     private final GestionInventarioService gestionInventarioService;
-    private final IntegrityEventLogger eventLogger;
-    private final IntegrityMetrics metrics;
+    private final ObservabilityPort observability;
 
     public ProcesarCompraService(PartidaRepository partidaRepository, PresupuestoRepository presupuestoRepository,
             IntegrityHashService integrityHashService, IntegrityAuditLog auditLog,
-            GestionInventarioService gestionInventarioService, IntegrityEventLogger eventLogger,
-            IntegrityMetrics metrics) {
+            GestionInventarioService gestionInventarioService, ObservabilityPort observability) {
         this.partidaRepository = partidaRepository;
         this.presupuestoRepository = presupuestoRepository;
         this.integrityHashService = integrityHashService;
         this.auditLog = auditLog;
         this.gestionInventarioService = gestionInventarioService;
-        this.eventLogger = eventLogger;
-        this.metrics = metrics;
+        this.observability = observability;
     }
 
     /**
@@ -100,26 +98,26 @@ public class ProcesarCompraService {
 
         // Validar integridad del presupuesto (solo si fue aprobado y tiene hash)
         if (presupuesto.isAprobado()) {
-            String correlationId = eventLogger.generateCorrelationId();
+            String correlationId = observability.generateCorrelationId();
             long validationStartTime = System.currentTimeMillis();
 
             try {
                 presupuesto.validarIntegridad(integrityHashService);
 
-                // Registrar validación exitosa en audit log y métricas
+                // Registrar validación exitosa en audit log
                 long validationDuration = System.currentTimeMillis() - validationStartTime;
-                metrics.recordHashValidation(true, validationDuration, "SHA-256-v1");
-                eventLogger.logHashValidation(correlationId, presupuesto.getId().getValue(), true, validationDuration,
-                        String.format("Purchase approval validation for compra %s", compra.getId().getValue()),
-                        "SHA-256-v1");
+                observability.recordMetrics("budget.integrity.validation", (double) validationDuration, "status",
+                        "success");
+                observability.logEvent("HASH_VALIDATION_SUCCESS",
+                        String.format("Purchase approval validation for compra %s", compra.getId().getValue()));
                 auditLog.logHashValidation(presupuesto, null, true,
                         String.format("Purchase approval validation for compra %s", compra.getId().getValue()));
             } catch (BudgetIntegrityViolationException e) {
-                // Registrar violación en audit log, métricas y logging estructurado
+                // Registrar violación en audit log
                 long validationDuration = System.currentTimeMillis() - validationStartTime;
-                metrics.recordHashValidation(false, validationDuration, "SHA-256-v1");
-                metrics.recordIntegrityViolation(e.getViolationType(), "SHA-256-v1");
-                eventLogger.logIntegrityViolation(correlationId, e, null, "purchase_approval", "SHA-256-v1");
+                observability.recordMetrics("budget.integrity.violation", 1.0, "type", e.getViolationType());
+                observability.logError(correlationId, "logistica.compra", "purchase_approval",
+                        compra.getProyectoId().toString(), e);
                 auditLog.logIntegrityViolation(e, null);
                 throw e; // Prevenir aprobación de compra sobre presupuesto comprometido
             }
@@ -161,8 +159,7 @@ public class ProcesarCompraService {
         // Usar el método egresar que valida saldo, integridad y crea el movimiento
         billetera.egresar(compra.getTotal(),
                 String.format("Compra #%s - %s", compra.getId().getValue(), compra.getProveedor()), null, // evidenciaUrl
-                                                                                                          // opcional
-                presupuesto, integrityHashService);
+                presupuesto.getId(), true); // true because we validated it above
 
         // Aprobar la compra
         compra.aprobar();
