@@ -46,6 +46,14 @@ public interface ProyectoRepository {
     boolean existsByNombre(String nombre);
 
     /**
+     * Verifica si existe un proyecto con el ID dado.
+     * 
+     * @param id El ID del proyecto
+     * @return true si existe, false en caso contrario
+     */
+    boolean existsById(ProyectoId id);
+
+    /**
      * Obtiene todos los proyectos.
      * 
      * @return Lista de todos los proyectos
