@@ -7,7 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Puerto de Salida (Outbound Port) para la persistencia del agregado Presupuesto.
+ * Puerto de Salida (Outbound Port) para la persistencia del agregado
+ * Presupuesto.
  * 
  * Define el contrato de persistencia sin depender de tecnologías específicas.
  * La implementación estará en la capa de infraestructura.
@@ -36,6 +37,14 @@ public interface PresupuestoRepository {
      * @return Optional con el presupuesto si existe, vacío en caso contrario
      */
     Optional<Presupuesto> findByProyectoId(UUID proyectoId);
+
+    /**
+     * Busca el presupuesto activo de un proyecto.
+     * 
+     * @param proyectoId El ID del proyecto
+     * @return Optional con el presupuesto si existe, vacío en caso contrario
+     */
+    Optional<Presupuesto> findActiveByProyectoId(UUID proyectoId);
 
     /**
      * Verifica si existe un presupuesto activo para el proyecto dado.
