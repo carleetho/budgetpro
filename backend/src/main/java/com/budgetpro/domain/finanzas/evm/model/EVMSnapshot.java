@@ -136,9 +136,9 @@ public final class EVMSnapshot {
 
         // Interpretación de Costo (CPI)
         if (cpi.compareTo(BigDecimal.ONE) < 0) {
-            sb.append("Proyecto bajo presupuesto (CPI < 1.0): gastando más de lo planificado. ");
+            sb.append("Proyecto sobre presupuesto (CPI < 1.0): gastando más de lo planificado. ");
         } else if (cpi.compareTo(BigDecimal.ONE) > 0) {
-            sb.append("Proyecto con ahorro en costos (CPI > 1.0). ");
+            sb.append("Proyecto bajo presupuesto (CPI > 1.0). ");
         } else {
             sb.append("Proyecto conforme al presupuesto (CPI = 1.0). ");
         }

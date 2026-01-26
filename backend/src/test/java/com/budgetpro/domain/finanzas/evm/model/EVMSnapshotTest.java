@@ -53,7 +53,7 @@ class EVMSnapshotTest {
                 new BigDecimal("5000.00"));
 
         // Then
-        assertTrue(snapshot.getInterpretacion().contains("Proyecto bajo presupuesto (CPI < 1.0)"));
+        assertTrue(snapshot.getInterpretacion().contains("Proyecto sobre presupuesto (CPI < 1.0)"));
         assertTrue(snapshot.getInterpretacion().contains("Proyecto retrasado (SPI < 1.0)"));
     }
 
@@ -66,7 +66,7 @@ class EVMSnapshotTest {
                 new BigDecimal("5000.00"));
 
         // Then
-        assertTrue(snapshot.getInterpretacion().contains("Proyecto con ahorro en costos (CPI > 1.0)"));
+        assertTrue(snapshot.getInterpretacion().contains("Proyecto bajo presupuesto (CPI > 1.0)"));
         assertTrue(snapshot.getInterpretacion().contains("Proyecto adelantado (SPI > 1.0)"));
     }
 
