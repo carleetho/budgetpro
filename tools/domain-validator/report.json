@@ -1,7 +1,7 @@
 {
   "exitCode" : 1,
-  "validation_id" : "17c2121e-03a4-4e66-8ce7-2366658dfb81",
-  "timestamp" : "2026-01-23T20:16:52.708900167Z",
+  "validation_id" : "4c0207c4-0fb6-4bc1-9477-daebac83b54a",
+  "timestamp" : "2026-01-25T04:22:53.398877538Z",
   "repository_path" : "/home/wazoox/Desktop/budgetpro-backend/backend",
   "canonical_version" : "1.0.0",
   "status" : "CRITICAL_VIOLATIONS",
@@ -262,7 +262,7 @@
   "module_statuses" : [ {
     "module_id" : "proyecto",
     "implementation_status" : "COMPLETE",
-    "detected_entities" : [ "com.budgetpro.domain.finanzas.model.Billetera", "com.budgetpro.domain.finanzas.model.BilleteraId", "com.budgetpro.domain.finanzas.port.out.BilleteraRepository", "com.budgetpro.domain.proyecto.model.ProyectoId", "com.budgetpro.domain.proyecto.model.Proyecto", "com.budgetpro.domain.proyecto.port.out.ProyectoRepository" ],
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.model.Billetera", "com.budgetpro.domain.finanzas.model.BilleteraId", "com.budgetpro.domain.finanzas.port.out.BilleteraRepository", "com.budgetpro.domain.rrhh.model.AsignacionProyectoId", "com.budgetpro.domain.rrhh.model.AsignacionProyecto", "com.budgetpro.domain.proyecto.model.ProyectoId", "com.budgetpro.domain.proyecto.model.Proyecto", "com.budgetpro.domain.proyecto.port.out.ProyectoRepository" ],
     "detected_services" : [ ],
     "detected_endpoints" : [ "GET ", "GET ", "POST " ],
     "missing_dependencies" : [ ]
@@ -283,22 +283,22 @@
   }, {
     "module_id" : "compras",
     "implementation_status" : "IN_PROGRESS",
-    "detected_entities" : [ "com.budgetpro.domain.logistica.compra.model.CompraDetalleId", "com.budgetpro.domain.logistica.compra.model.CompraId", "com.budgetpro.domain.logistica.compra.model.CompraDetalle", "com.budgetpro.domain.logistica.compra.model.Compra", "com.budgetpro.domain.logistica.compra.service.PartidaData", "com.budgetpro.domain.logistica.compra.port.out.CompraRepository" ],
+    "detected_entities" : [ "com.budgetpro.domain.logistica.backlog.model.RequerimientoCompraId", "com.budgetpro.domain.logistica.backlog.model.RequerimientoCompra", "com.budgetpro.domain.logistica.compra.model.CompraDetalleId", "com.budgetpro.domain.logistica.compra.model.CompraId", "com.budgetpro.domain.logistica.compra.model.CompraDetalle", "com.budgetpro.domain.logistica.compra.model.Compra", "com.budgetpro.domain.logistica.compra.service.PartidaData", "com.budgetpro.domain.logistica.compra.port.out.CompraRepository" ],
     "detected_services" : [ "com.budgetpro.domain.logistica.compra.service.ProcesarCompraService", "com.budgetpro.domain.logistica.compra.service.PartidaData" ],
     "detected_endpoints" : [ ],
     "missing_dependencies" : [ ]
   }, {
     "module_id" : "inventarios",
     "implementation_status" : "NOT_STARTED",
-    "detected_entities" : [ "com.budgetpro.domain.logistica.inventario.model.MovimientoInventario", "com.budgetpro.domain.logistica.inventario.model.MovimientoInventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioItem", "com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository" ],
-    "detected_services" : [ "com.budgetpro.domain.logistica.inventario.service.GestionInventarioService" ],
+    "detected_entities" : [ "com.budgetpro.domain.logistica.inventario.model.MovimientoInventario", "com.budgetpro.domain.logistica.inventario.model.MovimientoInventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioId", "com.budgetpro.domain.logistica.inventario.model.InventarioItem", "com.budgetpro.domain.logistica.inventario.service.InventarioSnapshotService", "com.budgetpro.domain.logistica.inventario.port.out.InventarioRepository" ],
+    "detected_services" : [ "com.budgetpro.domain.logistica.inventario.service.GestionInventarioService", "com.budgetpro.domain.logistica.inventario.service.InventarioSnapshotService", "com.budgetpro.domain.logistica.inventario.service.ImputacionService" ],
     "detected_endpoints" : [ ],
     "missing_dependencies" : [ ]
   }, {
     "module_id" : "rrhh",
     "implementation_status" : "NOT_STARTED",
-    "detected_entities" : [ ],
-    "detected_services" : [ ],
+    "detected_entities" : [ "com.budgetpro.domain.rrhh.model.CuadrillaId", "com.budgetpro.domain.rrhh.model.Contacto", "com.budgetpro.domain.rrhh.model.HistorialId", "com.budgetpro.domain.rrhh.model.Empleado", "com.budgetpro.domain.rrhh.model.AsignacionProyectoId", "com.budgetpro.domain.rrhh.model.EmpleadoId", "com.budgetpro.domain.rrhh.model.Cuadrilla", "com.budgetpro.domain.rrhh.model.AsignacionProyecto", "com.budgetpro.domain.rrhh.model.HistorialLaboral", "com.budgetpro.domain.rrhh.model.CuadrillaMiembroId", "com.budgetpro.domain.rrhh.model.CuadrillaMiembro", "com.budgetpro.domain.rrhh.model.AsistenciaRegistro" ],
+    "detected_services" : [ "com.budgetpro.domain.rrhh.service.CalculadorFSR" ],
     "detected_endpoints" : [ ],
     "missing_dependencies" : [ "tiempo" ]
   }, {
@@ -311,9 +311,9 @@
   }, {
     "module_id" : "evm",
     "implementation_status" : "COMPLETE",
-    "detected_entities" : [ "com.budgetpro.domain.finanzas.control.service.DatosControlPartida" ],
+    "detected_entities" : [ "com.budgetpro.domain.finanzas.evm.model.EVMSnapshot", "com.budgetpro.domain.finanzas.evm.model.EVMSnapshotId", "com.budgetpro.domain.finanzas.control.service.DatosControlPartida" ],
     "detected_services" : [ "com.budgetpro.domain.finanzas.control.service.AgregacionControlCostosService", "com.budgetpro.domain.finanzas.control.service.DatosControlPartida", "com.budgetpro.domain.finanzas.avance.service.ControlAvanceService" ],
-    "detected_endpoints" : [ ],
+    "detected_endpoints" : [ "GET " ],
     "missing_dependencies" : [ "tiempo" ]
   }, {
     "module_id" : "cambios",
@@ -328,7 +328,7 @@
     "detected_entities" : [ "com.budgetpro.domain.finanzas.sobrecosto.model.AnalisisSobrecostoId", "com.budgetpro.domain.finanzas.sobrecosto.model.AnalisisSobrecosto", "com.budgetpro.domain.finanzas.sobrecosto.port.out.AnalisisSobrecostoRepository", "com.budgetpro.domain.finanzas.alertas.model.AlertaParametrica", "com.budgetpro.domain.finanzas.alertas.model.AnalisisPresupuesto", "com.budgetpro.domain.finanzas.alertas.service.AnalizadorParametricoService" ],
     "detected_services" : [ "com.budgetpro.domain.finanzas.alertas.service.DatosPartida", "com.budgetpro.domain.finanzas.alertas.service.DatosApuInsumo", "com.budgetpro.domain.finanzas.alertas.service.AnalizadorParametricoService", "com.budgetpro.domain.finanzas.alertas.service.DatosRecurso", "com.budgetpro.domain.finanzas.sobrecosto.service.AlertaInteligencia", "com.budgetpro.domain.finanzas.alertas.service.DatosAnalisis" ],
     "detected_endpoints" : [ ],
-    "missing_dependencies" : [ "rrhh" ]
+    "missing_dependencies" : [ ]
   }, {
     "module_id" : "billetera",
     "implementation_status" : "COMPLETE",
@@ -340,7 +340,7 @@
     "module_id" : "catalogo",
     "implementation_status" : "COMPLETE",
     "detected_entities" : [ "com.budgetpro.domain.catalogo.model.APUSnapshotId", "com.budgetpro.domain.catalogo.model.APUInsumoSnapshotId", "com.budgetpro.domain.catalogo.model.APUSnapshot", "com.budgetpro.domain.catalogo.model.RecursoSearchCriteria", "com.budgetpro.domain.catalogo.model.RecursoProxy", "com.budgetpro.domain.catalogo.model.RecursoProxyId", "com.budgetpro.domain.catalogo.model.APUInsumoSnapshot", "com.budgetpro.domain.finanzas.apu.model.ApuInsumo", "com.budgetpro.domain.finanzas.apu.model.APU", "com.budgetpro.domain.finanzas.apu.model.ApuId", "com.budgetpro.domain.finanzas.apu.model.ApuInsumoId", "com.budgetpro.domain.finanzas.apu.port.out.ApuRepository", "com.budgetpro.domain.recurso.model.Recurso", "com.budgetpro.domain.recurso.model.RecursoId" ],
-    "detected_services" : [ "com.budgetpro.domain.finanzas.cronograma.service.SnapshotGeneratorService", "com.budgetpro.domain.finanzas.alertas.service.DatosApuInsumo", "com.budgetpro.domain.finanzas.alertas.service.DatosRecurso", "com.budgetpro.domain.catalogo.service.CalculoApuDinamicoService", "com.budgetpro.domain.catalogo.service.SnapshotService" ],
+    "detected_services" : [ "com.budgetpro.domain.finanzas.cronograma.service.SnapshotGeneratorService", "com.budgetpro.domain.finanzas.alertas.service.DatosApuInsumo", "com.budgetpro.domain.finanzas.alertas.service.DatosRecurso", "com.budgetpro.domain.catalogo.service.CalculoApuDinamicoService", "com.budgetpro.domain.logistica.inventario.service.InventarioSnapshotService", "com.budgetpro.domain.catalogo.service.SnapshotService" ],
     "detected_endpoints" : [ ],
     "missing_dependencies" : [ ]
   } ]
