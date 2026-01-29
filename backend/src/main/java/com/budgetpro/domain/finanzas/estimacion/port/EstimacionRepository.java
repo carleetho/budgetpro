@@ -28,4 +28,9 @@ public interface EstimacionRepository {
      * para actualizaciones).
      */
     boolean existsPeriodoSolapadoExcludingId(UUID proyectoId, LocalDate inicio, LocalDate fin, EstimacionId excludeId);
+
+    /**
+     * Obtiene el siguiente número de estimación para un proyecto.
+     */
+    Integer obtenerSiguienteNumeroEstimacion(UUID proyectoId);
 }

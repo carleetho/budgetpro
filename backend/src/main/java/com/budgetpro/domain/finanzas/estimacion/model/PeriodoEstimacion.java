@@ -25,6 +25,14 @@ public final class PeriodoEstimacion {
         return new PeriodoEstimacion(fechaInicio, fechaFin);
     }
 
+    /**
+     * Reconstruye un periodo desde persistencia u otra capa. Mismo comportamiento
+     * que of() pero semánticamente distinto para Clean Arch.
+     */
+    public static PeriodoEstimacion reconstruir(LocalDate fechaInicio, LocalDate fechaFin) {
+        return new PeriodoEstimacion(fechaInicio, fechaFin);
+    }
+
     public LocalDate getFechaInicio() {
         return fechaInicio;
     }

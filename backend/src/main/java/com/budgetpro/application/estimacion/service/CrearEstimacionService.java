@@ -46,9 +46,9 @@ public class CrearEstimacionService implements CrearEstimacionUseCase {
         response.setFechaFin(estimacion.getPeriodo().getFechaFin());
         response.setRetencionPorcentaje(estimacion.getRetencionPorcentaje().getValue());
         response.setMontoRetencion(estimacion.calcularMontoRetencion().getValue());
-        response.setSubtotal(estimacion.calcularSubtotal().getValue());
+        response.setSubtotal(estimacion.calcularSubtotal());
         response.setTotalPagar(estimacion.calcularTotalPagar().getValue());
-        response.setItems(Collections.emptyList()); // New estimation has no items
+        response.setDetalles(Collections.emptyList()); // New estimation has no items
         return response;
     }
 }

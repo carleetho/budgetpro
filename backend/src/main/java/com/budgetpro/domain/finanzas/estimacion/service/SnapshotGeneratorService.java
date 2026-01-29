@@ -34,8 +34,8 @@ public class SnapshotGeneratorService {
 
     private String generarTotalesJson(Estimacion estimacion) {
         Map<String, Object> totalesMap = new HashMap<>();
-        totalesMap.put("totalEstimado", estimacion.calcularTotalEstimado().getValueForPersistence());
-        totalesMap.put("retencion", estimacion.calcularRetencion().getValueForPersistence());
+        totalesMap.put("totalEstimado", estimacion.calcularSubtotal());
+        totalesMap.put("retencion", estimacion.calcularMontoRetencion().getValueForPersistence());
         totalesMap.put("totalPagar", estimacion.calcularTotalPagar().getValueForPersistence());
         totalesMap.put("porcentajeRetencion", estimacion.getRetencionPorcentaje().getValue());
 

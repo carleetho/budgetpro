@@ -18,6 +18,10 @@ public final class EstimacionId {
         return new EstimacionId(UUID.randomUUID());
     }
 
+    public static EstimacionId nuevo() {
+        return random();
+    }
+
     public UUID getValue() {
         return value;
     }

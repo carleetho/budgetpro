@@ -1,0 +1,75 @@
+# AXIOM Configuration for BudgetPro
+# Source of truth for architectural rules and constraints
+
+system:
+  role: "Senior Software Architect expert in Java 17, Spring Boot 3.2, and Hexagonal Architecture (DDD)"
+  priorities:
+    - "SOLIDEZ (Solidity) over speed"
+    - "INTEGRIDAD (Integrity) of data"
+    - "Strict adherence to Hexagonal Architecture"
+
+axioms:
+  protection_zones:
+    - name: "Domain Layer - Core Logic"
+      level: "RED"
+      paths:
+        - "backend/src/main/java/com/budgetpro/domain/**"
+      description: "The core domain logic. Pure Java. No framework dependencies."
+
+    - name: "Estimacion Module - Legacy/Stable"
+      level: "RED"
+      paths:
+        - "backend/src/main/java/com/budgetpro/application/estimacion/**"
+      description: "Legacy stable module. NO refactorices su estructura sin permiso explícito 'OVERRIDE_ESTIMACION'."
+
+    - name: "Application Layer - Use Cases"
+      level: "YELLOW"
+      paths:
+        - "backend/src/main/java/com/budgetpro/application/**"
+      description: "Orchestration of domain logic. Can depend on Domain."
+
+    - name: "Infrastructure Layer - Adapters"
+      level: "GREEN"
+      paths:
+        - "backend/src/main/java/com/budgetpro/infrastructure/**"
+      description: "Implementation details (Database, Web, etc). Safe to modify with care."
+
+  prohibitions:
+    - "NO BORRES CÓDIGO FUNCIONAL: Nunca reemplaces lógica existente con comentarios // TODO o // Implement later."
+    - "NO DEJES MÉTODOS VACÍOS: En adaptadores de persistencia, nunca devuelvas null, Optional.empty() o listas vacías solo para satisfacer al compilador."
+    - "PROHIBIDO IMPORTAR INFRAESTRUCTURA EN DOMINIO: El paquete com.budgetpro.domain nunca debe importar com.budgetpro.infrastructure."
+    - "PROHIBIDO IMPORTAR FRAMEWORKS EN DOMINIO: El paquete com.budgetpro.domain nunca debe importar org.springframework.* o jakarta.persistence.*."
+    - "No mezcles lógica de negocio en los adaptadores. Solo mapeo y delegación al repositorio JPA."
+
+  hexagonal_boundaries:
+    permitted:
+      - from: "com.budgetpro.application"
+        to: "com.budgetpro.domain"
+      - from: "com.budgetpro.infrastructure"
+        to: "com.budgetpro.application"
+      - from: "com.budgetpro.infrastructure"
+        to: "com.budgetpro.domain"
+    forbidden:
+      - from: "com.budgetpro.domain"
+        to: "com.budgetpro.infrastructure"
+      - from: "com.budgetpro.domain"
+        to: "com.budgetpro.application"
+      - from: "com.budgetpro.domain"
+        to: "org.springframework"
+      - from: "com.budgetpro.domain"
+        to: "jakarta.persistence"
+
+  override_keywords:
+    EMERGENCY_FIX: "Use only for critical production bugs that require immediate bypass of standard rules."
+    ARCHITECTURE_APPROVED: "Use when a deviation has been explicitly approved by the Architecture team."
+    BASELINE_CHANGE: "Use when modifying the core baseline architecture or rules."
+    ROADMAP_EXCEPTION: "Use for approved deviations from the canonical roadmap."
+    OVERRIDE_ESTIMACION: "Explicit permission to refactor the legacy ESTIMACION module."
+
+  historical_context:
+    baseline_violations:
+      - "Mixing persistence logic (JPA entities) directly into Domain models."
+      - "Using Spring's @Autowired in Domain entities."
+    lessons_learned:
+      - "Strict separation of Domain and Infrastructure is critical for long-term maintainability."
+      - "Always use Mappers to convert between Domain Entities and JPA Entities."
