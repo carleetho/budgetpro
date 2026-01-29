@@ -1,0 +1,73 @@
+# AXIOM Configuration File
+# Defines behavior, protection zones, and operational parameters for the BudgetPro project.
+
+# Protection Zones: Define strictness levels for different parts of the codebase.
+# Limits the number of files that can be changed per commit in these zones to prevent large, risky PRs.
+protection_zones:
+  # Red Zones: Critical domain logic. High risk. Very strict limits.
+  red:
+    - path: "domain/presupuesto"
+      max_files: 1
+    - path: "domain/estimacion"
+      max_files: 1
+    - path: "domain/valueobjects"
+      max_files: 1
+    - path: "domain/entities"
+      max_files: 1
+
+  # Yellow Zones: Infrastructure and persistence. Moderate risk.
+  yellow:
+    - path: "infrastructure/persistence"
+      max_files: 3
+
+  # Green Zones: Application layer, web adapters, and tests. Lower risk.
+  green:
+    - path: "application"
+      max_files: 10
+    - path: "infrastructure/web"
+      max_files: 10
+    - path: "tests"
+      max_files: 10
+
+# Validators: Configuration for the AXIOM validation engine.
+validators:
+  # Blast Radius: Prevents massive changes that carry high risk.
+  blast_radius:
+    enabled: true
+    threshold: 10
+    # Strictness levels:
+    # - blocking: fails the build if threshold is exceeded
+    # - warning: logs a warning but allows the build
+    # - hybrid: blocking for red zones, warning for others
+    strictness: "blocking"
+
+# Reporters: Where to send validation results.
+reporters:
+  console:
+    enabled: true
+
+  log_file:
+    enabled: true
+    # Path for the log file. Supports environment variable interpolation (e.g. ${LOG_PATH})
+    path: ".budgetpro/axiom.log"
+
+  metrics:
+    enabled: true
+    path: ".budgetpro/metrics.json"
+
+# Auto-fix: Configuration for automatic remediation of issues.
+auto_fix:
+  enabled: false
+  # If true, only applies fixes known to be 100% safe (no logic changes, formatting/imports only).
+  safe_only: true
+
+# Overrides: List of active override keywords permitting violation of rules.
+# Add keywords to this list (or use commit message tags) to bypass specific checks.
+overrides:
+  # List of active override keywords.
+  enabled_keywords: []
+  # Examples of override keywords:
+  # - OVERRIDE_ESTIMACION  # Allow changes to Estimacion module
+  # - OVERRIDE_PRESUPUESTO # Allow changes to Presupuesto module
+  # - OVERRIDE_DOMAIN_CORE # Allow changes to core domain objects
+  # - BIGBANG_APPROVED     # Allow large changes (bypass blast radius)
