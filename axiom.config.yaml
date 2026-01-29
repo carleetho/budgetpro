@@ -41,6 +41,15 @@ validators:
     # - hybrid: blocking for red zones, warning for others
     strictness: "blocking"
 
+  # Security Validator: Enforces security best practices.
+  security_validator:
+    enabled: true
+    strictness: "standard" # standard (warnings for high/med/low), strict (blocking for high)
+    checks:
+      gitignore: true
+      credentials: true
+      file_integrity: true
+
 # Reporters: Where to send validation results.
 reporters:
   console:
