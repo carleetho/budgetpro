@@ -10,7 +10,11 @@ class LazyCodeValidator(BaseValidator):
     AI-generated code from entering the repository.
     """
 
+    # Configuration constants
+    CONTEXT_LINES = 2
+
     # Strictly defined regex patterns
+    # Matches: public|private|protected + return type + method name + arguments + { + (comments|spaces)* + }
     EMPTY_METHOD_REGEX = r"(public|private|protected)\s+[\w<>\[\], ]+\s+\w+\s*\([^)]*\)\s*\{\s*(?://.*|/\*[\s\S]*?\*/|\s)*\}"
     NULL_RETURN_REGEX = r"return\s+null;|return\s+Optional\.empty\(\);"
     TODO_FIXME_REGEX = r"//\s*(TODO|FIXME)"
@@ -86,16 +90,19 @@ class LazyCodeValidator(BaseValidator):
         
         full_message = f"{message}\n\nContexto:\n{context}\n\nSugerencia: {suggestion}"
         
+        # Use strictness from config (defaults to blocking for this validator)
+        severity = self.config.get("strictness", "blocking")
+        
         return Violation(
             file_path=file_path,
             message=full_message,
-            severity="blocking",
+            severity=severity,
             validator_name=self.name,
             line_number=line_num
         )
 
-    def _extract_code_context(self, content: str, line_number: int, context_lines: int = 2) -> str:
-        """Extracts ±2 lines of context around the violation."""
+    def _extract_code_context(self, content: str, line_number: int, context_lines: int = CONTEXT_LINES) -> str:
+        """Extracts context lines around the violation for better reporting."""
         lines = content.splitlines()
         total_lines = len(lines)
         
@@ -120,7 +127,10 @@ class LazyCodeValidator(BaseValidator):
         return suggestions.get(pattern_type, "")
 
     def _matches_path_pattern(self, file_path: str, pattern: str) -> bool:
-        """Checks if file_path contains the pattern fragment."""
+        """
+        Checks if file_path matches a package/directory fragment.
+        Handles both prefix-based and mid-path matches for flexibility.
+        """
         normalized_path = file_path.replace("\\", "/")
         return pattern.rstrip("/") + "/" in normalized_path or normalized_path.startswith(pattern.rstrip("/") + "/")
 
