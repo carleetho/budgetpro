@@ -62,6 +62,7 @@ npm run dev
 ## 🛠️ Tecnologías
 
 ### Backend
+
 - Java 17
 - Spring Boot 3.x
 - PostgreSQL
@@ -69,6 +70,7 @@ npm run dev
 - Maven
 
 ### Frontend
+
 - (Por definir)
 
 ## 📖 API REST
@@ -83,6 +85,26 @@ Ver documentación completa de endpoints en: `docs/ARQUITECTURA_VISUAL.md`
 cd backend
 ./mvnw test
 ```
+
+## 🛡️ AXIOM - Validación de Código
+
+El proyecto utiliza **AXIOM** para garantizar la calidad del código y prevenir anti-patrones de IA (Lazy Code).
+
+### Pre-commit Hook
+
+Para instalar el hook de validación local:
+
+```bash
+./tools/axiom/install_hook.sh
+```
+
+### CI/CD Integration
+
+AXIOM se ejecuta automáticamente en cada PR y Push hacia `main` y `develop` mediante GitHub Actions. El build fallará si se detectan:
+
+- Métodos vacíos.
+- Retornos `null` en capas de persistencia.
+- `TODO/FIXME` en lógica de dominio crítica.
 
 ## 📝 Licencia
 
