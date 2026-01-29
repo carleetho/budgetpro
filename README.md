@@ -106,6 +106,8 @@ AXIOM se ejecuta automáticamente en cada PR y Push hacia `main` y `develop` med
 - Retornos `null` en capas de persistencia.
 - `TODO/FIXME` en lógica de dominio crítica.
 
+Para más detalles, consulta la [Guía del Desarrollador de AXIOM Lazy Code](tools/axiom/docs/lazy-code-validator.md).
+
 ## 📝 Licencia
 
 (Definir según corresponda)

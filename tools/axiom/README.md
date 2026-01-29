@@ -24,11 +24,14 @@ tools/axiom/
 ├── override_detector.py   # Override detection
 ├── validators/            # Validator interfaces and implementations
 │   ├── security_validator.py # Security best practices check
+│   ├── lazy_code_validator.py # REQ-18: Anti-lazy code patterns
 ├── reporters/             # Reporting interfaces (Console, Logs, etc.)
+│   ├── console_reporter.py   # Enhanced CLI output
 ├── fixers/                # Auto-fixer interfaces
 └── docs/
     ├── CONFIGURATION.md   # Detailed configuration reference
     ├── INSTALLATION.md    # Installation and Hook setup
+    ├── lazy-code-validator.md # [NEW] Guide for REQ-18 validation
     ├── MIGRATION_SECURITY.md # Security migration guide
     └── EXAMPLES.md        # Usage examples and scenarios
 ```
@@ -67,4 +70,5 @@ See [INSTALLATION.md](docs/INSTALLATION.md) for detailed setup and usage.
 ## Documentation
 
 - [Detailed Configuration Reference](docs/CONFIGURATION.md) - Complete guide to all available options.
+- [Lazy Code Validator Guide](docs/lazy-code-validator.md) - Documentation for anti-pattern detection (REQ-18).
 - [Usage Examples](docs/EXAMPLES.md) - Common scenarios, Python API usage, and troubleshooting.
