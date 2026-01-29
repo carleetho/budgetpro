@@ -1,0 +1,29 @@
+name: Hexagonal Boundary Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate-boundaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build Domain Validator
+        run: |
+          cd tools/domain-validator
+          ./mvnw package -DskipTests
+
+      - name: Run Boundary Validator
+        run: |
+          java -jar tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar validate-boundary -r backend/src/main/java/com/budgetpro/domain

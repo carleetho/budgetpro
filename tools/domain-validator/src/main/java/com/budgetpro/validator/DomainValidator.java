@@ -1,5 +1,10 @@
 package com.budgetpro.validator;
 
+import com.budgetpro.validator.boundary.config.BoundaryConfig;
+import com.budgetpro.validator.boundary.config.BoundaryConfigLoader;
+import com.budgetpro.validator.boundary.report.BoundaryViolation;
+import com.budgetpro.validator.boundary.report.ViolationReporter;
+import com.budgetpro.validator.boundary.scanner.DomainScanner;
 import com.budgetpro.validator.engine.ValidationEngine;
 import com.budgetpro.validator.model.ValidationResult;
 import com.budgetpro.validator.model.ValidationStatus;
@@ -18,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -28,8 +34,8 @@ import java.util.concurrent.Callable;
  * detectadas (bloquea CI/CD) - 2: Advertencias detectadas (requiere revisión) -
  * 3: Error durante el análisis (estructura inválida)
  */
-@Command(name = "domain-validator", mixinStandardHelpOptions = true, version = "Domain Validator 1.0.0", description = "Valida el orden de desarrollo de módulos BudgetPro contra el roadmap canónico", subcommands = {
-        ValidateCommand.class, GenerateRoadmapCommand.class, CheckModuleCommand.class })
+@Command(name = "domain-validator", mixinStandardHelpOptions = true, version = "Domain Validator 1.0.0", description = "Valida el orden de desarrollo y las fronteras arquitectónicas de BudgetPro", subcommands = {
+        ValidateCommand.class, GenerateRoadmapCommand.class, CheckModuleCommand.class, ValidateBoundaryCommand.class })
 public class DomainValidator implements Callable<Integer> {
 
     public static void main(String[] args) {
@@ -382,6 +388,50 @@ class CheckModuleCommand implements Callable<Integer> {
 
         } catch (Exception e) {
             System.err.println("Error checking module: " + e.getMessage());
+            e.printStackTrace();
+            return 3; // ERROR
+        }
+    }
+}
+
+/**
+ * Comando para validar las fronteras arquitectónicas de la capa de dominio.
+ */
+@Command(name = "validate-boundary", description = "Valida que la capa de dominio sea independiente de frameworks e infraestructura")
+class ValidateBoundaryCommand implements Callable<Integer> {
+
+    @Option(names = { "--domain-root",
+            "-r" }, description = "Ruta a la capa de dominio (default: ./backend/src/main/java/com/budgetpro/domain)", defaultValue = "./backend/src/main/java/com/budgetpro/domain")
+    private String domainRoot;
+
+    @Override
+    public Integer call() {
+        try {
+            Path domainPath = Paths.get(domainRoot).toAbsolutePath().normalize();
+
+            if (!domainPath.toFile().exists()) {
+                System.err.println("Error: Domain root path does not exist: " + domainPath);
+                return 3; // ERROR
+            }
+
+            System.out.println("Validating hexagonal boundaries in: " + domainPath);
+
+            // Cargar configuración de fronteras
+            BoundaryConfigLoader loader = new BoundaryConfigLoader();
+            BoundaryConfig config = loader.load();
+
+            // Ejecutar validación
+            ViolationReporter reporter = new ViolationReporter(new DomainScanner(), config);
+            List<BoundaryViolation> violations = reporter.validateDomain(domainPath);
+
+            // Reportar resultados
+            reporter.reportViolations(violations);
+
+            // Retornar exit code 1 si hay violaciones (bloquea CI)
+            return violations.isEmpty() ? 0 : 1;
+
+        } catch (Exception e) {
+            System.err.println("Error validating boundaries: " + e.getMessage());
             e.printStackTrace();
             return 3; // ERROR
         }
