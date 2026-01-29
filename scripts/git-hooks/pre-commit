@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Pre-commit hook to validate hexagonal boundaries in the domain layer
+
+# Path to the validator jar
+VALIDATOR_JAR="tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar"
+
+if [ ! -f "$VALIDATOR_JAR" ]; then
+    echo "⚠️  Boundary validator JAR not found. Skipping validation."
+    echo "To enable validation, run: cd tools/domain-validator && ./mvnw package -DskipTests"
+    exit 0
+fi
+
+# We scan the entire domain layer for simplicity in this version, 
+# although we could optimize it to scan only staged files.
+echo "🔍 Ejecutando validador de fronteras arquitectónicas..."
+
+java -jar "$VALIDATOR_JAR" validate-boundary -r backend/src/main/java/com/budgetpro/domain
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "❌ Error: Se detectaron violaciones de fronteras en la capa de dominio."
+    echo "Revisa los mensajes de arriba y corrige los imports prohibidos antes de hacer commit."
+    exit 1
+fi
+
+exit 0
