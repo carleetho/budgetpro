@@ -48,7 +48,12 @@ validators:
     checks:
       gitignore: true
       credentials: true
+      credentials: true
       file_integrity: true
+
+  # Lazy Code Validator: Detects placeholder or incomplete implementations.
+  lazy_code_validator:
+    enabled: true
 
 # Reporters: Where to send validation results.
 reporters:

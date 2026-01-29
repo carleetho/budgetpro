@@ -10,6 +10,7 @@ from tools.axiom.config_loader import load_axiom_config, AxiomConfig
 from tools.axiom.override_detector import detect_overrides, OverrideResult
 from tools.axiom.validators.base_validator import BaseValidator, Violation, ValidationResult
 from tools.axiom.validators.security_validator import SecurityValidator
+from tools.axiom.validators.lazy_code_validator import LazyCodeValidator
 from tools.axiom.reporters.base_reporter import BaseReporter, ReportResult
 from tools.axiom.fixers.base_fixer import BaseFixer, FixResult
 
@@ -108,6 +109,12 @@ class AxiomSentinel:
         if sec_config.get("enabled", True):
             self.validators.append(SecurityValidator(sec_config))
             self.logger.info("SecurityValidator initialized.")
+
+        # Lazy Code Validator
+        lazy_config = val_config.get("lazy_code_validator", {})
+        if lazy_config.get("enabled", True):
+            self.validators.append(LazyCodeValidator(lazy_config))
+            self.logger.info("LazyCodeValidator initialized.")
 
         # Placeholder for other validators (Blast Radius, etc.)
         # ...
