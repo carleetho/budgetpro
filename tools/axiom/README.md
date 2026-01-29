@@ -23,11 +23,13 @@ tools/axiom/
 ├── config_loader.py       # Configuration loading
 ├── override_detector.py   # Override detection
 ├── validators/            # Validator interfaces and implementations
+│   ├── security_validator.py # Security best practices check
 ├── reporters/             # Reporting interfaces (Console, Logs, etc.)
 ├── fixers/                # Auto-fixer interfaces
 └── docs/
     ├── CONFIGURATION.md   # Detailed configuration reference
     ├── INSTALLATION.md    # Installation and Hook setup
+    ├── MIGRATION_SECURITY.md # Security migration guide
     └── EXAMPLES.md        # Usage examples and scenarios
 ```
 
