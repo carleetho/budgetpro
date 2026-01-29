@@ -51,8 +51,9 @@ validators:
       file_integrity: true
 
   # Lazy Code Validator: Detects placeholder or incomplete implementations.
-  lazy_code_validator:
+  lazy_code:
     enabled: true
+    strictness: "blocking"
 
 # Reporters: Where to send validation results.
 reporters:
