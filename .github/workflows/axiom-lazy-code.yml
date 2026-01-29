@@ -1,0 +1,36 @@
+name: AXIOM Lazy Code Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate-lazy-code:
+    name: Lazy Code Anti-Pattern Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Prepare Workspace
+        run: |
+          # The AXIOM validator uses 'git diff --cached' to identify files to check.
+          # In CI, we want to check all files in the current checkout or the diff.
+          # Forcing 'git add .' ensures all files are "staged" for the validator.
+          git add .
+
+      - name: Run AXIOM Validator
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python3 tools/axiom/pre_commit_hook.py
+        continue-on-error: false
