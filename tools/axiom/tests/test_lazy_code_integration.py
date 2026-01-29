@@ -1,132 +1,161 @@
-import unittest
 import os
 import subprocess
 import tempfile
 import shutil
+import pytest
 from pathlib import Path
 
-class TestLazyCodeIntegration(unittest.TestCase):
+# --- Fixtures ---
+
+@pytest.fixture
+def temp_git_repo():
     """
-    End-to-end integration tests for AXIOM pre-commit hook blocking 
-    lazy code patterns (REQ-18).
+    Fixture that creates a temporary directory, initializes a git repository,
+    configures a test user, and yields the repository path.
+    Cleans up after the test.
     """
+    temp_dir = tempfile.mkdtemp()
+    repo_path = os.path.join(temp_dir, "test_repo")
+    os.makedirs(repo_path)
+    
+    # Initialize Git
+    subprocess.run(["git", "init"], cwd=repo_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@axiom.com"], cwd=repo_path, check=True)
+    subprocess.run(["git", "config", "user.name", "Axiom Test"], cwd=repo_path, check=True)
+    
+    # Copy axiom.config.yaml to the repo root
+    workspace_root = os.getcwd()
+    shutil.copy(
+        os.path.join(workspace_root, "axiom.config.yaml"),
+        os.path.join(repo_path, "axiom.config.yaml")
+    )
+    
+    # Add a mandatory .gitignore to satisfy SecurityValidator (avoid blocking on missing file)
+    with open(os.path.join(repo_path, ".gitignore"), "w") as f:
+        f.write(".env\n*.log\n.gemini\nnode_modules\ntarget\n")
+    subprocess.run(["git", "add", ".gitignore"], cwd=repo_path, check=True)
+    subprocess.run(["git", "commit", "-m", "initial commit"], cwd=repo_path, check=True)
 
-    def setUp(self):
-        # 1. Create temporary repository
-        self.workspace_root = os.getcwd()
-        self.test_dir = tempfile.mkdtemp()
-        self.repo_path = os.path.join(self.test_dir, "test_repo")
-        os.makedirs(self.repo_path)
-        
-        # 2. Init git
-        self._run_git(["init"], self.repo_path)
-        self._run_git(["config", "user.email", "test@axiom.com"], self.repo_path)
-        self._run_git(["config", "user.name", "Axiom Test"], self.repo_path)
-        
-        # 3. Copy axiom.config.yaml
-        shutil.copy(
-            os.path.join(self.workspace_root, "axiom.config.yaml"),
-            os.path.join(self.repo_path, "axiom.config.yaml")
-        )
-        
-        # 4. Add required .gitignore for SecurityValidator
-        self._create_and_stage(".gitignore", ".env\n*.log\n.gemini\nnode_modules\ntarget\n")
-        
-        # 5. Install pre-commit hook wrapper
-        # We point to the actual code in the workspace root to avoid copying everything
-        hook_path = os.path.join(self.repo_path, ".git", "hooks", "pre-commit")
-        with open(hook_path, "w") as f:
-            f.write(f"#!/bin/bash\n")
-            f.write(f"export PYTHONPATH={self.workspace_root}\n")
-            f.write(f"python3 {os.path.join(self.workspace_root, 'tools/axiom/pre_commit_hook.py')} \"$@\"\n")
-        os.chmod(hook_path, 0o755)
+    yield repo_path
+    
+    shutil.rmtree(temp_dir)
 
-    def tearDown(self):
-        shutil.rmtree(self.test_dir)
+# --- Helper Methods ---
 
-    def _run_git(self, args, cwd, input=None):
-        return subprocess.run(
-            ["git"] + args,
-            cwd=cwd,
-            input=input,
-            capture_output=True,
-            text=True
-        )
+def create_and_stage_file(repo_path: str, file_path: str, content: str):
+    """Creates a file at the given relative path and stages it in the git index."""
+    full_path = os.path.join(repo_path, file_path)
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    with open(full_path, "w") as f:
+        f.write(content)
+    subprocess.run(["git", "add", file_path], cwd=repo_path, check=True)
 
-    def _create_and_stage(self, relative_path, content):
-        full_path = os.path.join(self.repo_path, relative_path)
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
-        with open(full_path, "w") as f:
-            f.write(content)
-        self._run_git(["add", relative_path], self.repo_path)
+def attempt_commit(repo_path: str, message: str, no_verify: bool = False) -> subprocess.CompletedProcess:
+    """Runs git commit and returns the result."""
+    cmd = ["git", "commit", "-m", message]
+    if no_verify:
+        cmd.append("--no-verify")
+    
+    # Ensure PYTHONPATH is set so that the pre_commit_hook.py can import the tools package
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.getcwd()
+    
+    return subprocess.run(
+        cmd,
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        env=env
+    )
 
-    # --- Test Cases ---
+def install_axiom_hook(repo_path: str):
+    """
+    Copies/installs the AXIOM pre-commit hook into the repository.
+    Replicates the logic of install_hook.sh but adapted for test environment.
+    """
+    workspace_root = os.getcwd()
+    hook_dest = os.path.join(repo_path, ".git", "hooks", "pre-commit")
+    hook_source_path = os.path.join(workspace_root, "tools/axiom/pre_commit_hook.py")
+    
+    # Replicate the logic from install_hook.sh for the hook content
+    # Note: We use the absolute path to the workspace tools for the test, 
+    # but the logic follows the requirement to "Copy AXIOM hook files to .git/hooks/"
+    # Actually, the requirement says "Copy AXIOM hook files to .git/hooks/" - usually referring to the hook script.
+    
+    hook_content = f"""#!/bin/bash
+# Trigger AXIOM validation pipeline
+python3 {hook_source_path} "$@"
+"""
+    with open(hook_dest, "w") as f:
+        f.write(hook_content)
+    os.chmod(hook_dest, 0o755)
 
-    def test_commit_blocked_empty_method(self):
-        """Verifies that an empty method in a Java file blocks the commit."""
-        content = "public class Test { public void lazy() {} }"
-        self._create_and_stage("Test.java", content)
-        
-        result = self._run_git(["commit", "-m", "add lazy code"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("CÓDIGO PEREZOSO: Método vacío detectado", result.stdout + result.stderr)
+# --- Test Methods ---
 
-    def test_commit_blocked_null_return_persistence(self):
-        """Verifies that a null return in persistence layer blocks the commit."""
-        content = "public class Repo { public Object find() { return null; } }"
-        self._create_and_stage("infrastructure/persistence/TestRepo.java", content)
-        
-        result = self._run_git(["commit", "-m", "add null return"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("CÓDIGO PEREZOSO: Retorno null o empty detectado", result.stdout + result.stderr)
+def test_commit_blocked_empty_method(temp_git_repo):
+    """Test case: commit blocked when empty method detected."""
+    install_axiom_hook(temp_git_repo)
+    create_and_stage_file(temp_git_repo, "LazyClass.java", "public class Lazy { public void empty() {} }")
+    
+    result = attempt_commit(temp_git_repo, "test empty method")
+    
+    assert result.returncode == 1
+    assert "CÓDIGO PEREZOSO: Método vacío detectado" in (result.stdout + result.stderr)
 
-    def test_commit_blocked_todo_critical_module(self):
-        """Verifies that a TODO in a critical domain module blocks the commit."""
-        content = "// TODO: implement this logic"
-        self._create_and_stage("domain/presupuesto/Service.java", content)
-        
-        result = self._run_git(["commit", "-m", "add todo"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("CÓDIGO PEREZOSO: TODO o FIXME detectado", result.stdout + result.stderr)
+def test_commit_blocked_null_return_persistence(temp_git_repo):
+    """Test case: commit blocked when null return in persistence detected."""
+    install_axiom_hook(temp_git_repo)
+    content = "public class Repo { public Object find() { return null; } }"
+    create_and_stage_file(temp_git_repo, "infrastructure/persistence/TestAdapter.java", content)
+    
+    result = attempt_commit(temp_git_repo, "test null return")
+    
+    assert result.returncode == 1
+    assert "CÓDIGO PEREZOSO: Retorno null o empty detectado" in (result.stdout + result.stderr)
 
-    def test_commit_succeeds_clean_code(self):
-        """Verifies that clean code allows the commit to proceed."""
-        content = "public class Success { public void work() { System.out.println(\"done\"); } }"
-        self._create_and_stage("Success.java", content)
-        
-        result = self._run_git(["commit", "-m", "add clean code"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 0)
-        self.assertIn("No blocking violations found. Commit allowed.", result.stdout + result.stderr)
+def test_commit_blocked_todo_critical_module(temp_git_repo):
+    """Test case: commit blocked when TODO in critical module detected."""
+    install_axiom_hook(temp_git_repo)
+    content = "// TODO: implement this logic"
+    create_and_stage_file(temp_git_repo, "domain/presupuesto/TestService.java", content)
+    
+    result = attempt_commit(temp_git_repo, "test todo")
+    
+    assert result.returncode == 1
+    assert "CÓDIGO PEREZOSO: TODO o FIXME detectado" in (result.stdout + result.stderr)
 
-    def test_bypass_with_no_verify(self):
-        """Verifies that --no-verify allows committing even with lazy code."""
-        content = "public class Lazy { public void empty() {} }"
-        self._create_and_stage("Lazy.java", content)
-        
-        # This should fail WITHOUT --no-verify, so let's check it can pass WITH it
-        result = self._run_git(["commit", "-m", "bypass", "--no-verify"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 0)
-        # Git log check
-        log = self._run_git(["log", "-1", "--pretty=%B"], self.repo_path)
-        self.assertIn("bypass", log.stdout)
+def test_commit_succeeds_clean_code(temp_git_repo):
+    """Test case: commit succeeds with clean code."""
+    install_axiom_hook(temp_git_repo)
+    content = "public class Clean { public void work() { System.out.println(\"working\"); } }"
+    create_and_stage_file(temp_git_repo, "Clean.java", content)
+    
+    result = attempt_commit(temp_git_repo, "clean commit")
+    
+    assert result.returncode == 0
+    assert "No blocking violations found. Commit allowed." in (result.stdout + result.stderr)
 
-    def test_multiple_violations_reported(self):
-        """Checks if multiple violations across files are all reported."""
-        self._create_and_stage("Lazy1.java", "public void a() {}")
-        self._create_and_stage("domain/estimacion/Logic.java", "// FIXME later")
-        
-        result = self._run_git(["commit", "-m", "multiple issues"], self.repo_path)
-        
-        self.assertEqual(result.returncode, 1)
-        output = result.stdout + result.stderr
-        self.assertIn("Método vacío detectado", output)
-        self.assertIn("TODO o FIXME detectado", output)
-        self.assertIn("Commit blocked", output)
+def test_multiple_violations_reported(temp_git_repo):
+    """Test case: multiple violations reported together."""
+    install_axiom_hook(temp_git_repo)
+    create_and_stage_file(temp_git_repo, "Lazy1.java", "public void a() {}")
+    create_and_stage_file(temp_git_repo, "domain/estimacion/Logic.java", "// FIXME later")
+    
+    result = attempt_commit(temp_git_repo, "multiple violations")
+    
+    assert result.returncode == 1
+    output = result.stdout + result.stderr
+    assert "CÓDIGO PEREZOSO: Método vacío detectado" in output
+    assert "CÓDIGO PEREZOSO: TODO o FIXME detectado" in output
 
-if __name__ == "__main__":
-    unittest.main()
+def test_bypass_with_no_verify(temp_git_repo):
+    """Test case: --no-verify bypass allows commit."""
+    install_axiom_hook(temp_git_repo)
+    create_and_stage_file(temp_git_repo, "LazyBypass.java", "public void lazy() {}")
+    
+    result = attempt_commit(temp_git_repo, "bypass", no_verify=True)
+    
+    assert result.returncode == 0
+    # Capture git log to verify commit was created
+    log_check = subprocess.run(["git", "log", "-1", "--pretty=%B"], cwd=temp_git_repo, capture_output=True, text=True)
+    assert "bypass" in log_check.stdout
