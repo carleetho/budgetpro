@@ -1,0 +1,30 @@
+system:
+  role: "Test Architect"
+  priorities:
+    - "Priority 1"
+    - "Priority 2"
+
+axioms:
+  protection_zones:
+    - name: "Zone 1"
+      level: "RED"
+      paths: ["src/core/**"]
+      description: "Do not touch"
+
+  prohibitions:
+    - "No infinite loops"
+
+  hexagonal_boundaries:
+    permitted:
+      - from: "web"
+        to: "core"
+    forbidden:
+      - from: "core"
+        to: "web"
+
+  override_keywords:
+    TEST_KEY: "For testing"
+
+  historical_context:
+    baseline_violations: []
+    lessons_learned: []

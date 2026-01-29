@@ -1,8 +1,7 @@
 package com.budgetpro.domain.finanzas.estimacion.event;
 
-import com.budgetpro.domain.finanzas.estimacion.model.EstimacionItem;
+import com.budgetpro.domain.finanzas.estimacion.model.DetalleEstimacion;
 import com.budgetpro.domain.finanzas.estimacion.model.MontoEstimado;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -13,12 +12,12 @@ public class EstimacionAprobadaEvent {
     private final UUID estimacionId;
     private final UUID proyectoId;
     private final MontoEstimado montoTotalEstimado;
-    private final List<EstimacionItem> items;
+    private final List<DetalleEstimacion> items;
     private final LocalDateTime aprobadoAt;
     private final LocalDateTime occurredOn;
 
     public EstimacionAprobadaEvent(UUID estimacionId, UUID proyectoId, MontoEstimado montoTotalEstimado,
-            List<EstimacionItem> items, LocalDateTime aprobadoAt) {
+            List<DetalleEstimacion> items, LocalDateTime aprobadoAt) {
         this.estimacionId = estimacionId;
         this.proyectoId = proyectoId;
         this.montoTotalEstimado = montoTotalEstimado;
@@ -39,7 +38,7 @@ public class EstimacionAprobadaEvent {
         return montoTotalEstimado;
     }
 
-    public List<EstimacionItem> getItems() {
+    public List<DetalleEstimacion> getItems() {
         return items;
     }
 

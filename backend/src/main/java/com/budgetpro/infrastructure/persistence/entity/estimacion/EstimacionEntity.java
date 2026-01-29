@@ -36,6 +36,9 @@ public class EstimacionEntity {
     @Column(name = "fecha_fin", nullable = false)
     private LocalDate fechaFin;
 
+    @Column(name = "fecha_corte")
+    private LocalDateTime fechaCorte;
+
     @Column(name = "retencion_porcentaje", nullable = false, precision = 5, scale = 2)
     private BigDecimal retencionPorcentaje;
 
@@ -48,6 +51,26 @@ public class EstimacionEntity {
     @Column(name = "aprobado_por")
     private UUID aprobadoPor;
 
+    // Financial fields
+    @Column(name = "monto_bruto", precision = 19, scale = 4)
+    private BigDecimal montoBruto;
+
+    @Column(name = "amortizacion_anticipo", precision = 19, scale = 4)
+    private BigDecimal amortizacionAnticipo;
+
+    @Column(name = "retencion_fondo_garantia", precision = 19, scale = 4)
+    private BigDecimal retencionFondoGarantia;
+
+    @Column(name = "monto_neto_pagar", precision = 19, scale = 4)
+    private BigDecimal montoNetoPagar;
+
+    @Column(name = "evidencia_url", length = 500)
+    private String evidenciaUrl;
+
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -57,10 +80,31 @@ public class EstimacionEntity {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "estimacion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<EstimacionItemEntity> items = new ArrayList<>();
+    private List<DetalleEstimacionEntity> detalles = new ArrayList<>();
 
     // Required by JPA
     public EstimacionEntity() {
+    }
+
+    public EstimacionEntity(UUID id, UUID presupuestoId, Long numeroEstimacion, LocalDateTime fechaCorte,
+            LocalDate fechaInicio, LocalDate fechaFin, BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
+            BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar, String evidenciaUrl, EstadoEstimacion estado,
+            Integer version) {
+        this.id = id;
+        this.presupuestoId = presupuestoId;
+        this.numeroEstimacion = numeroEstimacion;
+        this.fechaCorte = fechaCorte;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+        this.montoBruto = montoBruto;
+        this.amortizacionAnticipo = amortizacionAnticipo;
+        this.retencionFondoGarantia = retencionFondoGarantia;
+        this.montoNetoPagar = montoNetoPagar;
+        this.evidenciaUrl = evidenciaUrl;
+        this.estado = estado;
+        this.version = version;
+        this.fechaCreacion = LocalDateTime.now();
+        this.retencionPorcentaje = BigDecimal.TEN;
     }
 
     // Getters and Setters
@@ -112,6 +156,14 @@ public class EstimacionEntity {
         this.fechaFin = fechaFin;
     }
 
+    public LocalDateTime getFechaCorte() {
+        return fechaCorte;
+    }
+
+    public void setFechaCorte(LocalDateTime fechaCorte) {
+        this.fechaCorte = fechaCorte;
+    }
+
     public BigDecimal getRetencionPorcentaje() {
         return retencionPorcentaje;
     }
@@ -144,6 +196,54 @@ public class EstimacionEntity {
         this.aprobadoPor = aprobadoPor;
     }
 
+    public BigDecimal getMontoBruto() {
+        return montoBruto;
+    }
+
+    public void setMontoBruto(BigDecimal montoBruto) {
+        this.montoBruto = montoBruto;
+    }
+
+    public BigDecimal getAmortizacionAnticipo() {
+        return amortizacionAnticipo;
+    }
+
+    public void setAmortizacionAnticipo(BigDecimal amortizacionAnticipo) {
+        this.amortizacionAnticipo = amortizacionAnticipo;
+    }
+
+    public BigDecimal getRetencionFondoGarantia() {
+        return retencionFondoGarantia;
+    }
+
+    public void setRetencionFondoGarantia(BigDecimal retencionFondoGarantia) {
+        this.retencionFondoGarantia = retencionFondoGarantia;
+    }
+
+    public BigDecimal getMontoNetoPagar() {
+        return montoNetoPagar;
+    }
+
+    public void setMontoNetoPagar(BigDecimal montoNetoPagar) {
+        this.montoNetoPagar = montoNetoPagar;
+    }
+
+    public String getEvidenciaUrl() {
+        return evidenciaUrl;
+    }
+
+    public void setEvidenciaUrl(String evidenciaUrl) {
+        this.evidenciaUrl = evidenciaUrl;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -160,19 +260,14 @@ public class EstimacionEntity {
         this.updatedAt = updatedAt;
     }
 
-    public List<EstimacionItemEntity> getItems() {
-        return items;
+    public List<DetalleEstimacionEntity> getDetalles() {
+        return detalles;
     }
 
-    public void setItems(List<EstimacionItemEntity> items) {
-        this.items = items;
-        for (EstimacionItemEntity item : items) {
-            item.setEstimacion(this);
+    public void setDetalles(List<DetalleEstimacionEntity> detalles) {
+        this.detalles = detalles;
+        if (detalles != null) {
+            detalles.forEach(d -> d.setEstimacion(this));
         }
-    }
-
-    public void addItem(EstimacionItemEntity item) {
-        this.items.add(item);
-        item.setEstimacion(this);
     }
 }

@@ -66,4 +66,15 @@ public class EstimacionRepositoryAdapter implements EstimacionRepository {
             EstimacionId excludeId) {
         return estimacionJpaRepository.existsPeriodoSolapadoExcludingId(proyectoId, inicio, fin, excludeId.getValue());
     }
+
+    @Override
+    public Integer obtenerSiguienteNumeroEstimacion(UUID proyectoId) {
+        // Simple implementation: count + 1 or max + 1.
+        // Assuming we want strict sequential numbers per project.
+        // For MVP/Refactor, using Count + 1 is risky if deletions happen, but
+        // acceptable if specified?
+        // Better: Max(numero) + 1.
+        Integer max = estimacionJpaRepository.findMaxNumeroEstimacionByProyectoId(proyectoId);
+        return max != null ? max + 1 : 1;
+    }
 }

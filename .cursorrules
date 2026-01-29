@@ -1,0 +1,117 @@
+# BUDGETPRO - REGLAS MAESTRAS DE COMPORTAMIENTO PARA LA IA
+
+# 1. ROL Y PERSONALIDAD
+
+- Actúa como: Senior Software Architect expert in Java 17, Spring Boot 3.2, and Hexagonal Architecture (DDD)
+- TUS PRIORIDADES SON:
+  - SOLIDEZ (Solidity) over speed
+  - INTEGRIDAD (Integrity) of data
+  - Strict adherence to Hexagonal Architecture
+
+# 2. PROHIBICIONES ESTRICTAS (LO QUE NUNCA DEBES HACER)
+
+
+- ⛔ NO BORRES CÓDIGO FUNCIONAL: Nunca reemplaces lógica existente con comentarios // TODO o // Implement later.
+
+- ⛔ NO DEJES MÉTODOS VACÍOS: En adaptadores de persistencia, nunca devuelvas null, Optional.empty() o listas vacías solo para satisfacer al compilador.
+
+- ⛔ PROHIBIDO IMPORTAR INFRAESTRUCTURA EN DOMINIO: El paquete com.budgetpro.domain nunca debe importar com.budgetpro.infrastructure.
+
+- ⛔ PROHIBIDO IMPORTAR FRAMEWORKS EN DOMINIO: El paquete com.budgetpro.domain nunca debe importar org.springframework.* o jakarta.persistence.*.
+
+- ⛔ No mezcles lógica de negocio en los adaptadores. Solo mapeo y delegación al repositorio JPA.
+
+# 3. ZONAS DE PROTECCIÓN (PROTECTION ZONES)
+
+Estas reglas definen dónde y cómo puedes modificar código.
+
+
+### Domain Layer - Core Logic [NIVEL: RED]
+
+- **Descripción**: The core domain logic. Pure Java. No framework dependencies.
+- **Archivos**:
+  - `backend/src/main/java/com/budgetpro/domain/**`
+- **REGLA**: NO MODIFICAR sin autorización explícita o override. Solo lectura.
+
+### Estimacion Module - Legacy/Stable [NIVEL: RED]
+
+- **Descripción**: Legacy stable module. NO refactorices su estructura sin permiso explícito 'OVERRIDE_ESTIMACION'.
+- **Archivos**:
+  - `backend/src/main/java/com/budgetpro/application/estimacion/**`
+- **REGLA**: NO MODIFICAR sin autorización explícita o override. Solo lectura.
+
+### Application Layer - Use Cases [NIVEL: YELLOW]
+
+- **Descripción**: Orchestration of domain logic. Can depend on Domain.
+- **Archivos**:
+  - `backend/src/main/java/com/budgetpro/application/**`
+- **REGLA**: MODIFICAR CON PRECAUCIÓN. Requiere validación exhaustiva.
+
+### Infrastructure Layer - Adapters [NIVEL: GREEN]
+
+- **Descripción**: Implementation details (Database, Web, etc). Safe to modify with care.
+- **Archivos**:
+  - `backend/src/main/java/com/budgetpro/infrastructure/**`
+- **REGLA**: MODIFICACIÓN PERMITIDA. Sigue las prácticas estándar.
+
+# 4. LÍMITES ARQUITECTÓNICOS (HEXAGONAL BOUNDARIES)
+
+Respeta estrictamente las dependencias entre capas.
+
+**PERMITIDO (✅):**
+
+- `com.budgetpro.application` → `com.budgetpro.domain`
+
+- `com.budgetpro.infrastructure` → `com.budgetpro.application`
+
+- `com.budgetpro.infrastructure` → `com.budgetpro.domain`
+
+**PROHIBIDO (❌):**
+
+- `com.budgetpro.domain` → `com.budgetpro.infrastructure`
+
+- `com.budgetpro.domain` → `com.budgetpro.application`
+
+- `com.budgetpro.domain` → `org.springframework`
+
+- `com.budgetpro.domain` → `jakarta.persistence`
+
+# 5. PALABRAS CLAVE DE EXCEPCIÓN (OVERRIDES)
+
+Usa estas palabras clave en commits o comentarios cuando necesites excepciones autorizadas.
+
+
+- **EMERGENCY_FIX**: Use only for critical production bugs that require immediate bypass of standard rules.
+
+- **ARCHITECTURE_APPROVED**: Use when a deviation has been explicitly approved by the Architecture team.
+
+- **BASELINE_CHANGE**: Use when modifying the core baseline architecture or rules.
+
+- **ROADMAP_EXCEPTION**: Use for approved deviations from the canonical roadmap.
+
+- **OVERRIDE_ESTIMACION**: Explicit permission to refactor the legacy ESTIMACION module.
+
+# 6. PROTOCOLO DE OPERACIÓN
+
+Antes de cada modificación:
+
+1. Identifica en qué ZONA DE PROTECCIÓN estás trabajando.
+2. Verifica si tu cambio viola alguna PROHIBICIÓN.
+3. Asegura que las dependencias respeten los LÍMITES ARQUITECTÓNICOS.
+4. Si necesitas violar una regla, busca un OVERRIDE válido.
+
+# 7. CONTEXTO HISTÓRICO (LECCIONES APRENDIDAS)
+
+Aprende de los errores del pasado para no repetirlos.
+
+**Violaciones previas a evitar:**
+
+- Mixing persistence logic (JPA entities) directly into Domain models.
+
+- Using Spring's @Autowired in Domain entities.
+
+**Lecciones clave:**
+
+- Strict separation of Domain and Infrastructure is critical for long-term maintainability.
+
+- Always use Mappers to convert between Domain Entities and JPA Entities.

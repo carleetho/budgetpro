@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Axiom Configuration Schema",
+  "description": "Schema for defining AXIOM architectural rules and constraints for BudgetPro",
+  "type": "object",
+  "properties": {
+    "system": {
+      "type": "object",
+      "description": "System identity and core priorities",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "The persona/role the AI should adopt"
+        },
+        "priorities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ordered list of high-level priorities"
+        }
+      },
+      "required": [
+        "role",
+        "priorities"
+      ]
+    },
+    "axioms": {
+      "type": "object",
+      "description": "Core architectural axioms and rules",
+      "properties": {
+        "protection_zones": {
+          "type": "array",
+          "description": "zones with different levels of modification protection",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "level": {
+                "type": "string",
+                "enum": [
+                  "RED",
+                  "YELLOW",
+                  "GREEN"
+                ],
+                "description": "RED: Protected/Legacy, YELLOW: Caution, GREEN: Safe to modify"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Glob patterns for files in this zone"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "level",
+              "paths"
+            ]
+          }
+        },
+        "prohibitions": {
+          "type": "array",
+          "description": "Strict negative constraints (what NOT to do)",
+          "items": {
+            "type": "string",
+            "description": "Description of the prohibition"
+          }
+        },
+        "hexagonal_boundaries": {
+          "type": "object",
+          "description": "Rules for import/dependency directions in Hexagonal Architecture",
+          "properties": {
+            "permitted": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dependency_flow"
+              }
+            },
+            "forbidden": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dependency_flow"
+              }
+            }
+          }
+        },
+        "override_keywords": {
+          "type": "object",
+          "description": "Keywords that signal authorized exceptions",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Context in which this override is valid"
+          }
+        },
+        "historical_context": {
+          "type": "object",
+          "description": "Learnings from past incidents",
+          "properties": {
+            "baseline_violations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lessons_learned": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "protection_zones",
+        "prohibitions",
+        "hexagonal_boundaries"
+      ]
+    }
+  },
+  "definitions": {
+    "dependency_flow": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source layer/package pattern"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target layer/package pattern"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "required": [
+    "system",
+    "axioms"
+  ]
+}

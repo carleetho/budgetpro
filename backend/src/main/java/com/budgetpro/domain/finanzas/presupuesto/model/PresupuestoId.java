@@ -29,6 +29,14 @@ public final class PresupuestoId {
     }
 
     /**
+     * Factory method para crear un PresupuestoId desde un UUID existente (Alias
+     * common).
+     */
+    public static PresupuestoId of(UUID uuid) {
+        return new PresupuestoId(uuid);
+    }
+
+    /**
      * Factory method para crear un PresupuestoId desde un String UUID.
      */
     public static PresupuestoId from(String uuidString) {
@@ -41,8 +49,10 @@ public final class PresupuestoId {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PresupuestoId that = (PresupuestoId) o;
         return Objects.equals(value, that.value);
     }
