@@ -17,13 +17,40 @@ The configuration system allows you to:
 
 ```
 tools/axiom/
-├── config_loader.py       # Main entry point for loading configuration
-├── override_detector.py   # Detection of commit message override keywords
-├── axiom.config.yaml      # (Template) Default configuration file
+├── axiom_sentinel.py      # Pipeline orchestrator
+├── pre_commit_hook.py     # Git hook entry point
+├── install_hook.sh        # Hook installation script
+├── config_loader.py       # Configuration loading
+├── override_detector.py   # Override detection
+├── validators/            # Validator interfaces and implementations
+├── reporters/             # Reporting interfaces (Console, Logs, etc.)
+├── fixers/                # Auto-fixer interfaces
 └── docs/
     ├── CONFIGURATION.md   # Detailed configuration reference
+    ├── INSTALLATION.md    # Installation and Hook setup
     └── EXAMPLES.md        # Usage examples and scenarios
 ```
+
+## Orchestration Pipeline
+
+AXIOM follows a sequential execution pipeline:
+
+1. **Discovery**: Identifies staged files via git.
+2. **Validation**: Runs architectural and integrity validators.
+3. **Override**: Applies bypasses based on commit message keywords.
+4. **Fixing**: Triggers auto-fixers (if enabled).
+5. **Reporting**: Outputs results to console and logs.
+6. **Decision**: Blocks or allows the commit based on severity.
+
+## Installation
+
+To install the pre-commit hook:
+
+```bash
+bash tools/axiom/install_hook.sh
+```
+
+See [INSTALLATION.md](docs/INSTALLATION.md) for detailed setup and usage.
 
 ## Quick Start
 
