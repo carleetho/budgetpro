@@ -1,0 +1,15 @@
+{
+  "forbidden_imports": [
+    "org.springframework.*",
+    "jakarta.persistence.*",
+    "javax.persistence.*",
+    "com.budgetpro.infrastructure.*",
+    "com.budgetpro.application.*",
+    "org.hibernate.*"
+  ],
+  "allowed_standard_libs": [
+    "java.*",
+    "javax.validation.*",
+    "javax.annotation.*"
+  ]
+}
