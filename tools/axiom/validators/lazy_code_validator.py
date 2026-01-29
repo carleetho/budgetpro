@@ -14,7 +14,10 @@ class LazyCodeValidator(BaseValidator):
     """
 
     # Java method detection (simplified for pre-commit speed)
-    # This regex looks for common method patterns followed by an empty or comment-only block
+    # This regex looks for:
+    # 1. Modifiers or whitespace (e.g., public, private)
+    # 2. Return type and method name with parameters: [\w<>\[\], ]+\s+\w+\s*\([^)]*\)
+    # 3. An opening brace followed by optional whitespace, optional comments (// or /* */), and a closing brace: \{\s*(?://.*|/\*[\s\S]*?\*/|\s)*\}
     EMPTY_METHOD_PATTERN = r"(?:public|private|protected|static|\s) +[\w<>\[\], ]+\s+\w+\s*\([^)]*\)\s*\{\s*(?://.*|/\*[\s\S]*?\*/|\s)*\}"
     
     # Persistence specific patterns

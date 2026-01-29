@@ -30,7 +30,9 @@ class TestLazyCodeValidator(unittest.TestCase):
         
         self.assertEqual(len(violations), 2)
         self.assertIn("Método vacío detectado", violations[0].message)
+        # Line 2: public void emptyMethod() { } (starts on line 2 after initial empty line)
         self.assertEqual(violations[0].line_number, 2) 
+        # Line 4: public void commentedMethod() { // TODO: implement } (starts on line 4 after one line of emptyMethod)
         self.assertEqual(violations[1].line_number, 4)
 
     def test_persistence_lazy_return_detection(self):
@@ -54,7 +56,9 @@ class TestLazyCodeValidator(unittest.TestCase):
         self.assertEqual(len(violations), 2)
         self.assertIn("Retorno null", violations[0].message)
         self.assertIn("Retorno empty", violations[1].message)
+        # Line 4: return null; (inside find() method)
         self.assertEqual(violations[0].line_number, 4)
+        # Line 7: return Optional.empty(); (inside findOpt() method)
         self.assertEqual(violations[1].line_number, 7)
 
     def test_critical_todo_detection(self):
@@ -74,8 +78,11 @@ class TestLazyCodeValidator(unittest.TestCase):
         
         self.assertEqual(len(violations), 3)
         self.assertIn("TODO en módulo crítico", violations[0].message)
+        # Line 4: // TODO: refactor this header (inside header comment)
         self.assertEqual(violations[0].line_number, 4) 
+        # Line 7: // TODO: implement logic (before execute method)
         self.assertEqual(violations[1].line_number, 7)
+        # Line 9: /* TODO: subtask */ (inside execute method)
         self.assertEqual(violations[2].line_number, 9)
 
     @patch('os.path.exists')
