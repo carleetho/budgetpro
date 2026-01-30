@@ -1,5 +1,10 @@
 name: Semgrep Security Scan
 
+# This workflow runs Semgrep static analysis on all code changes.
+# Includes immutability validation for domain entities, snapshots, and value objects.
+# Blocking violations (ERROR severity) prevent merge to main/develop branches.
+# Warnings (WARNING severity) are displayed in PR comments but don't block merge.
+
 on:
   push:
     branches: [main, develop]
@@ -20,6 +25,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Runs Semgrep with PR profile configuration
+      # Scans all rules in .semgrep/rules/ including:
+      # - Security rules (hardcoded secrets, JWT, etc.)
+      # - Domain immutability rules (entities, snapshots, value objects)
+      #   * 04-entity-final-fields.yaml: Non-final fields in domain entities
+      #   * 05-snapshot-immutability.yaml: Setters in snapshot classes
+      #   * 06-valueobject-no-setters.yaml: Setters in value objects
+      # - Architecture rules (hexagonal boundaries)
+      # - Quality rules (null safety, exception handling)
+      # 
+      # Blocking violations (ERROR severity) fail the workflow and prevent merge.
+      # Warnings (WARNING severity) are reported but don't block merge.
+      # Semgrep Action automatically scans .semgrep/rules/ when using a config file.
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
@@ -28,6 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Uploads SARIF file to GitHub Security tab for vulnerability tracking
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
         with:

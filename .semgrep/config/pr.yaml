@@ -1,4 +1,16 @@
 # PR profile: block on Critical/High
 # Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/pr.yaml .
+#
+# This configuration includes all Semgrep rules from .semgrep/rules/
+# including immutability validation rules for domain entities, snapshots, and value objects.
+#
+# Immutability Rules:
+#   - 04-entity-final-fields.yaml: Detects non-final private fields in domain entities
+#   - 05-snapshot-immutability.yaml: Detects setters and missing immutability markers in snapshots
+#   - 06-valueobject-no-setters.yaml: Detects setters in value objects
+#
+# Severity Levels:
+#   - ERROR: Blocks PR merge (critical domains: presupuesto, estimacion)
+#   - WARNING: Shows in PR comments but doesn't block merge (other domains)
 
 rules: []
