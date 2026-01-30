@@ -155,8 +155,4 @@ public class EstimacionItem {
         return Objects.hash(id);
     }
 
-    public EstimacionId getSaldoPorEjercer() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSaldoPorEjercer'");
-    }
 }
