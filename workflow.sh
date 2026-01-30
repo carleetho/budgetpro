@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 # Función: Iniciar Nueva Tarea (Pasos 1, 2 y 3 de BrainGrid)
 function start_task() {
-    echo -e "${BLUE}🚀 INICIANDO NUEVA TAREA (Sincronizando main...)${NC}"
+    echo -e "${BLUE}🚀 INICIANDO NUEVO REQUERIMIENTO (Sincronizando main...)${NC}"
     
     # 1. Ir a main y actualizar
     git checkout main
@@ -34,7 +34,7 @@ function start_task() {
 
 # Función: Guardar Progreso (Paso 5 de BrainGrid + AXIOM)
 function save_progress() {
-    echo -e "${BLUE}💾 GUARDANDO PROGRESO (Ejecutando Axiom...)${NC}"
+    echo -e "${BLUE}💾 GUARDANDO PROGRESO DE TASK (Ejecutando Axiom...)${NC}"
     
     # 1. Stage de todo
     git add .
