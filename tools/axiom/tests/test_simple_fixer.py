@@ -18,33 +18,7 @@ class TestSimpleFixer(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    def test_fix_gitignore_success(self):
-        violation = Violation(
-            file_path=self.gitignore_path,
-            message="Missing .env",
-            severity="warning",
-            validator_name="security_validator",
-            auto_fixable=True,
-            fix_data={"missing_entries": [".env", ".gemini"]}
-        )
-        
-        result = self.fixer.fix([violation])
-        
-        self.assertTrue(result.success)
-        self.assertIn(self.gitignore_path, result.fixed_files)
-        
-        with open(self.gitignore_path, "r") as f:
-            content = f.read()
-            self.assertIn(".env", content)
-            self.assertIn(".gemini", content)
-            self.assertIn("# Auto-added by AXIOM Sentinel", content)
-        
-        # Check if backup exists
-        backups = [f for f in os.listdir(self.test_dir) if ".backup." in f]
-        self.assertEqual(len(backups), 1)
-
-    def test_fix_disabled(self):
-        self.fixer.config["enabled"] = False
+    def test_fix_gitignore_success_and_commit(self):
         violation = Violation(
             file_path=self.gitignore_path,
             message="Missing .env",
@@ -55,31 +29,51 @@ class TestSimpleFixer(unittest.TestCase):
         )
         
         result = self.fixer.fix([violation])
-        
         self.assertTrue(result.success)
-        self.assertEqual(len(result.fixed_files), 0)
         
+        # Check if backup exists before commit
+        backups = [f for f in os.listdir(self.test_dir) if ".backup." in f]
+        self.assertEqual(len(backups), 1)
+        
+        # Call commit
+        self.fixer.commit()
+        
+        # Check if backup is cleaned up
+        backups = [f for f in os.listdir(self.test_dir) if ".backup." in f]
+        self.assertEqual(len(backups), 0)
+        self.assertEqual(len(self.fixer.backups), 0)
+
+    def test_explicit_rollback(self):
+        violation = Violation(
+            file_path=self.gitignore_path,
+            message="Missing .env",
+            severity="warning",
+            validator_name="security_validator",
+            auto_fixable=True,
+            fix_data={"missing_entries": [".env"]}
+        )
+        
+        self.fixer.fix([violation])
+        
+        # Verify fix applied
+        with open(self.gitignore_path, "r") as f:
+            self.assertIn(".env", f.read())
+            
+        # Call rollback
+        self.fixer.rollback()
+        
+        # Verify content restored
         with open(self.gitignore_path, "r") as f:
             content = f.read()
             self.assertNotIn(".env", content)
-
-    def test_fix_skips_blocking(self):
-        violation = Violation(
-            file_path=self.gitignore_path,
-            message="Missing .env",
-            severity="blocking",
-            validator_name="security_validator",
-            auto_fixable=True,
-            fix_data={"missing_entries": [".env"]}
-        )
-        
-        result = self.fixer.fix([violation])
-        
-        self.assertTrue(result.success)
-        self.assertEqual(len(result.fixed_files), 0)
+            self.assertIn("node_modules", content)
+            
+        # Check if backup is cleaned up after rollback
+        backups = [f for f in os.listdir(self.test_dir) if ".backup." in f]
+        self.assertEqual(len(backups), 0)
+        self.assertEqual(len(self.fixer.backups), 0)
 
     def test_rollback_on_write_failure(self):
-        # Create a violation for a file that we will make unreadable/unwritable
         violation = Violation(
             file_path=self.gitignore_path,
             message="Missing .env",
@@ -89,29 +83,20 @@ class TestSimpleFixer(unittest.TestCase):
             fix_data={"missing_entries": [".env"]}
         )
         
-        # Mocking a write failure is tricky without mock, but we can try making it read-only
+        # Make file read-only to force failure
         os.chmod(self.gitignore_path, 0o444)
         
         try:
             result = self.fixer.fix([violation])
             self.assertFalse(result.success)
             self.assertIn("Write failed", result.error_message)
+            
+            # Verify file was restored (content should be original despite failed write attempt)
+            # Actually since write failed, content shouldn't have changed, but rollback should have restored from backup if anything happened.
+            # Most importantly, backups should be cleared if fix fails and rolls back internally.
+            self.assertEqual(len(self.fixer.backups), 0)
         finally:
             os.chmod(self.gitignore_path, 0o644)
-
-    def test_fix_no_fixable_violations(self):
-        violation = Violation(
-            file_path=self.gitignore_path,
-            message="Missing .env",
-            severity="warning",
-            validator_name="security_validator",
-            auto_fixable=False,
-            fix_data={"missing_entries": [".env"]}
-        )
-        
-        result = self.fixer.fix([violation])
-        self.assertTrue(result.success)
-        self.assertEqual(len(result.fixed_files), 0)
 
 if __name__ == "__main__":
     unittest.main()

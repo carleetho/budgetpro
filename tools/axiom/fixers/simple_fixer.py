@@ -14,6 +14,10 @@ class SimpleFixer(BaseFixer):
     Currently focused on .gitignore improvements.
     """
 
+    def __init__(self, config: dict):
+        super().__init__(config)
+        self.backups = {}  # original_path -> backup_path
+
     @property
     def name(self) -> str:
         return "simple_fixer"
@@ -21,6 +25,12 @@ class SimpleFixer(BaseFixer):
     def fix(self, violations: List[Violation]) -> FixResult:
         """
         Attempts to fix the provided violations by appending missing entries to files.
+        
+        Args:
+            violations: List of violations to evaluate.
+            
+        Returns:
+            FixResult indicating success, modified files, and execution time.
         """
         start_time = time.time()
         
@@ -36,7 +46,6 @@ class SimpleFixer(BaseFixer):
             return FixResult(success=True, execution_time_ms=(time.time() - start_time) * 1000)
 
         fixed_files = set()
-        backups = {}
 
         try:
             for violation in fixable_violations:
@@ -44,20 +53,16 @@ class SimpleFixer(BaseFixer):
                 missing_entries = violation.fix_data["missing_entries"]
 
                 if not os.path.exists(file_path):
-                    # For .gitignore, we might want to create it if missing, 
-                    # but current logic assumes it exists or is being reported as missing.
-                    # Base on Task 2, it marks .gitignore as missing (CRITICAL/Blocking)
-                    # and MISSING EXCLUSION (HIGH/Warning). 
-                    # Blocking is skipped, so we only handle existing .gitignore here.
+                    logger.debug(f"Skipping fix for non-existent file: {file_path}")
                     continue
 
-                # Create backup if not already done for this file
-                if file_path not in backups:
+                # Create backup if not already done for this file in this session
+                if file_path not in self.backups:
                     backup_path = f"{file_path}.backup.{int(time.time())}"
                     try:
                         shutil.copy2(file_path, backup_path)
-                        backups[file_path] = backup_path
-                    except Exception as e:
+                        self.backups[file_path] = backup_path
+                    except (IOError, OSError) as e:
                         logger.error(f"Failed to create backup for {file_path}: {e}")
                         return FixResult(success=False, error_message=f"Backup failed: {e}")
 
@@ -68,10 +73,10 @@ class SimpleFixer(BaseFixer):
                         for entry in missing_entries:
                             f.write(f"{entry}\n")
                     fixed_files.add(file_path)
-                except Exception as e:
+                except (IOError, OSError) as e:
                     logger.error(f"Failed to write to {file_path}: {e}")
-                    # Rollback all changes if any write fails
-                    self._rollback(backups)
+                    # Local rollback for current session failure during fix()
+                    self.rollback()
                     return FixResult(success=False, error_message=f"Write failed on {file_path}: {e}")
 
             return FixResult(
@@ -81,15 +86,38 @@ class SimpleFixer(BaseFixer):
             )
 
         except Exception as e:
-            logger.error(f"Unexpected error in SimpleFixer: {e}")
-            self._rollback(backups)
+            logger.error(f"Unexpected error in SimpleFixer.fix: {e}")
+            self.rollback()
             return FixResult(success=False, error_message=str(e))
 
-    def _rollback(self, backups: dict):
-        """Restores files from backups."""
-        for original_path, backup_path in backups.items():
+    def commit(self) -> None:
+        """
+        Finalizes the fix by deleting backup files created during the fix operation.
+        """
+        for backup_path in self.backups.values():
             try:
-                shutil.move(backup_path, original_path)
-                logger.info(f"Rolled back {original_path} from {backup_path}")
-            except Exception as e:
-                logger.error(f"FAILED ROLLBACK for {original_path}: {e}")
+                if os.path.exists(backup_path):
+                    os.remove(backup_path)
+                    logger.debug(f"Cleaned up backup file: {backup_path}")
+            except (IOError, OSError) as e:
+                logger.warning(f"Failed to clean up backup {backup_path}: {e}")
+        
+        self.backups.clear()
+
+    def rollback(self) -> None:
+        """
+        Reverts any file modifications by restoring from backups and then cleaning them up.
+        """
+        if not self.backups:
+            logger.debug("No backups to rollback in SimpleFixer.")
+            return
+
+        for original_path, backup_path in self.backups.items():
+            try:
+                if os.path.exists(backup_path):
+                    shutil.move(backup_path, original_path)
+                    logger.info(f"Rolled back {original_path} from {backup_path}")
+            except (IOError, OSError, shutil.Error) as e:
+                logger.error(f"CRITICAL: Failed to rollback {original_path} from {backup_path}: {e}")
+        
+        self.backups.clear()
