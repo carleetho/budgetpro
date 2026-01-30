@@ -84,7 +84,7 @@ auto_fix:
 # Add keywords to this list (or use commit message tags) to bypass specific checks.
 overrides:
   # List of active override keywords.
-  enabled_keywords: []
+  enabled_keywords: ["BIGBANG_APPROVED"]
   # Examples of override keywords:
   # - OVERRIDE_ESTIMACION  # Allow changes to Estimacion module
   # - OVERRIDE_PRESUPUESTO # Allow changes to Presupuesto module

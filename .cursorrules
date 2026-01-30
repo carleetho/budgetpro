@@ -58,11 +58,6 @@ Domain (Core) ← Application ← Infrastructure
 ✅ Asegura que no hay Lazy Code
 ✅ Verifica Arquitectura Hexagonal / Aislamiento de Dominio
 
-### ⛔ PROHIBICIÓN ESTRICTA DE BYPASS
-- **NUNCA** modifiques archivos de configuración (`axiom.config.yaml`, `.cursorrules`) o scripts de validación para saltar un bloqueo.
-- **SIEMPRE** si un cambio es bloqueado por AXIOM o la Gobernanza, divide el trabajo en commits más pequeños o pide permiso al USER.
-- **EL BYPASS ES UNA VIOLACIÓN CRÍTICA**: No uses `--no-verify` ni alteres los límites para "completar la tarea".
-
 ### 🚀 WORKFLOW
 1. `./axiom.sh --status`
 2. `./axiom.sh --dry-run`
