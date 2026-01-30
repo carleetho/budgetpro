@@ -16,6 +16,7 @@ from tools.axiom.reporters.log_reporter import LogReporter
 from tools.axiom.reporters.metrics_reporter import MetricsReporter
 from tools.axiom.reporters.base_reporter import BaseReporter, ReportResult
 from tools.axiom.fixers.base_fixer import BaseFixer, FixResult
+from tools.axiom.fixers.simple_fixer import SimpleFixer
 
 @dataclass
 class AggregatedViolations:
@@ -140,7 +141,12 @@ class AxiomSentinel:
                 self.reporters.append(MetricsReporter(rep_config.get('metrics', {})))
                 self.logger.info("MetricsReporter registered.")
         
-        # 3. Initialize Fixers (Placeholder)
+        # 3. Initialize Fixers
+        if self.config and hasattr(self.config, 'auto_fix'):
+            fix_config = self.config.auto_fix
+            if fix_config.get('enabled', False):
+                self.fixers.append(SimpleFixer(fix_config))
+                self.logger.info("SimpleFixer initialized.")
 
     def _execute_validators(self, files: List[str]) -> List[ValidationResult]:
         """Executes all initialized validators sequentially."""
@@ -248,20 +254,54 @@ class AxiomSentinel:
         if not self.config or not self.config.auto_fix.get("enabled"):
             return aggregated
             
+        if not self.fixers:
+            return aggregated
+
         all_violations = aggregated.blocking + aggregated.warning + aggregated.info
+        modified_files = set()
         
         for fixer in self.fixers:
             self.logger.info(f"Triggering auto-fixer: {fixer.name}...")
             try:
                 fix_result = fixer.fix(all_violations)
                 if fix_result.success and fix_result.fixed_files:
-                    self.logger.info(f"Fixed files: {fix_result.fixed_files}")
-                    # In a real implementation, we might re-run validators here
-                    # For Task 4, we just log and return.
+                    self.logger.info(f"Auto-fixer {fixer.name} success. Modified files: {fix_result.fixed_files}")
+                    modified_files.update(fix_result.fixed_files)
+                elif not fix_result.success:
+                    self.logger.error(f"Auto-fixer {fixer.name} failed: {fix_result.error_message}")
             except Exception as e:
-                self.logger.error(f"Auto-fixer {fixer.name} failed: {e}")
+                self.logger.error(f"Unexpected error in auto-fixer {fixer.name}: {e}")
                 
-        return aggregated
+        if not modified_files:
+            return aggregated
+
+        # Re-validate modified files
+        self.logger.info(f"Re-validating modified files: {list(modified_files)}")
+        re_val_results = self._execute_validators(list(modified_files))
+        re_val_aggregated = self._aggregate_violations(re_val_results)
+        
+        # Check if new blocking violations were introduced
+        if re_val_aggregated.blocking:
+            self.logger.error("New blocking violations detected after auto-fix. Rolling back changes.")
+            for fixer in self.fixers:
+                try:
+                    fixer.rollback()
+                except Exception as e:
+                    self.logger.error(f"Failed to rollback fixer {fixer.name}: {e}")
+            return aggregated
+
+        # Re-validation passed, commit changes (cleanup backups)
+        for fixer in self.fixers:
+            try:
+                fixer.commit()
+            except Exception as e:
+                self.logger.error(f"Failed to commit fixer {fixer.name}: {e}")
+        
+        # Finally, re-run full validation to provide a consistent final state
+        all_files = self._discover_staged_files()
+        final_val_results = self._execute_validators(all_files)
+        return self._aggregate_violations(final_val_results)
+
 
     def _make_exit_decision(self, aggregated: AggregatedViolations) -> int:
         """Determines exit code based on remaining blocking violations."""

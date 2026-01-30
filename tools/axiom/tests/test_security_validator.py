@@ -24,6 +24,32 @@ class TestSecurityValidator(unittest.TestCase):
         
         self.assertEqual(len(violations), 1)
         self.assertIn(".gemini", violations[0].message)
+        self.assertTrue(violations[0].auto_fixable)
+        self.assertEqual(violations[0].fix_data, {"missing_entries": [".gemini"]})
+
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open, read_data=".env\n*.log\n.gemini\nnode_modules\ntarget\n")
+    def test_check_gitignore_complete(self, mock_file, mock_exists):
+        mock_exists.return_value = True
+        validator = SecurityValidator({"checks": {"gitignore": True}})
+        violations = validator._check_gitignore()
+        
+        self.assertEqual(len(violations), 0)
+
+    @patch('os.path.exists')
+    @patch('builtins.open', new_callable=mock_open, read_data="")
+    def test_check_gitignore_blocking_not_auto_fixable(self, mock_file, mock_exists):
+        mock_exists.return_value = True
+        # Set strictness to standard, but SEC_MEDIUM maps to warning.
+        # To make it blocking, we need to mock _resolve_severity or change how it works.
+        # Actually, let's mock _resolve_severity to return "blocking"
+        validator = SecurityValidator({"strictness": "strict"})
+        with patch.object(SecurityValidator, '_resolve_severity', return_value="blocking"):
+            violations = validator._check_gitignore()
+            self.assertEqual(len(violations), 1)
+            self.assertEqual(violations[0].severity, "blocking")
+            self.assertFalse(violations[0].auto_fixable)
+            self.assertIsNone(violations[0].fix_data)
 
     @patch('os.path.exists')
     def test_check_gitignore_missing_file(self, mock_exists):

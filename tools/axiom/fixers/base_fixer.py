@@ -46,3 +46,21 @@ class BaseFixer(ABC):
             FixResult containing success status, list of modified files, and metadata.
         """
         pass
+
+    @abstractmethod
+    def commit(self) -> None:
+        """
+        Finalizes the fix operation. 
+        Should be called if the fix is accepted (e.g., re-validation passed).
+        Typical actions include deleting backup files.
+        """
+        pass
+
+    @abstractmethod
+    def rollback(self) -> None:
+        """
+        Reverts any changes made during the fix operation.
+        Should be called if the fix is rejected (e.g., re-validation failed).
+        Typical actions include restoring files from backups.
+        """
+        pass
