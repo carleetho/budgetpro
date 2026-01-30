@@ -1,0 +1,54 @@
+rules:
+  # Sub-regla 1: Detectar setters en clases Snapshot - ERROR
+  - id: budgetpro.domain.immutability.snapshot-no-setters
+    patterns:
+      - pattern: public void $METHOD(...) { ... }
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^set[A-Z].*
+      - pattern-inside: |
+          class $CLASS {
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $CLASS
+          regex: .*Snapshot
+    paths:
+      include:
+        - "**/*Snapshot.java"
+    message: |
+      INMUTABILIDAD: Snapshot con setters detectado.
+      Los snapshots deben ser inmutables para garantizar la integridad de los datos históricos.
+      Usa constructor o builder pattern en lugar de setters.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
+
+  # Sub-regla 2: Detectar snapshots sin marcadores de inmutabilidad - WARNING
+  - id: budgetpro.domain.immutability.snapshot-markers
+    patterns:
+      - pattern: class $CLASS { ... }
+      - pattern-not-inside: |
+          @Immutable
+          class $CLASS { ... }
+      - pattern-not-inside: |
+          record $CLASS(...) { ... }
+      - metavariable-regex:
+          metavariable: $CLASS
+          regex: .*Snapshot
+    paths:
+      include:
+        - "**/*Snapshot.java"
+    message: |
+      INMUTABILIDAD: Snapshot sin marcador de inmutabilidad.
+      Los snapshots deben estar marcados explícitamente como inmutables para claridad y seguridad.
+      Agrega @Immutable o convierte a 'record' para indicar inmutabilidad.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
