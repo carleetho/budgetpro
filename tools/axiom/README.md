@@ -11,7 +11,10 @@ The configuration system allows you to:
 - Define **Protection Zones** (Red, Yellow, Green) with specific file limits.
 - Configure **Validators** (e.g., Blast Radius strictness).
 - Setup **Reporters** (Console, Log files, Metrics).
+- Configure **Validators** (e.g., Blast Radius strictness).
+- Setup **Reporters** (Console, Log files, Metrics).
 - Manage **Overrides** for emergency fixes or authorized large changes.
+- **AI Assistant Integration**: Generate `.cursorrules` to teach AI agents your project's architectural rules.
 
 ## Directory Structure
 
@@ -90,6 +93,27 @@ See [INSTALLATION.md](docs/INSTALLATION.md) for detailed setup and usage.
 
 ## Documentation
 
-- [Detailed Configuration Reference](docs/CONFIGURATION.md) - Complete guide to all available options.
+- [Detailed Configuration Reference](docs/CONFIGURATION_GUIDE.md) - **Guide for AI Integration (REQ-27)**.
+- [General Configuration](docs/CONFIGURATION.md) - Reference for core validator settings.
+- [Usage Examples](docs/EXAMPLES.md) - Scenarios for both Core Validators and AI setup.
 - [Lazy Code Validator Guide](docs/lazy-code-validator.md) - Documentation for anti-pattern detection (REQ-18).
-- [Usage Examples](docs/EXAMPLES.md) - Common scenarios, Python API usage, and troubleshooting.
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Solutions for common errors.
+
+## AI Assistant Integration (REQ-27)
+
+AXIOM helps you maintain architectural consistency by generating a `.cursorrules` file for your AI coding assistants (Cursor, Windsurf, Antigravity).
+
+### Generation
+
+The file is generated from `axiom.config.yaml`. To update it manually:
+
+```bash
+python3 tools/axiom/sync_cursorrules.py
+```
+
+### Features
+
+- **Persona Injection**: Sets the AI's role and priorities.
+- **Zone Protection**: Teaches the AI which files are "high risk".
+- **Forbidden Patterns**: Explicit "NEVER" rules.
+- **Institutional Memory**: Preventing repeat incidents via "Historical Context".

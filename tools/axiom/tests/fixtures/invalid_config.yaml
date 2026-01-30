@@ -1,0 +1,6 @@
+system:
+  # Missing role!
+  priorities: []
+axioms:
+  protection_zones: {}
+history: {}
