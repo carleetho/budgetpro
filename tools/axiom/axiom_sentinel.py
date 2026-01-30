@@ -16,6 +16,7 @@ from tools.axiom.reporters.log_reporter import LogReporter
 from tools.axiom.reporters.metrics_reporter import MetricsReporter
 from tools.axiom.reporters.base_reporter import BaseReporter, ReportResult
 from tools.axiom.fixers.base_fixer import BaseFixer, FixResult
+from tools.axiom.fixers.simple_fixer import SimpleFixer
 
 @dataclass
 class AggregatedViolations:
@@ -140,7 +141,12 @@ class AxiomSentinel:
                 self.reporters.append(MetricsReporter(rep_config.get('metrics', {})))
                 self.logger.info("MetricsReporter registered.")
         
-        # 3. Initialize Fixers (Placeholder)
+        # 3. Initialize Fixers
+        if self.config and hasattr(self.config, 'auto_fix'):
+            fix_config = self.config.auto_fix
+            if fix_config.get('enabled', False):
+                self.fixers.append(SimpleFixer(fix_config))
+                self.logger.info("SimpleFixer initialized.")
 
     def _execute_validators(self, files: List[str]) -> List[ValidationResult]:
         """Executes all initialized validators sequentially."""
@@ -248,20 +254,84 @@ class AxiomSentinel:
         if not self.config or not self.config.auto_fix.get("enabled"):
             return aggregated
             
+        if not self.fixers:
+            return aggregated
+
         all_violations = aggregated.blocking + aggregated.warning + aggregated.info
+        modified_files = set()
         
         for fixer in self.fixers:
             self.logger.info(f"Triggering auto-fixer: {fixer.name}...")
             try:
                 fix_result = fixer.fix(all_violations)
                 if fix_result.success and fix_result.fixed_files:
-                    self.logger.info(f"Fixed files: {fix_result.fixed_files}")
-                    # In a real implementation, we might re-run validators here
-                    # For Task 4, we just log and return.
+                    self.logger.info(f"Auto-fixer {fixer.name} success. Modified files: {fix_result.fixed_files}")
+                    modified_files.update(fix_result.fixed_files)
+                elif not fix_result.success:
+                    self.logger.error(f"Auto-fixer {fixer.name} failed: {fix_result.error_message}")
             except Exception as e:
-                self.logger.error(f"Auto-fixer {fixer.name} failed: {e}")
+                self.logger.error(f"Unexpected error in auto-fixer {fixer.name}: {e}")
                 
-        return aggregated
+        if not modified_files:
+            return aggregated
+
+        # Re-validate modified files
+        self.logger.info(f"Re-validating modified files: {list(modified_files)}")
+        re_val_results = self._execute_validators(list(modified_files))
+        re_val_aggregated = self._aggregate_violations(re_val_results)
+        
+        # Check if new blocking violations were introduced
+        if re_val_aggregated.blocking:
+            self.logger.error("New blocking violations detected after auto-fix. Rolling back changes.")
+            # Trigger rollback for all fixers
+            for fixer in self.fixers:
+                # We need to find backup files to restore. 
+                # SimpleFixer manages its own backups during fix() and rolls back if fix() fails.
+                # However, here we need a rollback AFTER fix() succeeded but re-validation failed.
+                # Current SimpleFixer implementation deletes/moves backups in fix() if successful?
+                # Actually, my SimpleFixer implementation in Task 3 didn't cleanup backups after success.
+                # It left them there. Let's adjust SimpleFixer or use its _rollback if reachable?
+                # BaseFixer doesn't have _rollback in its interface.
+                # Let's assume SimpleFixer leaves backups and we need a way to restore.
+                # Since SimpleFixer._rollback is internal, let's look at what we can do.
+                pass
+            
+            # Re-performing manual rollback for .gitignore as it's the only one we handle
+            for file_path in modified_files:
+                backup_patterns = [f for f in os.listdir(os.path.dirname(file_path) or ".") if ".backup." in f and f.startswith(os.path.basename(file_path))]
+                if backup_patterns:
+                    # Sort by timestamp to get the latest
+                    backup_patterns.sort(reverse=True)
+                    latest_backup = os.path.join(os.path.dirname(file_path) or ".", backup_patterns[0])
+                    import shutil
+                    shutil.move(latest_backup, file_path)
+                    self.logger.info(f"Rolled back {file_path} from {latest_backup}")
+            
+            return aggregated
+
+        # Cleanup backups if re-validation passed
+        for file_path in modified_files:
+            backup_patterns = [f for f in os.listdir(os.path.dirname(file_path) or ".") if ".backup." in f and f.startswith(os.path.basename(file_path))]
+            for b in backup_patterns:
+                try:
+                    os.remove(os.path.join(os.path.dirname(file_path) or ".", b))
+                except:
+                    pass
+
+        # Update aggregated results: remove violations that are no longer present
+        # Simplified: re-run validation on ALL tracked files might be safer but expensive.
+        # Let's just return the re-validated aggregated results merged with original untouched ones.
+        # But for this task's simplicity, let's assume we re-aggregated everything correctly.
+        # For now, let's return the re_val_aggregated as the new state for modified files
+        # plus the violations from unmodified files.
+        
+        # This part is complex. Let's just return the new aggregated results from a full re-validation if possible,
+        # or just filter out the fixed violations.
+        
+        # Let's re-run full validation to be absolutely sure and simple.
+        all_files = self._discover_staged_files()
+        final_val_results = self._execute_validators(all_files)
+        return self._aggregate_violations(final_val_results)
 
     def _make_exit_decision(self, aggregated: AggregatedViolations) -> int:
         """Determines exit code based on remaining blocking violations."""

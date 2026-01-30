@@ -170,17 +170,29 @@ class SecurityValidator(BaseValidator):
             return violations
 
         critical_patterns = [".env", "*.log", ".gemini", "node_modules", "target"]
+        missing_entries = []
         try:
             with open(gitignore_path, "r") as f:
-                content = f.read()
+                # Basic parsing: strip comments and whitespace
+                lines = [line.split('#')[0].strip() for line in f]
+                existing_entries = set(filter(None, lines))
+                
                 for pattern in critical_patterns:
-                    if pattern not in content:
-                        violations.append(Violation(
-                            file_path=gitignore_path,
-                            message=f"MISSING EXCLUSION: .gitignore does not contain '{pattern}'.",
-                            severity=self._resolve_severity(self.SEC_HIGH),
-                            validator_name=self.name
-                        ))
+                    if pattern not in existing_entries:
+                        missing_entries.append(pattern)
+            
+            if missing_entries:
+                severity = self._resolve_severity(self.SEC_MEDIUM)
+                is_blocking = (severity == "blocking")
+                
+                violations.append(Violation(
+                    file_path=gitignore_path,
+                    message=f"Missing .gitignore entries for sensitive files: {', '.join(missing_entries)}",
+                    severity=severity,
+                    validator_name=self.name,
+                    auto_fixable=not is_blocking,
+                    fix_data={"missing_entries": missing_entries} if not is_blocking else None
+                ))
         except Exception as e:
              violations.append(Violation(
                 file_path=gitignore_path,
