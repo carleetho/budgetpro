@@ -235,5 +235,50 @@ class TestAxiomSentinel(unittest.TestCase):
         mock_val.assert_called_once()
         mock_rep.assert_called_once()
 
+    def test_initialize_reporters_all_enabled_by_default(self):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(reporters={
+            "console": {"enabled": True},
+            "log_file": {"enabled": True},
+            "metrics": {"enabled": True}
+        })
+        
+        sentinel._initialize_components()
+        
+        reporter_names = [r.name for r in sentinel.reporters]
+        self.assertIn("console", reporter_names)
+        self.assertIn("log_file", reporter_names)
+        self.assertIn("metrics", reporter_names)
+        self.assertEqual(len(sentinel.reporters), 3)
+
+    def test_initialize_reporters_partial_disable(self):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(reporters={
+            "console": {"enabled": True},
+            "log_file": {"enabled": False},
+            "metrics": {"enabled": True}
+        })
+        
+        sentinel._initialize_components()
+        
+        reporter_names = [r.name for r in sentinel.reporters]
+        self.assertIn("console", reporter_names)
+        self.assertNotIn("log_file", reporter_names)
+        self.assertIn("metrics", reporter_names)
+        self.assertEqual(len(sentinel.reporters), 2)
+
+    def test_initialize_reporters_implicit_enabled(self):
+        sentinel = AxiomSentinel()
+        # No 'enabled' flag set means True by default
+        sentinel.config = AxiomConfig(reporters={
+            "console": {},
+            "log_file": {},
+            "metrics": {}
+        })
+        
+        sentinel._initialize_components()
+        
+        self.assertEqual(len(sentinel.reporters), 3)
+
 if __name__ == "__main__":
     unittest.main()
