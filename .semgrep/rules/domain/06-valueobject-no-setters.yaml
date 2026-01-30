@@ -1,0 +1,21 @@
+rules:
+  - id: budgetpro.domain.immutability.valueobject-no-setters
+    patterns:
+      - pattern-regex: 'public\s+void\s+set\w+\([^)]+\)\s*\{'
+      - pattern-inside: |
+          class $CLASS {
+            ...
+          }
+    paths:
+      include:
+        - "**/domain/**/valueobjects/*.java"
+    message: |
+      INMUTABILIDAD: Value Object con setters.
+      Value Objects deben ser inmutables según principios de Domain-Driven Design.
+      Elimina setters y usa constructor para crear nuevos value objects.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
