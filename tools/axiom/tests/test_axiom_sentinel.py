@@ -58,6 +58,12 @@ class MockFixer(BaseFixer):
             raise RuntimeError("Fixer crash")
         return FixResult(True, self.fixed_files, 1.0)
 
+    def commit(self):
+        pass
+
+    def rollback(self):
+        pass
+
 class TestAxiomSentinel(unittest.TestCase):
 
     def setUp(self):
@@ -201,9 +207,42 @@ class TestAxiomSentinel(unittest.TestCase):
         mock_exec.return_value = []
         
         aggregated = AggregatedViolations(blocking=[Violation("a.py", "m", "blocking", "v")])
-        sentinel._execute_auto_fixer(aggregated)
+        result = sentinel._execute_auto_fixer(aggregated)
         
         self.assertEqual(len(f1.fixed_files), 1)
+        self.assertEqual(mock_exec.call_count, 2) # 1 for re-validation, 1 for final re-aggregation
+
+    @patch('tools.axiom.axiom_sentinel.AxiomSentinel._execute_validators')
+    @patch('tools.axiom.axiom_sentinel.AxiomSentinel._discover_staged_files')
+    def test_execute_auto_fixer_rollback(self, mock_discover, mock_exec):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(auto_fix={"enabled": True})
+        
+        # Use a MagicMock for the fixer to easily track calls to rollback/commit
+        f1 = MagicMock(spec=BaseFixer)
+        f1.name = "f1"
+        f1.fix.return_value = FixResult(success=True, fixed_files=[".gitignore"])
+        sentinel.fixers = [f1]
+        
+        mock_discover.return_value = [".gitignore"]
+        
+        # Mock re-validation with NEW blocking violation
+        new_violation = Violation(".gitignore", "new error", "blocking", "v")
+        mock_exec.return_value = [ValidationResult("v", [new_violation])]
+        
+        aggregated = AggregatedViolations(warning=[Violation(".gitignore", "old warn", "warning", "v")])
+        result = sentinel._execute_auto_fixer(aggregated)
+        
+        f1.rollback.assert_called_once()
+        self.assertEqual(result, aggregated)
+
+    def test_initialize_simple_fixer(self):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(auto_fix={"enabled": True})
+        sentinel._initialize_components()
+        
+        fixer_names = [f.name for f in sentinel.fixers]
+        self.assertIn("simple_fixer", fixer_names)
 
     def test_make_exit_decision(self):
         sentinel = AxiomSentinel()

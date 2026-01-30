@@ -40,5 +40,39 @@ class TestBaseValidator(unittest.TestCase):
         self.assertEqual(result.violations[0].message, "Testing violation")
         self.assertFalse(result.success)
 
+    def test_violation_auto_fix_fields(self):
+        violation = Violation(
+            file_path="/path/to/file.py",
+            message="Auto-fixable violation",
+            severity="warning",
+            validator_name="test_validator",
+            auto_fixable=True,
+            fix_data={"action": "replace", "new_content": "fixed"}
+        )
+        
+        self.assertTrue(violation.auto_fixable)
+        self.assertEqual(violation.fix_data, {"action": "replace", "new_content": "fixed"})
+
+    def test_violation_defaults(self):
+        violation = Violation(
+            file_path="/path/to/file.py",
+            message="Default violation",
+            severity="info",
+            validator_name="test_validator"
+        )
+        
+        self.assertFalse(violation.auto_fixable)
+        self.assertIsNone(violation.fix_data)
+
+    def test_violation_frozen(self):
+        violation = Violation(
+            file_path="/path/to/file.py",
+            message="Frozen violation",
+            severity="info",
+            validator_name="test_validator"
+        )
+        with self.assertRaises(Exception): # dataclasses.FrozenInstanceError
+            violation.auto_fixable = True
+
 if __name__ == "__main__":
     unittest.main()

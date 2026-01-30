@@ -160,30 +160,52 @@ class SecurityValidator(BaseValidator):
         violations = []
         gitignore_path = ".gitignore"
         
-        if not os.path.exists(gitignore_path):
+        # Use absolute path if config suggests it, or if we want to be safe for matching
+        abs_gitignore_path = os.path.abspath(gitignore_path)
+        
+        if not os.path.exists(abs_gitignore_path):
             violations.append(Violation(
-                file_path=gitignore_path,
+                file_path=abs_gitignore_path,
                 message="CRITICAL: .gitignore file is missing. This is a severe security risk.",
                 severity=self._resolve_severity(self.SEC_CRITICAL),
                 validator_name=self.name
             ))
             return violations
 
-        critical_patterns = [".env", "*.log", ".gemini", "node_modules", "target"]
+        # Get patterns from config or use defaults
+        config_patterns = self.config.get("required_gitignore_entries", {})
+        if isinstance(config_patterns, dict):
+            # If it's a dict, we look for our specific file or a generic list
+            critical_patterns = config_patterns.get(abs_gitignore_path) or config_patterns.get(gitignore_path) or [".env", "*.log", ".gemini", "node_modules", "target"]
+        else:
+            critical_patterns = config_patterns or [".env", "*.log", ".gemini", "node_modules", "target"]
+
+        missing_entries = []
         try:
-            with open(gitignore_path, "r") as f:
-                content = f.read()
+            with open(abs_gitignore_path, "r") as f:
+                # Basic parsing: strip comments and whitespace
+                lines = [line.split('#')[0].strip() for line in f]
+                existing_entries = set(filter(None, lines))
+                
                 for pattern in critical_patterns:
-                    if pattern not in content:
-                        violations.append(Violation(
-                            file_path=gitignore_path,
-                            message=f"MISSING EXCLUSION: .gitignore does not contain '{pattern}'.",
-                            severity=self._resolve_severity(self.SEC_HIGH),
-                            validator_name=self.name
-                        ))
+                    if pattern not in existing_entries:
+                        missing_entries.append(pattern)
+            
+            if missing_entries:
+                severity = self._resolve_severity(self.SEC_MEDIUM)
+                is_blocking = (severity == "blocking")
+                
+                violations.append(Violation(
+                    file_path=abs_gitignore_path,
+                    message=f"Missing .gitignore entries for sensitive files: {', '.join(missing_entries)}",
+                    severity=severity,
+                    validator_name=self.name,
+                    auto_fixable=not is_blocking,
+                    fix_data={"missing_entries": missing_entries} if not is_blocking else None
+                ))
         except Exception as e:
              violations.append(Violation(
-                file_path=gitignore_path,
+                file_path=abs_gitignore_path,
                 message=f"ERROR: Could not read .gitignore: {e}",
                 severity=self._resolve_severity(self.SEC_CRITICAL),
                 validator_name=self.name
