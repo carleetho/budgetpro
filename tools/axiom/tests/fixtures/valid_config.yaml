@@ -1,0 +1,17 @@
+system:
+  role: "Test Bot"
+  priorities:
+    - "Priority 1"
+axioms:
+  protection_zones:
+    green:
+      - path: "tests"
+        max_files: 5
+  prohibitions: []
+  hexagonal_boundaries:
+    permitted: []
+    forbidden: []
+  override_keywords: []
+history:
+  lessons_learned: []
+  incidents: []
