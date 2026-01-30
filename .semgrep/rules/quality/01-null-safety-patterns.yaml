@@ -1,0 +1,33 @@
+rules:
+  - id: budgetpro.quality.null-safety-patterns
+    patterns:
+      - pattern: |
+          public $RET $METHOD(..., $TYPE $ARG, ...) {
+            ...
+          }
+      - pattern-not: |
+          public $RET $METHOD(..., $TYPE $ARG, ...) {
+            ...
+            Objects.requireNonNull($ARG, ...);
+            ...
+          }
+      - pattern-not: |
+          public $RET $METHOD(..., $TYPE $ARG, ...) {
+            ...
+            Assert.notNull($ARG, ...);
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $TYPE
+          regex: ^(?!int|long|double|float|boolean|char|byte|short).*
+      - metavariable-regex:
+          metavariable: $ARG
+          regex: ^(?!.*(Result|Optional|Collection|List|Set|Map)).*
+    message: |
+      Missing null-safety check for public method argument '$ARG'.
+      For public API/Services, it is recommended to use 'Objects.requireNonNull($ARG, "...")' or Spring's 'Assert.notNull($ARG, "...")' to provide clear error messages and fail fast.
+    severity: INFO
+    languages:
+      - java
+    metadata:
+      category: quality

@@ -1,0 +1,16 @@
+rules:
+  - id: 04-cors-misconfiguration
+    patterns:
+      - pattern-either:
+          - pattern: $E.allowedOriginPatterns(..., "*", ...)
+          - pattern: $E.allowedOrigins(..., "*", ...)
+    message: |
+      CORS configuration uses a wildcard "*".
+      Using wildcards in CORS origins with credentials enabled (common in Spring Security) is a security vulnerability.
+      Specify explicit origins like "http://localhost:3000" or verified domains.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      technology: spring-security
+      confidence: HIGH

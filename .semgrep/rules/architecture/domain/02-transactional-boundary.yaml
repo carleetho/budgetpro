@@ -1,0 +1,22 @@
+rules:
+  - id: 02-transactional-boundary
+    patterns:
+      - pattern-either:
+          - pattern: |
+              @Transactional
+              class $CLASS { ... }
+          - pattern: |
+              @Transactional
+              $TYPE $METHOD(...) { ... }
+    paths:
+      include:
+        - "**/domain/**"
+    message: |
+      Transactional boundary violation.
+      The @Transactional annotation belongs in the application layer, not in the domain layer.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: architecture
+      technology: budgetpro
+      confidence: HIGH

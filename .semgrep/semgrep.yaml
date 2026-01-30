@@ -1,0 +1,7 @@
+# Base configuration listing all rule categories.
+# Note: Semgrep config expects a 'rules' key containing an array of rule objects,
+# or when including paths, it should be passed via CLI or as rule entries.
+# To use as a 'pack' of directories, we usually define them in the CLI.
+# However, for a config file that imports others:
+
+rules: [] # Placeholder for now, as we use CLI to target paths.

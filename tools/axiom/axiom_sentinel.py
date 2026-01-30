@@ -10,6 +10,8 @@ from tools.axiom.config_loader import load_axiom_config, AxiomConfig
 from tools.axiom.override_detector import detect_overrides, OverrideResult
 from tools.axiom.validators.base_validator import BaseValidator, Violation, ValidationResult
 from tools.axiom.validators.security_validator import SecurityValidator
+from tools.axiom.validators.lazy_code_validator import LazyCodeValidator
+from tools.axiom.reporters.console_reporter import ConsoleReporter
 from tools.axiom.reporters.base_reporter import BaseReporter, ReportResult
 from tools.axiom.fixers.base_fixer import BaseFixer, FixResult
 
@@ -109,8 +111,22 @@ class AxiomSentinel:
             self.validators.append(SecurityValidator(sec_config))
             self.logger.info("SecurityValidator initialized.")
 
-        # Placeholder for other validators (Blast Radius, etc.)
-        # ...
+        # Lazy Code Validator
+        if self.config and self.config.validators.get('lazy_code', {}).get('enabled', False):
+            lazy_config = self.config.validators['lazy_code']
+            self.validators.append(LazyCodeValidator(lazy_config))
+            self.logger.debug("LazyCodeValidator registered")
+
+        # placeholder for other validators
+        
+        # 2. Initialize Reporters
+        if self.config and hasattr(self.config, 'reporters'):
+            rep_config = self.config.reporters
+            if rep_config.get('console', {}).get('enabled', True):
+                self.reporters.append(ConsoleReporter(rep_config['console']))
+                self.logger.debug("ConsoleReporter registered")
+        
+        # 3. Initialize Fixers (Placeholder)
 
     def _execute_validators(self, files: List[str]) -> List[ValidationResult]:
         """Executes all initialized validators sequentially."""

@@ -103,6 +103,10 @@ public class EstimacionItem {
         return this.montoAnterior.sumar(this.montoActual);
     }
 
+    public MontoEstimado getSaldoPorEjercer() {
+        return montoContractual.restar(getMontoAcumulado());
+    }
+
     // Getters
     public EstimacionItemId getId() {
         return id;
@@ -149,5 +153,10 @@ public class EstimacionItem {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public EstimacionId getSaldoPorEjercer() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getSaldoPorEjercer'");
     }
 }

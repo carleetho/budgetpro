@@ -62,6 +62,7 @@ npm run dev
 ## 🛠️ Tecnologías
 
 ### Backend
+
 - Java 17
 - Spring Boot 3.x
 - PostgreSQL
@@ -69,6 +70,7 @@ npm run dev
 - Maven
 
 ### Frontend
+
 - (Por definir)
 
 ## 📖 API REST
@@ -83,6 +85,52 @@ Ver documentación completa de endpoints en: `docs/ARQUITECTURA_VISUAL.md`
 cd backend
 ./mvnw test
 ```
+
+## 🛡️ AXIOM - Validación de Código
+
+El proyecto utiliza **AXIOM** para garantizar la calidad del código y prevenir anti-patrones de IA (Lazy Code).
+
+### Pre-commit Hook
+
+Para instalar el hook de validación local:
+
+```bash
+./tools/axiom/install_hook.sh
+```
+
+### CI/CD Integration
+
+AXIOM se ejecuta automáticamente en cada PR y Push hacia `main` y `develop` mediante GitHub Actions. El build fallará si se detectan:
+
+- Métodos vacíos.
+- Retornos `null` en capas de persistencia.
+- `TODO/FIXME` en lógica de dominio crítica.
+
+Para más detalles, consulta la [Guía del Desarrollador de AXIOM Lazy Code](tools/axiom/docs/lazy-code-validator.md).
+
+## 🔍 Semgrep - Análisis de Seguridad y Calidad
+
+El proyecto utiliza **Semgrep** para detectar vulnerabilidades de seguridad, errores de lógica de dominio y asegurar el cumplimiento de la arquitectura hexagonal.
+
+### Ejecución Local
+
+Para ejecutar un escaneo completo localmente:
+
+```bash
+./.semgrep/scripts/scan-all.sh
+```
+
+Para escanear una categoría específica:
+
+```bash
+./.semgrep/scripts/scan-category.sh <security|domain|architecture|performance|quality>
+```
+
+Para más detalles sobre instalación, reglas y manejo de hallazgos, consulta la [Guía de Semgrep para Desarrolladores](docs/semgrep-guide.md).
+
+### Integración CI/CD
+
+Semgrep se ejecuta en cada Pull Request mediante GitHub Actions. Los hallazgos de severidad **Critical** y **High** bloquearán el merge, mientras que **Medium** y **Low** se reportarán como advertencias.
 
 ## 📝 Licencia
 

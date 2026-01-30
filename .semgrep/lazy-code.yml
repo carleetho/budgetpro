@@ -1,0 +1,11 @@
+rules:
+  - id: no-todo-in-domain
+    languages:
+      - java
+    pattern: TODO
+    message: "TODO not allowed in domain layer"
+    severity: ERROR
+    paths:
+      include:
+        - '**/src/main/java/**/domain/**'
+

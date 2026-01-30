@@ -1,0 +1,30 @@
+rules:
+  - id: 01-estimacion-state-machine
+    patterns:
+      - pattern: $E.estado = $VAL
+      - pattern-inside: |
+          class Estimacion {
+            ...
+          }
+      - pattern-not-inside: |
+          void aprobar(...) {
+            ...
+          }
+      - pattern-not-inside: |
+          void facturar(...) {
+            ...
+          }
+      - pattern-not-inside: |
+          void anular(...) {
+            ...
+          }
+    message: |
+      Invalid Estimacion state transition.
+      Directly assigning a value to the 'estado' field is prohibited to ensure state machine integrity.
+      Use the domain methods: aprobar(), facturar(), or anular() instead.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH

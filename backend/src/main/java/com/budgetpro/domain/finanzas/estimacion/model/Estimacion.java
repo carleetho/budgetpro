@@ -78,15 +78,22 @@ public class Estimacion {
     /**
      * Calcula el monto de retención basado en el total estimado.
      */
-    public MontoEstimado calcularRetencion() {
+    public MontoEstimado calcularMontoRetencion() {
         return retencionPorcentaje.calcularRetencion(calcularTotalEstimado());
+    }
+
+    /**
+     * Alias para calcular total estimado para consistencia con UI/DTO.
+     */
+    public MontoEstimado calcularSubtotal() {
+        return calcularTotalEstimado();
     }
 
     /**
      * Calcula el total a pagar (Estimado - Retención).
      */
     public MontoEstimado calcularTotalPagar() {
-        return calcularTotalEstimado().restar(calcularRetencion());
+        return calcularTotalEstimado().restar(calcularMontoRetencion());
     }
 
     /**
