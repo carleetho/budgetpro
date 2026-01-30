@@ -55,6 +55,27 @@ To install the pre-commit hook:
 bash tools/axiom/install_hook.sh
 ```
 
+## Multi-Channel Reporting
+
+AXIOM provides feedback through three distinct channels:
+
+1. **Console**: Real-time feedback with color-coded severity grouping and fix suggestions.
+
+```yaml
+reporters:
+  console:
+    enabled: true
+  log_file:
+    enabled: true
+    path: ".budgetpro/validation.log" # Default persistent audit trail
+  metrics:
+    enabled: true
+    path: ".budgetpro/metrics.json" # Default trend analysis data
+```
+
+> [!NOTE]
+> **Accessibility**: The console reporter uses ANSI color codes (Red/Yellow/Blue) to denote severity. If you are color-blind or using a terminal that doesn't support colors, rely on the `[SEVERITY]` text tags prefixing each violation.
+
 See [INSTALLATION.md](docs/INSTALLATION.md) for detailed setup and usage.
 
 ## Quick Start

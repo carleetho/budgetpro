@@ -57,12 +57,12 @@ Configures where validation results are sent. **At least one reporter must be en
 ```yaml
 reporters:
   console:
-    enabled: true
+    enabled: true # Real-time terminal output with colors
   log_file:
-    enabled: true
-    path: ".budgetpro/axiom.log"
+    enabled: true # Persistent audit trail
+    path: ".budgetpro/validation.log"
   metrics:
-    enabled: true
+    enabled: true # historical data for trend analysis
     path: ".budgetpro/metrics.json"
 ```
 

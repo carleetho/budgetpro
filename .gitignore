@@ -58,3 +58,10 @@ backend/.docker/
 # --- Documentación y recursos ---
 knowledge_base/
 backend/target/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.test_axiom_integration/
