@@ -1,0 +1,4 @@
+# PR profile: block on Critical/High
+# Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/pr.yaml .
+
+rules: []

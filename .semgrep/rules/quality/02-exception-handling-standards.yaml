@@ -1,0 +1,33 @@
+rules:
+  - id: budgetpro.quality.exception-handling-standards
+    patterns:
+      - pattern-either:
+          - pattern: catch ($TYPE $E) {}
+          - pattern: |
+              catch (Exception $E) {
+                ...
+              }
+          - pattern: |
+              catch (Throwable $E) {
+                ...
+              }
+      - pattern-not: |
+          catch (Exception $E) {
+            ...
+            throw ...;
+          }
+      - pattern-not: |
+          catch (Throwable $E) {
+            ...
+            throw ...;
+          }
+    message: |
+      Generic or empty exception handling detected.
+      Avoid catching 'Exception' or 'Throwable' blindly unless you rethrow it. 
+      Empty catch blocks should be avoided or explicitly documented.
+      Prefer catching specific checked or unchecked exceptions.
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      category: quality

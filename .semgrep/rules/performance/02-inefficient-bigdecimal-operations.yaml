@@ -1,0 +1,16 @@
+rules:
+  - id: budgetpro.performance.inefficient-bigdecimal-operations
+    patterns:
+      - pattern: $X.setScale($S1, $R1).setScale($S2, $R2)
+      - metavariable-type:
+          metavariable: $X
+          type: java.math.BigDecimal
+    message: |
+      Inefficient BigDecimal scaling detected. 
+      Calling 'setScale' multiple times in a chain on the same BigDecimal instance creates multiple intermediate objects.
+      Consider performing all operations first and then calling 'setScale' once at the end.
+    severity: INFO
+    languages:
+      - java
+    metadata:
+      category: performance

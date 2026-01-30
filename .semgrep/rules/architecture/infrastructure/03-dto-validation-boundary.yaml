@@ -1,0 +1,21 @@
+rules:
+  - id: 03-dto-validation-boundary
+    patterns:
+      - pattern: com.budgetpro.domain.$ENTITY $P
+      - pattern-inside: |
+          @RestController
+          class $CONTROLLER {
+            ...
+          }
+    paths:
+      include:
+        - "**/infrastructure/**"
+    message: |
+      DTO validation boundary violation.
+      Domain entities should not be exposed directly in REST controller method signatures.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: architecture
+      technology: budgetpro
+      confidence: HIGH

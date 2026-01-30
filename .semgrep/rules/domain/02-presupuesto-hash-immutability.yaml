@@ -1,0 +1,21 @@
+rules:
+  - id: 02-presupuesto-hash-immutability
+    patterns:
+      - pattern: $P.integrityHashApproval = $VAL
+      - pattern-inside: |
+          class Presupuesto {
+            ...
+          }
+      - pattern-not-inside: |
+          void aprobar(...) {
+            ...
+          }
+    message: |
+      The 'integrityHashApproval' field is immutable after generation.
+      Modifying this field outside of the aprobar() method is a critical security violation that compromises budget integrity.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH

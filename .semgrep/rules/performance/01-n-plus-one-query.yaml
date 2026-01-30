@@ -1,0 +1,38 @@
+rules:
+  - id: budgetpro.performance.n-plus-one-query
+    patterns:
+      - pattern-either:
+          - pattern: |
+              for ($TYPE $VAR : $COLLECTION) {
+                ...
+                $REPO.$METHOD(...);
+                ...
+              }
+          - pattern: |
+              $COLLECTION.forEach($VAR -> {
+                ...
+                $REPO.$METHOD(...);
+                ...
+              });
+          - pattern: |
+              for (int $I = 0; $I < $COLLECTION.size(); $I++) {
+                ...
+                $REPO.$METHOD(...);
+                ...
+              }
+      - metavariable-regex:
+          metavariable: $REPO
+          regex: (?i).*(Repository|Service|Adapter|Port)$
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: (?i)^(find|get|save|update|delete).*
+    message: |
+      Potential N+1 query or inefficient batch operation detected.
+      Calling '$REPO.$METHOD()' inside a loop can lead to significant performance bottlenecks.
+      Consider using batch operations (e.g., 'findAllById', 'saveAll') or fetching data outside the loop.
+    severity: WARNING
+    languages:
+      - java
+    metadata:
+      category: performance
+      tech: spring-boot
