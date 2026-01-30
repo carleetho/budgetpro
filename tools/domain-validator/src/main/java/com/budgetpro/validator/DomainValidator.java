@@ -7,7 +7,6 @@ import com.budgetpro.validator.boundary.report.ViolationReporter;
 import com.budgetpro.validator.boundary.scanner.DomainScanner;
 import com.budgetpro.validator.engine.ValidationEngine;
 import com.budgetpro.validator.model.ValidationResult;
-import com.budgetpro.validator.model.ValidationStatus;
 import com.budgetpro.validator.output.JsonReportGenerator;
 import com.budgetpro.validator.output.MarkdownGenerator;
 import com.budgetpro.validator.output.MermaidGenerator;
@@ -485,12 +484,8 @@ class ValidateStateMachineCommand implements Callable<Integer> {
                     gitDiffCommand);
 
             if (violations.isEmpty()) {
-                System.out.println("\n✅ State machine validation passed. No violations found.");
                 return 0;
             }
-
-            // Reportar violaciones
-            reportViolations(violations);
 
             // Determinar exit code
             boolean hasCritical = violations.stream().anyMatch(v -> v.getSeverity() == ViolationSeverity.CRITICAL);
@@ -510,26 +505,5 @@ class ValidateStateMachineCommand implements Callable<Integer> {
             e.printStackTrace();
             return 3;
         }
-    }
-
-    private void reportViolations(List<TransitionViolation> violations) {
-        long criticalCount = violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.CRITICAL).count();
-        long warningCount = violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.WARNING).count();
-
-        if (criticalCount > 0) {
-            System.out.println("\n🚫 Critical Violations (" + criticalCount + "):");
-            violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.CRITICAL)
-                    .forEach(v -> System.out.println("  • " + formatViolation(v)));
-        }
-
-        if (warningCount > 0) {
-            System.out.println("\n⚠️  Warnings (" + warningCount + "):");
-            violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.WARNING)
-                    .forEach(v -> System.out.println("  • " + formatViolation(v)));
-        }
-    }
-
-    private String formatViolation(TransitionViolation v) {
-        return String.format("[%s:%d] %s (%s)", v.getFilePath(), v.getLineNumber(), v.getMessage(), v.getMethodName());
     }
 }

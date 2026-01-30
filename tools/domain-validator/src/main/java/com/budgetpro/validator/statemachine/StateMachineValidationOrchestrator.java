@@ -30,6 +30,7 @@ public class StateMachineValidationOrchestrator {
     private final StateAssignmentDetector assignmentDetector;
     private final StateMachineDetector stateMachineDetector;
     private final TransitionValidator transitionValidator;
+    private final ViolationReporter reporter;
 
     public StateMachineValidationOrchestrator() {
         this.configLoader = new StateMachineConfigLoader();
@@ -37,6 +38,7 @@ public class StateMachineValidationOrchestrator {
         this.assignmentDetector = new StateAssignmentDetector();
         this.stateMachineDetector = new StateMachineDetector();
         this.transitionValidator = new TransitionValidator();
+        this.reporter = new ViolationReporter();
     }
 
     /**
@@ -79,6 +81,9 @@ public class StateMachineValidationOrchestrator {
             List<TransitionViolation> violations = transitionValidator.validate(changedAssignments, analyzerConfig);
             allViolations.addAll(violations);
         }
+
+        // 6. Reportar violaciones
+        reporter.report(allViolations);
 
         return allViolations;
     }
