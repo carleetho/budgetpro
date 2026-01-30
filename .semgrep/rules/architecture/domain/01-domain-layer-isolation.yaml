@@ -1,0 +1,19 @@
+rules:
+  - id: 01-domain-layer-isolation
+    patterns:
+      - pattern: import com.budgetpro.$LAYER.$CLASS;
+      - metavariable-regex:
+          metavariable: $LAYER
+          regex: (application|infrastructure)
+    paths:
+      include:
+        - "**/domain/**"
+    message: |
+      Domain layer isolation violation.
+      The domain layer (com.budgetpro.domain) must not depend on infrastructure or application layers.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: architecture
+      technology: budgetpro
+      confidence: HIGH

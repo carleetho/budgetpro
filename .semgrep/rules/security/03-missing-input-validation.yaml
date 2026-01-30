@@ -1,0 +1,26 @@
+rules:
+  - id: 03-missing-input-validation
+    patterns:
+      - pattern-either:
+          - pattern: |
+              @PostMapping(...)
+              $RET $METHOD(..., @RequestBody $TYPE $VAR, ...) { ... }
+          - pattern: |
+              @PutMapping(...)
+              $RET $METHOD(..., @RequestBody $TYPE $VAR, ...) { ... }
+      - pattern-not: |
+          @PostMapping(...)
+          $RET $METHOD(..., @Valid @RequestBody $TYPE $VAR, ...) { ... }
+      - pattern-not: |
+          @PutMapping(...)
+          $RET $METHOD(..., @Valid @RequestBody $TYPE $VAR, ...) { ... }
+    message: |
+      Missing @Valid annotation on @RequestBody parameter in $METHOD.
+      Post and Put endpoints should validate the request body to ensure data integrity and security.
+      Add @Valid before @RequestBody.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      technology: spring
+      confidence: HIGH

@@ -1,0 +1,7 @@
+# Tooling legacy / experimental
+tools/axiom/**
+tools/domain-validator/**
+
+# Tests (si decides excluirlos globalmente más adelante)
+# src/test/**
+

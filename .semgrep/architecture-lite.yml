@@ -1,0 +1,13 @@
+rules:
+  - id: domain-no-spring-dependency
+    languages: [java]
+    severity: ERROR
+    message: >
+      Domain layer must not depend on Spring framework.
+      Move this dependency to application or infrastructure layer.
+    patterns:
+      - pattern: import org.springframework.$X;
+    paths:
+      include:
+        - '**/src/main/java/**/domain/**'
+

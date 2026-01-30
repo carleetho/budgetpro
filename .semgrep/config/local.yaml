@@ -1,0 +1,4 @@
+# Local development profile: warn only, no blocking
+# Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/local.yaml .
+
+rules: []
