@@ -6,7 +6,8 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 
 # Use environment variable for config path or default to project root
-DEFAULT_CONFIG_PATH = "axiom.config.yaml"
+DEFAULT_CONFIG_PATH = ".budgetpro/axiom.config.yaml"
+LEGACY_CONFIG_PATH = "axiom.config.yaml"
 
 # Default configuration structure
 DEFAULT_CONFIG = {
@@ -154,7 +155,14 @@ def _validate_config(config: Dict[str, Any]) -> None:
         raise ConfigurationError("At least one reporter must be enabled")
 
 def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
-    """Recursively merges update dict into base dict."""
+    """
+    Recursively merges update dict into base dict.
+    
+    Strategy:
+    - If key exists in both and both are dicts: Recursive merge.
+    - Otherwise: Overwrite base value with update value.
+    - New keys in update are added to base.
+    """
     for key, value in update.items():
         if isinstance(value, dict) and key in base and isinstance(base[key], dict):
             _deep_merge(base[key], value)
@@ -162,10 +170,10 @@ def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
             base[key] = value
     return base
 
-def load_axiom_config(config_path: str = DEFAULT_CONFIG_PATH) -> AxiomConfig:
+def load_axiom_config(config_path: Optional[str] = None) -> AxiomConfig:
     """
     Loads, interpolates, validates, and caches the AXIOM configuration.
-    Falls back to defaults if file is missing, but logs a warning.
+    Prioritizes path from argument, then .budgetpro/axiom.config.yaml, then axiom.config.yaml.
     """
     global _config_cache
     if _config_cache:
@@ -175,18 +183,37 @@ def load_axiom_config(config_path: str = DEFAULT_CONFIG_PATH) -> AxiomConfig:
     import copy
     config_data = copy.deepcopy(DEFAULT_CONFIG)
     
-    # Try to load from file
-    if os.path.exists(config_path):
+    # Determine which file to load
+    target_path = None
+    
+    if config_path:
+        # Explicit override
+        target_path = config_path
+    elif os.path.exists(DEFAULT_CONFIG_PATH):
+        # Preferred location
+        target_path = DEFAULT_CONFIG_PATH
+        logging.info(f"Loading config from {target_path}")
+    elif os.path.exists(LEGACY_CONFIG_PATH):
+        # Legacy location
+        target_path = LEGACY_CONFIG_PATH
+        logging.info(f"Loading config from {target_path} (legacy location)")
+    
+    # Try to load from file if determined
+    if target_path and os.path.exists(target_path):
         try:
-            with open(config_path, 'r') as f:
+            with open(target_path, 'r') as f:
                 file_data = yaml.safe_load(f)
                 if file_data:
                     # Perform deep merge so partial configs work
                     _deep_merge(config_data, file_data)
         except yaml.YAMLError as e:
             raise ConfigurationError(f"Error parsing YAML config: {e}")
-    else:
-        logging.warning(f"Configuration file not found at {config_path}. Using default configuration.")
+    elif config_path:
+         # explicit path was requested but doesn't exist
+         logging.warning(f"Configuration file not found at {config_path}. Using default configuration.")
+    elif not target_path:
+         # No config files found at all
+         logging.warning("No configuration file found. Using default configuration.")
 
     # Interpolate Env Vars
     config_data = _interpolate_env_vars(config_data)
