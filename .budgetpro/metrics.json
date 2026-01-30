@@ -1,0 +1,26 @@
+{
+  "history": [
+    {
+      "timestamp": "2026-01-30T15:26:04.247498+00:00Z",
+      "execution_time_ms": 28.887033462524414,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    }
+  ],
+  "statistics": {
+    "total_runs": 1,
+    "avg_violations_per_run": 1.0,
+    "pass_rate": 100.0,
+    "most_common_validator": "security_validator",
+    "most_problematic_module": "home",
+    "trend": "stable"
+  }
+}
