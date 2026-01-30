@@ -33,27 +33,24 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Ensure mvnw is executable
-        working-directory: tools/blast-radius-validator
-        run: |
-          chmod +x mvnw
-
       - name: Build blast radius validator
-        working-directory: tools/blast-radius-validator
         run: |
+          cd tools/blast-radius-validator
+          chmod +x mvnw
           ./mvnw clean package -DskipTests
 
       - name: Locate blast radius validator JAR
         id: locate-jar
-        working-directory: tools/blast-radius-validator
         run: |
+          cd tools/blast-radius-validator
           JAR_PATH=$(ls target/*blast-radius-validator*.jar | head -n 1)
-          echo "jar=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "JAR found at: $JAR_PATH"
 
       - name: Validate blast radius
         id: validate
         run: |
-          java -jar tools/blast-radius-validator/${{ steps.locate-jar.outputs.jar }} . \
+          java -jar tools/blast-radius-validator/${{ steps.locate-jar.outputs.jar_path }} . \
             --no-colors
 
       - name: Validation passed
