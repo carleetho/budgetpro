@@ -1,0 +1,4 @@
+# Main profile: block on Critical/High, generate SARIF
+# Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/main.yaml .
+
+rules: []

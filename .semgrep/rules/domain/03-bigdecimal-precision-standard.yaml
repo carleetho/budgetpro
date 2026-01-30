@@ -1,0 +1,21 @@
+rules:
+  - id: 03-bigdecimal-precision-standard
+    patterns:
+      - pattern: $BD.setScale($SCALE, ...)
+      - pattern-not: $BD.setScale(4, ...)
+      - pattern-inside: |
+          $RET $METHOD(...) { ... }
+      - metavariable-regex:
+          metavariable: $METHOD
+          # Match methods that DO NOT end with ForPersistence (case insensitive)
+          regex: ^(?i)(?!.*forpersistence).*$
+    message: |
+      Financial calculation precision violation.
+      BudgetPro standard requires 4-decimal precision for all internal calculations.
+      Exception: 2-decimal precision is only allowed in methods ending with 'ForPersistence'.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH

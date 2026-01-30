@@ -1,0 +1,20 @@
+rules:
+  - id: 05-weak-cryptographic-algorithm
+    patterns:
+      - pattern-either:
+          - pattern: MessageDigest.getInstance("$ALG", ...)
+          - pattern: Cipher.getInstance("$ALG", ...)
+          - pattern: SecretKeyFactory.getInstance("$ALG", ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: (?i)^(MD5|SHA-?1|DES|RC4)$
+    message: |
+      Weak cryptographic algorithm "$ALG" detected.
+      MD5, SHA-1, DES, and RC4 are considered broken and should not be used for security-critical operations.
+      Use stronger alternatives like SHA-256 for hashing and AES for encryption.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      technology: cryptography
+      confidence: HIGH

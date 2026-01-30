@@ -1,0 +1,23 @@
+rules:
+  - id: budgetpro.quality.logging-standards
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.info(..., $VAR, ...)
+          - pattern: $LOG.debug(..., $VAR, ...)
+          - pattern: $LOG.warn(..., $VAR, ...)
+          - pattern: $LOG.error(..., $VAR, ...)
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i).*(password|secret|token|apikey|credential|password_hash).*
+      - metavariable-regex:
+          metavariable: $LOG
+          regex: (?i).*(log|logger).*
+    message: |
+      Potential sensitive data logging detected.
+      Variable '$VAR' appears to contain sensitive information (password, secret, token, etc.) and is being logged.
+      Sensitive data should never be printed to logs. Reference by ID or use masked values if necessary.
+    severity: ERROR
+    languages:
+      - java
+    metadata:
+      category: quality
