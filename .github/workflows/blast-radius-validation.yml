@@ -36,7 +36,7 @@ jobs:
       - name: Build blast radius validator
         run: |
           cd tools/blast-radius-validator
-          chmod +x mvnw
+          chmod +x mvnw || true
           ./mvnw clean package -DskipTests
 
       - name: Locate blast radius validator JAR
