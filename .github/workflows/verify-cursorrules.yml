@@ -1,0 +1,97 @@
+# .github/workflows/verify-cursorrules.yml
+name: Verify .cursorrules Synchronization
+
+on:
+  pull_request:
+    paths:
+      - "axiom.yaml"
+      - ".cursorrules"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "axiom.yaml"
+      - ".cursorrules"
+
+jobs:
+  verify-cursorrules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install pyyaml
+
+      - name: 🔍 Check if axiom.yaml or .cursorrules changed
+        id: check_changes
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          AXIOM_CHANGED=$(git diff --name-only $BASE_SHA $HEAD_SHA | grep -E '^axiom\.yaml$' || true)
+          CURSORRULES_CHANGED=$(git diff --name-only $BASE_SHA $HEAD_SHA | grep -E '^\.cursorrules$' || true)
+
+          echo "axiom_changed=$AXIOM_CHANGED" >> $GITHUB_OUTPUT
+          echo "cursorrules_changed=$CURSORRULES_CHANGED" >> $GITHUB_OUTPUT
+
+      - name: ⚠️ Check if both files changed together
+        if: steps.check_changes.outputs.axiom_changed != '' && steps.check_changes.outputs.cursorrules_changed == ''
+        run: |
+          echo "::error::axiom.yaml cambió pero .cursorrules no fue actualizado"
+          echo "::error::Ejecuta: ./scripts/update_cursorrules.sh para sincronizar"
+          exit 1
+
+      - name: 🔍 Verify synchronization
+        if: steps.check_changes.outputs.axiom_changed != '' || steps.check_changes.outputs.cursorrules_changed != ''
+        run: |
+          chmod +x scripts/verify_cursorrules.sh
+          ./scripts/verify_cursorrules.sh
+
+      - name: ✅ Verification passed
+        if: success()
+        run: |
+          echo "✅ .cursorrules está sincronizado con axiom.yaml"
+
+      - name: 💬 Comment on PR
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ⚠️ AXIOM .cursorrules Verification Failed
+              
+              El archivo \`.cursorrules\` no está sincronizado con \`axiom.yaml\`.
+              
+              **Acción requerida:**
+              \`\`\`bash
+              ./scripts/update_cursorrules.sh
+              git add .cursorrules
+              git commit -m "Sync .cursorrules with axiom.yaml"
+              git push
+              \`\`\`
+              
+              Para más detalles, ejecuta localmente:
+              \`\`\`bash
+              ./scripts/verify_cursorrules.sh
+              \`\`\`
+              `
+            })

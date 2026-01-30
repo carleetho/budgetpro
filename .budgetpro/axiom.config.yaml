@@ -6,9 +6,9 @@
 protection_zones:
   # Red Zones: Critical domain logic. High risk. Very strict limits.
   red:
-    - path: "domain/presupuesto"
+    - path: "domain/finanzas/presupuesto"
       max_files: 1
-    - path: "domain/estimacion"
+    - path: "domain/finanzas/estimacion"
       max_files: 1
     - path: "domain/valueobjects"
       max_files: 1
@@ -55,6 +55,11 @@ validators:
     enabled: true
     strictness: "blocking"
 
+  # Dependency Validator: Enforces architectural boundaries (Domain isolation).
+  dependency_validator:
+    enabled: true
+    domain_patterns: ["domain/"]
+
 # Reporters: Where to send validation results.
 reporters:
   console:
@@ -79,7 +84,7 @@ auto_fix:
 # Add keywords to this list (or use commit message tags) to bypass specific checks.
 overrides:
   # List of active override keywords.
-  enabled_keywords: []
+  enabled_keywords: ["BIGBANG_APPROVED"]
   # Examples of override keywords:
   # - OVERRIDE_ESTIMACION  # Allow changes to Estimacion module
   # - OVERRIDE_PRESUPUESTO # Allow changes to Presupuesto module

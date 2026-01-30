@@ -11,6 +11,9 @@ from tools.axiom.override_detector import detect_overrides, OverrideResult
 from tools.axiom.validators.base_validator import BaseValidator, Violation, ValidationResult
 from tools.axiom.validators.security_validator import SecurityValidator
 from tools.axiom.validators.lazy_code_validator import LazyCodeValidator
+from tools.axiom.validators.blast_radius_validator import BlastRadiusValidator
+from tools.axiom.lib.blast_radius_adapter import BlastRadiusAdapter
+from tools.axiom.validators.dependency_validator import DependencyValidator
 from tools.axiom.reporters.console_reporter import ConsoleReporter
 from tools.axiom.reporters.log_reporter import LogReporter
 from tools.axiom.reporters.metrics_reporter import MetricsReporter
@@ -111,7 +114,9 @@ class AxiomSentinel:
         # Security Validator
         sec_config = val_config.get("security_validator", {})
         if sec_config.get("enabled", True):
-            self.validators.append(SecurityValidator(sec_config))
+            from dataclasses import asdict
+            full_config_dict = asdict(self.config)
+            self.validators.append(SecurityValidator(sec_config, full_config_dict))
             self.logger.info("SecurityValidator initialized.")
 
         # Lazy Code Validator
@@ -120,7 +125,18 @@ class AxiomSentinel:
             self.validators.append(LazyCodeValidator(lazy_config))
             self.logger.debug("LazyCodeValidator registered")
 
-        # placeholder for other validators
+        # Blast Radius Validator
+        if self.config and self.config.validators.get('blast_radius', {}).get('enabled', True):
+            blast_config = self.config.validators['blast_radius']
+            adapter = BlastRadiusAdapter(self.config)
+            self.validators.append(BlastRadiusValidator(blast_config, adapter))
+            self.logger.info("BlastRadiusValidator initialized.")
+        
+        # Dependency Validator
+        dep_config = val_config.get("dependency_validator", {})
+        if dep_config.get("enabled", True):
+            self.validators.append(DependencyValidator(dep_config))
+            self.logger.info("DependencyValidator initialized.")
         
         # 2. Initialize Reporters
         if self.config and hasattr(self.config, 'reporters'):

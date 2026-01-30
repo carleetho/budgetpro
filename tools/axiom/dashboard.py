@@ -19,11 +19,11 @@ st.set_page_config(
 
 # File Paths
 METRICS_FILE = pathlib.Path(".budgetpro/metrics.json")
-LOG_FILE = pathlib.Path(".budgetpro/validation.log")
+LOG_FILE = pathlib.Path(".budgetpro/axiom.log")
 DEFAULT_CONFIG_PATH = pathlib.Path(".budgetpro/axiom.config.yaml")
 LEGACY_CONFIG_PATH = pathlib.Path("axiom.config.yaml")
 
-@st.cache_data
+@st.cache_data(ttl=10)
 def load_metrics_data():
     """Loads and validates metrics from JSON file."""
     if not METRICS_FILE.exists():
@@ -46,7 +46,7 @@ def load_metrics_data():
         st.error(f"Error loading metrics: {e}")
         return None
 
-@st.cache_data
+@st.cache_data(ttl=10)
 def load_validation_log():
     """Parses validation log for JSON entries."""
     if not LOG_FILE.exists():
@@ -75,10 +75,15 @@ def load_validation_log():
         return []
 
 # Helpers
-def calculate_health_score(pass_rate: float, avg_blocking: float) -> int:
+def calculate_health_score(pass_rate: float, avg_blocking: float, has_integrity_violation: bool = False) -> int:
     """Calculates health score (0-100)."""
     base = pass_rate
     penalty = avg_blocking * 10
+    
+    # Critical penalty for Integrity Violations (Semantic Lock)
+    if has_integrity_violation:
+        penalty += 20
+        
     score = max(0, base - penalty)
     return int(min(100, score))
 
@@ -104,6 +109,11 @@ def determine_trend(history: list) -> str:
     avg_prev = get_blocking(previous)
     avg_recent = get_blocking(recent)
     
+    current_blocking = history[-1].get('by_severity', {}).get('error', 0)
+    
+    if current_blocking > avg_prev and current_blocking > 0:
+        return "DEGRADANDO ↓"
+    
     if avg_prev == 0:
         if avg_recent > 0:
             return "DEGRADANDO ↓"
@@ -112,12 +122,35 @@ def determine_trend(history: list) -> str:
 
     change = (avg_recent - avg_prev) / avg_prev
     
-    if change < -0.2:
+    if change < -0.1:
         return "MEJORANDO ↑"
-    elif change > 0.2:
+    elif change > 0.1:
         return "DEGRADANDO ↓"
     else:
         return "ESTABLE →"
+
+def build_health_gauge(score):
+    import plotly.graph_objects as go
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = score,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': "Health Score (Latest Run)"},
+        gauge = {
+            'axis': {'range': [None, 100]},
+            'bar': {'color': "white"},
+            'steps' : [
+                {'range': [0, 40], 'color': "red"},
+                {'range': [40, 70], 'color': "orange"},
+                {'range': [70, 100], 'color': "green"}],
+            'threshold' : {
+                'line': {'color': "white", 'width': 4},
+                'thickness': 0.75,
+                'value': 90}
+        }
+    ))
+    fig.update_layout(template="plotly_dark", height=300)
+    return fig
 
 def build_violations_by_validator_chart(history):
     if not history: return None
@@ -153,7 +186,7 @@ def build_trend_chart(history):
         sev = run.get('by_severity', {})
         data.append({
             'Timestamp': ts,
-            'Blocking': sev.get('error', 0),
+            'Blocking': sev.get('error', 0) + sev.get('blocking', 0), # Support both error/blocking keys
             'Warning': sev.get('warning', 0)
         })
     
@@ -172,13 +205,8 @@ def build_blast_radius_chart(history):
     data = []
     for run in recent:
         ts = run.get('timestamp', '')
-        # Assuming 'files_modified' count might be in metrics, or we use total violations as proxy for impact if missing
-        # The metrics.json snippet didn't show files_modified explicitly, assume potential key or fallback
-        count = run.get('execution_time_ms', 0) # Placeholder if files_modified missing, or maybe just don't show?
-        # Requirement says "files modified per commit". Let's assume key 'files_scanned' or similar exists or just use violations count as proxy for now if key missing
-        # Actually proper blast radius is distinct files.
-        # Let's check keys in a safe way.
-        impact = run.get('files_scanned', 0) # trying reasonable guess
+        # Try to get specific blast radius count if available
+        impact = run.get('files_scanned', run.get('total_files', 0))
         
         data.append({
             'Timestamp': ts,
@@ -187,7 +215,7 @@ def build_blast_radius_chart(history):
         
     df = pd.DataFrame(data)
     fig = px.bar(df, x='Timestamp', y='Files Impacted', 
-                 title="Files Scanned per Run", template="plotly_dark")
+                 title="Files Scanned/Impacted per Run", template="plotly_dark")
     return fig
 
 def build_todo_distribution_chart(todos_by_module):
@@ -208,6 +236,24 @@ def build_todo_distribution_chart(todos_by_module):
                  title="TODOs by Module", template="plotly_dark",
                  text='Count')
     fig.update_traces(textposition='outside')
+    return fig
+
+def build_hotspots_chart(history, log_entries):
+    """Visualizes files with high entropy (frequency of changes)."""
+    hotspots = {}
+    for entry in log_entries:
+        if "DOMAIN ENTROPY" in entry.get('message', ''):
+            file_path = entry.get('file_path', 'unknown')
+            hotspots[file_path] = hotspots.get(file_path, 0) + 1
+            
+    if not hotspots: return None
+    
+    df = pd.DataFrame(list(hotspots.items()), columns=['File', 'Alerts'])
+    df = df.sort_values(by='Alerts', ascending=False).head(10)
+    
+    fig = px.bar(df, x='Alerts', y='File', orientation='h',
+                 title="🔥 Domain Hotspots (Entropy Alerts)", template="plotly_dark",
+                 color='Alerts', color_continuous_scale='Reds')
     return fig
 
 def load_config_data():
@@ -261,7 +307,7 @@ def generate_pdf_report(metrics_data, history):
     pass_rate = stats.get('pass_rate', 0)
     
     latest_run = history[-1] if history else {}
-    latest_blocking = latest_run.get('by_severity', {}).get('error', 0)
+    latest_blocking = latest_run.get('by_severity', {}).get('error', 0) + latest_run.get('by_severity', {}).get('blocking', 0)
     total_runs = stats.get('total_runs', 0)
     
     y = height - 120
@@ -366,46 +412,36 @@ def show_improvement_recommendations(health_score, latest_blocking, todos_count)
 
 def build_validator_docs():
     docs = {
+        "Base Policy (Blast Radius)": """
+        **Propósito**: Evita cambios masivos y dispersos que rompen la estabilidad del sistema.
+        
+        **Límites actuales:**
+        - **Zona Roja**: Máximo 1 archivo (Foco total en dominio).
+        - **Zona Amarilla**: Máximo 3 archivos.
+        - **Zona Verde**: Máximo 10 archivos.
+        """,
         "SecurityValidator": """
-        **Propósito**: Detecta secretos, claves API y patrones inseguros.
+        **Propósito**: Detecta secretos, claves API y protege la integridad semántica del Dominio.
         
-        **Lo que busca:**
-        - Claves de AWS, Stripe, Google.
-        - Passwords hardcodeados.
-        - Uso de funciones inseguras (ej. `eval()`).
-        
-        **Ejemplo de Violación:**
-        ```python
-        # MAL
-        api_key = "sk_live_123456789"
-        
-        # BIEN
-        api_key = os.getenv("STRIPE_KEY")
-        ```
+        **Nivel Sentinel:**
+        - **Semantic Lock**: Bloquea cambios en Enums, Classes o Interfaces en Zonas Rojas sin un override explícito.
+        - **Secret Detection**: Busca claves API (AWS, Stripe, etc.) hardcodeadas.
         """,
         "LazyCodeValidator": """
-        **Propósito**: Impide "código perezoso" como `pass` vacíos o impresiones de depuración.
+        **Propósito**: Impide código incompleto o de depuración en el repositorio.
         
-        **Lo que busca:**
-        - `print()`, `console.log()`.
-        - `pass` en bloques `except` sin comentarios.
-        - `TODO`s sin contexto.
+        **Patrones Críticos:**
+        - `System.out.println`, `e.printStackTrace()`, `console.log()`.
+        - Métodos vacíos o retornos nulos en persistencia.
+        - TODOs/FIXMEs en módulos de dominio.
+        """,
+        "DependencyValidator": """
+        **Propósito**: Garantiza la pureza técnica del Dominio (Hexagonal / DDD).
         
-        **Ejemplo de Violación:**
-        ```python
-        # MAL
-        try:
-            do_something()
-        except error:
-            pass 
-        
-        # BIEN
-        try:
-            do_something()
-        except error:
-            # Ignoramos error porque...
-            pass
-        ```
+        **Restricciones**:
+        - El dominio NO puede importar `infrastructure`.
+        - El dominio NO puede importar `Spring` u otros frameworks.
+        - El dominio NO puede importar `Persistence/JPA`.
         """
     }
     return docs
@@ -450,20 +486,53 @@ if metrics_data:
     
     avg_warnings = sum(r.get('by_severity', {}).get('warning', 0) for r in history) / len(history) if history else 0
     
-    health_score = calculate_health_score(pass_rate, avg_blocking)
+    has_integrity_violation = any("SEMANTIC LOCK" in entry.get('message', '') for entry in log_entries)
+    has_dependency_violation = any("FORBIDDEN IMPORT" in entry.get('message', '') for entry in log_entries)
+    
+    # Calculate health score based on LATEST run for the main indicator
+    latest_pass_rate = 100 if latest_blocking == 0 else 0
+    latest_health_score = calculate_health_score(latest_pass_rate, latest_blocking, has_integrity_violation or has_dependency_violation)
+    
     trend = determine_trend(history)
     
-    cols[0].metric("Health Score", f"{health_score}/100", trend, help="Puntuación de salud del código (0-100). Penaliza violaciones bloqueantes.")
-    cols[1].metric("Pass Rate", f"{pass_rate:.1f}%", help="Porcentaje de validaciones exitosas sin violaciones bloqueantes. Meta: >95%")
-    cols[2].metric("Avg Blocking", f"{avg_blocking:.1f}", help="Promedio de violaciones bloqueantes por ejecución")
-    cols[3].metric("Avg Warnings", f"{avg_warnings:.1f}", help="Promedio de advertencias por ejecución")
-    cols[4].metric("Total Runs", stats.get('total_runs', 0), help="Número total de validaciones ejecutadas")
+    # Status Banner
+    if latest_blocking > 0:
+        st.error(f"🚫 **COMMIT BLOQUEADO**: Se detectaron {latest_blocking} fallos críticos en la última ejecución.")
+    else:
+        st.success("✅ **COMMIT APROBADO**: El código cumple con las políticas de AXIOM.")
+
+    col_gauge, col_metrics = st.columns([1, 2])
+    with col_gauge:
+        st.plotly_chart(build_health_gauge(latest_health_score), use_container_width=True)
+    
+    with col_metrics:
+        m_cols = st.columns(2)
+        m_cols[0].metric("Latest Health", f"{latest_health_score}/100", trend)
+        m_cols[1].metric("History Pass Rate", f"{pass_rate:.1f}%")
+        
+        m_cols2 = st.columns(2)
+        m_cols2[0].metric("Avg Blocking (History)", f"{avg_blocking:.1f}")
+        m_cols2[1].metric("Total Validations", stats.get('total_runs', 0))
+
     st.markdown("---")
     
+    # NEW: Integrity & Architecture Highlights
+    if has_integrity_violation or has_dependency_violation:
+        if has_integrity_violation:
+            st.error("🚨 **INTEGRITY BREACH**: Se intentó modificar el núcleo del dominio en una Zona Roja.")
+        if has_dependency_violation:
+            st.warning("📐 **ARCHITECTURAL DEBT**: Se detectaron importaciones prohibidas en el Dominio (Spring/Infrastructure).")
+            
+        with st.expander("Ver detalles de integridad y arquitectura", expanded=True):
+            for entry in log_entries:
+                if "SEMANTIC LOCK" in entry.get('message', '') or "FORBIDDEN IMPORT" in entry.get('message', ''):
+                    st.warning(f"**Archivo**: `{entry.get('file_path')}`\n\n{entry.get('message')}")
+        st.markdown("---")
+
     # NEW: Smart Recommendations
     todos_by_module = latest_run.get('todos_by_module', {})
     total_todos = sum(len(items) for items in todos_by_module.values())
-    show_improvement_recommendations(health_score, latest_blocking, total_todos)
+    show_improvement_recommendations(latest_health_score, latest_blocking, total_todos)
     
     # 3. Charts & Analysis
     st.header("🔎 Análisis de Violaciones")
@@ -501,7 +570,15 @@ if metrics_data:
                 mod = sel_module[0].get('x')
                 st.session_state['drill_down_filters'] = {'type': 'module', 'value': mod}
 
-    # 4. Violation Details Table
+    # 4. Domain Hotspots (NEW)
+    fig_hotspots = build_hotspots_chart(history, log_entries)
+    if fig_hotspots:
+        st.markdown("---")
+        st.subheader("🔥 Mapa de Calor de Entropía (Hotspots)")
+        st.plotly_chart(fig_hotspots, use_container_width=True)
+        st.info("💡 **Tip**: Archivos con alta entropía en la Zona Roja indican inestabilidad del dominio. Considera encapsular lógica o refactorizar.")
+
+    # 5. Violation Details Table
     if log_entries:
         st.markdown("---")
         st.subheader("📋 Detalle de Violaciones")
@@ -591,14 +668,23 @@ if metrics_data:
         st.markdown("---")
         st.info("No TODOs tracked. TODOs are only detected in configured modules.")
         
-    # 6. Raw Log Viewer
+    # 6. Raw Log Viewer & Data Inspector
     st.markdown("---")
-    with st.expander("📜 Log de Validación Crudo"):
-        if LOG_FILE.exists():
-            with open(LOG_FILE, 'r') as f:
-                st.code(f.read(), language='text')
-        else:
-            st.warning("Log file not found.")
+    col_log, col_raw = st.columns(2)
+    with col_log:
+        with st.expander("📜 Log de Validación Crudo"):
+            if LOG_FILE.exists():
+                with open(LOG_FILE, 'r') as f:
+                    st.code(f.read(), language='text')
+            else:
+                st.warning("Log file not found.")
+    
+    with col_raw:
+        with st.expander("📊 Datos de Métricas (JSON)"):
+            if METRICS_FILE.exists():
+                st.json(metrics_data)
+            else:
+                st.warning("Metrics file not found.")
 
 elif metrics_data is None:
     st.warning("Data files not found or invalid. Run AXIOM validation first to generate metrics.")
