@@ -1,0 +1,19 @@
+{
+  "max_files_without_approval": 15,
+  "max_files_red_zone": 2,
+  "max_files_yellow_zone": 4,
+  "red_zone_paths": [
+    "domain/presupuesto/",
+    "domain/estimacion/",
+    "domain/valueobjects/",
+    "domain/entities/",
+    "domain/shared/core/"
+  ],
+  "yellow_zone_paths": [
+    "infrastructure/persistence/",
+    "infrastructure/messaging/",
+    "application/commands/",
+    "application/queries/"
+  ],
+  "override_keyword": "BIGBANG_APPROVED"
+}
