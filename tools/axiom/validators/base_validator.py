@@ -23,6 +23,8 @@ class Violation:
     line_number: Optional[int] = None
     detail: Optional[str] = None
     suggestion: Optional[str] = None
+    auto_fixable: bool = False
+    fix_data: Optional[Dict[str, Any]] = None
 
 @dataclass(frozen=True)
 class ValidationResult:

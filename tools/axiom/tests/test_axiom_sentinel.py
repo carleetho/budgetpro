@@ -201,9 +201,43 @@ class TestAxiomSentinel(unittest.TestCase):
         mock_exec.return_value = []
         
         aggregated = AggregatedViolations(blocking=[Violation("a.py", "m", "blocking", "v")])
-        sentinel._execute_auto_fixer(aggregated)
+        result = sentinel._execute_auto_fixer(aggregated)
         
         self.assertEqual(len(f1.fixed_files), 1)
+        self.assertEqual(mock_exec.call_count, 2) # 1 for re-validation, 1 for final re-aggregation
+
+    @patch('tools.axiom.axiom_sentinel.AxiomSentinel._execute_validators')
+    @patch('tools.axiom.axiom_sentinel.AxiomSentinel._discover_staged_files')
+    @patch('os.listdir')
+    @patch('shutil.move')
+    def test_execute_auto_fixer_rollback(self, mock_move, mock_listdir, mock_discover, mock_exec):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(auto_fix={"enabled": True})
+        
+        f1 = MockFixer("f1", fixed_files=[".gitignore"])
+        sentinel.fixers = [f1]
+        
+        # Mock discoveries
+        mock_discover.return_value = [".gitignore"]
+        mock_listdir.return_value = [".gitignore.backup.12345"]
+        
+        # Mock re-validation with NEW blocking violation
+        new_violation = Violation(".gitignore", "new error", "blocking", "v")
+        mock_exec.return_value = [ValidationResult("v", [new_violation])]
+        
+        aggregated = AggregatedViolations(warning=[Violation(".gitignore", "old warn", "warning", "v")])
+        result = sentinel._execute_auto_fixer(aggregated)
+        
+        mock_move.assert_called_once()
+        self.assertEqual(result, aggregated)
+
+    def test_initialize_simple_fixer(self):
+        sentinel = AxiomSentinel()
+        sentinel.config = AxiomConfig(auto_fix={"enabled": True})
+        sentinel._initialize_components()
+        
+        fixer_names = [f.name for f in sentinel.fixers]
+        self.assertIn("simple_fixer", fixer_names)
 
     def test_make_exit_decision(self):
         sentinel = AxiomSentinel()
