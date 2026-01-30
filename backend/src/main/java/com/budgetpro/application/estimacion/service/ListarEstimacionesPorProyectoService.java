@@ -5,7 +5,7 @@ import com.budgetpro.application.estimacion.dto.EstimacionResponse;
 import com.budgetpro.application.estimacion.port.in.ListarEstimacionesPorProyectoUseCase;
 import com.budgetpro.domain.finanzas.estimacion.model.Estimacion;
 import com.budgetpro.domain.finanzas.estimacion.model.EstimacionItem;
-import com.budgetpro.domain.finanzas.estimacion.port.EstimacionRepository;
+import com.budgetpro.domain.finanzas.estimacion.port.out.EstimacionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
