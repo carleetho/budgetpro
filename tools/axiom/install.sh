@@ -49,8 +49,7 @@ TEMPLATE_PATH="tools/axiom/pre_commit_template.sh"
 
 if [ -f "$HOOK_PATH" ]; then
     # Check if it's already our hook to avoid unnecessary backups or loops?
-    # For simplicity, always backup if it exists and differs, or just backup.
-    echo "Respadando hook existente..."
+    echo "Respaldando hook existente..."
     mv "$HOOK_PATH" "$HOOK_PATH.backup"
 fi
 

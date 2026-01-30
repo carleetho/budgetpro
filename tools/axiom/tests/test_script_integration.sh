@@ -51,6 +51,10 @@ assert_exit_code() {
     local expected=$2
     local msg=$3
     
+    # 0 = Success
+    # 1 = Violations Found (Blocking)
+    # 2 = System Error
+    
     if [ "$code" -eq "$expected" ]; then
         echo -e "  ✅ PASS: $msg"
     else
