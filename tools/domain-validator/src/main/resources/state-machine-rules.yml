@@ -1,0 +1,13 @@
+stateMachines:
+  - class: com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto
+    stateField: estado
+    stateEnum: EstadoPresupuesto
+    transitions:
+      BORRADOR:
+        - CONGELADO
+      CONGELADO: []
+      INVALIDADO: []
+    transitionMethods:
+      - aprobar
+      - congelar
+      - invalidar
