@@ -1,0 +1,64 @@
+name: Blast Radius Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'domain/**'
+      - 'infrastructure/**'
+      - 'tools/blast-radius-validator/**'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'domain/**'
+      - 'infrastructure/**'
+
+jobs:
+  validate-blast-radius:
+    name: Validate Blast Radius
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for Git operations
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      
+      - name: Build blast radius validator
+        working-directory: tools/blast-radius-validator
+        run: |
+          ./mvnw clean package -DskipTests
+      
+      - name: Validate blast radius
+        id: validate
+        run: |
+          java -jar tools/blast-radius-validator/target/blast-radius-validator-1.0.0-SNAPSHOT.jar . \
+            --no-colors
+        continue-on-error: true
+      
+      - name: Check validation result
+        if: steps.validate.outcome == 'failure'
+        run: |
+          echo "❌ Blast radius validation failed"
+          echo "The PR contains changes that exceed the configured limits."
+          echo ""
+          echo "Please review the validation output above and either:"
+          echo "  1. Split your changes into smaller commits"
+          echo "  2. Reduce the number of files changed"
+          echo "  3. Add 'BIGBANG_APPROVED' to your commit message if this change has been reviewed"
+          exit 1
+      
+      - name: Validation passed
+        if: steps.validate.outcome == 'success'
+        run: |
+          echo "✅ Blast radius validation passed"
+          echo "All staged changes are within the configured limits."

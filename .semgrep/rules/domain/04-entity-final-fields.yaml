@@ -1,0 +1,50 @@
+rules:
+  # Regla para dominios críticos (presupuesto, estimacion) - ERROR
+  - id: budgetpro.domain.immutability.entity-final-fields.critical
+    patterns:
+      - pattern: private $TYPE $FIELD;
+      - pattern-not: private final $TYPE $FIELD;
+      - pattern-inside: |
+          class $CLASS {
+            ...
+          }
+    paths:
+      include:
+        - "**/domain/**/presupuesto/**/model/*.java"
+        - "**/domain/**/estimacion/**/model/*.java"
+    message: |
+      INMUTABILIDAD: Campos sin 'final' en entidad de dominio crítico.
+      Los campos privados en entidades de dominio deben ser inmutables para garantizar la integridad del modelo.
+      Usa 'private final' para campos de entidades de dominio.
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
+
+  # Regla para otros dominios - WARNING
+  - id: budgetpro.domain.immutability.entity-final-fields
+    patterns:
+      - pattern: private $TYPE $FIELD;
+      - pattern-not: private final $TYPE $FIELD;
+      - pattern-inside: |
+          class $CLASS {
+            ...
+          }
+    paths:
+      include:
+        - "**/domain/**/model/*.java"
+      exclude:
+        - "**/domain/**/presupuesto/**/model/*.java"
+        - "**/domain/**/estimacion/**/model/*.java"
+    message: |
+      INMUTABILIDAD: Campos sin 'final' en entidad de dominio.
+      Los campos privados en entidades de dominio deben ser inmutables para garantizar la integridad del modelo.
+      Usa 'private final' para campos de entidades de dominio.
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
