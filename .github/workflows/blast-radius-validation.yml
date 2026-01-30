@@ -37,7 +37,6 @@ jobs:
       - name: Verify mvnw exists
         run: |
           ls -la tools/blast-radius-validator/mvnw || (echo "mvnw not found" && find . -name mvnw -type f)
-          
       - name: Build blast radius validator
         run: |
           cd tools/blast-radius-validator
