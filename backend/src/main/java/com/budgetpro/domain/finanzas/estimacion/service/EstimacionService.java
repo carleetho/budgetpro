@@ -6,7 +6,7 @@ import com.budgetpro.domain.finanzas.estimacion.exception.EstimacionNoEncontrada
 import com.budgetpro.domain.finanzas.estimacion.exception.PresupuestoNoCongeladoException;
 import com.budgetpro.domain.finanzas.estimacion.model.*;
 import com.budgetpro.domain.finanzas.estimacion.port.AvancePartidaRepository;
-import com.budgetpro.domain.finanzas.estimacion.port.EstimacionRepository;
+import com.budgetpro.domain.finanzas.estimacion.port.out.EstimacionRepository;
 import com.budgetpro.domain.finanzas.estimacion.port.EstimacionSnapshotRepository;
 import com.budgetpro.domain.finanzas.estimacion.port.EventPublisher;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
