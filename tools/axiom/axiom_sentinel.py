@@ -12,6 +12,8 @@ from tools.axiom.validators.base_validator import BaseValidator, Violation, Vali
 from tools.axiom.validators.security_validator import SecurityValidator
 from tools.axiom.validators.lazy_code_validator import LazyCodeValidator
 from tools.axiom.reporters.console_reporter import ConsoleReporter
+from tools.axiom.reporters.log_reporter import LogReporter
+from tools.axiom.reporters.metrics_reporter import MetricsReporter
 from tools.axiom.reporters.base_reporter import BaseReporter, ReportResult
 from tools.axiom.fixers.base_fixer import BaseFixer, FixResult
 
@@ -122,9 +124,21 @@ class AxiomSentinel:
         # 2. Initialize Reporters
         if self.config and hasattr(self.config, 'reporters'):
             rep_config = self.config.reporters
+            
+            # Console Reporter
             if rep_config.get('console', {}).get('enabled', True):
-                self.reporters.append(ConsoleReporter(rep_config['console']))
-                self.logger.debug("ConsoleReporter registered")
+                self.reporters.append(ConsoleReporter(rep_config.get('console', {})))
+                self.logger.info("ConsoleReporter registered.")
+                
+            # Log File Reporter
+            if rep_config.get('log_file', {}).get('enabled', True):
+                self.reporters.append(LogReporter(rep_config.get('log_file', {})))
+                self.logger.info("LogReporter registered.")
+                
+            # Metrics Reporter
+            if rep_config.get('metrics', {}).get('enabled', True):
+                self.reporters.append(MetricsReporter(rep_config.get('metrics', {})))
+                self.logger.info("MetricsReporter registered.")
         
         # 3. Initialize Fixers (Placeholder)
 
