@@ -16,36 +16,39 @@ import java.util.UUID;
 @Service
 public class AprobarOrdenCambioUseCase {
 
-    private final OrdenCambioRepository ordenCambioRepository;
-    private final PresupuestoRepository presupuestoRepository;
-    private final PresupuestoVersionService presupuestoVersionService;
-    private final IntegrityHashService integrityHashService;
+        private final OrdenCambioRepository ordenCambioRepository;
+        private final PresupuestoRepository presupuestoRepository;
+        private final PresupuestoVersionService presupuestoVersionService;
+        private final IntegrityHashService integrityHashService;
 
-    public AprobarOrdenCambioUseCase(OrdenCambioRepository ordenCambioRepository,
-            PresupuestoRepository presupuestoRepository, PresupuestoVersionService presupuestoVersionService,
-            IntegrityHashService integrityHashService) {
-        this.ordenCambioRepository = ordenCambioRepository;
-        this.presupuestoRepository = presupuestoRepository;
-        this.presupuestoVersionService = presupuestoVersionService;
-        this.integrityHashService = integrityHashService;
-    }
+        public AprobarOrdenCambioUseCase(OrdenCambioRepository ordenCambioRepository,
+                        PresupuestoRepository presupuestoRepository,
+                        PresupuestoVersionService presupuestoVersionService,
+                        IntegrityHashService integrityHashService) {
+                this.ordenCambioRepository = ordenCambioRepository;
+                this.presupuestoRepository = presupuestoRepository;
+                this.presupuestoVersionService = presupuestoVersionService;
+                this.integrityHashService = integrityHashService;
+        }
 
-    @Transactional
-    public OrdenCambio ejecutar(UUID ordenCambioId, UUID aprobadorId, Integer impactoCronogramaDias,
-            boolean requiereAdenda, String numeroAdenda) {
+        @Transactional
+        public OrdenCambio ejecutar(UUID ordenCambioId, UUID aprobadorId, Integer impactoCronogramaDias,
+                        boolean requiereAdenda, String numeroAdenda) {
 
-        OrdenCambio orden = ordenCambioRepository.findById(OrdenCambioId.from(ordenCambioId))
-                .orElseThrow(() -> new OrdenCambioException("Orden de cambio no encontrada: " + ordenCambioId));
+                OrdenCambio orden = ordenCambioRepository.findById(OrdenCambioId.from(ordenCambioId)).orElseThrow(
+                                () -> new OrdenCambioException("Orden de cambio no encontrada: " + ordenCambioId));
 
-        Presupuesto presupuestoBase = presupuestoRepository.findActiveByProyectoId(orden.getProyectoId())
-                .orElseThrow(() -> new OrdenCambioException("No se encontró presupuesto activo para el proyecto"));
+                Presupuesto presupuestoBase = presupuestoRepository
+                                .findActiveByProyectoId(orden.getProyectoId().getValue())
+                                .orElseThrow(() -> new OrdenCambioException(
+                                                "No se encontró presupuesto activo para el proyecto"));
 
-        // Aprobar orden y generar nueva versión
-        Presupuesto nuevaVersion = orden.aprobar(aprobadorId, impactoCronogramaDias, requiereAdenda, numeroAdenda,
-                presupuestoVersionService, presupuestoBase, integrityHashService);
+                // Aprobar orden y generar nueva versión
+                Presupuesto nuevaVersion = orden.aprobar(aprobadorId, impactoCronogramaDias, requiereAdenda,
+                                numeroAdenda, presupuestoVersionService, presupuestoBase, integrityHashService);
 
-        // Persistir la nueva versión y la orden actualizada
-        presupuestoRepository.save(nuevaVersion);
-        return ordenCambioRepository.save(orden);
-    }
+                // Persistir la nueva versión y la orden actualizada
+                presupuestoRepository.save(nuevaVersion);
+                return ordenCambioRepository.save(orden);
+        }
 }
