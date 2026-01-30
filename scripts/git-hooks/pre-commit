@@ -13,16 +13,25 @@ fi
 
 # We scan the entire domain layer for simplicity in this version, 
 # although we could optimize it to scan only staged files.
-echo "🔍 Ejecutando validador de fronteras arquitectónicas..."
-
+echo "🔍 Validating architectural boundaries..."
 java -jar "$VALIDATOR_JAR" validate-boundary -r backend/src/main/java/com/budgetpro/domain
-
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
-    echo "❌ Error: Se detectaron violaciones de fronteras en la capa de dominio."
-    echo "Revisa los mensajes de arriba y corrige los imports prohibidos antes de hacer commit."
+    echo "❌ Error: Architectural boundary violations detected."
+    echo "Review the messages above and fix forbidden imports before committing."
     exit 1
 fi
 
+echo "🔍 Validating state machine transitions..."
+java -jar "$VALIDATOR_JAR" validate-state-machine
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "❌ Error: Invalid state machine transitions detected."
+    echo "Review the violations above and fix state transitions before committing."
+    exit 1
+fi
+
+echo "✅ All domain validations passed."
 exit 0
