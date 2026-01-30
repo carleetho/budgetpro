@@ -131,6 +131,32 @@ class TestAxiomSentinel(unittest.TestCase):
         self.assertEqual(len(aggregated.info), 1)
         self.assertEqual(aggregated.total_count, 3)
 
+    def test_violation_with_all_fields(self):
+        v = Violation(
+            file_path="f.py",
+            message="msg",
+            severity="blocking",
+            validator_name="v",
+            line_number=10,
+            detail="detailed info",
+            suggestion="how to fix"
+        )
+        self.assertEqual(v.detail, "detailed info")
+        self.assertEqual(v.suggestion, "how to fix")
+        self.assertEqual(v.line_number, 10)
+
+    def test_violation_backward_compatibility(self):
+        v = Violation("f.py", "msg", "blocking", "v")
+        self.assertIsNone(v.line_number)
+        self.assertIsNone(v.detail)
+        self.assertIsNone(v.suggestion)
+
+    def test_violation_immutability(self):
+        v = Violation("f.py", "msg", "blocking", "v")
+        from dataclasses import FrozenInstanceError
+        with self.assertRaises(FrozenInstanceError):
+            v.message = "new message"
+
     @patch('tools.axiom.axiom_sentinel.detect_overrides')
     @patch('subprocess.run')
     def test_apply_overrides_blast_radius(self, mock_run, mock_detect):

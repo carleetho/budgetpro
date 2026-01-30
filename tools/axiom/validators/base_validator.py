@@ -4,12 +4,25 @@ from abc import ABC, abstractmethod
 
 @dataclass(frozen=True)
 class Violation:
-    """Represents a single validation rule violation."""
+    """
+    Represents a single validation rule violation.
+    
+    Attributes:
+        file_path: Absolute path to the file containing the violation.
+        message: Concise summary of the violation.
+        severity: Level of severity ('blocking', 'warning', 'info').
+        validator_name: Name of the validator that identified the violation.
+        line_number: Optional line number where the violation occurs.
+        detail: Optional extended explanation of why this is a violation.
+        suggestion: Optional actionable guidance on how to fix the violation.
+    """
     file_path: str
     message: str
     severity: str  # 'blocking', 'warning', 'info'
     validator_name: str
     line_number: Optional[int] = None
+    detail: Optional[str] = None
+    suggestion: Optional[str] = None
 
 @dataclass(frozen=True)
 class ValidationResult:
