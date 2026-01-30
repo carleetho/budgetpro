@@ -155,7 +155,14 @@ def _validate_config(config: Dict[str, Any]) -> None:
         raise ConfigurationError("At least one reporter must be enabled")
 
 def _deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
-    """Recursively merges update dict into base dict."""
+    """
+    Recursively merges update dict into base dict.
+    
+    Strategy:
+    - If key exists in both and both are dicts: Recursive merge.
+    - Otherwise: Overwrite base value with update value.
+    - New keys in update are added to base.
+    """
     for key, value in update.items():
         if isinstance(value, dict) and key in base and isinstance(base[key], dict):
             _deep_merge(base[key], value)
