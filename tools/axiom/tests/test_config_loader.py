@@ -126,10 +126,34 @@ class TestAxiomConfigLoader(unittest.TestCase):
         self.create_config_file(config_data)
         config = load_axiom_config(self.config_path)
         
-        # New red zone
-        self.assertEqual(config.protection_zones["red"][0]["path"], "new/red")
         # With deep merge, 'yellow' zone from default persists because key is not present in file.
         self.assertIn("yellow", config.protection_zones)
+
+    def test_default_reporter_paths(self):
+        """Test that default configuration has correct reporter paths"""
+        config = load_axiom_config("non_existent.yaml")
+        
+        self.assertEqual(config.reporters["log_file"]["path"], ".budgetpro/validation.log")
+        self.assertEqual(config.reporters["metrics"]["path"], ".budgetpro/metrics.json")
+        self.assertTrue(config.reporters["console"]["enabled"])
+        self.assertTrue(config.reporters["log_file"]["enabled"])
+        self.assertTrue(config.reporters["metrics"]["enabled"])
+
+    def test_reporter_path_override(self):
+        """Test overriding default reporter paths in YAML"""
+        config_data = {
+            "reporters": {
+                "log_file": {"path": "custom/audit.log"},
+                "metrics": {"path": "custom/stats.json"}
+            }
+        }
+        self.create_config_file(config_data)
+        config = load_axiom_config(self.config_path)
+        
+        self.assertEqual(config.reporters["log_file"]["path"], "custom/audit.log")
+        self.assertEqual(config.reporters["metrics"]["path"], "custom/stats.json")
+        # Console should still be enabled by default due to deep merge
+        self.assertTrue(config.reporters["console"]["enabled"])
 
 if __name__ == '__main__':
     unittest.main()

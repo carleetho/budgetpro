@@ -35,7 +35,7 @@ DEFAULT_CONFIG = {
     },
     "reporters": {
         "console": {"enabled": True},
-        "log_file": {"enabled": True, "path": ".budgetpro/axiom.log"},
+        "log_file": {"enabled": True, "path": ".budgetpro/validation.log"},
         "metrics": {"enabled": True, "path": ".budgetpro/metrics.json"}
     },
     "auto_fix": {
