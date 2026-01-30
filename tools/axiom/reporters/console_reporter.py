@@ -14,12 +14,12 @@ class ConsoleReporter(BaseReporter):
     """
 
     # ANSI Color Codes
-    COLOR_RED = "\033[91m"
-    COLOR_YELLOW = "\033[93m"
-    COLOR_BLUE = "\033[94m"
-    COLOR_GREEN = "\033[92m"
-    COLOR_RESET = "\033[0m"
-    COLOR_BOLD = "\033[1m"
+    COLOR_RED = "\033[91m"     # High intensity red
+    COLOR_YELLOW = "\033[93m"  # High intensity yellow
+    COLOR_BLUE = "\033[94m"    # High intensity blue
+    COLOR_GREEN = "\033[92m"   # High intensity green
+    COLOR_RESET = "\033[0m"    # Reset to default colors
+    COLOR_BOLD = "\033[1m"     # Bold text
 
     @property
     def name(self) -> str:
