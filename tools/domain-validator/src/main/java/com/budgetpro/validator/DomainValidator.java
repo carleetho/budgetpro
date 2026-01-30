@@ -13,6 +13,9 @@ import com.budgetpro.validator.output.MarkdownGenerator;
 import com.budgetpro.validator.output.MermaidGenerator;
 import com.budgetpro.validator.roadmap.CanonicalRoadmap;
 import com.budgetpro.validator.roadmap.RoadmapLoader;
+import com.budgetpro.validator.statemachine.StateMachineValidationOrchestrator;
+import com.budgetpro.validator.model.TransitionViolation;
+import com.budgetpro.validator.model.ViolationSeverity;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -35,7 +38,8 @@ import java.util.concurrent.Callable;
  * 3: Error durante el análisis (estructura inválida)
  */
 @Command(name = "domain-validator", mixinStandardHelpOptions = true, version = "Domain Validator 1.0.0", description = "Valida el orden de desarrollo y las fronteras arquitectónicas de BudgetPro", subcommands = {
-        ValidateCommand.class, GenerateRoadmapCommand.class, CheckModuleCommand.class, ValidateBoundaryCommand.class })
+        ValidateCommand.class, GenerateRoadmapCommand.class, CheckModuleCommand.class, ValidateBoundaryCommand.class,
+        ValidateStateMachineCommand.class })
 public class DomainValidator implements Callable<Integer> {
 
     public static void main(String[] args) {
@@ -435,5 +439,97 @@ class ValidateBoundaryCommand implements Callable<Integer> {
             e.printStackTrace();
             return 3; // ERROR
         }
+    }
+}
+
+/**
+ * Comando para validar transiciones de máquinas de estado.
+ */
+@Command(name = "validate-state-machine", description = "Valida las transiciones de máquinas de estado basadas en los cambios detectados por Git")
+class ValidateStateMachineCommand implements Callable<Integer> {
+
+    @Option(names = { "--repo-path",
+            "-p" }, description = "Ruta al directorio del repositorio (default: .)", defaultValue = ".")
+    private String repoPath;
+
+    @Option(names = { "--domain-path",
+            "-d" }, description = "Ruta a la capa de dominio (default: src/main/java/com/budgetpro/domain)", defaultValue = "src/main/java/com/budgetpro/domain")
+    private String domainPath;
+
+    @Option(names = { "--git-diff-command",
+            "-g" }, description = "Comando de git para obtener cambios (default: git diff --cached)", defaultValue = "git diff --cached")
+    private String gitDiffCommand;
+
+    @Option(names = { "--strict",
+            "-s" }, description = "Modo estricto: trata advertencias como errores", defaultValue = "false")
+    private boolean strict;
+
+    @Override
+    public Integer call() {
+        try {
+            Path repositoryPath = Paths.get(repoPath).toAbsolutePath().normalize();
+            Path domainFullPath = repositoryPath.resolve(domainPath).toAbsolutePath().normalize();
+
+            if (!repositoryPath.toFile().exists()) {
+                System.err.println("Error: Repository path does not exist: " + repositoryPath);
+                return 3;
+            }
+
+            System.out.println("Validating state machine transitions...");
+            System.out.println("Repository: " + repositoryPath);
+            System.out.println("Git command: " + gitDiffCommand);
+            System.out.println("Strict mode: " + strict);
+
+            StateMachineValidationOrchestrator orchestrator = new StateMachineValidationOrchestrator();
+            List<TransitionViolation> violations = orchestrator.orchestrate(repositoryPath, domainFullPath,
+                    gitDiffCommand);
+
+            if (violations.isEmpty()) {
+                System.out.println("\n✅ State machine validation passed. No violations found.");
+                return 0;
+            }
+
+            // Reportar violaciones
+            reportViolations(violations);
+
+            // Determinar exit code
+            boolean hasCritical = violations.stream().anyMatch(v -> v.getSeverity() == ViolationSeverity.CRITICAL);
+            boolean hasWarning = violations.stream().anyMatch(v -> v.getSeverity() == ViolationSeverity.WARNING);
+
+            if (hasCritical) {
+                return 1; // Error crítico
+            }
+            if (strict && hasWarning) {
+                return 1; // Advertencia en modo estricto
+            }
+
+            return 0; // Solo advertencias en modo no estricto
+
+        } catch (Exception e) {
+            System.err.println("Critical error during state machine validation: " + e.getMessage());
+            e.printStackTrace();
+            return 3;
+        }
+    }
+
+    private void reportViolations(List<TransitionViolation> violations) {
+        long criticalCount = violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.CRITICAL).count();
+        long warningCount = violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.WARNING).count();
+
+        if (criticalCount > 0) {
+            System.out.println("\n🚫 Critical Violations (" + criticalCount + "):");
+            violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.CRITICAL)
+                    .forEach(v -> System.out.println("  • " + formatViolation(v)));
+        }
+
+        if (warningCount > 0) {
+            System.out.println("\n⚠️  Warnings (" + warningCount + "):");
+            violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.WARNING)
+                    .forEach(v -> System.out.println("  • " + formatViolation(v)));
+        }
+    }
+
+    private String formatViolation(TransitionViolation v) {
+        return String.format("[%s:%d] %s (%s)", v.getFilePath(), v.getLineNumber(), v.getMessage(), v.getMethodName());
     }
 }

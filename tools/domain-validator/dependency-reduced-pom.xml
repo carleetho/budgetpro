@@ -83,6 +83,7 @@
   </dependencies>
   <properties>
     <javaparser.version>3.25.4</javaparser.version>
+    <snakeyaml.version>2.2</snakeyaml.version>
     <java.version>17</java.version>
     <maven.compiler.source>17</maven.compiler.source>
     <jackson.version>2.15.2</jackson.version>
