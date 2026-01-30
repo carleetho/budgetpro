@@ -119,9 +119,9 @@ public class GitDiffParser {
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
         String className = fileName.substring(0, fileName.lastIndexOf("."));
 
-        // Verificar si la clase está en la configuración
-        // El config puede tener FQN o nombres simples.
-        for (String configuredClass : config.getStateMachines().keySet()) {
+        // Verificar si la clase está en la configuración de transiciones
+        // El config puede tener FQN o nombres simples en las transiciones.
+        for (String configuredClass : config.getTransitions().keySet()) {
             if (configuredClass.equals(className) || configuredClass.endsWith("." + className)) {
                 return true;
             }

@@ -94,10 +94,10 @@ function upload_pr() {
 # --- MENÚ PRINCIPAL ---
 clear
 echo -e "${GREEN}=============================================${NC}"
-echo -e "      🤖 BUDGETPRO DEV WORKFLOW (Axiom)      "
+echo -e "      🤖 BUDGETPRO DEV WORKFLOW (BrainGrid)      "
 echo -e "${GREEN}=============================================${NC}"
-echo "1. 🚀 Iniciar Tarea (Branch desde Main)"
-echo "2. 💾 Guardar Avance (Axiom + Commit)"
+echo "1. 🚀 Iniciar Requerimiento (Branch desde Main)"
+echo "2. 💾 Guardar Avance de Task (BrainGrid + Commit)"
 echo "3. ☁️  Subir y PR (Push + GitHub)"
 echo "4. ❌ Salir"
 echo -e "${GREEN}=============================================${NC}"
