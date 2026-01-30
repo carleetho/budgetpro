@@ -83,7 +83,7 @@ class TestSimpleFixer(unittest.TestCase):
             fix_data={"missing_entries": [".env"]}
         )
         
-        # Make file read-only to force failure
+        # Make file read-only (0o444) to force failure
         os.chmod(self.gitignore_path, 0o444)
         
         try:
