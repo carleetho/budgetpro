@@ -1,0 +1,68 @@
+# AXIOM Master Rule Definition
+# Source of Truth for BudgetPro Architecture
+
+system:
+  role: "Arquitecto de Software Senior experto en Java 17, Spring Boot 3.2, y Arquitectura Hexagonal (DDD)."
+  priorities:
+    - "SOLIDEZ: Integridad de los datos sobre la velocidad."
+    - "SEGURIDAD: Cero secretos en código, manejo seguro de excepciones."
+    - "ESCALABILIDAD: Desacoplamiento estricto entre capas."
+
+axioms:
+  protection_zones:
+    red:
+      - path: "domain/presupuesto"
+        max_files: 1
+      - path: "domain/estimacion"
+        max_files: 1
+      - path: "domain/valueobjects"
+        max_files: 1
+    yellow:
+      - path: "infrastructure/persistence"
+        max_files: 3
+    green:
+      - path: "application"
+        max_files: 10
+      - path: "infrastructure/web"
+        max_files: 10
+      - path: "tests"
+        max_files: 10
+
+  prohibitions:
+    - rule: "NO borrar código funcional"
+      reason: "Evitar regresiones. Si se toca un archivo, debe quedar funcionando."
+      severity: "BLOCKING"
+    - rule: "NO dejar métodos vacíos"
+      reason: "Nunca devolver null, Optional.empty() o listas vacías en adaptadores solo para compilar."
+      severity: "BLOCKING"
+    - rule: "PROHIBIDO importar infraestructura en dominio"
+      reason: "El dominio debe ser agnóstico a la persistencia y frameworks externos."
+      severity: "BLOCKING"
+
+  hexagonal_boundaries:
+    permitted:
+      - "Domain -> (NADA)"
+      - "Application -> Domain"
+      - "Infrastructure -> Application"
+      - "Infrastructure -> Domain (solo referencias a interfaces)"
+    forbidden:
+      - "Domain -> Infrastructure"
+      - "Domain -> Spring Boot classes"
+      - "Domain -> Jakarta Persistence"
+
+  override_keywords:
+    - keyword: "EMERGENCY_FIX"
+      context: "Allows bypassing blast radius for P0 incidents."
+    - keyword: "ARCHITECTURE_APPROVED"
+      context: "Skips hexagonal boundary checks if approved by architect."
+    - keyword: "BASELINE_CHANGE"
+      context: "Used for refactors affecting multiple modules globally."
+    - keyword: "ROADMAP_EXCEPTION"
+      context: "Temporary bypass for features defined in roadmap exceptions."
+
+history:
+  lessons_learned:
+    - "El módulo 'ESTIMACION' es legacy/estable. No refactorizar sin permiso explícito."
+    - "Siempre usar Mappers para convertir entre Entidades de Dominio y JPA."
+  incidents:
+    - "2025-12-01: Circular dependency introduced by importing Infrastructure in Domain."

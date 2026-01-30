@@ -29,20 +29,34 @@
       },
       "todos_by_module": {
         "domain/presupuesto": [
-            "// TODO: Refactor this method",
-            "// TODO: Add error handling"
+          "// TODO: Refactor this method",
+          "// TODO: Add error handling"
         ],
         "domain/estimacion": [
-            "// TODO: Optimize query"
+          "// TODO: Optimize query"
         ],
         "infrastructure": [
-            "// TODO: Remove legacy connector"
+          "// TODO: Remove legacy connector"
         ]
+      }
+    },
+    {
+      "timestamp": "2026-01-30T16:46:50.932527+00:00Z",
+      "execution_time_ms": 22.26090431213379,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
       }
     }
   ],
   "statistics": {
-    "total_runs": 2,
+    "total_runs": 3,
     "avg_violations_per_run": 1.0,
     "pass_rate": 100.0,
     "most_common_validator": "security_validator",

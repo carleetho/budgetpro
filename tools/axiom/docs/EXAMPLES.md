@@ -99,3 +99,58 @@ if "domain/estimacion" in overrides.bypass_zones:
 
 - **Cause**: You explicitly set `enabled: false` for console, log_file, and metrics.
 - **Fix**: Enable at least one to ensure you can see the validation results.
+
+## AI Assistant Integration Examples
+
+### 1. Spanish Language Configuration
+
+BudgetPro uses Spanish for domain concepts. The AI configuration supports this natively to keep instructions consistent with the codebase.
+
+```yaml
+system:
+  role: "Arquitecto de Software Senior"
+  priorities:
+    - "La integridad de los datos es la prioridad número uno."
+    - "Usar nombres en español para el dominio (ej. Presupuesto, Partida)."
+
+axioms:
+  prohibitions:
+    - rule: "No usar 'utils' como nombre de paquete"
+      reason: "Agrupar por funcionalidad, no por tipo."
+      severity: "WARNING"
+```
+
+### 2. Hexagonal Architecture Strictness
+
+Enforcing the dependency rule explicitly in the `.cursorrules`.
+
+```yaml
+axioms:
+  hexagonal_boundaries:
+    permitted:
+      - "Adapter -> Port"
+      - "Service -> Entity"
+    forbidden:
+      - "Entity -> Repository (Implementation)"
+      - "Domain -> Spring Framework"
+```
+
+This generates clear "✅ Permitted" and "❌ Forbidden" sections in the AI instructions, helping Copilots avoid suggesting bad imports.
+
+### 3. Generated .cursorrules Preview
+
+When you run `tools/axiom/sync_cursorrules.py`, the output looks like this:
+
+```markdown
+# Arquitecto de Software Senior
+
+## 🚀 System Priorities
+
+- La integridad de los datos es la prioridad número uno.
+
+## 🛡️ AXIOM: Fundamental Architectural Rules
+
+...
+```
+
+See `tools/axiom/templates/cursorrules.template.md` for the template structure.
