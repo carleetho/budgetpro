@@ -6,9 +6,9 @@
 protection_zones:
   # Red Zones: Critical domain logic. High risk. Very strict limits.
   red:
-    - path: "domain/presupuesto"
+    - path: "domain/finanzas/presupuesto"
       max_files: 1
-    - path: "domain/estimacion"
+    - path: "domain/finanzas/estimacion"
       max_files: 1
     - path: "domain/valueobjects"
       max_files: 1
@@ -54,6 +54,11 @@ validators:
   lazy_code:
     enabled: true
     strictness: "blocking"
+
+  # Dependency Validator: Enforces architectural boundaries (Domain isolation).
+  dependency_validator:
+    enabled: true
+    domain_patterns: ["domain/"]
 
 # Reporters: Where to send validation results.
 reporters:

@@ -53,14 +53,527 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-01-30T18:53:10.004891+00:00Z",
+      "execution_time_ms": 78.10449600219727,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:54:01.266499+00:00Z",
+      "execution_time_ms": 37.034034729003906,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:54:28.894314+00:00Z",
+      "execution_time_ms": 64.96334075927734,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:54:57.584876+00:00Z",
+      "execution_time_ms": 21.211862564086914,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:55:50.088276+00:00Z",
+      "execution_time_ms": 10424.033880233765,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:57:17.677153+00:00Z",
+      "execution_time_ms": 31808.66050720215,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:58:11.408721+00:00Z",
+      "execution_time_ms": 3817.133665084839,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:58:42.092901+00:00Z",
+      "execution_time_ms": 3829.42795753479,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:59:23.989545+00:00Z",
+      "execution_time_ms": 5785.308599472046,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T18:59:52.319896+00:00Z",
+      "execution_time_ms": 16230.002641677856,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:01:21.192935+00:00Z",
+      "execution_time_ms": 6072.882175445557,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "lazy_code": 1,
+        "security_validator": 1
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:01:47.533952+00:00Z",
+      "execution_time_ms": 13719.484806060791,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:03:49.364181+00:00Z",
+      "execution_time_ms": 17259.0172290802,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2,
+        "blast_radius": 1
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:13:29.187471+00:00Z",
+      "execution_time_ms": 8905.68232536316,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:13:45.799628+00:00Z",
+      "execution_time_ms": 3455.2369117736816,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:16:47.382901+00:00Z",
+      "execution_time_ms": 4549.811601638794,
+      "total_violations": 4,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3,
+        "dependency_validator": 1
+      },
+      "by_module": {
+        "backend": 3,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:34:54.273361+00:00Z",
+      "execution_time_ms": 5994.257688522339,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:36:03.179802+00:00Z",
+      "execution_time_ms": 2977.2655963897705,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:36:45.408514+00:00Z",
+      "execution_time_ms": 3100.4607677459717,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:38:16.384191+00:00Z",
+      "execution_time_ms": 2962.552309036255,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:39:56.457569+00:00Z",
+      "execution_time_ms": 2892.347812652588,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:51:00.300755+00:00Z",
+      "execution_time_ms": 14804.060697555542,
+      "total_violations": 4,
+      "by_severity": {
+        "blocking": 3,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2,
+        "lazy_code": 1,
+        "dependency_validator": 1
+      },
+      "by_module": {
+        "backend": 3,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:51:21.293775+00:00Z",
+      "execution_time_ms": 4991.2543296813965,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "lazy_code": 1,
+        "security_validator": 1
+      },
+      "by_module": {
+        "backend": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:54:32.159607+00:00Z",
+      "execution_time_ms": 3234.8239421844482,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2,
+        "lazy_code": 1
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T19:56:12.946312+00:00Z",
+      "execution_time_ms": 5383.507966995239,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 2,
+        "lazy_code": 1
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T20:00:20.158269+00:00Z",
+      "execution_time_ms": 3046.3531017303467,
+      "total_violations": 2,
+      "by_severity": {
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 2
+      },
+      "by_module": {
+        "home": 1,
+        "backend": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T20:03:07.885921+00:00Z",
+      "execution_time_ms": 11145.608901977539,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T20:07:13.164611+00:00Z",
+      "execution_time_ms": 10289.063215255737,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 2
+      },
+      "by_validator": {
+        "security_validator": 3
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T20:53:10.932108+00:00Z",
+      "execution_time_ms": 48.024892807006836,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "blast_radius": 1,
+        "security_validator": 1
+      },
+      "by_module": {
+        "root": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T20:53:30.359782+00:00Z",
+      "execution_time_ms": 43.83587837219238,
+      "total_violations": 2,
+      "by_severity": {
+        "blocking": 1,
+        "warning": 1
+      },
+      "by_validator": {
+        "blast_radius": 1,
+        "security_validator": 1
+      },
+      "by_module": {
+        "root": 1,
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T21:06:38.803295+00:00Z",
+      "execution_time_ms": 46.83113098144531,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-30T21:06:46.401475+00:00Z",
+      "execution_time_ms": 54.34870719909668,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 3,
-    "avg_violations_per_run": 1.0,
-    "pass_rate": 100.0,
+    "total_runs": 35,
+    "avg_violations_per_run": 2.26,
+    "pass_rate": 22.9,
     "most_common_validator": "security_validator",
-    "most_problematic_module": "home",
-    "trend": "stable"
+    "most_problematic_module": "backend",
+    "trend": "improving"
   }
 }
