@@ -60,20 +60,20 @@ class TestAutoFixerIntegration(unittest.TestCase):
     @patch('tools.axiom.axiom_sentinel.AxiomSentinel._discover_staged_files')
     @patch('tools.axiom.axiom_sentinel.AxiomSentinel._apply_overrides')
     def test_e2e_auto_fix_success(self, mock_apply, mock_discover):
-        mock_discover.return_value = [".gitignore"]
+        abs_gitignore = os.path.abspath(self.gitignore_path)
+        mock_discover.return_value = [abs_gitignore]
         mock_apply.side_effect = lambda x: x
         
         sentinel = AxiomSentinel(config_path=self.config_path)
-        # We need to make sure the absolute path in the violation matches the file on disk
-        # In run(), SecurityValidator uses os.path.abspath(file_path)
-        
+        # Ensure we run in a clean state
         exit_code = sentinel.run()
         
         self.assertEqual(exit_code, 0)
         
-        with open(self.gitignore_path, "r") as f:
+        with open(abs_gitignore, "r") as f:
             content = f.read()
             self.assertIn(".env", content)
+            self.assertIn("# Auto-added by AXIOM Sentinel", content)
 
     @patch('tools.axiom.axiom_sentinel.AxiomSentinel._discover_staged_files')
     @patch('tools.axiom.axiom_sentinel.AxiomSentinel._apply_overrides')
