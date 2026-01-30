@@ -16,7 +16,10 @@ class SimpleFixer(BaseFixer):
 
     def __init__(self, config: dict):
         super().__init__(config)
-        self.backups = {}  # original_path -> backup_path
+        # Internal state to track file backups: original_path -> backup_path
+        # The backups dictionary lifecycle is managed by fix(), commit(), and rollback().
+        # fix() populates it, while commit() and rollback() clear it after their respective operations.
+        self.backups = {}  
 
     @property
     def name(self) -> str:
@@ -58,6 +61,8 @@ class SimpleFixer(BaseFixer):
 
                 # Create backup if not already done for this file in this session
                 if file_path not in self.backups:
+                    # Naming pattern: {original_file}.backup.{timestamp}
+                    # This allows identifying related backups while avoiding name collisions.
                     backup_path = f"{file_path}.backup.{int(time.time())}"
                     try:
                         shutil.copy2(file_path, backup_path)
