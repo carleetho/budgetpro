@@ -1,0 +1,127 @@
+# ============================================================================
+# Configuración del Validador de Inmutabilidad - BudgetPro
+# ============================================================================
+#
+# Este archivo define la configuración para las reglas de inmutabilidad del
+# dominio, incluyendo dominios críticos, patrones de exclusión y overrides
+# de severidad.
+#
+# Las reglas de inmutabilidad (04, 05, 06) usan esta configuración como
+# referencia para determinar qué dominios requieren severidad bloqueante
+# y qué paths deben ser excluidos de la validación.
+#
+# Uso:
+#   - Este archivo es principalmente documentación y referencia
+#   - Las reglas de Semgrep ya tienen los paths hardcodeados según esta config
+#   - Para modificar dominios críticos, actualizar las reglas correspondientes
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Dominios Críticos
+# ----------------------------------------------------------------------------
+# Los dominios críticos son aquellos donde las violaciones de inmutabilidad
+# generan severidad ERROR (bloqueante) en lugar de WARNING.
+#
+# Dominios críticos por defecto:
+#   - presupuesto: Core financiero, integridad criptográfica crítica
+#   - estimacion: Core financiero, cálculos de estimación deben ser inmutables
+#
+# Para agregar un nuevo dominio crítico:
+#   1. Agregar el dominio a esta lista
+#   2. Actualizar la regla correspondiente en .semgrep/rules/domain/
+#   3. Agregar el path pattern: "**/domain/**/<dominio>/**/model/*.java"
+#
+critical_domains:
+  - presupuesto
+  - estimacion
+
+# ----------------------------------------------------------------------------
+# Patrones de Exclusión
+# ----------------------------------------------------------------------------
+# Paths que deben ser excluidos de la validación de inmutabilidad.
+#
+# Exclusiones por defecto:
+#   - **/test/**: Archivos de prueba (manejados por .semgrepignore)
+#   - **/legacy/**: Código legacy que no cumple con estándares actuales
+#   - **/infrastructure/persistence/entity/**: Entidades JPA pueden necesitar
+#     mutabilidad para frameworks de persistencia
+#
+# Nota: Semgrep ya excluye archivos de test automáticamente si están en
+# .semgrepignore. Estas exclusiones son para casos especiales.
+#
+exclusions:
+  # Archivos de prueba (ya manejados por .semgrepignore, pero documentado aquí)
+  - "**/test/**"
+  - "**/tests/**"
+  
+  # Código legacy que no cumple con estándares actuales
+  - "**/legacy/**"
+  
+  # Entidades JPA en la capa de infraestructura pueden necesitar mutabilidad
+  # para frameworks de persistencia (Hibernate, JPA, etc.)
+  - "**/infrastructure/persistence/entity/**"
+  
+  # Archivos de configuración y utilidades
+  - "**/config/**"
+  - "**/util/**"
+
+# ----------------------------------------------------------------------------
+# Overrides de Severidad (Opcional)
+# ----------------------------------------------------------------------------
+# Permite sobrescribir la severidad por defecto para dominios específicos.
+#
+# Por defecto:
+#   - Dominios críticos (presupuesto, estimacion): ERROR
+#   - Otros dominios: WARNING
+#
+# Para cambiar la severidad de un dominio:
+#   1. Descomentar la línea correspondiente
+#   2. Establecer la severidad deseada (ERROR, WARNING, INFO)
+#   3. Actualizar la regla correspondiente en .semgrep/rules/domain/
+#
+# Ejemplo:
+#   severity_overrides:
+#     catalogo: ERROR  # Hacer que catalogo sea bloqueante
+#     proyecto: INFO  # Reducir severidad de proyecto a info
+#
+severity_overrides:
+  # Descomentar y ajustar según necesidad:
+  # catalogo: ERROR
+  # proyecto: WARNING
+  # logistica: INFO
+
+# ----------------------------------------------------------------------------
+# Configuración de Paths por Tipo de Regla
+# ----------------------------------------------------------------------------
+# Documentación de los paths que cada regla de inmutabilidad debe escanear.
+#
+# Esta sección es solo documentación para referencia del equipo.
+#
+paths_by_rule:
+  # Regla 04: Entity Final Fields
+  # - Escanea: **/domain/**/model/*.java
+  # - Críticos: **/domain/**/presupuesto/**/model/*.java
+  #            **/domain/**/estimacion/**/model/*.java
+  
+  # Regla 05: Snapshot Immutability
+  # - Escanea: **/*Snapshot.java
+  
+  # Regla 06: Value Object No Setters
+  # - Escanea: **/domain/**/valueobjects/*.java
+
+# ----------------------------------------------------------------------------
+# Notas de Implementación
+# ----------------------------------------------------------------------------
+# 
+# Las reglas de Semgrep no pueden leer este archivo de configuración
+# directamente. Los paths y exclusiones están hardcodeados en cada regla.
+#
+# Para modificar la configuración:
+#   1. Actualizar este archivo (documentación)
+#   2. Actualizar la regla correspondiente en .semgrep/rules/domain/
+#   3. Actualizar los tests en .semgrep/tests/domain/
+#   4. Validar con: semgrep --test .semgrep/rules/domain/
+#
+# Mantener este archivo sincronizado con las reglas para documentación
+# y referencia del equipo.
