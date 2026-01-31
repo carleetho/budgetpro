@@ -28,6 +28,10 @@ _logs/
 *.swp
 .DS_Store
 Thumbs.db
+.gemini/
+.braingrid/
+node_modules/
+target/
 
 # --- Carpetas de IA/Cache ---
 .cache/
