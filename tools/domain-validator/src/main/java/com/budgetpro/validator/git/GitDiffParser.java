@@ -1,6 +1,6 @@
 package com.budgetpro.validator.git;
 
-import com.budgetpro.validator.analyzer.StateMachineConfig;
+import com.budgetpro.validator.config.StateMachineConfig;
 import com.budgetpro.validator.model.ChangedFile;
 import com.budgetpro.validator.model.ChangedFile.ChangeType;
 import com.budgetpro.validator.model.LineRange;
@@ -23,16 +23,10 @@ public class GitDiffParser {
     private static final Pattern HUNK_HEADER_PATTERN = Pattern.compile("^@@ -(\\d+),?(\\d*) \\+(\\d+),?(\\d*) @@.*$");
     private static final Pattern NEW_FILE_PATTERN = Pattern.compile("^new file mode \\d+$");
     private static final Pattern DELETED_FILE_PATTERN = Pattern.compile("^deleted file mode \\d+$");
-    private static final Pattern RENAME_FROM_PATTERN = Pattern.compile("^rename from (.+)$");
     private static final Pattern RENAME_TO_PATTERN = Pattern.compile("^rename to (.+)$");
 
     /**
      * Parsea los archivos cambiados ejecutando un comando de git.
-     *
-     * @param gitDiffCommand El comando de git a ejecutar (ej: "git diff --cached")
-     * @param config         Configuración de máquinas de estado para filtrar
-     *                       archivos
-     * @return Lista de archivos cambiados que coinciden con la configuración
      */
     public List<ChangedFile> parseChangedFiles(String gitDiffCommand, StateMachineConfig config)
             throws IOException, InterruptedException {
@@ -67,13 +61,11 @@ public class GitDiffParser {
 
             Matcher diffMatcher = DIFF_GIT_PATTERN.matcher(line);
             if (diffMatcher.matches()) {
-                // Guardar el archivo anterior si es válido
                 if (currentFile != null && isStateMachineFile(currentFile, config)) {
                     changedFiles.add(new ChangedFile(currentFile, currentType, currentLineRanges));
                 }
 
-                // Resetear para el nuevo archivo
-                currentFile = diffMatcher.group(2); // Usar la ruta 'b/' (nueva)
+                currentFile = diffMatcher.group(2);
                 currentType = ChangeType.MODIFIED;
                 currentLineRanges = new ArrayList<>();
                 continue;
@@ -86,9 +78,6 @@ public class GitDiffParser {
                 currentType = ChangeType.ADDED;
             } else if (DELETED_FILE_PATTERN.matcher(line).matches()) {
                 currentType = ChangeType.DELETED;
-            } else if (RENAME_FROM_PATTERN.matcher(line).matches()) {
-                // Opcional: manejar renames si es necesario, por ahora MODIFIED es suficiente
-                // para el target
             } else if (RENAME_TO_PATTERN.matcher(line).matches()) {
                 currentType = ChangeType.MODIFIED;
             } else {
@@ -96,13 +85,11 @@ public class GitDiffParser {
                 if (hunkMatcher.matches()) {
                     int startLine = Integer.parseInt(hunkMatcher.group(3));
                     int count = hunkMatcher.group(4).isEmpty() ? 1 : Integer.parseInt(hunkMatcher.group(4));
-                    // El rango en el archivo nuevo es de startLine a startLine + count - 1
                     currentLineRanges.add(new LineRange(startLine, startLine + Math.max(0, count - 1)));
                 }
             }
         }
 
-        // Agregar el último archivo
         if (currentFile != null && isStateMachineFile(currentFile, config)) {
             changedFiles.add(new ChangedFile(currentFile, currentType, currentLineRanges));
         }
@@ -115,17 +102,10 @@ public class GitDiffParser {
             return false;
         }
 
-        // Extraer el nombre de la clase (basename sin .java)
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
         String className = fileName.substring(0, fileName.lastIndexOf("."));
 
-        // Verificar si la clase está en la configuración de transiciones
-        // El config puede tener FQN o nombres simples en las transiciones.
-        for (String configuredClass : config.getTransitions().keySet()) {
-            if (configuredClass.equals(className) || configuredClass.endsWith("." + className)) {
-                return true;
-            }
-        }
-        return false;
+        // Usar el método findDefinitionForClass que maneja FQN parciales/completos
+        return config.findDefinitionForClass(className) != null;
     }
 }
