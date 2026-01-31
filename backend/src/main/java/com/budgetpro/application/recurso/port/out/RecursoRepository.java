@@ -1,7 +1,7 @@
 package com.budgetpro.application.recurso.port.out;
 
-import com.budgetpro.domain.recurso.model.Recurso;
-import com.budgetpro.domain.recurso.model.RecursoId;
+import com.budgetpro.domain.finanzas.recurso.model.Recurso;
+import com.budgetpro.domain.finanzas.recurso.model.RecursoId;
 
 import java.util.Optional;
 

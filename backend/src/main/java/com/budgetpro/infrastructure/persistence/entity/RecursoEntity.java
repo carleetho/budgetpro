@@ -1,6 +1,6 @@
 package com.budgetpro.infrastructure.persistence.entity;
 
-import com.budgetpro.domain.recurso.model.EstadoRecurso;
+import com.budgetpro.domain.finanzas.recurso.model.EstadoRecurso;
 import com.budgetpro.domain.shared.model.TipoRecurso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;

@@ -13,7 +13,7 @@ import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.proyecto.port.out.ProyectoRepository;
-import com.budgetpro.domain.recurso.model.Recurso;
+import com.budgetpro.domain.finanzas.recurso.model.Recurso;
 import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.domain.rrhh.model.AsignacionProyecto;
 import com.budgetpro.domain.rrhh.model.AsignacionProyectoId;

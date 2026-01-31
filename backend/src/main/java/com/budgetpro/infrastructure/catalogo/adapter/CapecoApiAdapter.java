@@ -83,6 +83,8 @@ public class CapecoApiAdapter implements CatalogPort {
     public RecursoSnapshot fetchRecurso(String externalId, String catalogSource) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         long startTime = System.currentTimeMillis();
+        boolean success = false;
+        Exception error = null;
 
         try {
             log.debug("Fetching recurso {} from catalog {}", externalId, catalogSource);
@@ -96,6 +98,7 @@ public class CapecoApiAdapter implements CatalogPort {
             String cacheKey = String.format("%s:%s", catalogSource, externalId);
             catalogCache.putRecursoL2(cacheKey, snapshot);
 
+            success = true;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "fetchRecurso", durationMs, true);
             catalogEventLogger.logApiCall(correlationId, catalogSource, "fetchRecurso", externalId, durationMs, true,
@@ -103,6 +106,7 @@ public class CapecoApiAdapter implements CatalogPort {
 
             return snapshot;
         } catch (Exception e) {
+            error = e;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "fetchRecurso", durationMs, false);
             catalogMetrics.recordApiError(catalogSource, "fetchRecurso", e.getClass().getSimpleName());
@@ -116,7 +120,6 @@ public class CapecoApiAdapter implements CatalogPort {
      * Fallback: Intenta obtener desde cache cuando el circuito está abierto o hay
      * error.
      */
-    @SuppressWarnings("unused")
     private RecursoSnapshot fetchRecursoFromCache(String externalId, String catalogSource, Exception e) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         log.warn("Circuit breaker open or error, falling back to cache for recurso {} from {}", externalId,
@@ -138,6 +141,8 @@ public class CapecoApiAdapter implements CatalogPort {
     public List<RecursoSnapshot> searchRecursos(RecursoSearchCriteria criteria, String catalogSource) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         long startTime = System.currentTimeMillis();
+        boolean success = false;
+        Exception error = null;
 
         try {
             log.debug("Searching recursos in catalog {} with criteria {}", catalogSource, criteria);
@@ -168,6 +173,7 @@ public class CapecoApiAdapter implements CatalogPort {
             List<RecursoSnapshot> resultados = List.of(body).stream()
                     .map(item -> mapToRecursoSnapshot(item, catalogSource)).collect(Collectors.toList());
 
+            success = true;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "searchRecursos", durationMs, true);
             catalogEventLogger.logApiCall(correlationId, catalogSource, "searchRecursos", "SEARCH", durationMs, true,
@@ -175,6 +181,7 @@ public class CapecoApiAdapter implements CatalogPort {
 
             return resultados;
         } catch (Exception e) {
+            error = e;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "searchRecursos", durationMs, false);
             catalogMetrics.recordApiError(catalogSource, "searchRecursos", e.getClass().getSimpleName());
@@ -188,7 +195,6 @@ public class CapecoApiAdapter implements CatalogPort {
      * Fallback: Retorna lista vacía cuando el circuito está abierto (búsquedas no
      * se cachean).
      */
-    @SuppressWarnings("unused")
     private List<RecursoSnapshot> searchRecursosFromCache(RecursoSearchCriteria criteria, String catalogSource,
             Exception e) {
         log.warn("Circuit breaker open or error, returning empty list for search in {}", catalogSource, e);
@@ -203,6 +209,8 @@ public class CapecoApiAdapter implements CatalogPort {
     public APUSnapshot fetchAPU(String externalApuId, String catalogSource) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         long startTime = System.currentTimeMillis();
+        boolean success = false;
+        Exception error = null;
 
         try {
             log.debug("Fetching APU {} from catalog {}", externalApuId, catalogSource);
@@ -228,6 +236,7 @@ public class CapecoApiAdapter implements CatalogPort {
             String cacheKey = String.format("%s:%s", catalogSource, externalApuId);
             catalogCache.putApuL2(cacheKey, snapshot);
 
+            success = true;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "fetchAPU", durationMs, true);
             catalogEventLogger.logApiCall(correlationId, catalogSource, "fetchAPU", externalApuId, durationMs, true,
@@ -235,6 +244,7 @@ public class CapecoApiAdapter implements CatalogPort {
 
             return snapshot;
         } catch (Exception e) {
+            error = e;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "fetchAPU", durationMs, false);
             catalogMetrics.recordApiError(catalogSource, "fetchAPU", e.getClass().getSimpleName());
@@ -248,7 +258,6 @@ public class CapecoApiAdapter implements CatalogPort {
      * Fallback: Intenta obtener desde cache cuando el circuito está abierto o hay
      * error.
      */
-    @SuppressWarnings("unused")
     private APUSnapshot fetchAPUFromCache(String externalApuId, String catalogSource, Exception e) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         log.warn("Circuit breaker open or error, falling back to cache for APU {} from {}", externalApuId,
@@ -270,6 +279,8 @@ public class CapecoApiAdapter implements CatalogPort {
     public boolean isRecursoActive(String externalId, String catalogSource) {
         String correlationId = catalogEventLogger.generateCorrelationId();
         long startTime = System.currentTimeMillis();
+        boolean success = false;
+        Exception error = null;
 
         try {
             String url = String.format("%s/recursos/%s", apiBaseUrl, externalId);
@@ -278,6 +289,7 @@ public class CapecoApiAdapter implements CatalogPort {
             CapecoRecursoResponse body = requireBody(response, externalId, catalogSource);
             boolean activo = body.getActivo() == null || body.getActivo();
 
+            success = true;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "isRecursoActive", durationMs, true);
             catalogEventLogger.logApiCall(correlationId, catalogSource, "isRecursoActive", externalId, durationMs, true,
@@ -292,6 +304,7 @@ public class CapecoApiAdapter implements CatalogPort {
                     null);
             return false;
         } catch (Exception e) {
+            error = e;
             long durationMs = System.currentTimeMillis() - startTime;
             catalogMetrics.recordApiCall(catalogSource, "isRecursoActive", durationMs, false);
             catalogMetrics.recordApiError(catalogSource, "isRecursoActive", e.getClass().getSimpleName());
@@ -304,7 +317,6 @@ public class CapecoApiAdapter implements CatalogPort {
     /**
      * Fallback: Si hay cache, asume activo. Si no, retorna false.
      */
-    @SuppressWarnings("unused")
     private boolean isRecursoActiveFromCache(String externalId, String catalogSource, Exception e) {
         log.warn("Circuit breaker open or error, checking cache for recurso {} from {}", externalId, catalogSource, e);
         String cacheKey = String.format("%s:%s", catalogSource, externalId);

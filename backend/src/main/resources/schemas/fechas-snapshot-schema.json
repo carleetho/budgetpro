@@ -1,58 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Fechas Snapshot Schema",
-  "description": "Esquema para validar la estructura de fechas del cronograma en snapshots",
   "type": "object",
-  "required": ["programa", "actividades"],
   "properties": {
-    "programa": {
-      "type": "object",
-      "required": [],
-      "properties": {
-        "fechaInicio": {
-          "type": ["string", "null"],
-          "format": "date",
-          "description": "Fecha de inicio del programa en formato ISO 8601 (YYYY-MM-DD) o null"
-        },
-        "fechaFinEstimada": {
-          "type": ["string", "null"],
-          "format": "date",
-          "description": "Fecha fin estimada del programa en formato ISO 8601 (YYYY-MM-DD) o null"
-        }
-      },
-      "additionalProperties": false
+    "fechaCreacion": {
+      "type": "string",
+      "format": "date-time"
     },
-    "actividades": {
-      "type": "array",
-      "description": "Lista de fechas de actividades",
-      "items": {
-        "type": "object",
-        "required": ["id", "partidaId"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID único de la actividad (UUID)"
-          },
-          "partidaId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID de la partida asociada (UUID)"
-          },
-          "fechaInicio": {
-            "type": ["string", "null"],
-            "format": "date",
-            "description": "Fecha de inicio de la actividad en formato ISO 8601 (YYYY-MM-DD) o null"
-          },
-          "fechaFin": {
-            "type": ["string", "null"],
-            "format": "date",
-            "description": "Fecha fin de la actividad en formato ISO 8601 (YYYY-MM-DD) o null"
-          }
-        },
-        "additionalProperties": false
-      }
+    "fechaModificacion": {
+      "type": "string",
+      "format": "date-time"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
