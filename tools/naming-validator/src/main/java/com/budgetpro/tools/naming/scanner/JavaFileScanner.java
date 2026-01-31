@@ -12,6 +12,9 @@ import java.util.stream.Stream;
  */
 public class JavaFileScanner {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(JavaFileScanner.class.getName());
+
     /**
      * Busca todos los archivos .java dentro de un directorio raíz de forma
      * recursiva.
@@ -21,6 +24,7 @@ public class JavaFileScanner {
      * @throws IOException Si ocurre un error al acceder al sistema de archivos.
      */
     public List<Path> scanJavaFiles(Path rootPath) throws IOException {
+        java.util.Objects.requireNonNull(rootPath, "Root path cannot be null");
         if (!Files.exists(rootPath) || !Files.isDirectory(rootPath)) {
             throw new IllegalArgumentException("La ruta especificada no existe o no es un directorio: " + rootPath);
         }
@@ -29,7 +33,7 @@ public class JavaFileScanner {
             return walk.filter(Files::isRegularFile).filter(p -> p.toString().endsWith(".java"))
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            System.err.println("Error escaneando archivos en " + rootPath + ": " + e.getMessage());
+            LOGGER.severe("Error escaneando archivos en " + rootPath + ": " + e.getMessage());
             throw e;
         }
     }

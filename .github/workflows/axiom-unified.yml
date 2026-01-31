@@ -1,0 +1,61 @@
+name: AXIOM Unified Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  axiom-validation:
+    name: AXIOM Security & Quality Suite
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build and Test Validators (Java)
+        run: |
+          echo "Building & Testing Naming Validator..."
+          cd tools/naming-validator
+          ./mvnw clean package
+          cd ../..
+          echo "Building Domain Validator..."
+          cd tools/domain-validator
+          ./mvnw clean package -DskipTests
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install AXIOM Dependencies
+        run: |
+          pip install PyYAML>=6.0 semgrep
+
+      - name: Prepare Workspace
+        run: |
+          # The AXIOM validator uses 'git diff --cached' to identify files to check.
+          # In CI, we want to check all files in the current checkout or the diff.
+          # Forcing 'git add .' ensures all files are "staged" for the validator.
+          git add .
+
+      - name: Run AXIOM Validator
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python3 tools/axiom/pre_commit_hook.py
+        continue-on-error: false

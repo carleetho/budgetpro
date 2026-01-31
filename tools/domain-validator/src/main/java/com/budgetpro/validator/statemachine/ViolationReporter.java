@@ -14,6 +14,9 @@ import java.util.stream.Collectors;
  */
 public class ViolationReporter {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ViolationReporter.class.getName());
+
     /**
      * Genera un reporte detallado de las violaciones encontradas.
      * 
@@ -21,7 +24,7 @@ public class ViolationReporter {
      */
     public void report(List<TransitionViolation> violations) {
         if (violations == null || violations.isEmpty()) {
-            System.out.println("\n✅ State machine validation passed. No violations found.");
+            LOGGER.info("\n✅ State machine validation passed. No violations found.");
             return;
         }
 
@@ -32,10 +35,10 @@ public class ViolationReporter {
         // Ordenar archivos alfabéticamente
         List<String> sortedFiles = groupedViolations.keySet().stream().sorted().collect(Collectors.toList());
 
-        System.out.println("\n🔍 State Machine Validation Report:");
+        LOGGER.info("\n🔍 State Machine Validation Report:");
 
         for (String filePath : sortedFiles) {
-            System.out.println("\nFile: " + filePath);
+            LOGGER.info("\nFile: " + filePath);
             List<TransitionViolation> fileViolations = groupedViolations.get(filePath).stream()
                     .sorted(Comparator.comparingInt(TransitionViolation::getLineNumber)).collect(Collectors.toList());
 
@@ -52,33 +55,33 @@ public class ViolationReporter {
     }
 
     private void reportError(TransitionViolation v) {
-        System.out.println(String.format("  ❌ ERROR: Invalid state transition in %s:%d",
-                getSimpleFileName(v.getFilePath()), v.getLineNumber()));
-        System.out.println(String.format("    Attempted: %s → %s",
-                v.getFromState() != null ? v.getFromState() : "UNKNOWN", v.getToState()));
+        LOGGER.severe(String.format("  ❌ ERROR: Invalid state transition in %s:%d", getSimpleFileName(v.getFilePath()),
+                v.getLineNumber()));
+        LOGGER.severe(String.format("    Attempted: %s → %s", v.getFromState() != null ? v.getFromState() : "UNKNOWN",
+                v.getToState()));
 
         String validTransitions = (v.getValidTransitions() == null || v.getValidTransitions().isEmpty())
                 ? "(none - final state)"
                 : String.join(", ", v.getValidTransitions());
 
-        System.out.println(String.format("    Valid transitions from %s: %s",
+        LOGGER.severe(String.format("    Valid transitions from %s: %s",
                 v.getFromState() != null ? v.getFromState() : "UNKNOWN", validTransitions));
     }
 
     private void reportWarning(TransitionViolation v) {
-        System.out.println(String.format("  ⚠️ WARNING: State change without validation in %s:%d",
+        LOGGER.warning(String.format("  ⚠️ WARNING: State change without validation in %s:%d",
                 getSimpleFileName(v.getFilePath()), v.getLineNumber()));
-        System.out.println(String.format("    Method '%s' changes state without checking current state",
+        LOGGER.warning(String.format("    Method '%s' changes state without checking current state",
                 v.getMethodName() != null ? v.getMethodName() : "unknown"));
-        System.out.println("    Suggestion: Add validation to ensure current state allows this transition");
+        LOGGER.warning("    Suggestion: Add validation to ensure current state allows this transition");
     }
 
     private void reportSummary(List<TransitionViolation> violations) {
         long errorCount = violations.stream().filter(v -> v.getSeverity() == ViolationSeverity.CRITICAL).count();
         long warningCount = violations.size() - errorCount;
 
-        System.out.println(String.format("\nFound %d violations (%d errors, %d warnings)", violations.size(),
-                errorCount, warningCount));
+        LOGGER.info(String.format("\nFound %d violations (%d errors, %d warnings)", violations.size(), errorCount,
+                warningCount));
     }
 
     private String getSimpleFileName(String filePath) {

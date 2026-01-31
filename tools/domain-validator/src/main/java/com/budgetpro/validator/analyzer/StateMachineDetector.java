@@ -20,17 +20,19 @@ import java.util.Map;
 /**
  * Detecta máquinas de estado (enums) en el código fuente.
  * 
- * Busca enums que representan estados de entidades (ej: EstadoPresupuesto, EstadoProyecto).
+ * Busca enums que representan estados de entidades (ej: EstadoPresupuesto,
+ * EstadoProyecto).
  */
 public class StateMachineDetector {
-    
+
     private final JavaParser javaParser;
-    
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(StateMachineDetector.class.getName());
+
     public StateMachineDetector() {
         TypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
         this.javaParser = new JavaParser();
-        this.javaParser.getParserConfiguration()
-                .setSymbolResolver(new JavaSymbolSolver(typeSolver));
+        this.javaParser.getParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver));
     }
 
     /**
@@ -41,17 +43,17 @@ public class StateMachineDetector {
      */
     public Map<String, List<String>> detectStateMachines(Path domainPath) {
         Map<String, List<String>> stateMachines = new HashMap<>();
-        
+
         if (domainPath == null || !domainPath.toFile().exists()) {
             return stateMachines;
         }
-        
+
         try {
             scanDirectory(domainPath.toFile(), stateMachines);
         } catch (Exception e) {
-            System.err.println("Error scanning state machines: " + e.getMessage());
+            LOGGER.severe("Error scanning state machines: " + e.getMessage());
         }
-        
+
         return stateMachines;
     }
 
@@ -63,7 +65,7 @@ public class StateMachineDetector {
         if (files == null) {
             return;
         }
-        
+
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDirectory(file, stateMachines);
@@ -80,48 +82,46 @@ public class StateMachineDetector {
     /**
      * Detecta si un archivo Java contiene un enum de estado.
      */
-    private void detectStateMachineInFile(File file, Map<String, List<String>> stateMachines) throws FileNotFoundException {
+    private void detectStateMachineInFile(File file, Map<String, List<String>> stateMachines)
+            throws FileNotFoundException {
         CompilationUnit cu = javaParser.parse(file).getResult().orElse(null);
         if (cu == null) {
             return;
         }
-        
-        String packageName = cu.getPackageDeclaration()
-                .map(p -> p.getNameAsString())
-                .orElse("");
-        
+
+        String packageName = cu.getPackageDeclaration().map(p -> p.getNameAsString()).orElse("");
+
         // Buscar enums que parezcan ser máquinas de estado
         List<EnumDeclaration> enums = cu.findAll(EnumDeclaration.class);
-        
+
         for (EnumDeclaration enumDecl : enums) {
             String enumName = enumDecl.getNameAsString();
-            
+
             // Verificar si el nombre sugiere que es un estado
-            boolean isStateMachine = enumName.toLowerCase().contains("estado") ||
-                                   enumName.toLowerCase().contains("state") ||
-                                   enumName.toLowerCase().endsWith("status");
-            
+            boolean isStateMachine = enumName.toLowerCase().contains("estado")
+                    || enumName.toLowerCase().contains("state") || enumName.toLowerCase().endsWith("status");
+
             // Verificar comentario
             if (!isStateMachine && enumDecl.getComment().isPresent()) {
                 String comment = enumDecl.getComment().get().toString().toLowerCase();
-                if (comment.contains("estado") || comment.contains("state") || 
-                    comment.contains("máquina de estado") || comment.contains("state machine")) {
+                if (comment.contains("estado") || comment.contains("state") || comment.contains("máquina de estado")
+                        || comment.contains("state machine")) {
                     isStateMachine = true;
                 }
             }
-            
+
             if (isStateMachine) {
                 List<String> values = new ArrayList<>();
                 for (EnumConstantDeclaration constant : enumDecl.getEntries()) {
                     values.add(constant.getNameAsString());
                 }
-                
+
                 String fullName = packageName + "." + enumName;
                 // Guardar tanto con FQN como con nombre simple para búsquedas flexibles
                 stateMachines.put(fullName, values);
                 stateMachines.put(enumName, values); // También por nombre simple
             }
-            
+
             // También detectar todos los enums (no solo state machines) para enum_exists
             // Esto permite detectar enums como NaturalezaGasto
             List<String> enumValues = new ArrayList<>();

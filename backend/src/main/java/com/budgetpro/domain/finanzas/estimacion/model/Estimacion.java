@@ -1,5 +1,12 @@
 package com.budgetpro.domain.finanzas.estimacion.model;
 
+import com.budgetpro.domain.finanzas.estimacion.model.EstimacionId;
+import com.budgetpro.domain.finanzas.estimacion.model.EstimacionItem;
+import com.budgetpro.domain.finanzas.estimacion.model.EstimacionSnapshot;
+import com.budgetpro.domain.finanzas.estimacion.model.EstadoEstimacion;
+import com.budgetpro.domain.finanzas.estimacion.model.MontoEstimado;
+import com.budgetpro.domain.finanzas.estimacion.model.PeriodoEstimacion;
+import com.budgetpro.domain.finanzas.estimacion.model.RetencionPorcentaje;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -188,5 +195,142 @@ public class Estimacion {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    // ========================================================================
+    // MÉTODOS DE COMPATIBILIDAD LEGACY
+    // ========================================================================
+    // Origen: commit 5e085db (AUDIT 2026-01-18)
+    // Razón: Restaurar funcionalidad perdida en revert masivo
+    // Usados por: GenerarEstimacionUseCaseImpl, EVMCalculationServiceImpl
+    // TODO: Migrar UseCases a API DDD pura y eliminar estos métodos
+    // ========================================================================
+
+    /**
+     * @deprecated Usar {@link #getPresupuestoId()} y extraer UUID con .getValue()
+     *             Compatibilidad con código legacy que espera UUID directo
+     */
+    @Deprecated
+    public java.util.UUID getProyectoId() {
+        return presupuestoId.getValue();
+    }
+
+    /**
+     * @deprecated No existe concepto de número de estimación en modelo DDD actual
+     *             Retorna 0 como placeholder. Implementar lógica de numeración si
+     *             es necesario.
+     */
+    @Deprecated
+    public Integer getNumeroEstimacion() {
+        // TODO: Implementar lógica de numeración si es requerido
+        return 0;
+    }
+
+    /**
+     * @deprecated Usar {@link #getPeriodo()} y extraer fechaFin con .getFechaFin()
+     *             En modelo legacy, fechaCorte era el fin del periodo
+     */
+    @Deprecated
+    public java.time.LocalDate getFechaCorte() {
+        return periodo.getFechaFin();
+    }
+
+    /**
+     * @deprecated Usar {@link #getPeriodo()} y extraer fechaInicio con
+     *             .getFechaInicio()
+     */
+    @Deprecated
+    public java.time.LocalDate getPeriodoInicio() {
+        return periodo.getFechaInicio();
+    }
+
+    /**
+     * @deprecated Usar {@link #getPeriodo()} y extraer fechaFin con .getFechaFin()
+     */
+    @Deprecated
+    public java.time.LocalDate getPeriodoFin() {
+        return periodo.getFechaFin();
+    }
+
+    /**
+     * @deprecated Usar {@link #calcularTotalEstimado()} que retorna MontoEstimado
+     *             Calcula suma de montos actuales de items
+     */
+    @Deprecated
+    public java.math.BigDecimal getMontoBruto() {
+        return calcularTotalEstimado().getValue();
+    }
+
+    /**
+     * @deprecated No existe concepto de amortización de anticipo en modelo DDD
+     *             actual Retorna ZERO como placeholder. Implementar si es
+     *             necesario.
+     */
+    @Deprecated
+    public java.math.BigDecimal getAmortizacionAnticipo() {
+        // TODO: Implementar lógica de amortización si es requerido
+        return java.math.BigDecimal.ZERO;
+    }
+
+    /**
+     * @deprecated Usar {@link #calcularMontoRetencion()} que retorna MontoEstimado
+     */
+    @Deprecated
+    public java.math.BigDecimal getRetencionFondoGarantia() {
+        return calcularMontoRetencion().getValue();
+    }
+
+    /**
+     * @deprecated Usar {@link #calcularTotalPagar()} que retorna MontoEstimado
+     */
+    @Deprecated
+    public java.math.BigDecimal getMontoNetoPagar() {
+        return calcularTotalPagar().getValue();
+    }
+
+    /**
+     * @deprecated No existe concepto de evidenciaUrl en modelo DDD actual Retorna
+     *             null como placeholder. Implementar si es necesario.
+     */
+    @Deprecated
+    public String getEvidenciaUrl() {
+        // TODO: Implementar lógica de evidencia si es requerido
+        return null;
+    }
+
+    /**
+     * @deprecated Usar {@link #getItems()} que retorna List<EstimacionItem> NOTA:
+     *             Retorna lista vacía porque DetalleEstimacion no existe en modelo
+     *             actual Si es necesario, implementar conversión EstimacionItem ->
+     *             DetalleEstimacion
+     */
+    @Deprecated
+    public java.util.List<DetalleEstimacion> getDetalles() {
+        // TODO: Implementar conversión si DetalleEstimacion es requerido
+        // Por ahora retorna lista vacía para evitar NullPointerException
+        return java.util.Collections.emptyList();
+    }
+
+    /**
+     * @deprecated No existe concepto de version en modelo DDD actual Retorna 0L
+     *             como placeholder. Implementar optimistic locking si es necesario.
+     */
+    @Deprecated
+    public Long getVersion() {
+        // TODO: Implementar versioning si es requerido
+        return 0L;
+    }
+
+    /**
+     * @deprecated Usar {@link #agregarItem(EstimacionItem)} NOTA: No hace nada
+     *             porque DetalleEstimacion no existe en modelo actual
+     */
+    @Deprecated
+    public void agregarDetalle(DetalleEstimacion detalle) {
+        // TODO: Implementar conversión DetalleEstimacion -> EstimacionItem si es
+        // necesario
+        // Por ahora no hace nada para evitar errores
+        throw new UnsupportedOperationException(
+                "agregarDetalle() no soportado. Usar agregarItem(EstimacionItem) en su lugar.");
     }
 }

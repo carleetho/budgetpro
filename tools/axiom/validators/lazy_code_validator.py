@@ -18,6 +18,7 @@ class LazyCodeValidator(BaseValidator):
     EMPTY_METHOD_REGEX = r"(public|private|protected)\s+[\w<>\[\], ]+\s+\w+\s*\([^)]*\)\s*\{\s*(?://.*|/\*[\s\S]*?\*/|\s)*\}"
     NULL_RETURN_REGEX = r"return\s+null;|return\s+Optional\.empty\(\);"
     TODO_FIXME_REGEX = r"//\s*(TODO|FIXME)"
+    DEBUG_PRINT_REGEX = r"(System\.out\.print|System\.err\.print|e\.printStackTrace|console\.log|print\()"
 
     @property
     def name(self) -> str:
@@ -66,6 +67,13 @@ class LazyCodeValidator(BaseValidator):
                             file_path, line_num, content, "todo_fixme", match.start()
                         ))
 
+                # 4. Debug Print detection (Global check)
+                for match in re.finditer(self.DEBUG_PRINT_REGEX, content):
+                    line_num = self._get_line_number(content, match.start())
+                    violations.append(self._create_violation(
+                        file_path, line_num, content, "debug_print", match.start()
+                    ))
+
             except Exception as e:
                 logging.warning(f"Error reading file {file_path}: {e}")
                 continue
@@ -81,7 +89,8 @@ class LazyCodeValidator(BaseValidator):
         error_messages = {
             "empty_method": "CÓDIGO PEREZOSO: Método vacío detectado",
             "null_return": "CÓDIGO PEREZOSO: Retorno null o empty detectado",
-            "todo_fixme": "CÓDIGO PEREZOSO: TODO o FIXME detectado en módulo crítico"
+            "todo_fixme": "CÓDIGO PEREZOSO: TODO o FIXME detectado en módulo crítico",
+            "debug_print": "CÓDIGO SUCIO: Debug print detectado (System.out/err, printStackTrace)"
         }
         
         message = error_messages[pattern_type]
@@ -122,7 +131,8 @@ class LazyCodeValidator(BaseValidator):
         suggestions = {
             "empty_method": "Implementa la lógica del método o elimínalo si no es necesario",
             "null_return": "Implementa la lógica real o lanza excepción específica",
-            "todo_fixme": "Completa la implementación antes de commit"
+            "todo_fixme": "Completa la implementación antes de commit",
+            "debug_print": "Elimina los logs de depuración o usa Logger propiamente configurado"
         }
         return suggestions.get(pattern_type, "")
 

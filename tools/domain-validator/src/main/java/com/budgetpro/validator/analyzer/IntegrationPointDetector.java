@@ -22,14 +22,15 @@ import java.util.Set;
  * Busca interfaces en paquetes port/ y clases en paquetes adapter/.
  */
 public class IntegrationPointDetector {
-    
+
     private final JavaParser javaParser;
-    
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(IntegrationPointDetector.class.getName());
+
     public IntegrationPointDetector() {
         TypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
         this.javaParser = new JavaParser();
-        this.javaParser.getParserConfiguration()
-                .setSymbolResolver(new JavaSymbolSolver(typeSolver));
+        this.javaParser.getParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver));
     }
 
     /**
@@ -40,17 +41,17 @@ public class IntegrationPointDetector {
      */
     public List<String> detectRepositories(Path domainPath) {
         List<String> repositories = new ArrayList<>();
-        
+
         if (domainPath == null || !domainPath.toFile().exists()) {
             return repositories;
         }
-        
+
         try {
             scanDirectory(domainPath.toFile(), repositories, true);
         } catch (Exception e) {
-            System.err.println("Error scanning repositories: " + e.getMessage());
+            LOGGER.severe("Error scanning repositories: " + e.getMessage());
         }
-        
+
         return repositories;
     }
 
@@ -62,17 +63,17 @@ public class IntegrationPointDetector {
      */
     public List<String> detectAdapters(Path infrastructurePath) {
         List<String> adapters = new ArrayList<>();
-        
+
         if (infrastructurePath == null || !infrastructurePath.toFile().exists()) {
             return adapters;
         }
-        
+
         try {
             scanDirectory(infrastructurePath.toFile(), adapters, false);
         } catch (Exception e) {
-            System.err.println("Error scanning adapters: " + e.getMessage());
+            LOGGER.severe("Error scanning adapters: " + e.getMessage());
         }
-        
+
         return adapters;
     }
 
@@ -84,7 +85,7 @@ public class IntegrationPointDetector {
         if (files == null) {
             return;
         }
-        
+
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDirectory(file, results, lookingForPorts);
@@ -110,36 +111,32 @@ public class IntegrationPointDetector {
         if (cu == null) {
             return;
         }
-        
-        String packageName = cu.getPackageDeclaration()
-                .map(p -> p.getNameAsString())
-                .orElse("");
-        
+
+        String packageName = cu.getPackageDeclaration().map(p -> p.getNameAsString()).orElse("");
+
         // Buscar interfaces en paquetes port/
         if (!packageName.contains("port")) {
             return;
         }
-        
+
         List<ClassOrInterfaceDeclaration> interfaces = cu.findAll(ClassOrInterfaceDeclaration.class);
-        
+
         for (ClassOrInterfaceDeclaration iface : interfaces) {
             if (iface.isInterface()) {
                 String interfaceName = iface.getNameAsString();
-                
+
                 // Verificar si parece ser un repositorio
-                boolean isRepository = interfaceName.endsWith("Repository") ||
-                                      interfaceName.endsWith("Port") ||
-                                      interfaceName.endsWith("Adapter");
-                
+                boolean isRepository = interfaceName.endsWith("Repository") || interfaceName.endsWith("Port")
+                        || interfaceName.endsWith("Adapter");
+
                 // Verificar comentario
                 if (!isRepository && iface.getComment().isPresent()) {
                     String comment = iface.getComment().get().toString().toLowerCase();
-                    if (comment.contains("repository") || comment.contains("port") || 
-                        comment.contains("repositorio")) {
+                    if (comment.contains("repository") || comment.contains("port") || comment.contains("repositorio")) {
                         isRepository = true;
                     }
                 }
-                
+
                 if (isRepository) {
                     repositories.add(packageName + "." + interfaceName);
                 }
@@ -155,36 +152,33 @@ public class IntegrationPointDetector {
         if (cu == null) {
             return;
         }
-        
-        String packageName = cu.getPackageDeclaration()
-                .map(p -> p.getNameAsString())
-                .orElse("");
-        
+
+        String packageName = cu.getPackageDeclaration().map(p -> p.getNameAsString()).orElse("");
+
         // Buscar clases en paquetes adapter/ o persistence/
         if (!packageName.contains("adapter") && !packageName.contains("persistence")) {
             return;
         }
-        
+
         List<ClassOrInterfaceDeclaration> classes = cu.findAll(ClassOrInterfaceDeclaration.class);
-        
+
         for (ClassOrInterfaceDeclaration clazz : classes) {
             if (!clazz.isInterface() && !clazz.isAbstract()) {
                 String className = clazz.getNameAsString();
-                
+
                 // Verificar si parece ser un adaptador
-                boolean isAdapter = className.endsWith("Adapter") ||
-                                   className.endsWith("Repository") ||
-                                   className.endsWith("Entity");
-                
+                boolean isAdapter = className.endsWith("Adapter") || className.endsWith("Repository")
+                        || className.endsWith("Entity");
+
                 // Verificar comentario
                 if (!isAdapter && clazz.getComment().isPresent()) {
                     String comment = clazz.getComment().get().toString().toLowerCase();
-                    if (comment.contains("adapter") || comment.contains("adaptador") ||
-                        comment.contains("repository") || comment.contains("persistence")) {
+                    if (comment.contains("adapter") || comment.contains("adaptador") || comment.contains("repository")
+                            || comment.contains("persistence")) {
                         isAdapter = true;
                     }
                 }
-                
+
                 if (isAdapter) {
                     adapters.add(packageName + "." + className);
                 }

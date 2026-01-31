@@ -1,12 +1,13 @@
 package com.budgetpro.validator.boundary.report;
 
 import com.budgetpro.validator.boundary.BoundaryMatcher;
-import com.budgetpro.validator.boundary.scanner.DomainScanner;
 import com.budgetpro.validator.boundary.config.BoundaryConfig;
+import com.budgetpro.validator.boundary.scanner.DomainScanner;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,31 +15,37 @@ import java.util.List;
  */
 public class ViolationReporter {
 
-    private final DomainScanner scanner;
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ViolationReporter.class.getName());
+    private final DomainScanner simpleScanner;
     private final BoundaryMatcher matcher;
+    private final BoundaryConfig config;
 
     public ViolationReporter(DomainScanner scanner, BoundaryConfig config) {
-        this.scanner = scanner;
+        this.simpleScanner = scanner;
+        this.config = config;
         this.matcher = new BoundaryMatcher(config.forbiddenImports(), config.allowedStandardLibs());
     }
 
     /**
      * Valida la capa de dominio en el directorio especificado.
-     * 
-     * @param domainRoot Raíz de la capa de dominio.
-     * @return Lista de violaciones encontradas.
-     * @throws IOException Si hay error escaneando archivos.
      */
     public List<BoundaryViolation> validateDomain(Path domainRoot) throws IOException {
         List<BoundaryViolation> violations = new ArrayList<>();
-        List<Path> javaFiles = scanner.scanJavaFiles(domainRoot);
+        if (!config.enabled()) {
+            return violations;
+        }
+
+        List<Path> javaFiles = simpleScanner.scanJavaFiles(domainRoot);
 
         for (Path file : javaFiles) {
-            List<String> imports = scanner.extractImports(file);
-            for (String importPath : imports) {
-                if (matcher.isForbidden(importPath)) {
-                    violations.add(new BoundaryViolation(file, importPath,
-                            "Elimina el import. Domain debe ser independiente de frameworks e infraestructura (Hexagonal Architecture)."));
+            Collection<String> itemsToValidate = simpleScanner.extractImports(file);
+
+            for (String item : itemsToValidate) {
+                if (matcher.isForbidden(item)) {
+                    violations.add(new BoundaryViolation(file, item,
+                            "Violación de frontera arquitectónica detectada. La capa de dominio debe ser independiente.",
+                            config.severity()));
                 }
             }
         }
@@ -51,13 +58,15 @@ public class ViolationReporter {
      */
     public void reportViolations(List<BoundaryViolation> violations) {
         if (violations.isEmpty()) {
-            System.out.println("✅ Capa de dominio limpia. No se detectaron violaciones de fronteras.");
+            LOGGER.info("✅ Capa de dominio limpia. No se detectaron violaciones de fronteras.");
             return;
         }
 
-        System.err.println("❌ Se detectaron " + violations.size() + " violaciones de fronteras arquitectónicas:");
+        String severityLabel = "[" + config.severity() + "]";
+        LOGGER.severe("❌ Se detectaron " + violations.size() + " violaciones de fronteras arquitectónicas:");
         for (BoundaryViolation v : violations) {
-            System.err.printf("  - [%s]: %s -> %s%n", v.file().toString(), v.forbiddenImport(), v.message());
+            LOGGER.severe(String.format("  - %s [%s]: %s -> %s%n", severityLabel, v.file().toString(),
+                    v.forbiddenImport(), v.message()));
         }
     }
 }

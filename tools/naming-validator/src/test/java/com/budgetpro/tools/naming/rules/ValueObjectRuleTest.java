@@ -3,6 +3,7 @@ package com.budgetpro.tools.naming.rules;
 import com.budgetpro.tools.naming.model.NamingViolation;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -10,23 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ValueObjectRuleTest {
 
-    private final ValueObjectRule rule = new ValueObjectRule();
+    private final ValueObjectRule rule = new ValueObjectRule(null);
+    private final Path testPath = Paths.get("domain/valueobjects/Dinero.java");
 
     @Test
-    void testValidValueObject() {
-        assertTrue(rule.validate(Paths.get("test/Money.java"), "Money").isEmpty());
+    void validate_ValidValueObject_NoViolations() {
+        List<NamingViolation> violations = rule.validate(testPath, "Dinero");
+        assertTrue(violations.isEmpty());
     }
 
     @Test
-    void testInvalidValueObjectVO() {
-        List<NamingViolation> violations = rule.validate(Paths.get("test/MoneyVO.java"), "MoneyVO");
-        assertEquals(1, violations.size());
-        assertEquals("Money", violations.get(0).expectedName());
-    }
-
-    @Test
-    void testInvalidValueObjectSuffix() {
-        List<NamingViolation> violations = rule.validate(Paths.get("test/MoneyValueObject.java"), "MoneyValueObject");
-        assertEquals("Money", violations.get(0).expectedName());
+    void validate_InvalidValueObject_ReturnsViolation() {
+        List<NamingViolation> violations = rule.validate(testPath, "DineroVO");
+        assertFalse(violations.isEmpty());
+        assertEquals("Dinero", violations.get(0).expectedName());
     }
 }

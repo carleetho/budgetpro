@@ -6,7 +6,7 @@ import com.budgetpro.domain.finanzas.estimacion.exception.EstimacionNoEncontrada
 import com.budgetpro.domain.finanzas.estimacion.model.EstadoEstimacion;
 import com.budgetpro.domain.finanzas.estimacion.model.Estimacion;
 import com.budgetpro.domain.finanzas.estimacion.model.EstimacionId;
-import com.budgetpro.domain.finanzas.estimacion.port.EstimacionRepository;
+import com.budgetpro.domain.finanzas.estimacion.port.out.EstimacionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

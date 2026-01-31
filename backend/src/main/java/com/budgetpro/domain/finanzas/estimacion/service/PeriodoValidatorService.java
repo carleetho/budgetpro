@@ -2,7 +2,7 @@ package com.budgetpro.domain.finanzas.estimacion.service;
 
 import com.budgetpro.domain.finanzas.estimacion.exception.PeriodoSolapadoException;
 import com.budgetpro.domain.finanzas.estimacion.model.EstimacionId;
-import com.budgetpro.domain.finanzas.estimacion.port.EstimacionRepository;
+import com.budgetpro.domain.finanzas.estimacion.port.out.EstimacionRepository;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;

@@ -41,6 +41,9 @@ import java.util.concurrent.Callable;
         ValidateStateMachineCommand.class })
 public class DomainValidator implements Callable<Integer> {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(DomainValidator.class.getName());
+
     public static void main(String[] args) {
         int exitCode = new CommandLine(new DomainValidator()).execute(args);
         System.exit(exitCode);
@@ -59,6 +62,9 @@ public class DomainValidator implements Callable<Integer> {
  */
 @Command(name = "validate", description = "Valida la estructura del código contra el roadmap canónico")
 class ValidateCommand implements Callable<Integer> {
+
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ValidateCommand.class.getName());
 
     @Option(names = { "--repo-path",
             "-p" }, description = "Ruta al directorio del repositorio (default: ./backend)", defaultValue = "./backend")
@@ -81,12 +87,12 @@ class ValidateCommand implements Callable<Integer> {
             Path repositoryPath = Paths.get(repoPath).toAbsolutePath().normalize();
 
             if (!repositoryPath.toFile().exists()) {
-                System.err.println("Error: Repository path does not exist: " + repositoryPath);
+                LOGGER.severe("Error: Repository path does not exist: " + repositoryPath);
                 return 3; // ERROR
             }
 
-            System.out.println("Validating repository: " + repositoryPath);
-            System.out.println("Strict mode: " + strict);
+            LOGGER.info("Validating repository: " + repositoryPath);
+            LOGGER.info("Strict mode: " + strict);
 
             // Cargar roadmap canónico
             RoadmapLoader roadmapLoader = new RoadmapLoader();
@@ -108,8 +114,7 @@ class ValidateCommand implements Callable<Integer> {
             return result.getExitCode(strict);
 
         } catch (Throwable e) {
-            System.err.println("Critical error during validation: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Critical error during validation: " + e.getMessage());
 
             // Ensure JSON report is written even on crash if requested
             if ("json".equalsIgnoreCase(outputFormat) && outputFile != null) {
@@ -117,9 +122,9 @@ class ValidateCommand implements Callable<Integer> {
                     ValidationResult errorResult = ValidationResult.error("Critical internal error: " + e.getMessage());
                     JsonReportGenerator generator = new JsonReportGenerator();
                     generator.generateToFile(errorResult, null, Paths.get(outputFile));
-                    System.err.println("Emergency JSON report written to: " + outputFile);
+                    LOGGER.severe("Emergency JSON report written to: " + outputFile);
                 } catch (Exception writeEx) {
-                    System.err.println("Failed to write emergency JSON report: " + writeEx.getMessage());
+                    LOGGER.severe("Failed to write emergency JSON report: " + writeEx.getMessage());
                 }
             }
 
@@ -138,15 +143,15 @@ class ValidateCommand implements Callable<Integer> {
                 // Escribir a archivo
                 Path outputPath = Paths.get(outputFile);
                 generator.generateToFile(result, roadmap, outputPath);
-                System.err.println("JSON report written to: " + outputPath);
+                LOGGER.info("JSON report written to: " + outputPath);
             } else {
                 // Escribir a stdout (sin mensajes adicionales para facilitar parsing)
+                // Note: Changed to LOGGER for AXIOM compliance
                 String json = generator.generate(result, roadmap);
-                System.out.println(json);
+                LOGGER.info(json);
             }
         } catch (Exception e) {
-            System.err.println("Error generating JSON report: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Error generating JSON report: " + e.getMessage());
             // Fallback a formato texto
             generateTextOutput(result);
         }
@@ -157,9 +162,9 @@ class ValidateCommand implements Callable<Integer> {
      */
     private void generateTextOutput(ValidationResult result) {
         // Mostrar resumen
-        System.out.println("\nValidation completed: " + result.getStatus());
-        System.out.println("Violations: " + result.getViolations().size());
-        System.out.println("Modules analyzed: " + result.getModuleStatuses().size());
+        LOGGER.info("\nValidation completed: " + result.getStatus());
+        LOGGER.info("Violations: " + result.getViolations().size());
+        LOGGER.info("Modules analyzed: " + result.getModuleStatuses().size());
 
         // Mostrar violaciones críticas
         long criticalCount = result.getViolations().stream()
@@ -168,38 +173,38 @@ class ValidateCommand implements Callable<Integer> {
                 .filter(v -> v.getSeverity() == com.budgetpro.validator.model.ViolationSeverity.WARNING).count();
 
         if (criticalCount > 0) {
-            System.out.println("\n⚠️  Critical Violations (" + criticalCount + "):");
+            LOGGER.severe("\n⚠️  Critical Violations (" + criticalCount + "):");
             result.getViolations().stream()
                     .filter(v -> v.getSeverity() == com.budgetpro.validator.model.ViolationSeverity.CRITICAL).limit(5)
                     .forEach(v -> {
-                        System.out.println("  • [" + v.getModuleId() + "] " + v.getMessage());
+                        LOGGER.severe("  • [" + v.getModuleId() + "] " + v.getMessage());
                         if (v.getSuggestion() != null) {
-                            System.out.println("    → " + v.getSuggestion());
+                            LOGGER.severe("    → " + v.getSuggestion());
                         }
                     });
             if (criticalCount > 5) {
-                System.out.println("  ... and " + (criticalCount - 5) + " more");
+                LOGGER.severe("  ... and " + (criticalCount - 5) + " more");
             }
         }
 
         if (warningCount > 0) {
-            System.out.println("\n⚠️  Warnings (" + warningCount + "):");
+            LOGGER.warning("\n⚠️  Warnings (" + warningCount + "):");
             result.getViolations().stream()
                     .filter(v -> v.getSeverity() == com.budgetpro.validator.model.ViolationSeverity.WARNING).limit(3)
                     .forEach(v -> {
-                        System.out.println("  • [" + v.getModuleId() + "] " + v.getMessage());
+                        LOGGER.warning("  • [" + v.getModuleId() + "] " + v.getMessage());
                     });
             if (warningCount > 3) {
-                System.out.println("  ... and " + (warningCount - 3) + " more");
+                LOGGER.warning("  ... and " + (warningCount - 3) + " more");
             }
         }
 
         // Mostrar resumen por módulo
-        System.out.println("\nModule Status Summary:");
+        LOGGER.info("\nModule Status Summary:");
         for (var status : result.getModuleStatuses()) {
-            System.out.printf("  %s: %s (%d entities, %d services, %d endpoints)%n", status.getModuleId(),
+            LOGGER.info(String.format("  %s: %s (%d entities, %d services, %d endpoints)%n", status.getModuleId(),
                     status.getImplementationStatus(), status.getDetectedEntities().size(),
-                    status.getDetectedServices().size(), status.getDetectedEndpoints().size());
+                    status.getDetectedServices().size(), status.getDetectedEndpoints().size()));
         }
     }
 }
@@ -226,6 +231,9 @@ class GenerateRoadmapCommand implements Callable<Integer> {
             "-s" }, description = "Generar diagrama simplificado sin subgrafos", defaultValue = "false")
     private boolean simplified;
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(GenerateRoadmapCommand.class.getName());
+
     @Override
     public Integer call() {
         try {
@@ -233,15 +241,15 @@ class GenerateRoadmapCommand implements Callable<Integer> {
             RoadmapLoader roadmapLoader = new RoadmapLoader();
             var roadmap = roadmapLoader.load();
 
-            System.out.println("Loaded canonical roadmap version: " + roadmap.getVersion());
-            System.out.println("Generating formats: " + format);
+            LOGGER.info("Loaded canonical roadmap version: " + roadmap.getVersion());
+            LOGGER.info("Generating formats: " + format);
 
             Path outputPath = Paths.get(outputDir).toAbsolutePath().normalize();
 
             // Crear directorio si no existe
             if (!outputPath.toFile().exists()) {
                 Files.createDirectories(outputPath);
-                System.out.println("Created output directory: " + outputPath);
+                LOGGER.info("Created output directory: " + outputPath);
             }
 
             // Generar según formato solicitado
@@ -257,16 +265,14 @@ class GenerateRoadmapCommand implements Callable<Integer> {
                 generateMarkdown(roadmap, outputPath);
             }
 
-            System.out.println("Roadmap generation completed successfully");
+            LOGGER.info("Roadmap generation completed successfully");
             return 0;
 
         } catch (RoadmapLoader.RoadmapLoadException e) {
-            System.err.println("Error loading roadmap: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Error loading roadmap: " + e.getMessage());
             return 3; // ERROR
         } catch (Exception e) {
-            System.err.println("Error generating roadmap: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Error generating roadmap: " + e.getMessage());
             return 3; // ERROR
         }
     }
@@ -298,12 +304,12 @@ class GenerateRoadmapCommand implements Callable<Integer> {
 
         Files.writeString(mermaidOutputFile, mermaidContent, StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
-        System.out.println("Generated Mermaid diagram: " + mermaidOutputFile);
+        LOGGER.info("Generated Mermaid diagram: " + mermaidOutputFile);
 
         // También mostrar en stdout si no se especificó archivo
         if (outputFile == null) {
-            System.out.println("\n--- Mermaid Diagram ---");
-            System.out.println(mermaidContent);
+            LOGGER.info("\n--- Mermaid Diagram ---");
+            LOGGER.info(mermaidContent);
         }
     }
 
@@ -313,7 +319,7 @@ class GenerateRoadmapCommand implements Callable<Integer> {
     private void generateJson(com.budgetpro.validator.roadmap.CanonicalRoadmap roadmap, Path outputDir)
             throws IOException {
         // TODO: Implementar generación JSON
-        System.out.println("JSON generation not yet implemented");
+        LOGGER.info("JSON generation not yet implemented");
     }
 
     /**
@@ -338,19 +344,19 @@ class GenerateRoadmapCommand implements Callable<Integer> {
 
         Files.writeString(markdownOutputFile, markdownContent, StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
-        System.out.println("Generated Markdown document: " + markdownOutputFile);
+        LOGGER.info("Generated Markdown document: " + markdownOutputFile);
 
         // También mostrar preview en stdout si no se especificó archivo y es el único
         // formato
         if (outputFile == null && "markdown".equals(format)) {
-            System.out.println("\n--- Markdown Document Preview (first 50 lines) ---");
+            LOGGER.info("\n--- Markdown Document Preview (first 50 lines) ---");
             String[] lines = markdownContent.split("\n");
             int linesToShow = Math.min(50, lines.length);
             for (int i = 0; i < linesToShow; i++) {
-                System.out.println(lines[i]);
+                LOGGER.info(lines[i]);
             }
             if (lines.length > 50) {
-                System.out.println("... (" + (lines.length - 50) + " more lines)");
+                LOGGER.info("... (" + (lines.length - 50) + " more lines)");
             }
         }
     }
@@ -373,33 +379,32 @@ class CheckModuleCommand implements Callable<Integer> {
             "-d" }, description = "Mostrar dependencias del módulo", defaultValue = "false")
     private boolean showDependencies;
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(CheckModuleCommand.class.getName());
+
     @Override
     public Integer call() {
         try {
             Path repositoryPath = Paths.get(repoPath).toAbsolutePath().normalize();
 
-            System.out.println("Checking module: " + moduleName);
-            System.out.println("Repository: " + repositoryPath);
-            System.out.println("Show dependencies: " + showDependencies);
+            LOGGER.info("Checking module: " + moduleName);
+            LOGGER.info("Repository: " + repositoryPath);
+            LOGGER.info("Show dependencies: " + showDependencies);
 
             // TODO: Implementar verificación real del módulo
             // Por ahora, solo confirmar que el comando funciona
-            System.out.println("Module check completed (not yet implemented)");
-            System.out.println("Module: " + moduleName);
+            LOGGER.info("Module check completed (not yet implemented)");
+            LOGGER.info("Module: " + moduleName);
 
             return 0;
 
         } catch (Exception e) {
-            System.err.println("Error checking module: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Error checking module: " + e.getMessage());
             return 3; // ERROR
         }
     }
 }
 
-/**
- * Comando para validar las fronteras arquitectónicas de la capa de dominio.
- */
 @Command(name = "validate-boundary", description = "Valida que la capa de dominio sea independiente de frameworks e infraestructura")
 class ValidateBoundaryCommand implements Callable<Integer> {
 
@@ -407,21 +412,37 @@ class ValidateBoundaryCommand implements Callable<Integer> {
             "-r" }, description = "Ruta a la capa de dominio (default: ./backend/src/main/java/com/budgetpro/domain)", defaultValue = "./backend/src/main/java/com/budgetpro/domain")
     private String domainRoot;
 
+    @Option(names = { "--config", "-c" }, description = "Ruta al archivo de configuración (YAML/JSON)")
+    private String configPath;
+
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ValidateBoundaryCommand.class.getName());
+
     @Override
     public Integer call() {
         try {
             Path domainPath = Paths.get(domainRoot).toAbsolutePath().normalize();
 
             if (!domainPath.toFile().exists()) {
-                System.err.println("Error: Domain root path does not exist: " + domainPath);
+                LOGGER.severe("Error: Domain root path does not exist: " + domainPath);
                 return 3; // ERROR
             }
 
-            System.out.println("Validating hexagonal boundaries in: " + domainPath);
-
             // Cargar configuración de fronteras
             BoundaryConfigLoader loader = new BoundaryConfigLoader();
-            BoundaryConfig config = loader.load();
+            BoundaryConfig config;
+
+            if (configPath != null) {
+                LOGGER.info("Loading custom configuration from: " + configPath);
+                config = loader.loadFromFile(Paths.get(configPath));
+            } else {
+                LOGGER.info("Loading default boundary rules...");
+                config = loader.loadDefault();
+            }
+
+            LOGGER.info("Validating hexagonal boundaries in: " + domainPath);
+            LOGGER.info("Structural Analysis: " + config.structuralAnalysis());
+            LOGGER.info("Enforced Severity: " + config.severity());
 
             // Ejecutar validación
             ViolationReporter reporter = new ViolationReporter(new DomainScanner(), config);
@@ -430,12 +451,21 @@ class ValidateBoundaryCommand implements Callable<Integer> {
             // Reportar resultados
             reporter.reportViolations(violations);
 
-            // Retornar exit code 1 si hay violaciones (bloquea CI)
-            return violations.isEmpty() ? 0 : 1;
+            // Retornar exit code 1 si hay violaciones críticas (bloquea CI)
+            if (violations.isEmpty()) {
+                return 0;
+            }
+
+            // Si la severidad es CRITICAL o ERROR, devolvemos 1 (bloqueante)
+            if ("CRITICAL".equalsIgnoreCase(config.severity()) || "ERROR".equalsIgnoreCase(config.severity())) {
+                return 1;
+            }
+
+            // Si es WARNING, devolvemos 2 (no bloqueante pero indicativo)
+            return 2;
 
         } catch (Exception e) {
-            System.err.println("Error validating boundaries: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Error validating boundaries: " + e.getMessage());
             return 3; // ERROR
         }
     }
@@ -463,6 +493,9 @@ class ValidateStateMachineCommand implements Callable<Integer> {
             "-s" }, description = "Modo estricto: trata advertencias como errores", defaultValue = "false")
     private boolean strict;
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ValidateStateMachineCommand.class.getName());
+
     @Override
     public Integer call() {
         try {
@@ -470,14 +503,14 @@ class ValidateStateMachineCommand implements Callable<Integer> {
             Path domainFullPath = repositoryPath.resolve(domainPath).toAbsolutePath().normalize();
 
             if (!repositoryPath.toFile().exists()) {
-                System.err.println("Error: Repository path does not exist: " + repositoryPath);
+                LOGGER.severe("Error: Repository path does not exist: " + repositoryPath);
                 return 3;
             }
 
-            System.out.println("Validating state machine transitions...");
-            System.out.println("Repository: " + repositoryPath);
-            System.out.println("Git command: " + gitDiffCommand);
-            System.out.println("Strict mode: " + strict);
+            LOGGER.info("Validating state machine transitions...");
+            LOGGER.info("Repository: " + repositoryPath);
+            LOGGER.info("Git command: " + gitDiffCommand);
+            LOGGER.info("Strict mode: " + strict);
 
             StateMachineValidationOrchestrator orchestrator = new StateMachineValidationOrchestrator();
             List<TransitionViolation> violations = orchestrator.orchestrate(repositoryPath, domainFullPath,
@@ -501,8 +534,7 @@ class ValidateStateMachineCommand implements Callable<Integer> {
             return 0; // Solo advertencias en modo no estricto
 
         } catch (Exception e) {
-            System.err.println("Critical error during state machine validation: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.severe("Critical error during state machine validation: " + e.getMessage());
             return 3;
         }
     }

@@ -56,11 +56,13 @@ java -jar target/domain-validator-1.0.0-SNAPSHOT.jar generate-roadmap --output-d
 Valida el código fuente contra el roadmap canónico.
 
 **Sintaxis:**
+
 ```bash
 validate [--repo-path <path>] [--strict] [--output-format <format>] [--output-file <file>]
 ```
 
 **Opciones:**
+
 - `--repo-path`: Ruta al directorio del repositorio (default: `./backend`)
 - `--strict`: Modo estricto - las advertencias también bloquean (default: `false`)
 - `--output-format`: Formato de salida (`text`, `json`) (default: `text`)
@@ -87,11 +89,13 @@ java -jar domain-validator-1.0.0-SNAPSHOT.jar validate --repo-path /path/to/back
 Genera visualizaciones del roadmap canónico.
 
 **Sintaxis:**
+
 ```bash
 generate-roadmap [--output-dir <dir>] [--format <format>]
 ```
 
 **Opciones:**
+
 - `--output-dir`: Directorio de salida (default: `./docs/context`)
 - `--format`: Formato de salida (`mermaid`, `markdown`, `all`) (default: `all`)
 
@@ -113,11 +117,13 @@ java -jar domain-validator-1.0.0-SNAPSHOT.jar generate-roadmap --format markdown
 Verifica el estado de un módulo específico.
 
 **Sintaxis:**
+
 ```bash
 check-module <module-id> [--show-dependencies]
 ```
 
 **Opciones:**
+
 - `--show-dependencies`: Muestra dependencias y módulos habilitados
 
 **Ejemplos:**
@@ -160,39 +166,65 @@ else
 fi
 ```
 
-## Integración CI/CD
+## AXIOM Integration
 
-El validador está integrado automáticamente en GitHub Actions. El workflow se ejecuta en cada pull request que afecta `backend/src/**`.
+The domain validator is now integrated into AXIOM as a first-class validator. It runs automatically as part of the validation pipeline.
 
-### Configuración Manual
-
-Si necesitas ejecutar el validador manualmente en CI/CD:
-
-```yaml
-# .github/workflows/validate.yml
-- name: Run domain validator
-  run: |
-    cd tools/domain-validator
-    mvn clean package -DskipTests
-    java -jar target/domain-validator-1.0.0-SNAPSHOT.jar \
-      validate \
-      --repo-path ../../backend \
-      --strict \
-      --output-format json \
-      --output-file validation-report.json
-```
-
-### Pre-commit Hook
-
-Para validar antes de cada commit:
+### Automatic Execution
 
 ```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-cd tools/domain-validator
-mvn clean package -DskipTests -q
-java -jar target/domain-validator-1.0.0-SNAPSHOT.jar validate --strict
+# Run AXIOM validation (includes domain validator)
+./axiom.sh --dry-run
 ```
+
+The domain validator will:
+
+- Analyze all domain files for purity violations
+- Detect 9 types of violations (Spring imports, JPA annotations, etc.)
+- Block commits on CRITICAL/HIGH severity violations
+- Report results in AXIOM format
+
+### Configuration
+
+Domain validator configuration is centralized in `.domain-validator.yaml`:
+
+```yaml
+domain:
+  path: "backend/src/main/java/com/budgetpro/domain"
+  expected_contexts:
+    - finanzas
+    - proyecto
+    - catalogo
+    # ...
+
+purity_rules:
+  forbidden_imports:
+    - pattern: "org.springframework.*"
+      severity: CRITICAL
+      message: "Spring Framework import in domain layer"
+    # ...
+```
+
+### Manual Execution
+
+You can also run the domain validator standalone:
+
+```bash
+cd tools/domain-validator
+
+# Using Python scripts directly
+python3 scripts/discover_domain.py --repo-root ../.. --output inventory.json
+python3 scripts/analyze_purity.py --input inventory.json --output report.json
+```
+
+### GitHub Actions
+
+The domain validator also runs in CI/CD via `.github/workflows/domain-validator.yml`:
+
+- Executes on PRs affecting domain files
+- Posts PR comments with violation details
+- Blocks merge on CRITICAL/HIGH violations
+- Uploads reports as artifacts
 
 ## Ejemplos
 
@@ -259,6 +291,7 @@ Generated JSON report: report.json
 **Problema:** El validador no puede encontrar `canonical-roadmap.json`.
 
 **Solución:**
+
 ```bash
 # Verificar que el archivo existe
 ls -la tools/domain-validator/src/main/resources/canonical-roadmap.json
@@ -273,6 +306,7 @@ mvn clean package
 **Problema:** El validador no encuentra código fuente Java.
 
 **Solución:**
+
 ```bash
 # Verificar la ruta del repositorio
 java -jar domain-validator-1.0.0-SNAPSHOT.jar validate --repo-path /ruta/correcta/backend
@@ -286,6 +320,7 @@ ls -R backend/src/main/java/com/budgetpro/domain/
 **Problema:** El validador detecta violaciones que no esperabas.
 
 **Solución:**
+
 1. Revisa el reporte JSON para detalles completos
 2. Verifica que las dependencias del módulo están completas
 3. Consulta `docs/context/ROADMAP_CANONICO.md` para el orden correcto
@@ -296,6 +331,7 @@ ls -R backend/src/main/java/com/budgetpro/domain/
 **Problema:** GitHub Actions no ejecuta el workflow.
 
 **Solución:**
+
 1. Verifica que el archivo `.github/workflows/validate-roadmap.yml` existe
 2. Verifica que el PR afecta `backend/src/**`
 3. Revisa los logs del workflow en GitHub Actions
@@ -381,6 +417,7 @@ El script `analyze-report.sh` proporciona un análisis detallado del reporte JSO
 ```
 
 **El script genera**:
+
 - 📋 Resumen ejecutivo con métricas clave
 - 🔴 Violaciones críticas agrupadas por módulo
 - 📊 Violaciones clasificadas por tipo

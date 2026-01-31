@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "RrhhCuadrillaEntity")
 @Table(name = "cuadrillas", indexes = {
         @Index(name = "idx_cuadrillas_proyecto", columnList = "proyecto_id") }, uniqueConstraints = {
                 @UniqueConstraint(name = "uk_cuadrilla_codigo_proyecto", columnNames = { "proyecto_id", "codigo" }) })

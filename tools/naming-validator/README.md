@@ -1,39 +1,72 @@
-# BudgetPro Naming Validator
+# 🏷️ BudgetPro Naming Validator
 
-Herramienta CLI para validar convenciones de nombres en el proyecto BudgetPro. Esta herramienta asegura que las clases sigan los patrones de nomenclatura definidos, especialmente en la arquitectura hexagonal y DDD.
+Herramienta de línea de comandos (CLI) para validar las convenciones de nomenclatura en el proyecto BudgetPro, asegurando la consistencia entre capas arquitectónicas (DDA/Hexagonal).
 
-## Requisitos
+## 🚀 Características
 
-- Java 17
-- Maven (incluido vía wrapper)
+- **Detección Automática de Capas**: Identifica si una clase pertenece al Dominio, Infraestructura o Aplicación basándose en su ruta y nombre.
+- **Validación de Reglas**:
+  - **Entidades de Dominio**: No deben tener sufijos técnicos (ej. `User` ✅, `UserEntity` ❌).
+  - **Entidades JPA**: Deben terminar en `JpaEntity`.
+  - **Mappers**: Deben terminar en `Mapper`.
+  - **Value Objects**: No deben tener sufijos como `VO` o `ValueObject`.
+  - **Servicios de Dominio**: Deben terminar en `Service`.
+- **Configuración Externa**: Soporte completo para personalizar reglas, sufijos y severidades mediante YAML.
+- **Integración CI**: Devuelve códigos de salida (0 éxito, 1 fallo) para integrarse en pipelines de integración continua.
 
-## Construcción
+## 🛠️ Instalación y Uso
 
-Para generar el archivo JAR ejecutable:
+### Requisitos
 
-```bash
-./mvnw clean package -DskipTests
-```
+- Java 17 o superior.
+- Maven.
 
-El artefacto se generará en `target/naming-validator-1.0.0-SNAPSHOT.jar`.
-
-## Uso
-
-Ejecutar la herramienta pasando la ruta del directorio de fuentes:
-
-```bash
-java -jar target/naming-validator-1.0.0-SNAPSHOT.jar <ruta-al-codigo-fuente>
-```
-
-Ejemplo:
+### Construcción
 
 ```bash
-java -jar target/naming-validator-1.0.0-SNAPSHOT.jar ../../src/main/java
+mvn clean package
 ```
 
-## Salida y Códigos de Retorno
+### Ejecución
 
-- **0**: Éxito. No se encontraron violaciones bloqueantes.
-- **1**: Error. Se encontraron una o más violaciones bloqueantes (`BLOCKING`).
+```bash
+java -jar target/naming-validator-1.0.0-SNAPSHOT.jar <ruta-al-codigo>
+```
 
-Los mensajes de error y sugerencias están en español para facilitar la corrección por parte del equipo.
+### Opciones
+
+- `-c, --config <file>`: Especifica un archivo de configuración YAML personalizado.
+- `-h, --help`: Muestra la ayuda.
+
+## ⚙️ Configuración (naming-config.yaml)
+
+```yaml
+layers:
+  DOMAIN_ENTITY:
+    pathPatterns: ["/domain/"]
+    classNamePatterns: ["/entities/", "/model/"]
+  JPA_ENTITY:
+    pathPatterns: ["/infrastructure/persistence/entity/"]
+
+rules:
+  DOMAIN_ENTITY:
+    enabled: true
+    severity: BLOCKING
+    forbiddenSuffixes: ["Entity", "JpaEntity"]
+  JPA_ENTITY:
+    enabled: true
+    expectedSuffix: "JpaEntity"
+    severity: BLOCKING
+
+exclusions:
+  - "**/Legacy*"
+  - "**/Test*"
+```
+
+## 🧪 Pruebas
+
+```bash
+mvn test
+```
+
+Actualmente cuenta con una suite de 26 pruebas unitarias que cubren todas las reglas y el motor de detección.

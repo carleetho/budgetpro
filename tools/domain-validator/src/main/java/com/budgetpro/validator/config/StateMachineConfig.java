@@ -1,26 +1,24 @@
 package com.budgetpro.validator.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Representa la configuración de máquinas de estado desde un archivo YAML.
+ * Representa la configuración de máquinas de estado.
  * 
- * Define las reglas de validación para transiciones de estado en entidades del dominio.
+ * Define las reglas de validación para transiciones de estado en entidades del
+ * dominio.
  */
 public class StateMachineConfig {
-    
+
     private List<StateMachineDefinition> stateMachines;
 
-    /**
-     * Constructor por defecto para deserialización YAML.
-     */
     public StateMachineConfig() {
     }
 
-    /**
-     * Constructor con lista de definiciones.
-     */
     public StateMachineConfig(List<StateMachineDefinition> stateMachines) {
         this.stateMachines = stateMachines;
     }
@@ -34,16 +32,22 @@ public class StateMachineConfig {
     }
 
     /**
-     * Valida que la configuración sea consistente.
-     * 
-     * @return Lista de errores encontrados, o lista vacía si es válida.
+     * Busca la definición de máquina de estado para una clase.
      */
+    public StateMachineDefinition findDefinitionForClass(String className) {
+        if (stateMachines == null || className == null)
+            return null;
+        return stateMachines.stream()
+                .filter(def -> def.getClassFqn().equals(className) || def.getClassFqn().endsWith("." + className))
+                .findFirst().orElse(null);
+    }
+
     public List<String> validate() {
         if (stateMachines == null || stateMachines.isEmpty()) {
-            return List.of("State machine configuration must define at least one 'stateMachines' entry");
+            return List.of("State machine configuration must define at least one 'state_machines' entry");
         }
 
-        List<String> errors = new java.util.ArrayList<>();
+        List<String> errors = new ArrayList<>();
         for (int i = 0; i < stateMachines.size(); i++) {
             StateMachineDefinition def = stateMachines.get(i);
             List<String> defErrors = def.validate();
@@ -55,27 +59,20 @@ public class StateMachineConfig {
         return errors;
     }
 
-    /**
-     * Representa una definición individual de máquina de estado.
-     */
     public static class StateMachineDefinition {
         private String classFqn;
         private String stateField;
         private String stateEnum;
+        private String initialState;
+        private Set<String> terminalStates;
         private Map<String, List<String>> transitions;
         private List<String> transitionMethods;
 
-        /**
-         * Constructor por defecto para deserialización YAML.
-         */
         public StateMachineDefinition() {
         }
 
-        /**
-         * Constructor completo.
-         */
         public StateMachineDefinition(String classFqn, String stateField, String stateEnum,
-                                     Map<String, List<String>> transitions, List<String> transitionMethods) {
+                Map<String, List<String>> transitions, List<String> transitionMethods) {
             this.classFqn = classFqn;
             this.stateField = stateField;
             this.stateEnum = stateEnum;
@@ -107,6 +104,22 @@ public class StateMachineConfig {
             this.stateEnum = stateEnum;
         }
 
+        public String getInitialState() {
+            return initialState;
+        }
+
+        public void setInitialState(String initialState) {
+            this.initialState = initialState;
+        }
+
+        public Set<String> getTerminalStates() {
+            return terminalStates;
+        }
+
+        public void setTerminalStates(Set<String> terminalStates) {
+            this.terminalStates = terminalStates;
+        }
+
         public Map<String, List<String>> getTransitions() {
             return transitions;
         }
@@ -123,59 +136,53 @@ public class StateMachineConfig {
             this.transitionMethods = transitionMethods;
         }
 
-        /**
-         * Valida que la definición de máquina de estado sea completa y correcta.
-         * 
-         * @return Lista de errores encontrados, o lista vacía si es válida.
-         */
+        public boolean isValidTransition(String fromState, String toState) {
+            if (fromState == null || toState == null || transitions == null)
+                return false;
+
+            // Si es un estado terminal, no permite transiciones salientes
+            if (isTerminalState(fromState))
+                return false;
+
+            List<String> allowed = transitions.get(fromState);
+            return allowed != null && allowed.contains(toState);
+        }
+
+        public boolean isTerminalState(String state) {
+            if (state == null)
+                return false;
+            if (terminalStates != null && terminalStates.contains(state))
+                return true;
+
+            // Heurística por defecto si no hay estados terminales definidos
+            return "CONGELADO".equals(state) || "CERRADO".equals(state) || "CANCELADO".equals(state);
+        }
+
         public List<String> validate() {
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
 
-            if (classFqn == null || classFqn.isBlank()) {
-                errors.add("'class' field is required and cannot be empty");
-            }
-
-            if (stateField == null || stateField.isBlank()) {
-                errors.add("'stateField' field is required and cannot be empty");
-            }
-
-            if (stateEnum == null || stateEnum.isBlank()) {
-                errors.add("'stateEnum' field is required and cannot be empty");
-            }
+            if (classFqn == null || classFqn.isBlank())
+                errors.add("'class_fqn' is required");
+            if (stateField == null || stateField.isBlank())
+                errors.add("'state_field' is required");
+            if (stateEnum == null || stateEnum.isBlank())
+                errors.add("'state_enum' is required");
 
             if (transitions == null) {
-                errors.add("'transitions' field is required");
+                errors.add("'transitions' is required");
             } else {
-                // Validar que no haya valores nulos en el mapa
                 for (Map.Entry<String, List<String>> entry : transitions.entrySet()) {
-                    if (entry.getKey() == null || entry.getKey().isBlank()) {
-                        errors.add("'transitions' map cannot contain null or empty keys");
-                    }
                     if (entry.getValue() == null) {
-                        errors.add(String.format("'transitions' map value for key '%s' cannot be null (use empty list [] instead)", entry.getKey()));
-                    } else {
-                        // Validar que no haya valores nulos en la lista
-                        for (String targetState : entry.getValue()) {
-                            if (targetState == null || targetState.isBlank()) {
-                                errors.add(String.format("'transitions' map value for key '%s' cannot contain null or empty target states", entry.getKey()));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (transitionMethods == null) {
-                errors.add("'transitionMethods' field is required");
-            } else {
-                // Validar que no haya valores nulos en la lista
-                for (String method : transitionMethods) {
-                    if (method == null || method.isBlank()) {
-                        errors.add("'transitionMethods' list cannot contain null or empty method names");
+                        errors.add(String.format("Transitions for '%s' cannot be null", entry.getKey()));
                     }
                 }
             }
 
             return errors;
         }
+    }
+
+    public static StateMachineConfig defaultConfig() {
+        return new StateMachineConfig(new ArrayList<>());
     }
 }

@@ -23,9 +23,10 @@ public class EstimacionSnapshotRepositoryAdapter implements EstimacionSnapshotRe
     }
 
     @Override
-    public void save(EstimacionSnapshot snapshot) {
+    public EstimacionSnapshot save(EstimacionSnapshot snapshot) {
         EstimacionSnapshotEntity entity = snapshotMapper.toEntity(snapshot);
         snapshotJpaRepository.save(entity);
+        return snapshot;
     }
 
     @Override

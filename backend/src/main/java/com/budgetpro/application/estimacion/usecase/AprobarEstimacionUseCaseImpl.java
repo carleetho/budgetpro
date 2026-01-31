@@ -14,7 +14,8 @@ import java.util.UUID;
 /**
  * Implementación del caso de uso para aprobar una estimación.
  * 
- * CRÍTICO: Cuando se aprueba una estimación, no se registra ingreso sin evidencia.
+ * CRÍTICO: Cuando se aprueba una estimación, no se registra ingreso sin
+ * evidencia.
  */
 @Service
 public class AprobarEstimacionUseCaseImpl implements AprobarEstimacionUseCase {
@@ -23,14 +24,14 @@ public class AprobarEstimacionUseCaseImpl implements AprobarEstimacionUseCase {
     private final AnticipoMovimientoRepository anticipoMovimientoRepository;
 
     public AprobarEstimacionUseCaseImpl(EstimacionRepository estimacionRepository,
-                                        AnticipoMovimientoRepository anticipoMovimientoRepository) {
+            AnticipoMovimientoRepository anticipoMovimientoRepository) {
         this.estimacionRepository = estimacionRepository;
         this.anticipoMovimientoRepository = anticipoMovimientoRepository;
     }
 
     @Override
     @Transactional
-    public void aprobar(UUID estimacionId) {
+    public void aprobar(UUID estimacionId, UUID aprobadoPor) {
         // 1. Buscar la estimación
         Estimacion estimacion = estimacionRepository.findById(EstimacionId.of(estimacionId))
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -38,14 +39,15 @@ public class AprobarEstimacionUseCaseImpl implements AprobarEstimacionUseCase {
 
         // 2. Validar evidencia contractual obligatoria antes de aprobar
         if (estimacion.getEvidenciaUrl() == null || estimacion.getEvidenciaUrl().isBlank()) {
-            throw new IllegalStateException(String.format(
-                    "No se puede aprobar la estimación %d sin evidencia contractual válida",
-                    estimacion.getNumeroEstimacion()
-            ));
+            throw new IllegalStateException(
+                    String.format("No se puede aprobar la estimación %d sin evidencia contractual válida",
+                            estimacion.getNumeroEstimacion()));
         }
 
         // 3. Aprobar la estimación (cambia estado a APROBADA)
-        estimacion.aprobar();
+        // NOTA: Los JSON de items, totales y metadata se generan internamente en el
+        // dominio
+        estimacion.aprobar(aprobadoPor, null, null, null);
 
         // 4. Persistir estimación aprobada
         estimacionRepository.save(estimacion);
@@ -53,11 +55,9 @@ public class AprobarEstimacionUseCaseImpl implements AprobarEstimacionUseCase {
         // 5. Registrar amortización de anticipo si aplica
         if (estimacion.getAmortizacionAnticipo() != null
                 && estimacion.getAmortizacionAnticipo().compareTo(java.math.BigDecimal.ZERO) > 0) {
-            AnticipoMovimiento movimiento = AnticipoMovimiento.amortizar(
-                    estimacion.getProyectoId(),
+            AnticipoMovimiento movimiento = AnticipoMovimiento.amortizar(estimacion.getPresupuestoId().getValue(),
                     estimacion.getAmortizacionAnticipo(),
-                    String.format("Amortización Estimación %d", estimacion.getNumeroEstimacion())
-            );
+                    String.format("Amortización Estimación %d", estimacion.getNumeroEstimacion()));
             anticipoMovimientoRepository.registrar(movimiento);
         }
     }

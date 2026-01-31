@@ -9,26 +9,64 @@ PATTERNS = {
     "VIOLATION_A": {
         "type": "SPRING_IMPORT",
         "regex": re.compile(r"^import\s+org\.springframework\..*;"),
-        "description": "Critical: Spring Framework import in domain layer."
+        "description": "Critical: Spring Framework import in domain layer.",
+        "severity": "CRITICAL"
     },
     "VIOLATION_B": {
         "type": "INFRASTRUCTURE_IMPORT",
         "regex": re.compile(r"^import\s+com\.budgetpro\.infrastructure\..*;"),
-        "description": "Critical: Infrastructure package import in domain layer."
+        "description": "Critical: Infrastructure package import in domain layer.",
+        "severity": "CRITICAL"
     },
     "VIOLATION_C": {
         "type": "HEAVY_LIBRARY_IMPORT",
         "regex": re.compile(r"^import\s+(org\.apache\.poi|java\.sql|org\.apache\.http|com\.fasterxml\.jackson)\..*;"),
-        "description": "Critical: Heavy third-party library or SQL import in domain layer."
+        "description": "Critical: Heavy third-party library or SQL import in domain layer.",
+        "severity": "CRITICAL"
     },
     "VIOLATION_D": {
         "type": "PERSISTENCE_ANNOTATION",
         "regex": re.compile(r"^\s*@(Entity|Table|Id|Column|ManyToOne|OneToMany)(\s|\(|$)"),
-        "description": "Critical: JPA/Persistence annotation in domain layer."
+        "description": "Critical: JPA/Persistence annotation in domain layer.",
+        "severity": "CRITICAL"
+    },
+    "VIOLATION_E": {
+        "type": "SERVICE_ANNOTATION",
+        "regex": re.compile(r"^\s*@(Service|Component|Repository|Controller)(\s|\(|$)"),
+        "description": "Critical: Spring stereotype annotation in domain layer.",
+        "severity": "CRITICAL"
+    },
+    "VIOLATION_F": {
+        "type": "TRANSACTIONAL_ANNOTATION",
+        "regex": re.compile(r"^\s*@Transactional(\s|\(|$)"),
+        "description": "Critical: Transaction management in domain layer.",
+        "severity": "CRITICAL"
+    },
+    "VIOLATION_G": {
+        "type": "DTO_IMPORT",
+        "regex": re.compile(r"^import\s+com\.budgetpro\.(application|infrastructure)\..*DTO;"),
+        "description": "High: DTO import from upper layers in domain.",
+        "severity": "HIGH"
+    },
+    "VIOLATION_H": {
+        "type": "CONTROLLER_IMPORT",
+        "regex": re.compile(r"^import\s+com\.budgetpro\.infrastructure\.web\..*Controller;"),
+        "description": "Critical: Controller import in domain layer.",
+        "severity": "CRITICAL"
+    },
+    "VIOLATION_I": {
+        "type": "AUTOWIRED_ANNOTATION",
+        "regex": re.compile(r"^\s*@Autowired(\s|\(|$)"),
+        "description": "Critical: Dependency injection annotation in domain layer.",
+        "severity": "CRITICAL"
     }
 }
 
-def analyze_file(file_path):
+def analyze_file(file_path, patterns=None):
+    """Analyze a single file for purity violations."""
+    if patterns is None:
+        patterns = PATTERNS
+    
     violations = []
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -37,11 +75,13 @@ def analyze_file(file_path):
                 if not clean_line:
                     continue
                 
-                for v_id, config in PATTERNS.items():
-                    if config["regex"].search(clean_line if v_id != "VIOLATION_D" else line):
+                for v_id, config in patterns.items():
+                    # Use line for annotations, clean_line for imports
+                    search_text = line if v_id.startswith("VIOLATION_D") or "ANNOTATION" in config["type"] else clean_line
+                    if config["regex"].search(search_text):
                         violations.append({
                             "type": config["type"],
-                            "severity": "CRITICAL",
+                            "severity": config.get("severity", "CRITICAL"),
                             "line_number": i,
                             "content": clean_line,
                             "description": config["description"]

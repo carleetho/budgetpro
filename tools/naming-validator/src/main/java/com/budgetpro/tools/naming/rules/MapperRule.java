@@ -1,26 +1,38 @@
 package com.budgetpro.tools.naming.rules;
 
+import com.budgetpro.tools.naming.config.ValidationConfig;
 import com.budgetpro.tools.naming.model.NamingViolation;
-import com.budgetpro.tools.naming.model.ValidationRule;
-import com.budgetpro.tools.naming.model.ViolationSeverity;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Regla para Mappers: Deben terminar con el sufijo 'Mapper'.
+ * Regla para Mappers: Deben tener el sufijo 'Mapper'.
  */
-public class MapperRule implements ValidationRule {
+public class MapperRule extends BaseConfigurableRule {
+
+    public MapperRule(ValidationConfig.RuleConfig config) {
+        super(config);
+    }
+
+    @Override
+    protected ValidationConfig.RuleConfig createDefaultConfig() {
+        return new ValidationConfig.RuleConfig(true, "Mapper", null, "BLOCKING", null);
+    }
 
     @Override
     public List<NamingViolation> validate(Path filePath, String className) {
+        Objects.requireNonNull(filePath, "File path cannot be null");
+        Objects.requireNonNull(className, "Class name cannot be null");
         List<NamingViolation> violations = new ArrayList<>();
+        String expectedSuffix = config.expectedSuffix();
 
-        if (!className.endsWith("Mapper")) {
-            violations.add(new NamingViolation(filePath, className, className + "Mapper", ViolationSeverity.WARNING,
-                    "NAMING: Mapper sin sufijo 'Mapper'",
-                    "Las clases que actúan como mappers deben terminar con el sufijo 'Mapper'."));
+        if (expectedSuffix != null && !className.endsWith(expectedSuffix)) {
+            String expectedName = className + expectedSuffix;
+            violations.add(new NamingViolation(filePath, className, expectedName, getSeverity(),
+                    "NAMING: Mapper con nombre incorrecto",
+                    "Los mappers deben terminar en '" + expectedSuffix + "'. Ej: '" + expectedName + "'."));
         }
 
         return violations;

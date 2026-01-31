@@ -14,6 +14,7 @@ public class ValidationResult {
     private final List<NamingViolation> allViolations;
 
     public ValidationResult(List<NamingViolation> allViolations) {
+        java.util.Objects.requireNonNull(allViolations, "Violations list cannot be null");
         this.allViolations = List.copyOf(allViolations);
     }
 

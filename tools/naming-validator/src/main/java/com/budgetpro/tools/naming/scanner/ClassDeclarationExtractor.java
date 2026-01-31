@@ -20,7 +20,8 @@ public class ClassDeclarationExtractor {
      * @return Optional con el nombre encontrado, o vacío si no hay coincidencia.
      */
     public Optional<String> extractClassName(String fileContent) {
-        if (fileContent == null || fileContent.isBlank()) {
+        java.util.Objects.requireNonNull(fileContent, "File content cannot be null");
+        if (fileContent.isBlank()) {
             return Optional.empty();
         }
 

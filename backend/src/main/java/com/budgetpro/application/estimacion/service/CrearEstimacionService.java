@@ -30,7 +30,7 @@ public class CrearEstimacionService implements CrearEstimacionUseCase {
     @Override
     public EstimacionResponse crear(CrearEstimacionCommand command) {
         Estimacion estimacion = estimacionService.crear(command.getProyectoId(),
-                PresupuestoId.of(command.getPresupuestoId()),
+                PresupuestoId.from(command.getPresupuestoId()),
                 PeriodoEstimacion.of(command.getFechaInicio(), command.getFechaFin()),
                 RetencionPorcentaje.of(command.getRetencionPorcentaje()));
 

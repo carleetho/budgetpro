@@ -11,6 +11,14 @@ from tools.axiom.override_detector import detect_overrides, OverrideResult
 from tools.axiom.validators.base_validator import BaseValidator, Violation, ValidationResult
 from tools.axiom.validators.security_validator import SecurityValidator
 from tools.axiom.validators.lazy_code_validator import LazyCodeValidator
+from tools.axiom.validators.naming_validator import NamingValidator
+from tools.axiom.validators.boundary_validator import BoundaryValidator
+from tools.axiom.validators.state_machine_validator import StateMachineValidator
+from tools.axiom.validators.semgrep_validator import SemgrepValidator
+from tools.axiom.validators.domain_validator import DomainValidator
+from tools.axiom.validators.blast_radius_validator import BlastRadiusValidator
+from tools.axiom.lib.blast_radius_adapter import BlastRadiusAdapter
+from tools.axiom.validators.dependency_validator import DependencyValidator
 from tools.axiom.reporters.console_reporter import ConsoleReporter
 from tools.axiom.reporters.log_reporter import LogReporter
 from tools.axiom.reporters.metrics_reporter import MetricsReporter
@@ -111,7 +119,9 @@ class AxiomSentinel:
         # Security Validator
         sec_config = val_config.get("security_validator", {})
         if sec_config.get("enabled", True):
-            self.validators.append(SecurityValidator(sec_config))
+            from dataclasses import asdict
+            full_config_dict = asdict(self.config)
+            self.validators.append(SecurityValidator(sec_config, full_config_dict))
             self.logger.info("SecurityValidator initialized.")
 
         # Lazy Code Validator
@@ -120,7 +130,53 @@ class AxiomSentinel:
             self.validators.append(LazyCodeValidator(lazy_config))
             self.logger.debug("LazyCodeValidator registered")
 
-        # placeholder for other validators
+        # Blast Radius Validator
+        if self.config and self.config.validators.get('blast_radius', {}).get('enabled', True):
+            blast_config = self.config.validators['blast_radius']
+            adapter = BlastRadiusAdapter(self.config)
+            self.validators.append(BlastRadiusValidator(blast_config, adapter))
+            self.logger.info("BlastRadiusValidator initialized.")
+        
+        # Dependency Validator
+        dep_config = val_config.get("dependency_validator", {})
+        if dep_config.get("enabled", True):
+            self.validators.append(DependencyValidator(dep_config))
+            self.logger.info("DependencyValidator initialized.")
+        
+        # Naming Validator
+        naming_config = val_config.get("naming_validator", {})
+        if naming_config.get("enabled", True):
+            root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.validators.append(NamingValidator(naming_config, root_dir))
+            self.logger.info("NamingValidator initialized.")
+        
+        # Boundary Validator
+        boundary_config = val_config.get("boundary_validator", {})
+        if boundary_config.get("enabled", True):
+            root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.validators.append(BoundaryValidator(boundary_config, root_dir))
+            self.logger.info("BoundaryValidator initialized.")
+
+        # State Machine Validator
+        sm_config = val_config.get("state_machine_validator", {})
+        if sm_config.get("enabled", True):
+            root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.validators.append(StateMachineValidator(sm_config, root_dir))
+            self.logger.info("StateMachineValidator initialized.")
+        
+        # Semgrep Validator
+        semgrep_config = val_config.get("semgrep_validator", {})
+        if semgrep_config.get("enabled", True):
+            root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.validators.append(SemgrepValidator(semgrep_config, root_dir))
+            self.logger.info("SemgrepValidator initialized.")
+        
+        # Domain Validator
+        domain_config = val_config.get("domain", {})
+        if domain_config.get("enabled", True):
+            root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            self.validators.append(DomainValidator(domain_config, root_dir))
+            self.logger.info("DomainValidator initialized.")
         
         # 2. Initialize Reporters
         if self.config and hasattr(self.config, 'reporters'):

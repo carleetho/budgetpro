@@ -1,4 +1,24 @@
 -- Create Estimacion table
+-- Drop existing objects if they exist (for development/testing)
+DROP TABLE IF EXISTS estimacion_snapshot CASCADE;
+DROP TABLE IF EXISTS avance_partida CASCADE;
+DROP TABLE IF EXISTS estimacion_item CASCADE;
+DROP TABLE IF EXISTS detalle_estimacion CASCADE;
+DROP TABLE IF EXISTS estimacion CASCADE;
+
+-- Drop indexes that might conflict
+DROP INDEX IF EXISTS idx_estimacion_presupuesto;
+DROP INDEX IF EXISTS idx_estimacion_estado;
+DROP INDEX IF EXISTS idx_estimacion_periodo;
+DROP INDEX IF EXISTS idx_item_estimacion;
+DROP INDEX IF EXISTS idx_item_partida;
+DROP INDEX IF EXISTS idx_avance_partida;
+DROP INDEX IF EXISTS idx_avance_estimacion;
+DROP INDEX IF EXISTS idx_snapshot_estimacion;
+
+-- Drop function if exists
+DROP FUNCTION IF EXISTS update_estimacion_timestamp() CASCADE;
+
 CREATE TABLE estimacion (
     estimacion_id UUID PRIMARY KEY,
     presupuesto_id UUID NOT NULL,

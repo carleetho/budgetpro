@@ -3,10 +3,13 @@ import json
 import argparse
 from collections import defaultdict
 
-def discover_domain_files(base_path):
+def discover_domain_files(base_path, expected_contexts=None):
     """
     Recursively scans the domain directory and groups .java files by bounded context.
     """
+    if expected_contexts is None:
+        expected_contexts = {"finanzas", "proyecto", "catalogo", "recurso", "rrhh", "logistica", "shared"}
+    
     domain_path = os.path.join(base_path, "backend/src/main/java/com/budgetpro/domain")
     if not os.path.exists(domain_path):
         print(f"Error: Domain path not found at {domain_path}")
@@ -15,8 +18,6 @@ def discover_domain_files(base_path):
     inventory = defaultdict(list)
     metrics = defaultdict(int)
     
-    # Expected bounded contexts
-    expected_contexts = {"finanzas", "proyecto", "catalogo", "recurso", "rrhh", "logistica", "shared"}
     discovered_contexts = set()
 
     for root, _, files in os.walk(domain_path):
@@ -56,10 +57,28 @@ def discover_domain_files(base_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Discover and group domain Java files.")
-    parser.add_argument("--repo-root", default="/home/wazoox/Desktop/budgetpro-backend", help="Path to the repository root")
+    parser.add_argument("--repo-root", required=True, help="Path to the repository root")
+    parser.add_argument("--config", default=".domain-validator.yaml", help="Path to configuration file")
     parser.add_argument("--output", default="domain_inventory.json", help="Output JSON file")
     
     args = parser.parse_args()
+    
+    # Load configuration
+    config_path = os.path.join(args.repo_root, args.config)
+    if os.path.exists(config_path):
+        import yaml
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+        domain_config = config.get('domain', {})
+        expected_contexts = set(domain_config.get('expected_contexts', []))
+    else:
+        # Fallback to defaults if no config file
+        expected_contexts = {"finanzas", "proyecto", "catalogo", "recurso", "rrhh", "logistica", "shared"}
+    
+    print(f"Scanning domain in {args.repo_root}...")
+    print(f"Expected contexts: {', '.join(sorted(expected_contexts))}")
+    
+    result = discover_domain_files(args.repo_root, expected_contexts)
     
     print(f"Scanning domain in {args.repo_root}...")
     result = discover_domain_files(args.repo_root)

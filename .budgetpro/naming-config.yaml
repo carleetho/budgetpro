@@ -1,0 +1,43 @@
+# 🏷️ Configuración de AXIOM Naming Validator (BudgetPro)
+
+layers:
+  DOMAIN_ENTITY:
+    pathPatterns: ["/domain/finanzas/"]
+    classNamePatterns: ["/model/"]
+  JPA_ENTITY:
+    pathPatterns: ["/infrastructure/persistence/entity/"]
+  MAPPER:
+    pathPatterns: ["/mapper/"]
+    classNamePatterns: ["Mapper"]
+  VALUE_OBJECT:
+    pathPatterns: ["/domain/"]
+    classNamePatterns: ["/valueobjects/"]
+  DOMAIN_SERVICE:
+    pathPatterns: ["/domain/"]
+    classNamePatterns: ["Service"]
+
+rules:
+  DOMAIN_ENTITY:
+    enabled: true
+    severity: BLOCKING
+    forbiddenSuffixes: ["Entity", "JpaEntity", "Model"]
+  JPA_ENTITY:
+    enabled: true
+    expectedSuffix: "JpaEntity"
+    severity: BLOCKING
+  MAPPER:
+    enabled: true
+    expectedSuffix: "Mapper"
+    severity: BLOCKING
+  VALUE_OBJECT:
+    enabled: true
+    severity: BLOCKING
+    forbiddenSuffixes: ["VO", "ValueObject"]
+  DOMAIN_SERVICE:
+    enabled: true
+    expectedSuffix: "Service"
+    severity: BLOCKING
+
+exclusions:
+  - "**/test/**"
+  - "**/generated/**"

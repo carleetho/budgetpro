@@ -1,16 +1,160 @@
-# PR profile: block on Critical/High
-# Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/pr.yaml .
+# ============================================================================
+# Semgrep Configuration - Pull Request Context
+# ============================================================================
 #
-# This configuration includes all Semgrep rules from .semgrep/rules/
-# including immutability validation rules for domain entities, snapshots, and value objects.
+# This configuration is used when scanning code in Pull Request context.
+# It enforces strict quality gates to prevent issues from entering the codebase.
 #
-# Immutability Rules:
-#   - 04-entity-final-fields.yaml: Detects non-final private fields in domain entities
-#   - 05-snapshot-immutability.yaml: Detects setters and missing immutability markers in snapshots
-#   - 06-valueobject-no-setters.yaml: Detects setters in value objects
+# Usage:
+#   semgrep scan --config .semgrep/rules/ --config .semgrep/config/pr.yaml .
 #
-# Severity Levels:
-#   - ERROR: Blocks PR merge (critical domains: presupuesto, estimacion)
-#   - WARNING: Shows in PR comments but doesn't block merge (other domains)
+# Enforcement Policy:
+#   - ERROR severity: BLOCKS PR merge (exit code 1)
+#   - WARNING severity: Shows in PR comments but ALLOWS merge (exit code 0)
+#   - INFO severity: Informational only
+#
+# Integration:
+#   - GitHub Actions: .github/workflows/semgrep.yml
+#   - AXIOM: tools/axiom/validators/semgrep_validator.py
+#
+# ============================================================================
 
+# Auto-discovery: Empty rules array means Semgrep will scan all rules in
+# .semgrep/rules/ directory. This approach provides:
+#   - Simplicity: No need to maintain explicit rule lists
+#   - Completeness: All rules are automatically included
+#   - Maintainability: Adding new rules doesn't require config updates
+#
+# Severity filtering is handled by the --error flag in CI/CD workflows,
+# which causes Semgrep to exit with code 1 if ERROR severity findings exist.
 rules: []
+
+# ============================================================================
+# Rule Execution Matrix (Auto-discovered from .semgrep/rules/)
+# ============================================================================
+#
+# This section documents which rules execute and their enforcement level.
+# All rules are auto-discovered; this is documentation only.
+#
+# SECURITY (ERROR - Blocking)
+# ---------------------------
+# ✋ budgetpro.security.hardcoded-secrets
+#    Detects hardcoded passwords, API keys, tokens
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.security.jwt-weak-secret
+#    Detects weak JWT secrets (< 256 bits)
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.security.weak-cryptographic-algorithm
+#    Detects MD5, SHA1, weak encryption
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.security.cors-misconfiguration
+#    Detects overly permissive CORS
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.security.missing-input-validation
+#    Detects missing validation in controllers
+#    Action: BLOCKS merge
+#
+# DOMAIN - IMMUTABILITY (ERROR for critical domains, WARNING for others)
+# ----------------------------------------------------------------------
+# ✋ budgetpro.domain.immutability.entity-final-fields.critical
+#    Detects non-final fields in presupuesto/estimacion entities
+#    Action: BLOCKS merge
+#
+# ⚠️  budgetpro.domain.immutability.entity-final-fields
+#    Detects non-final fields in other domain entities
+#    Action: Warning only
+#
+# ✋ budgetpro.domain.immutability.snapshot-no-setters
+#    Detects setters in Snapshot classes
+#    Action: BLOCKS merge
+#
+# ⚠️  budgetpro.domain.immutability.snapshot-markers
+#    Detects snapshots without @Immutable or record
+#    Action: Warning only
+#
+# ✋ budgetpro.domain.immutability.valueobject-no-setters
+#    Detects setters in Value Objects
+#    Action: BLOCKS merge
+#
+# DOMAIN - BUSINESS LOGIC (ERROR - Blocking)
+# ------------------------------------------
+# ✋ budgetpro.domain.estimacion-state-machine
+#    Validates state machine transitions
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.domain.presupuesto-hash-immutability
+#    Validates hash recalculation on modifications
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.domain.bigdecimal-precision-standard
+#    Enforces BigDecimal precision standards
+#    Action: BLOCKS merge
+#
+# ARCHITECTURE (ERROR - Blocking)
+# -------------------------------
+# ✋ budgetpro.architecture.domain-layer-isolation
+#    Prevents domain from importing infrastructure/application
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.architecture.transactional-boundary
+#    Prevents @Transactional in domain layer
+#    Action: BLOCKS merge
+#
+# ✋ budgetpro.architecture.dto-validation-boundary
+#    Enforces validation at DTO boundary
+#    Action: BLOCKS merge
+#
+# PERFORMANCE (WARNING - Non-blocking)
+# ------------------------------------
+# ⚠️  budgetpro.performance.n-plus-one-query
+#    Detects potential N+1 query patterns
+#    Action: Warning only
+#
+# ⚠️  budgetpro.performance.inefficient-bigdecimal-operations
+#    Detects inefficient BigDecimal usage
+#    Action: Warning only
+#
+# QUALITY (WARNING/INFO - Non-blocking)
+# -------------------------------------
+# ⚠️  budgetpro.quality.null-safety-patterns
+#    Suggests Optional usage for null safety
+#    Action: Warning only
+#
+# ⚠️  budgetpro.quality.exception-handling-standards
+#    Enforces exception handling standards
+#    Action: Warning only
+#
+# ⚠️  budgetpro.quality.logging-standards
+#    Enforces logging best practices
+#    Action: Warning only
+#
+# ============================================================================
+# Exception Handling
+# ============================================================================
+#
+# Developers can suppress findings using nosemgrep annotations:
+#
+#   // nosemgrep: budgetpro.security.hardcoded-secrets
+#   // Justificación: Public API key documented at https://...
+#   private static final String PUBLIC_KEY = "pk_live_...";
+#
+# All exceptions MUST include justification. See:
+#   .semgrep/docs/exception-guidelines.md
+#
+# ============================================================================
+# Performance
+# ============================================================================
+#
+# Target: < 3 minutes for full codebase scan
+# Actual: ~1.5 seconds scan time + overhead
+#
+# Optimizations:
+#   - .semgrepignore excludes test files, target/, node_modules/
+#   - Rules use specific path patterns to reduce search space
+#   - Parallel execution enabled by default
+#
+# ============================================================================

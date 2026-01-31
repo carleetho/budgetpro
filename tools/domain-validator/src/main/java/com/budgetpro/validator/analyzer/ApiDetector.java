@@ -21,38 +21,41 @@ import java.util.Map;
 /**
  * Detecta endpoints REST en controladores.
  * 
- * Busca clases con @RestController y extrae métodos con @GetMapping, @PostMapping, etc.
+ * Busca clases con @RestController y extrae métodos
+ * con @GetMapping, @PostMapping, etc.
  */
 public class ApiDetector {
-    
+
     private final JavaParser javaParser;
-    
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ApiDetector.class.getName());
+
     public ApiDetector() {
         TypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
         this.javaParser = new JavaParser();
-        this.javaParser.getParserConfiguration()
-                .setSymbolResolver(new JavaSymbolSolver(typeSolver));
+        this.javaParser.getParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver));
     }
 
     /**
      * Detecta todos los endpoints REST en un directorio.
      * 
      * @param infrastructurePath Ruta al directorio infrastructure/rest/
-     * @return Mapa de nombre de controlador -> lista de endpoints (ej: "GET /api/v1/presupuestos")
+     * @return Mapa de nombre de controlador -> lista de endpoints (ej: "GET
+     *         /api/v1/presupuestos")
      */
     public Map<String, List<String>> detectEndpoints(Path infrastructurePath) {
         Map<String, List<String>> endpoints = new HashMap<>();
-        
+
         if (infrastructurePath == null || !infrastructurePath.toFile().exists()) {
             return endpoints;
         }
-        
+
         try {
             scanDirectory(infrastructurePath.toFile(), endpoints);
         } catch (Exception e) {
-            System.err.println("Error scanning endpoints: " + e.getMessage());
+            LOGGER.severe("Error scanning endpoints: " + e.getMessage());
         }
-        
+
         return endpoints;
     }
 
@@ -64,7 +67,7 @@ public class ApiDetector {
         if (files == null) {
             return;
         }
-        
+
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDirectory(file, endpoints);
@@ -86,24 +89,24 @@ public class ApiDetector {
         if (cu == null) {
             return;
         }
-        
+
         List<ClassOrInterfaceDeclaration> classes = cu.findAll(ClassOrInterfaceDeclaration.class);
-        
+
         for (ClassOrInterfaceDeclaration clazz : classes) {
             // Verificar si tiene @RestController
             boolean isRestController = clazz.getAnnotations().stream()
                     .anyMatch(a -> a.getNameAsString().equals("RestController"));
-            
+
             if (!isRestController) {
                 continue;
             }
-            
+
             String controllerName = clazz.getNameAsString();
             List<String> controllerEndpoints = new ArrayList<>();
-            
+
             // Obtener base path de @RequestMapping si existe
             String basePath = extractBasePath(clazz);
-            
+
             // Buscar métodos con anotaciones HTTP
             List<MethodDeclaration> methods = clazz.getMethods();
             for (MethodDeclaration method : methods) {
@@ -112,7 +115,7 @@ public class ApiDetector {
                     controllerEndpoints.add(endpoint);
                 }
             }
-            
+
             if (!controllerEndpoints.isEmpty()) {
                 endpoints.put(controllerName, controllerEndpoints);
             }
@@ -123,9 +126,7 @@ public class ApiDetector {
      * Extrae el path base de @RequestMapping en la clase.
      */
     private String extractBasePath(ClassOrInterfaceDeclaration clazz) {
-        return clazz.getAnnotations().stream()
-                .filter(a -> a.getNameAsString().equals("RequestMapping"))
-                .findFirst()
+        return clazz.getAnnotations().stream().filter(a -> a.getNameAsString().equals("RequestMapping")).findFirst()
                 .map(a -> {
                     // Intentar extraer el valor del annotation
                     // Simplificado: buscar en el toString
@@ -139,8 +140,7 @@ public class ApiDetector {
                         }
                     }
                     return "";
-                })
-                .orElse("");
+                }).orElse("");
     }
 
     /**
@@ -149,18 +149,16 @@ public class ApiDetector {
     private String extractEndpoint(MethodDeclaration method, String basePath) {
         String httpMethod = null;
         String path = "";
-        
+
         // Buscar anotaciones HTTP
         for (AnnotationExpr annotation : method.getAnnotations()) {
             String annotationName = annotation.getNameAsString();
-            if (annotationName.equals("GetMapping") || 
-                annotationName.equals("PostMapping") ||
-                annotationName.equals("PutMapping") ||
-                annotationName.equals("DeleteMapping") ||
-                annotationName.equals("PatchMapping")) {
-                
+            if (annotationName.equals("GetMapping") || annotationName.equals("PostMapping")
+                    || annotationName.equals("PutMapping") || annotationName.equals("DeleteMapping")
+                    || annotationName.equals("PatchMapping")) {
+
                 httpMethod = annotationName.replace("Mapping", "").toUpperCase();
-                
+
                 // Intentar extraer path del annotation
                 String annotationStr = annotation.toString();
                 if (annotationStr.contains("value") || annotationStr.contains("path")) {
@@ -173,11 +171,11 @@ public class ApiDetector {
                 break;
             }
         }
-        
+
         if (httpMethod == null) {
             return null;
         }
-        
+
         // Construir endpoint completo
         String fullPath = basePath;
         if (!path.isEmpty()) {
@@ -186,7 +184,7 @@ public class ApiDetector {
             }
             fullPath += path;
         }
-        
+
         return httpMethod + " " + fullPath;
     }
 }
