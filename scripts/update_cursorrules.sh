@@ -20,16 +20,16 @@ if [ ! -f ".budgetpro/axiom.config.yaml" ]; then
     exit 1
 fi
 
-# Backup de .cursorrules existente
-if [ -f ".cursorrules" ]; then
-    BACKUP_FILE=".cursorrules.backup.$(date +%Y%m%d_%H%M%S)"
+# Backup de .cursorrules.md existente
+if [ -f ".cursorrules.md" ]; then
+    BACKUP_FILE=".cursorrules.md.backup.$(date +%Y%m%d_%H%M%S)"
     echo -e "${YELLOW}📦 Creando backup: ${BACKUP_FILE}${NC}"
-    cp .cursorrules "$BACKUP_FILE"
+    cp .cursorrules.md "$BACKUP_FILE"
     echo -e "${GREEN}✓${NC} Backup creado"
 fi
 
 echo ""
-echo -e "${YELLOW}🔨 Generando nuevo .cursorrules...${NC}"
+echo -e "${YELLOW}🔨 Generando nuevo .cursorrules.md...${NC}"
 
 # Crear script Python para generar .cursorrules
 cat > /tmp/generate_cursorrules.py << 'PYTHON_SCRIPT'
@@ -111,7 +111,11 @@ Domain (Core) ← Application ← Infrastructure
         'blast_radius': '✅ Verifica Blast Radius del cambio',
         'security_validator': '✅ Confirma que no hay secretos expuestos',
         'lazy_code': '✅ Asegura que no hay Lazy Code',
-        'dependency_validator': '✅ Verifica Arquitectura Hexagonal / Aislamiento de Dominio'
+        'dependency_validator': '✅ Verifica Arquitectura Hexagonal / Aislamiento de Dominio',
+        'naming_validator': '✅ Verifica convenciones de nomenclatura Java',
+        'boundary_validator': '✅ Valida Fronteras Hexagonales Estrictas',
+        'state_machine_validator': '✅ Verifica transiciones de estado lógicas',
+        'semgrep_validator': '✅ Ejecuta escaneo de seguridad y estático (Semgrep)'
     }
     
     for v_id, text in validator_mapping.items():
@@ -134,14 +138,14 @@ def main():
     print("Cargando configuración de axiom.yaml...")
     config = load_axiom_config()
     
-    print("Generando contenido de .cursorrules...")
+    print("Generando contenido de .cursorrules.md...")
     content = generate_cursorrules(config)
     
-    print("Escribiendo .cursorrules...")
+    print("Escribiendo .cursorrules.md...")
     try:
-        with open('.cursorrules', 'w') as f:
+        with open('.cursorrules.md', 'w') as f:
             f.write(content)
-        print("✓ .cursorrules actualizado exitosamente")
+        print("✓ .cursorrules.md actualizado exitosamente")
     except Exception as e:
         print(f"❌ Error escribiendo .cursorrules: {e}")
         sys.exit(1)
@@ -157,4 +161,4 @@ python3 /tmp/generate_cursorrules.py
 rm /tmp/generate_cursorrules.py
 
 echo ""
-echo -e "${GREEN}✅ .cursorrules actualizado exitosamente${NC}"
+echo -e "${GREEN}✅ .cursorrules.md actualizado exitosamente${NC}"
