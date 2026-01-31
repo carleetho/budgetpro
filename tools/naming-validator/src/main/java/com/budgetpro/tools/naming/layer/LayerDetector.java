@@ -1,12 +1,20 @@
 package com.budgetpro.tools.naming.layer;
 
+import com.budgetpro.tools.naming.config.ValidationConfig;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Detecta la capa arquitectónica de un archivo Java basándose en su ruta y
- * nombre de clase.
+ * nombre de clase y una configuración externa.
  */
 public class LayerDetector {
+    private final ValidationConfig config;
+
+    public LayerDetector(ValidationConfig config) {
+        this.config = config;
+    }
 
     /**
      * Identifica la capa arquitectónica del archivo especificado.
@@ -16,39 +24,40 @@ public class LayerDetector {
      * @return ArchitecturalLayer detectada.
      */
     public ArchitecturalLayer detectLayer(Path filePath, String className) {
-        if (filePath == null || className == null) {
+        Objects.requireNonNull(filePath, "File path cannot be null");
+        Objects.requireNonNull(className, "Class name cannot be null");
+
+        if (config == null || config.layers() == null) {
             return ArchitecturalLayer.UNKNOWN;
         }
 
-        String pathStr = filePath.toString().replace('\\', '/').toLowerCase();
-        String classNameLower = className.toLowerCase();
+        String pathStr = filePath.toString().replace('\\', '/');
 
-        // 1. JPA Entity: /infrastructure/persistence/entity/
-        if (pathStr.contains("/infrastructure/persistence/entity/")) {
-            return ArchitecturalLayer.JPA_ENTITY;
-        }
+        for (ArchitecturalLayer layer : ArchitecturalLayer.values()) {
+            if (layer == ArchitecturalLayer.UNKNOWN)
+                continue;
 
-        // 2. Mapper: /mapper/ en ruta O "Mapper" en nombre de clase
-        if (pathStr.contains("/mapper/") || className.contains("Mapper")) {
-            return ArchitecturalLayer.MAPPER;
-        }
+            ValidationConfig.LayerPatterns patterns = config.layers().get(layer.name());
+            if (patterns == null)
+                continue;
 
-        // 3. Value Object: /domain/ Y /valueobjects/
-        if (pathStr.contains("/domain/") && pathStr.contains("/valueobjects/")) {
-            return ArchitecturalLayer.VALUE_OBJECT;
-        }
-
-        // 4. Domain Service: /domain/ Y nombre termina en "Service" (o contiene Service
-        // según requerimiento)
-        if (pathStr.contains("/domain/") && className.contains("Service")) {
-            return ArchitecturalLayer.DOMAIN_SERVICE;
-        }
-
-        // 5. Domain Entity: /domain/ Y (/entities/ O /model/)
-        if (pathStr.contains("/domain/") && (pathStr.contains("/entities/") || pathStr.contains("/model/"))) {
-            return ArchitecturalLayer.DOMAIN_ENTITY;
+            // 1. Chequear patrones de ruta
+            if (matchesAny(pathStr, patterns.pathPatterns()) || matchesAny(className, patterns.classNamePatterns())) {
+                return layer;
+            }
         }
 
         return ArchitecturalLayer.UNKNOWN;
+    }
+
+    private boolean matchesAny(String target, List<String> patterns) {
+        if (patterns == null)
+            return false;
+        for (String pattern : patterns) {
+            if (target.contains(pattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
