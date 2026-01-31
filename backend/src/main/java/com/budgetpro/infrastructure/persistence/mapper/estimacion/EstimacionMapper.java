@@ -26,7 +26,7 @@ public class EstimacionMapper {
      */
     public EstimacionEntity toEntity(Estimacion estimacion) {
         if (estimacion == null) {
-            return null;
+            throw new IllegalArgumentException("La estimación no puede ser nula para convertir a entidad");
         }
 
         EstimacionEntity entity = new EstimacionEntity();
@@ -55,7 +55,7 @@ public class EstimacionMapper {
      */
     public Estimacion toDomain(EstimacionEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("La entidad EstimacionEntity no puede ser nula para convertir a dominio");
         }
 
         // Mapear items
