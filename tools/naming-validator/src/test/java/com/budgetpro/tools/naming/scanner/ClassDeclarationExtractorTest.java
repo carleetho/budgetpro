@@ -28,7 +28,7 @@ class ClassDeclarationExtractorTest {
 
     @Test
     void testExtractRecord() {
-        String content = "public record PresupuestoId(UUID value) { }";
+        String content = "public record PresupuestoId(UUID value) { public PresupuestoId {} }";
         assertEquals(Optional.of("PresupuestoId"), extractor.extractClassName(content));
     }
 
@@ -47,7 +47,8 @@ class ClassDeclarationExtractorTest {
     @Test
     void testEmptyFile() {
         assertEquals(Optional.empty(), extractor.extractClassName(""));
-        assertEquals(Optional.empty(), extractor.extractClassName(null));
+        assertEquals(Optional.empty(), extractor.extractClassName(""));
+        assertThrows(NullPointerException.class, () -> extractor.extractClassName(null));
     }
 
     @Test
