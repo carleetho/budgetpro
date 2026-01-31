@@ -66,3 +66,11 @@ history:
     - "Siempre usar Mappers para convertir entre Entidades de Dominio y JPA."
   incidents:
     - "2025-12-01: Circular dependency introduced by importing Infrastructure in Domain."
+
+validators:
+  domain:
+    enabled: true
+    config_file: ".domain-validator.yaml"
+    strict_mode: false # true = warnings also block
+    severity_threshold: "HIGH" # CRITICAL, HIGH, MEDIUM, LOW
+

@@ -1,0 +1,119 @@
+# Domain Validator Configuration
+# Defines rules for domain layer purity and architectural boundaries
+
+domain:
+  # Base path to domain layer (relative to repo root)
+  path: "backend/src/main/java/com/budgetpro/domain"
+
+  # Expected bounded contexts
+  expected_contexts:
+    - finanzas
+    - proyecto
+    - catalogo
+    - recurso
+    - rrhh
+    - logistica
+    - shared
+
+  # Exclusion patterns (glob)
+  exclusions:
+    - "**/test/**"
+    - "**/*Test.java"
+    - "**/*TestData.java"
+    - "**/generated/**"
+
+purity_rules:
+  # Forbidden imports in domain layer
+  forbidden_imports:
+    - pattern: "org.springframework.*"
+      severity: CRITICAL
+      message: "Spring Framework import in domain layer"
+
+    - pattern: "com.budgetpro.infrastructure.*"
+      severity: CRITICAL
+      message: "Infrastructure package import in domain layer"
+
+    - pattern: "jakarta.persistence.*"
+      severity: CRITICAL
+      message: "JPA import in domain layer (use domain interfaces)"
+
+    - pattern: "com.budgetpro.application.*DTO"
+      severity: HIGH
+      message: "DTO import from application layer"
+
+    - pattern: "org.apache.poi.*"
+      severity: HIGH
+      message: "Heavy library (Apache POI) in domain layer"
+
+    - pattern: "java.sql.*"
+      severity: CRITICAL
+      message: "SQL import in domain layer"
+
+    - pattern: "com.budgetpro.infrastructure.web.*Controller"
+      severity: CRITICAL
+      message: "Controller import in domain layer"
+
+  # Forbidden annotations
+  forbidden_annotations:
+    - pattern: "@(Entity|Table|Id|Column|ManyToOne|OneToMany)"
+      severity: CRITICAL
+      message: "JPA annotation in domain layer"
+
+    - pattern: "@(Service|Component|Repository|Controller)"
+      severity: CRITICAL
+      message: "Spring stereotype annotation in domain layer"
+
+    - pattern: "@Transactional"
+      severity: CRITICAL
+      message: "Transaction management in domain layer"
+
+    - pattern: "@Autowired"
+      severity: CRITICAL
+      message: "Dependency injection annotation in domain layer"
+
+structure_rules:
+  # Required subdirectories per bounded context
+  required_structure:
+    - model # Entities, Value Objects, Aggregates
+    - port/in # Use case interfaces
+    - port/out # Repository/Service interfaces
+    - service # Domain services
+
+  # Forbidden directories
+  forbidden_directories:
+    - controller
+    - repository
+    - adapter
+    - config
+
+coupling_rules:
+  # Maximum allowed dependencies between contexts
+  max_cross_context_dependencies: 3
+
+  # Allowed dependencies (context -> context)
+  allowed_dependencies:
+    - from: "finanzas"
+      to: ["shared"]
+    - from: "proyecto"
+      to: ["shared", "finanzas"]
+    - from: "catalogo"
+      to: ["shared"]
+    - from: "recurso"
+      to: ["shared"]
+    - from: "rrhh"
+      to: ["shared"]
+    - from: "logistica"
+      to: ["shared", "catalogo"]
+
+reporting:
+  # Severity threshold for blocking
+  block_on: ["CRITICAL", "HIGH"]
+
+  # Output formats
+  formats:
+    - json
+    - markdown
+
+  # Include code context in reports
+  include_context: true
+  context_lines: 2
