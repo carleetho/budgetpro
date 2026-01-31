@@ -65,3 +65,4 @@ __pycache__/
 *$py.class
 .pytest_cache/
 .test_axiom_integration/
+tools/domain-validator/.refactoring-backup/
