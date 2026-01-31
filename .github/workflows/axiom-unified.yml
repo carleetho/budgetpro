@@ -10,6 +10,10 @@ jobs:
   axiom-validation:
     name: AXIOM Security & Quality Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
