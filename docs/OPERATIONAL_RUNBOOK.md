@@ -48,6 +48,7 @@ Las violaciones de integridad se detectan cuando:
 ### 1. Bloqueo Automático
 
 El sistema automáticamente:
+
 - ✅ **Bloquea la transacción**: Rollback automático
 - ✅ **Registra en audit log**: Entrada en `presupuesto_integrity_audit`
 - ✅ **Genera log crítico**: Log estructurado con contexto completo
@@ -56,12 +57,14 @@ El sistema automáticamente:
 ### 2. Acciones Manuales Inmediatas
 
 1. **Verificar Alertas**
+
    ```bash
    # Consultar métricas de Prometheus
    curl http://localhost:8080/actuator/prometheus | grep budget.integrity.violations
    ```
 
 2. **Revisar Logs Críticos**
+
    ```bash
    # Buscar violaciones en logs
    grep "CRITICAL: Budget integrity violation" /var/log/budgetpro/application.log
@@ -69,7 +72,7 @@ El sistema automáticamente:
 
 3. **Consultar Audit Log**
    ```sql
-   SELECT 
+   SELECT
        id,
        presupuesto_id,
        event_type,
@@ -92,7 +95,7 @@ El sistema automáticamente:
 
 ```sql
 -- Obtener último evento de violación
-SELECT 
+SELECT
     presupuesto_id,
     violation_details,
     validated_at,
@@ -107,12 +110,12 @@ LIMIT 1;
 
 ```sql
 -- Obtener hash esperado vs actual
-SELECT 
+SELECT
     hash_approval as expected_hash,
     hash_execution as actual_hash,
     violation_details
 FROM presupuesto_integrity_audit
-WHERE presupuesto_id = ? 
+WHERE presupuesto_id = ?
   AND event_type = 'HASH_VIOLATION'
 ORDER BY validated_at DESC
 LIMIT 1;
@@ -122,7 +125,7 @@ LIMIT 1;
 
 ```sql
 -- Verificar cambios en Partidas
-SELECT 
+SELECT
     id,
     item,
     descripcion,
@@ -134,7 +137,7 @@ WHERE presupuesto_id = ?
 ORDER BY updated_at DESC;
 
 -- Verificar cambios en APU Snapshots
-SELECT 
+SELECT
     apu.id,
     apu.partida_id,
     apu.rendimiento_vigente,
@@ -236,9 +239,10 @@ sum by (violation_type) (budget_integrity_violations_total)
 **Síntoma**: Hash no coincide, cambios detectados en base de datos
 
 **Acciones:**
+
 1. **Inmediato**: Bloquear todas las transacciones del presupuesto afectado
 2. **Investigación**: Identificar qué cambió y quién lo cambió
-3. **Restauración**: 
+3. **Restauración**:
    - Si es cambio no autorizado: Restaurar desde backup
    - Si es cambio legítimo: Crear nuevo presupuesto (no modificar aprobado)
 4. **Documentación**: Registrar incidente en sistema de tickets
@@ -248,6 +252,7 @@ sum by (violation_type) (budget_integrity_violations_total)
 **Síntoma**: Hash no coincide, pero no hay cambios en base de datos
 
 **Acciones:**
+
 1. **Verificación**: Confirmar que no hay cambios en datos
 2. **Debug**: Revisar logs para identificar causa
 3. **Fix**: Corregir bug en cálculo de hash
@@ -258,6 +263,7 @@ sum by (violation_type) (budget_integrity_violations_total)
 **Síntoma**: Hash no coincide, datos inconsistentes
 
 **Acciones:**
+
 1. **Análisis**: Identificar alcance de corrupción
 2. **Backup**: Verificar integridad de backups
 3. **Restauración**: Restaurar desde último backup válido
@@ -313,3 +319,23 @@ sum by (violation_type) (budget_integrity_violations_total)
 - [Integrity Implementation Guide](./INTEGRITY_IMPLEMENTATION.md)
 - [Arquitectura Visual - Diagramas de Integridad](../ARQUITECTURA_VISUAL.md#11-arquitectura-de-integridad-criptográfica)
 - [Business Manifesto - Integridad Criptográfica](../context/BUSINESS_MANIFESTO.md#9-principio-de-integridad-criptográfica-swiss-grade)
+
+---
+
+## Historial de Ejecuciones de Sesión (Logs)
+
+### Sesión 2026-01-31: Estabilización y Restauración Masiva
+
+**Objetivo**: Recuperar proyecto de estado MODE_0 (refactor fallido de Estimación).
+**Acciones Ejecutadas**:
+
+1. ✅ **Restauración Bulk**: Reemplazo de 202 archivos desde baseline `rescue/post-audit-base`.
+2. ✅ **Remediación de Validadores**: Fix en `SecurityValidator.py` para rutas relativas de `mvnw`.
+3. ✅ **Limpieza de Código Perezoso**: Eliminación de bloqueos en `EstimacionMapper` (reemplazo de `return null` por excepciones).
+4. ✅ **Validación Final**: `./mvnw clean compile` resultando en `BUILD SUCCESS`.
+
+**Métricas Finales**:
+
+- Bloqueos resueltos: 6 (Axiom security + Lazy code).
+- Advertencias remanentes: 1 (.gitignore desactualizado).
+- Estatus Final: **MODE_2 (Estabilizado)**.
