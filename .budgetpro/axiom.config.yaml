@@ -6,9 +6,9 @@
 protection_zones:
   # Red Zones: Critical domain logic. High risk. Very strict limits.
   red:
-    - path: "domain/finanzas/presupuesto"
+    - path: "domain/presupuesto"
       max_files: 1
-    - path: "domain/finanzas/estimacion"
+    - path: "domain/estimacion"
       max_files: 1
     - path: "domain/valueobjects"
       max_files: 1
@@ -55,10 +55,29 @@ validators:
     enabled: true
     strictness: "blocking"
 
-  # Dependency Validator: Enforces architectural boundaries (Domain isolation).
-  dependency_validator:
+  # Naming Validator: Enforces architectural naming conventions.
+  naming_validator:
     enabled: true
-    domain_patterns: ["domain/"]
+    jar_path: "tools/naming-validator/target/naming-validator-1.0.0-SNAPSHOT.jar"
+    source_path: "backend/src/main/java"
+
+  # Boundary Validator: Enforces hexagonal architectural boundaries.
+  boundary_validator:
+    enabled: true
+    jar_path: "tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar"
+    domain_path: "backend/src/main/java/com/budgetpro/domain"
+
+  # State Machine Validator: Validates domain state transitions.
+  state_machine_validator:
+    enabled: true
+    jar_path: "tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar"
+    domain_path: "backend/src/main/java/com/budgetpro/domain"
+
+  # Semgrep Validator: Security and architecture static analysis.
+  semgrep_validator:
+    enabled: true
+    rules_path: ".semgrep/rules"
+    config_path: ".semgrep/config/pr.yaml"
 
 # Reporters: Where to send validation results.
 reporters:
@@ -84,7 +103,7 @@ auto_fix:
 # Add keywords to this list (or use commit message tags) to bypass specific checks.
 overrides:
   # List of active override keywords.
-  enabled_keywords: ["BIGBANG_APPROVED"]
+  enabled_keywords: []
   # Examples of override keywords:
   # - OVERRIDE_ESTIMACION  # Allow changes to Estimacion module
   # - OVERRIDE_PRESUPUESTO # Allow changes to Presupuesto module
