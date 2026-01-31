@@ -13,7 +13,7 @@ import java.util.UUID;
  * Relación 1:N (un frente de trabajo, varias cuadrillas).
  * Unique constraint: (proyecto_id, codigo) — sin códigos duplicados por proyecto.
  */
-@Entity
+@Entity(name = "OrganizacionCuadrillaEntity")
 @Table(name = "cuadrilla",
         uniqueConstraints = @UniqueConstraint(name = "uq_cuadrilla_proyecto_codigo", columnNames = {"proyecto_id", "codigo"}),
         indexes = {
