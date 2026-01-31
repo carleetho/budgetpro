@@ -1,9 +1,4 @@
-name: Semgrep Security Scan
-
-# This workflow runs Semgrep static analysis on all code changes.
-# Includes immutability validation for domain entities, snapshots, and value objects.
-# Blocking violations (ERROR severity) prevent merge to main/develop branches.
-# Warnings (WARNING severity) are displayed in PR comments but don't block merge.
+name: Semgrep Security & Quality Analysis
 
 on:
   push:
@@ -13,42 +8,175 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  pull-requests: write # For inline comments
-  actions: read
+  security-events: write # For SARIF upload
+  pull-requests: write # For PR comments
 
 jobs:
-  semgrep-scan:
-    name: Semgrep Analysis
+  semgrep:
+    name: Semgrep Static Analysis
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      # Runs Semgrep with PR profile configuration
-      # Scans all rules in .semgrep/rules/ including:
-      # - Security rules (hardcoded secrets, JWT, etc.)
-      # - Domain immutability rules (entities, snapshots, value objects)
-      #   * 04-entity-final-fields.yaml: Non-final fields in domain entities
-      #   * 05-snapshot-immutability.yaml: Setters in snapshot classes
-      #   * 06-valueobject-no-setters.yaml: Setters in value objects
-      # - Architecture rules (hexagonal boundaries)
-      # - Quality rules (null safety, exception handling)
-      # 
-      # Blocking violations (ERROR severity) fail the workflow and prevent merge.
-      # Warnings (WARNING severity) are reported but don't block merge.
-      # Semgrep Action automatically scans .semgrep/rules/ when using a config file.
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
         with:
-          config: .semgrep/config/pr.yaml
-          generateSarif: "1"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Full history for better analysis
 
-      # Uploads SARIF file to GitHub Security tab for vulnerability tracking
-      - name: Upload SARIF file
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install Semgrep
+        run: |
+          pip install semgrep
+          semgrep --version
+
+      - name: Determine Config Context
+        id: config
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "config=pr.yaml" >> $GITHUB_OUTPUT
+            echo "context=PR" >> $GITHUB_OUTPUT
+          else
+            echo "config=main.yaml" >> $GITHUB_OUTPUT
+            echo "context=Main Branch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Semgrep Scan
+        id: semgrep
+        run: |
+          echo "Running Semgrep in ${{ steps.config.outputs.context }} context..."
+
+          # Run Semgrep with appropriate config
+          # --error flag causes exit code 1 if ERROR severity findings exist
+          # --json and --sarif for multiple output formats
+          semgrep scan \
+            --config .semgrep/rules/ \
+            --config .semgrep/config/${{ steps.config.outputs.config }} \
+            --error \
+            --json --output findings.json \
+            --sarif --output findings.sarif \
+            --text --output findings.txt \
+            backend/src/ || echo "SEMGREP_FAILED=true" >> $GITHUB_ENV
+
+          # Count findings by severity
+          ERROR_COUNT=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' findings.json)
+          WARNING_COUNT=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' findings.json)
+          INFO_COUNT=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' findings.json)
+
+          echo "ERROR_COUNT=$ERROR_COUNT" >> $GITHUB_ENV
+          echo "WARNING_COUNT=$WARNING_COUNT" >> $GITHUB_ENV
+          echo "INFO_COUNT=$INFO_COUNT" >> $GITHUB_ENV
+
+          echo "### Semgrep Results" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔴 ERROR: $ERROR_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️  WARNING: $WARNING_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- ℹ️  INFO: $INFO_COUNT" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true # Don't fail workflow yet, handle in next step
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: semgrep.sarif
+          sarif_file: findings.sarif
+          category: semgrep
+
+      - name: Upload Findings as Artifacts
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-findings-${{ github.sha }}
+          path: |
+            findings.json
+            findings.sarif
+            findings.txt
+          retention-days: 30
+
+      - name: Post PR Comment with Findings
+        if: github.event_name == 'pull_request' && env.ERROR_COUNT != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const findings = JSON.parse(fs.readFileSync('findings.json', 'utf8'));
+
+            // Group findings by severity
+            const errors = findings.results.filter(f => f.extra.severity === 'ERROR');
+            const warnings = findings.results.filter(f => f.extra.severity === 'WARNING');
+
+            // Build comment body
+            let body = '## 🔍 Semgrep Analysis Results\n\n';
+            body += `- 🔴 **ERROR**: ${errors.length} (blocking)\n`;
+            body += `- ⚠️  **WARNING**: ${warnings.length} (non-blocking)\n`;
+            body += `- ℹ️  **INFO**: ${process.env.INFO_COUNT}\n\n`;
+
+            if (errors.length > 0) {
+              body += '### ❌ Blocking Issues (ERROR)\n\n';
+              body += 'The following issues must be fixed before this PR can be merged:\n\n';
+              
+              errors.slice(0, 10).forEach(error => {
+                const file = error.path;
+                const line = error.start.line;
+                const ruleId = error.check_id.split('.').pop();
+                const message = error.extra.message.split('\n')[0];
+                
+                body += `- **${ruleId}** in \`${file}:${line}\`\n`;
+                body += `  ${message}\n\n`;
+              });
+              
+              if (errors.length > 10) {
+                body += `\n_...and ${errors.length - 10} more ERROR findings. See artifacts for full report._\n\n`;
+              }
+            }
+
+            if (warnings.length > 0 && warnings.length <= 5) {
+              body += '\n### ⚠️  Warnings (Non-blocking)\n\n';
+              warnings.forEach(warning => {
+                const file = warning.path;
+                const line = warning.start.line;
+                const ruleId = warning.check_id.split('.').pop();
+                const message = warning.extra.message.split('\n')[0];
+                
+                body += `- **${ruleId}** in \`${file}:${line}\`\n`;
+                body += `  ${message}\n\n`;
+              });
+            } else if (warnings.length > 5) {
+              body += `\n### ⚠️  Warnings (Non-blocking)\n\n`;
+              body += `${warnings.length} warnings found. See artifacts for full report.\n\n`;
+            }
+
+            body += '\n---\n';
+            body += '💡 **How to fix:**\n';
+            body += '1. Review findings in the workflow artifacts\n';
+            body += '2. Fix ERROR severity issues (required)\n';
+            body += '3. Consider fixing WARNING issues (recommended)\n';
+            body += '4. For valid exceptions, use `// nosemgrep: <rule-id>` with justification\n';
+            body += '\n📚 **Documentation:**\n';
+            body += '- [Semgrep Guide](../blob/main/docs/semgrep-guide.md)\n';
+            body += '- [Exception Guidelines](../blob/main/.semgrep/docs/exception-guidelines.md)\n';
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail Workflow if ERROR Findings Exist
+        if: env.SEMGREP_FAILED == 'true'
+        run: |
+          echo "::error::Semgrep found ${{ env.ERROR_COUNT }} ERROR severity findings that block merge."
+          echo "Review the findings in the workflow artifacts or PR comments."
+          echo "Fix the issues or add nosemgrep annotations with justification."
+          exit 1
+
+      - name: Success Summary
+        if: env.ERROR_COUNT == '0'
+        run: |
+          echo "✅ Semgrep scan passed!"
+          echo "- No ERROR severity findings"
+          echo "- ${{ env.WARNING_COUNT }} warnings (non-blocking)"
+          echo "- ${{ env.INFO_COUNT }} info findings"

@@ -4,14 +4,16 @@ name: Verify .cursorrules Synchronization
 on:
   pull_request:
     paths:
-      - "axiom.yaml"
+      - "axiom.config.yaml"
+      - ".budgetpro/axiom.config.yaml"
       - ".cursorrules"
   push:
     branches:
       - main
       - develop
     paths:
-      - "axiom.yaml"
+      - "axiom.config.yaml"
+      - ".budgetpro/axiom.config.yaml"
       - ".cursorrules"
 
 jobs:
