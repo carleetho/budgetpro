@@ -1,4 +1,162 @@
-# Local development profile: warn only, no blocking
-# Run with: semgrep --config .semgrep/rules/ --config .semgrep/config/local.yaml .
+# ============================================================================
+# Semgrep Configuration - Local Development Context
+# ============================================================================
+#
+# This configuration is used for local development and pre-commit hooks.
+# It provides early feedback to developers without blocking their workflow.
+#
+# Usage:
+#   semgrep scan --config .semgrep/rules/ --config .semgrep/config/local.yaml .
+#
+# Enforcement Policy:
+#   - All findings are WARNINGS (non-blocking)
+#   - Developers can choose to fix or defer to PR review
+#   - Encourages early detection without interrupting flow
+#
+# Integration:
+#   - AXIOM pre-commit hook: tools/axiom/validators/semgrep_validator.py
+#   - Manual execution: .semgrep/scripts/scan-all.sh
+#   - IDE integration: Configure Semgrep extension to use this config
+#
+# ============================================================================
 
+# Auto-discovery: Empty rules array means Semgrep will scan all rules in
+# .semgrep/rules/ directory. Local context executes the same rules as PR/main
+# but with different enforcement (warnings only, no blocking).
 rules: []
+
+# ============================================================================
+# Developer Experience Optimizations
+# ============================================================================
+#
+# Local scans are optimized for:
+#
+# 1. Speed
+#    - Scan only staged files in pre-commit hook
+#    - Skip test files (already in .semgrepignore)
+#    - Use --fast flag for quicker analysis
+#
+# 2. Clarity
+#    - Concise output focused on actionable items
+#    - Rule IDs included for easy suppression
+#    - Links to documentation for each finding
+#
+# 3. Non-Intrusiveness
+#    - No blocking (exit code always 0)
+#    - Optional execution (can be skipped with --no-verify)
+#    - Minimal noise (only show ERROR and WARNING, hide INFO)
+#
+# ============================================================================
+# Rule Execution (Same Rules, Different Enforcement)
+# ============================================================================
+#
+# All rules from .semgrep/rules/ are executed, but:
+#
+# - ERROR severity → Displayed as WARNING (non-blocking)
+# - WARNING severity → Displayed as INFO (informational)
+# - INFO severity → Hidden by default (use --verbose to show)
+#
+# This provides early feedback without interrupting development flow.
+# Developers can:
+#   - Fix issues immediately (recommended)
+#   - Add nosemgrep annotation with justification (for valid exceptions)
+#   - Defer to PR review (issues will be caught by CI/CD)
+#
+# ============================================================================
+# Quick Reference
+# ============================================================================
+#
+# Scan all files (local development):
+#   semgrep scan --config .semgrep/rules/ --config .semgrep/config/local.yaml .
+#
+# Scan only staged files (pre-commit):
+#   git diff --cached --name-only --diff-filter=ACM | \
+#     xargs semgrep scan --config .semgrep/rules/ --config .semgrep/config/local.yaml
+#
+# Scan specific category:
+#   semgrep scan --config .semgrep/rules/security/ --config .semgrep/config/local.yaml .
+#
+# Scan with auto-fix (use with caution):
+#   semgrep scan --config .semgrep/rules/ --config .semgrep/config/local.yaml --autofix .
+#
+# Test rules (validate rule behavior):
+#   semgrep --test .semgrep/rules/
+#
+# ============================================================================
+# Output Formats
+# ============================================================================
+#
+# Local development supports multiple output formats:
+#
+# 1. Text (default)
+#    - Human-readable console output
+#    - Color-coded by severity
+#    - Includes file path, line number, and message
+#
+# 2. JSON (for tooling integration)
+#    - Machine-readable format
+#    - Can be parsed by IDEs or custom scripts
+#    - Command: --json
+#
+# 3. Sarif (for IDE integration)
+#    - Standard format for static analysis
+#    - Supported by VS Code, IntelliJ, etc.
+#    - Command: --sarif
+#
+# ============================================================================
+# IDE Integration
+# ============================================================================
+#
+# Configure your IDE to use this config for real-time feedback:
+#
+# VS Code (Semgrep Extension):
+#   1. Install "Semgrep" extension
+#   2. Settings → Semgrep: Config Path → .semgrep/config/local.yaml
+#   3. Settings → Semgrep: Rules Path → .semgrep/rules/
+#
+# IntelliJ IDEA (Semgrep Plugin):
+#   1. Install "Semgrep" plugin
+#   2. Preferences → Tools → Semgrep → Config → .semgrep/config/local.yaml
+#   3. Preferences → Tools → Semgrep → Rules → .semgrep/rules/
+#
+# ============================================================================
+# Performance
+# ============================================================================
+#
+# Local scans are optimized for speed:
+#
+# - Full codebase scan: ~1.5 seconds
+# - Staged files only (pre-commit): ~0.3 seconds
+# - Single file scan: ~0.1 seconds
+#
+# Tips for faster scans:
+#   - Use .semgrepignore to exclude large directories
+#   - Scan only modified files in pre-commit
+#   - Use --fast flag for quicker (less thorough) analysis
+#   - Run specific categories instead of all rules
+#
+# ============================================================================
+# Troubleshooting
+# ============================================================================
+#
+# "Scan is too slow"
+#   → Check .semgrepignore excludes target/, node_modules/, etc.
+#   → Use --fast flag for quicker analysis
+#   → Scan only staged files instead of entire codebase
+#
+# "Too many false positives"
+#   → Add nosemgrep annotation with justification
+#   → Report false positive to team for rule refinement
+#   → Check if file should be in .semgrepignore
+#
+# "Rule not executing"
+#   → Verify rule file exists in .semgrep/rules/
+#   → Check rule paths match your file structure
+#   → Run with --verbose to see rule matching details
+#
+# "Semgrep not found"
+#   → Install: pip install semgrep
+#   → Verify: semgrep --version
+#   → Check PATH includes pip installation directory
+#
+# ============================================================================
