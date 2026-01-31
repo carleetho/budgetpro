@@ -95,13 +95,15 @@ class SecurityValidator(BaseValidator):
         if not os.path.exists(mvnw_path):
             if os.path.exists("mvnw"):
                 mvnw_path = "./mvnw"
-                backend_dir = "."
             else:
                 return []
 
         try:
+            # Use ./mvnw if we are running inside the backend directory
+            cmd_mvnw = "./mvnw" if backend_dir == "backend" else mvnw_path
+            
             result = subprocess.run(
-                [mvnw_path, "compile", "-DskipTests"],
+                [cmd_mvnw, "compile", "-DskipTests"],
                 cwd=backend_dir,
                 capture_output=True,
                 text=True,
