@@ -21,6 +21,8 @@ import java.util.Optional;
  */
 public class ValidationEngine {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ValidationEngine.class.getName());
     private final JavaFileScanner scanner;
     private final ClassDeclarationExtractor extractor;
     private final LayerDetector detector;
@@ -28,10 +30,10 @@ public class ValidationEngine {
 
     public ValidationEngine(JavaFileScanner scanner, ClassDeclarationExtractor extractor, LayerDetector detector,
             Map<ArchitecturalLayer, ValidationRule> rules) {
-        this.scanner = scanner;
-        this.extractor = extractor;
-        this.detector = detector;
-        this.rules = rules;
+        this.scanner = java.util.Objects.requireNonNull(scanner, "Scanner cannot be null");
+        this.extractor = java.util.Objects.requireNonNull(extractor, "Extractor cannot be null");
+        this.detector = java.util.Objects.requireNonNull(detector, "Detector cannot be null");
+        this.rules = java.util.Objects.requireNonNull(rules, "Rules cannot be null");
     }
 
     /**
@@ -41,6 +43,7 @@ public class ValidationEngine {
      * @return Resultado de la validación con todas las violaciones encontradas.
      */
     public ValidationResult validate(Path rootPath) {
+        java.util.Objects.requireNonNull(rootPath, "Root path cannot be null");
         List<NamingViolation> allViolations = new ArrayList<>();
 
         try {
@@ -50,11 +53,11 @@ public class ValidationEngine {
                 try {
                     processFile(filePath, allViolations);
                 } catch (Exception e) {
-                    System.err.println("Error procesando archivo " + filePath + ": " + e.getMessage());
+                    LOGGER.severe("Error procesando archivo " + filePath + ": " + e.getMessage());
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error durante el escaneo de archivos: " + e.getMessage());
+            LOGGER.severe("Error durante el escaneo de archivos: " + e.getMessage());
         }
 
         return new ValidationResult(allViolations);
