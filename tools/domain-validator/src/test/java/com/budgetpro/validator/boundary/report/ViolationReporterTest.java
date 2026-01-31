@@ -26,7 +26,8 @@ class ViolationReporterTest {
         Files.write(modelFile, List.of("package com.budgetpro.domain.model;",
                 "import org.springframework.stereotype.Component;", "import java.util.List;", "public class Model {}"));
 
-        BoundaryConfig config = new BoundaryConfig(List.of("org.springframework.*"), List.of("java.*"));
+        BoundaryConfig config = new BoundaryConfig(true, "CRITICAL", true, List.of("org.springframework.*"),
+                List.of("java.*"));
 
         ViolationReporter reporter = new ViolationReporter(new DomainScanner(), config);
         List<BoundaryViolation> violations = reporter.validateDomain(domainDir);
@@ -45,7 +46,8 @@ class ViolationReporterTest {
         Files.write(modelFile,
                 List.of("package com.budgetpro.domain.model;", "import java.util.List;", "public class Model {}"));
 
-        BoundaryConfig config = new BoundaryConfig(List.of("org.springframework.*"), List.of("java.*"));
+        BoundaryConfig config = new BoundaryConfig(true, "CRITICAL", true, List.of("org.springframework.*"),
+                List.of("java.*"));
 
         ViolationReporter reporter = new ViolationReporter(new DomainScanner(), config);
         List<BoundaryViolation> violations = reporter.validateDomain(domainDir);
