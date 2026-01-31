@@ -2,6 +2,7 @@ package com.budgetpro.tools.naming.rules;
 
 import com.budgetpro.tools.naming.model.NamingViolation;
 import com.budgetpro.tools.naming.model.ViolationSeverity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -12,7 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DomainEntityRuleTest {
 
-    private final DomainEntityRule rule = new DomainEntityRule();
+    private DomainEntityRule rule;
+
+    @BeforeEach
+    void setUp() {
+        rule = new DomainEntityRule(null);
+    }
+
     private final Path testPath = Paths.get("domain/model/Presupuesto.java");
 
     @Test
@@ -28,7 +35,7 @@ class DomainEntityRuleTest {
         NamingViolation violation = violations.get(0);
         assertEquals(ViolationSeverity.BLOCKING, violation.severity());
         assertEquals("Presupuesto", violation.expectedName());
-        assertTrue(violation.message().contains("sufijo incorrecto"));
+        assertTrue(violation.message().contains("Sufijo prohibido detectado"));
     }
 
     @Test

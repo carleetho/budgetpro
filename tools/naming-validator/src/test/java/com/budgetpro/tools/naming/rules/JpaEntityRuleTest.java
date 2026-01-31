@@ -12,21 +12,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JpaEntityRuleTest {
 
-    private final JpaEntityRule rule = new JpaEntityRule();
+    private final JpaEntityRule rule = new JpaEntityRule(null);
     private final Path testPath = Paths.get("infrastructure/persistence/entity/PresupuestoJpaEntity.java");
 
     @Test
-    void testValidJpaEntity() {
+    void validate_ValidJpaEntity_NoViolations() {
         List<NamingViolation> violations = rule.validate(testPath, "PresupuestoJpaEntity");
         assertTrue(violations.isEmpty());
     }
 
     @Test
-    void testInvalidJpaEntity() {
-        List<NamingViolation> violations = rule.validate(testPath, "Presupuesto");
-        assertEquals(1, violations.size());
-        NamingViolation violation = violations.get(0);
-        assertEquals(ViolationSeverity.WARNING, violation.severity());
-        assertEquals("PresupuestoJpaEntity", violation.expectedName());
+    void validate_InvalidJpaEntity_ReturnsViolation() {
+        List<NamingViolation> violations = rule.validate(testPath, "PresupuestoEntity");
+        assertFalse(violations.isEmpty());
+        assertEquals("PresupuestoEntityJpaEntity", violations.get(0).expectedName());
+        assertEquals(ViolationSeverity.BLOCKING, violations.get(0).severity());
     }
 }
