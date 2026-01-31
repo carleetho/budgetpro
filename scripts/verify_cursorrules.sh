@@ -100,7 +100,11 @@ def check_validators_in_rules(cursorrules, validators):
         'blast_radius': 'Blast Radius',
         'security_validator': 'secretos expuestos',
         'lazy_code': 'Lazy Code',
-        'dependency_validator': 'Arquitectura Hexagonal'
+        'dependency_validator': 'Arquitectura Hexagonal',
+        'naming_validator': 'nomenclatura',
+        'boundary_validator': 'Fronteras Hexagonales',
+        'state_machine_validator': 'transiciones de estado',
+        'semgrep_validator': 'seguridad'
     }
     
     for validator in validators:
@@ -192,7 +196,7 @@ def main():
     print("\n" + "="*50)
     if not all_issues:
         print("✅ VERIFICACIÓN EXITOSA")
-        print("   .cursorrules está sincronizado con axiom.yaml")
+        print("   .cursorrules está sincronizado con axiom.config.yaml")
         sys.exit(0)
     else:
         print(f"⚠️  ENCONTRADOS {len(all_issues)} PROBLEMAS")

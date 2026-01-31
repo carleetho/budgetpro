@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "severity": "CRITICAL",
+  "structural_analysis": true,
+  "forbidden_imports": [
+    "org.springframework.*",
+    "jakarta.persistence.*",
+    "jakarta.enterprise.*",
+    "jakarta.inject.*",
+    "com.fasterxml.jackson.*",
+    "org.hibernate.*",
+    "java.sql.*",
+    "javax.persistence.*"
+  ],
+  "allowed_standard_libs": [
+    "java.util.*",
+    "java.time.*",
+    "java.math.*",
+    "com.budgetpro.domain.*",
+    "org.slf4j.*"
+  ]
+}

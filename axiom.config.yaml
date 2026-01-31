@@ -55,6 +55,32 @@ validators:
     enabled: true
     strictness: "blocking"
 
+  # Naming Validator: Enforces architectural naming conventions.
+  naming_validator:
+    enabled: true
+    jar_path: "tools/naming-validator/target/naming-validator-1.0.0-SNAPSHOT.jar"
+    source_path: "backend/src/main/java"
+    config_path: ".budgetpro/naming-config.yaml"
+
+  # Boundary Validator: Enforces hexagonal architectural boundaries.
+  boundary_validator:
+    enabled: true
+    jar_path: "tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar"
+    domain_path: "backend/src/main/java/com/budgetpro/domain"
+    config_path: ".budgetpro/boundary-rules.json"
+
+  # State Machine Validator: Validates domain state transitions.
+  state_machine_validator:
+    enabled: true
+    jar_path: "tools/domain-validator/target/domain-validator-1.0.0-SNAPSHOT.jar"
+    domain_path: "backend/src/main/java/com/budgetpro/domain"
+
+  # Semgrep Validator: Security and architecture static analysis.
+  semgrep_validator:
+    enabled: true
+    rules_path: ".semgrep/rules"
+    config_path: ".semgrep/config/pr.yaml"
+
 # Reporters: Where to send validation results.
 reporters:
   console:
