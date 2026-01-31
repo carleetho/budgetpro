@@ -23,14 +23,15 @@ import java.util.Map;
  * Busca clases con @Service o clases en paquetes service/ o usecase/.
  */
 public class ServiceDetector {
-    
+
     private final JavaParser javaParser;
-    
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger
+            .getLogger(ServiceDetector.class.getName());
+
     public ServiceDetector() {
         TypeSolver typeSolver = new CombinedTypeSolver(new ReflectionTypeSolver());
         this.javaParser = new JavaParser();
-        this.javaParser.getParserConfiguration()
-                .setSymbolResolver(new JavaSymbolSolver(typeSolver));
+        this.javaParser.getParserConfiguration().setSymbolResolver(new JavaSymbolSolver(typeSolver));
     }
 
     /**
@@ -41,17 +42,17 @@ public class ServiceDetector {
      */
     public Map<String, List<String>> detectServices(Path domainPath) {
         Map<String, List<String>> services = new HashMap<>();
-        
+
         if (domainPath == null || !domainPath.toFile().exists()) {
             return services;
         }
-        
+
         try {
             scanDirectory(domainPath.toFile(), services);
         } catch (Exception e) {
-            System.err.println("Error scanning services: " + e.getMessage());
+            LOGGER.severe("Error scanning services: " + e.getMessage());
         }
-        
+
         return services;
     }
 
@@ -63,7 +64,7 @@ public class ServiceDetector {
         if (files == null) {
             return;
         }
-        
+
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDirectory(file, services);
@@ -85,28 +86,25 @@ public class ServiceDetector {
         if (cu == null) {
             return;
         }
-        
-        String packageName = cu.getPackageDeclaration()
-                .map(p -> p.getNameAsString())
-                .orElse("");
-        
+
+        String packageName = cu.getPackageDeclaration().map(p -> p.getNameAsString()).orElse("");
+
         // Buscar clases en paquetes service/ o usecase/ o con @Service
         List<ClassOrInterfaceDeclaration> classes = cu.findAll(ClassOrInterfaceDeclaration.class);
-        
+
         for (ClassOrInterfaceDeclaration clazz : classes) {
             boolean isService = false;
-            
+
             // Verificar si está en paquete service o usecase
             if (packageName.contains("service") || packageName.contains("usecase")) {
                 isService = true;
             }
-            
+
             // Verificar si tiene anotación @Service
-            if (clazz.getAnnotations().stream()
-                    .anyMatch(a -> a.getNameAsString().equals("Service"))) {
+            if (clazz.getAnnotations().stream().anyMatch(a -> a.getNameAsString().equals("Service"))) {
                 isService = true;
             }
-            
+
             // Verificar comentario
             if (clazz.getComment().isPresent()) {
                 String comment = clazz.getComment().get().toString().toLowerCase();
@@ -114,7 +112,7 @@ public class ServiceDetector {
                     isService = true;
                 }
             }
-            
+
             if (isService && !clazz.isInterface()) {
                 String serviceName = packageName + "." + clazz.getNameAsString();
                 List<String> methods = extractPublicMethods(clazz);
@@ -128,14 +126,14 @@ public class ServiceDetector {
      */
     private List<String> extractPublicMethods(ClassOrInterfaceDeclaration clazz) {
         List<String> methods = new ArrayList<>();
-        
+
         List<MethodDeclaration> methodDeclarations = clazz.getMethods();
         for (MethodDeclaration method : methodDeclarations) {
             if (method.isPublic() && !method.isStatic()) {
                 methods.add(method.getNameAsString());
             }
         }
-        
+
         return methods;
     }
 }
