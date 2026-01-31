@@ -1,60 +1,50 @@
 package com.budgetpro.infrastructure.persistence.mapper.estimacion;
 
-import com.budgetpro.domain.finanzas.estimacion.model.DetalleEstimacion;
-import com.budgetpro.domain.finanzas.estimacion.model.Estimacion;
-import com.budgetpro.domain.finanzas.estimacion.model.EstimacionId;
-import com.budgetpro.infrastructure.persistence.entity.estimacion.DetalleEstimacionEntity;
+import com.budgetpro.domain.finanzas.estimacion.model.*;
+import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.infrastructure.persistence.entity.estimacion.EstimacionEntity;
+import com.budgetpro.infrastructure.persistence.entity.estimacion.EstimacionItemEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Mapper para convertir entre Estimacion (dominio) y EstimacionEntity (persistencia).
+ * Mapper para convertir entre Estimacion (dominio) y EstimacionEntity
+ * (persistencia).
+ * 
+ * CRÍTICO: Este mapper está alineado con la estructura actual del dominio y la
+ * entidad JPA. Solo usa métodos públicos disponibles en el dominio.
  */
 @Component
 public class EstimacionMapper {
 
-    private final DetalleEstimacionMapper detalleMapper;
-
-    public EstimacionMapper(DetalleEstimacionMapper detalleMapper) {
-        this.detalleMapper = detalleMapper;
-    }
-
     /**
-     * Convierte un Estimacion (dominio) a EstimacionEntity (persistencia) para CREACIÓN.
-     * 
-     * CRÍTICO: Para nuevas entidades, pasa null en version.
-     * Hibernate inicializará la versión automáticamente.
+     * Convierte un Estimacion (dominio) a EstimacionEntity (persistencia) para
+     * CREACIÓN.
      */
     public EstimacionEntity toEntity(Estimacion estimacion) {
         if (estimacion == null) {
             return null;
         }
 
-        EstimacionEntity entity = new EstimacionEntity(
-            estimacion.getId().getValue(),
-            estimacion.getProyectoId(),
-            estimacion.getNumeroEstimacion(),
-            estimacion.getFechaCorte(),
-            estimacion.getPeriodoInicio(),
-            estimacion.getPeriodoFin(),
-            estimacion.getMontoBruto(),
-            estimacion.getAmortizacionAnticipo(),
-            estimacion.getRetencionFondoGarantia(),
-            estimacion.getMontoNetoPagar(),
-            estimacion.getEvidenciaUrl(),
-            estimacion.getEstado(),
-            null // CRÍTICO: null para nuevas entidades, Hibernate lo manejará
-        );
+        EstimacionEntity entity = new EstimacionEntity();
+        entity.setId(estimacion.getId().getValue());
+        entity.setPresupuestoId(estimacion.getPresupuestoId().getValue());
+        entity.setNumeroEstimacion(0L); // TODO: Implementar generación de número de estimación
+        entity.setEstado(estimacion.getEstado());
+        entity.setFechaInicio(estimacion.getPeriodo().getFechaInicio());
+        entity.setFechaFin(estimacion.getPeriodo().getFechaFin());
+        entity.setRetencionPorcentaje(estimacion.getRetencionPorcentaje().getValue());
+        // fechaCreacion, fechaAprobacion, aprobadoPor son manejados por Hibernate o no
+        // son accesibles
 
-        // Mapear detalles
-        if (estimacion.getDetalles() != null && !estimacion.getDetalles().isEmpty()) {
-            List<DetalleEstimacionEntity> detallesEntity = estimacion.getDetalles().stream()
-                    .map(detalle -> detalleMapper.toEntity(detalle, entity))
-                    .collect(Collectors.toList());
-            entity.setDetalles(detallesEntity);
+        // Mapear items
+        if (estimacion.getItems() != null && !estimacion.getItems().isEmpty()) {
+            List<EstimacionItemEntity> itemsEntity = estimacion.getItems().stream()
+                    .map(item -> toItemEntity(item, entity)).collect(Collectors.toList());
+            entity.setItems(itemsEntity);
         }
 
         return entity;
@@ -68,55 +58,60 @@ public class EstimacionMapper {
             return null;
         }
 
-        // Mapear detalles
-        List<DetalleEstimacion> detalles = entity.getDetalles().stream()
-                .map(detalleMapper::toDomain)
-                .collect(Collectors.toList());
+        // Mapear items
+        List<EstimacionItem> items = entity.getItems() != null
+                ? entity.getItems().stream().map(this::toItemDomain).collect(Collectors.toList())
+                : Collections.emptyList();
 
-        return Estimacion.reconstruir(
-            EstimacionId.of(entity.getId()),
-            entity.getProyectoId(),
-            entity.getNumeroEstimacion(),
-            entity.getFechaCorte(),
-            entity.getPeriodoInicio(),
-            entity.getPeriodoFin(),
-            entity.getMontoBruto(),
-            entity.getAmortizacionAnticipo(),
-            entity.getRetencionFondoGarantia(),
-            entity.getMontoNetoPagar(),
-            entity.getEvidenciaUrl(),
-            entity.getEstado(),
-            detalles,
-            entity.getVersion() != null ? entity.getVersion().longValue() : 0L
-        );
+        return Estimacion.reconstruir(EstimacionId.of(entity.getId()), PresupuestoId.from(entity.getPresupuestoId()),
+                PeriodoEstimacion.of(entity.getFechaInicio(), entity.getFechaFin()), entity.getEstado(),
+                RetencionPorcentaje.of(entity.getRetencionPorcentaje()), items, null, // snapshot - TODO: Implementar si
+                                                                                      // es necesario
+                entity.getFechaCreacion(), entity.getFechaAprobacion(), entity.getAprobadoPor());
     }
 
     /**
      * Actualiza una entidad existente con los datos del dominio.
-     * 
-     * CRÍTICO: NO se modifica la versión manualmente. Hibernate la incrementa automáticamente.
      */
     public void updateEntity(EstimacionEntity existingEntity, Estimacion estimacion) {
-        existingEntity.setFechaCorte(estimacion.getFechaCorte());
-        existingEntity.setPeriodoInicio(estimacion.getPeriodoInicio());
-        existingEntity.setPeriodoFin(estimacion.getPeriodoFin());
-        existingEntity.setMontoBruto(estimacion.getMontoBruto());
-        existingEntity.setAmortizacionAnticipo(estimacion.getAmortizacionAnticipo());
-        existingEntity.setRetencionFondoGarantia(estimacion.getRetencionFondoGarantia());
-        existingEntity.setMontoNetoPagar(estimacion.getMontoNetoPagar());
-        existingEntity.setEvidenciaUrl(estimacion.getEvidenciaUrl());
         existingEntity.setEstado(estimacion.getEstado());
-        
-        // Actualizar detalles: eliminar todos y agregar los nuevos
-        existingEntity.getDetalles().clear();
-        if (estimacion.getDetalles() != null && !estimacion.getDetalles().isEmpty()) {
-            List<DetalleEstimacionEntity> nuevosDetalles = estimacion.getDetalles().stream()
-                    .map(detalle -> detalleMapper.toEntity(detalle, existingEntity))
-                    .collect(Collectors.toList());
-            existingEntity.getDetalles().addAll(nuevosDetalles);
+        existingEntity.setFechaInicio(estimacion.getPeriodo().getFechaInicio());
+        existingEntity.setFechaFin(estimacion.getPeriodo().getFechaFin());
+        existingEntity.setRetencionPorcentaje(estimacion.getRetencionPorcentaje().getValue());
+
+        // Actualizar items: eliminar todos y agregar los nuevos
+        existingEntity.getItems().clear();
+        if (estimacion.getItems() != null && !estimacion.getItems().isEmpty()) {
+            List<EstimacionItemEntity> nuevosItems = estimacion.getItems().stream()
+                    .map(item -> toItemEntity(item, existingEntity)).collect(Collectors.toList());
+            existingEntity.getItems().addAll(nuevosItems);
         }
-        
-        // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
-        // CRÍTICO: NO se toca proyectoId ni numeroEstimacion (son inmutables después de crear)
+    }
+
+    /**
+     * Convierte un EstimacionItem (dominio) a EstimacionItemEntity (persistencia).
+     */
+    private EstimacionItemEntity toItemEntity(EstimacionItem item, EstimacionEntity estimacion) {
+        EstimacionItemEntity entity = new EstimacionItemEntity();
+        entity.setId(item.getId().getValue());
+        entity.setEstimacion(estimacion);
+        entity.setPartidaId(item.getPartidaId());
+        entity.setConcepto(item.getConcepto());
+        entity.setMontoContractual(item.getMontoContractual().getValue());
+        entity.setPorcentajeAnterior(item.getPorcentajeAnterior().getValue());
+        entity.setMontoAnterior(item.getMontoAnterior().getValue());
+        entity.setPorcentajeActual(item.getPorcentajeActual().getValue());
+        entity.setMontoActual(item.getMontoActual().getValue());
+        return entity;
+    }
+
+    /**
+     * Convierte un EstimacionItemEntity (persistencia) a EstimacionItem (dominio).
+     */
+    private EstimacionItem toItemDomain(EstimacionItemEntity entity) {
+        return EstimacionItem.reconstruir(EstimacionItemId.of(entity.getId()), entity.getPartidaId(),
+                entity.getConcepto(), MontoEstimado.of(entity.getMontoContractual()),
+                PorcentajeAvance.of(entity.getPorcentajeAnterior()), MontoEstimado.of(entity.getMontoAnterior()),
+                PorcentajeAvance.of(entity.getPorcentajeActual()), MontoEstimado.of(entity.getMontoActual()));
     }
 }
