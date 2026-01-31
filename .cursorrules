@@ -37,8 +37,8 @@ Domain (Core) ← Application ← Infrastructure
 
 ## 🔒 PROTECCIÓN POR ZONAS (BLAST RADIUS)
 ### Zona RED
-- **Ruta**: `domain/finanzas/presupuesto` | **Límite**: 1 archivos/commit
-- **Ruta**: `domain/finanzas/estimacion` | **Límite**: 1 archivos/commit
+- **Ruta**: `domain/presupuesto` | **Límite**: 1 archivos/commit
+- **Ruta**: `domain/estimacion` | **Límite**: 1 archivos/commit
 - **Ruta**: `domain/valueobjects` | **Límite**: 1 archivos/commit
 - **Ruta**: `domain/entities` | **Límite**: 1 archivos/commit
 
@@ -57,6 +57,10 @@ Domain (Core) ← Application ← Infrastructure
 ✅ Confirma que no hay secretos expuestos
 ✅ Asegura que no hay Lazy Code
 ✅ Verifica Arquitectura Hexagonal / Aislamiento de Dominio
+✅ Verifica convenciones de nomenclatura Java
+✅ Valida Fronteras Hexagonales Estrictas
+✅ Verifica transiciones de estado lógicas
+✅ Ejecuta escaneo de seguridad y estático (Semgrep)
 
 ### 🚀 WORKFLOW
 1. `./axiom.sh --status`
@@ -64,5 +68,35 @@ Domain (Core) ← Application ← Infrastructure
 
 ---
 
-*Última actualización: 2026-01-30*
+## 🚫 PROHIBICIÓN ABSOLUTA DE BYPASS SIN APROBACIÓN
+
+**REGLA CRÍTICA**: El AI Assistant **NUNCA** puede usar `git commit --no-verify` o cualquier mecanismo de bypass de AXIOM sin **aprobación explícita del usuario**.
+
+### Protocolo de Bypass (Solo con Aprobación)
+1. **DETENER**: Si AXIOM bloquea un commit, el AI debe **detenerse inmediatamente**.
+2. **PRESENTAR PLAN**: Crear un `implementation_plan.md` explicando:
+   - Por qué AXIOM bloqueó el commit
+   - Por qué el bypass es necesario
+   - Riesgos y justificación MODE_0/MODE_1
+   - Alternativas consideradas
+3. **SOLICITAR APROBACIÓN**: Usar `notify_user` para pedir aprobación explícita del usuario.
+4. **ESPERAR**: NO proceder hasta recibir confirmación del usuario.
+5. **DOCUMENTAR**: Si aprobado, documentar el bypass en el commit message con justificación completa.
+
+### Violaciones Prohibidas
+❌ Usar `--no-verify` sin aprobación previa
+❌ Modificar `axiom.config.yaml` para evadir validaciones
+❌ Modificar `.cursorrules` para relajar restricciones
+❌ Usar flags de Git para evitar pre-commit hooks
+❌ Dividir commits para evadir blast radius sin justificación
+
+### Excepciones (Requieren Aprobación)
+- MODE_0: Emergencias de compilación (requiere plan + aprobación)
+- Purga de archivos fantasma/técnicos (requiere plan + aprobación)
+- Rollback de cambios críticos (requiere plan + aprobación)
+
+---
+
+*Última actualización: 2026-01-31*
 *Gobernanza Generada desde: axiom.config.yaml*
+*Bypass Protocol: Requiere aprobación explícita del usuario*
