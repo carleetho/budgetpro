@@ -1,0 +1,165 @@
+name: Domain Purity Validation
+
+on:
+  pull_request:
+    paths:
+      - "backend/src/main/java/com/budgetpro/domain/**"
+      - ".domain-validator.yaml"
+      - "tools/domain-validator/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-domain:
+    name: Domain Layer Purity Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Run Domain Discovery
+        id: discover
+        run: |
+          cd tools/domain-validator
+          python3 scripts/discover_domain.py \
+            --repo-root $GITHUB_WORKSPACE \
+            --config .domain-validator.yaml \
+            --output domain-inventory.json
+        continue-on-error: true
+
+      - name: Run Purity Analysis
+        id: analyze
+        run: |
+          cd tools/domain-validator
+          python3 scripts/analyze_purity.py \
+            --input domain-inventory.json \
+            --output domain-report.json
+        continue-on-error: true
+
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-validation-report
+          path: tools/domain-validator/domain-report.json
+          retention-days: 30
+
+      - name: Parse Results
+        id: parse
+        if: always()
+        run: |
+          if [ -f tools/domain-validator/domain-report.json ]; then
+            TOTAL=$(jq -r '.metadata.total_violations_found // 0' tools/domain-validator/domain-report.json)
+            CRITICAL=$(jq -r '[.violations[].violations[] | select(.severity == "CRITICAL")] | length' tools/domain-validator/domain-report.json)
+            HIGH=$(jq -r '[.violations[].violations[] | select(.severity == "HIGH")] | length' tools/domain-validator/domain-report.json)
+            
+            echo "total_violations=$TOTAL" >> $GITHUB_OUTPUT
+            echo "critical_violations=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high_violations=$HIGH" >> $GITHUB_OUTPUT
+            
+            BLOCKING=$((CRITICAL + HIGH))
+            echo "blocking_violations=$BLOCKING" >> $GITHUB_OUTPUT
+          else
+            echo "total_violations=0" >> $GITHUB_OUTPUT
+            echo "critical_violations=0" >> $GITHUB_OUTPUT
+            echo "high_violations=0" >> $GITHUB_OUTPUT
+            echo "blocking_violations=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR Comment
+        if: github.event_name == 'pull_request' && steps.parse.outputs.total_violations != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'tools/domain-validator/domain-report.json';
+
+            if (!fs.existsSync(reportPath)) {
+              console.log('No report file found');
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            const totalViolations = report.metadata.total_violations_found || 0;
+            const affectedContexts = report.metadata.affected_contexts || [];
+
+            let body = '## 🏛️ Domain Purity Validation Results\n\n';
+
+            if (totalViolations === 0) {
+              body += '✅ **No violations found!** Domain layer is pure.\n';
+            } else {
+              const criticalCount = ${{ steps.parse.outputs.critical_violations }};
+              const highCount = ${{ steps.parse.outputs.high_violations }};
+              const blockingCount = ${{ steps.parse.outputs.blocking_violations }};
+              
+              body += `- **Total Violations**: ${totalViolations}\n`;
+              body += `- **Blocking Violations**: ${blockingCount} (${criticalCount} CRITICAL + ${highCount} HIGH)\n`;
+              body += `- **Affected Contexts**: ${affectedContexts.join(', ')}\n\n`;
+              
+              if (blockingCount > 0) {
+                body += '### ❌ Blocking Violations Found\n\n';
+                body += '> [!CAUTION]\n';
+                body += '> This PR introduces violations that **BLOCK** the merge. Please fix before merging.\n\n';
+              }
+              
+              // Show first 10 violations
+              const violationsToShow = report.violations.slice(0, 10);
+              
+              for (const fileRecord of violationsToShow) {
+                body += `#### \`${fileRecord.file}\` (${fileRecord.context})\n\n`;
+                
+                for (const v of fileRecord.violations) {
+                  const icon = v.severity === 'CRITICAL' ? '🔴' : '🟡';
+                  body += `${icon} **Line ${v.line_number}**: [${v.type}] ${v.description}\n`;
+                  body += `\`\`\`java\n${v.content}\n\`\`\`\n\n`;
+                }
+              }
+              
+              if (report.violations.length > 10) {
+                body += `\n_...and ${report.violations.length - 10} more files with violations. See artifacts for full report._\n`;
+              }
+              
+              body += '\n---\n\n';
+              body += '### 💡 How to Fix\n\n';
+              body += '1. **Remove forbidden imports/annotations** from domain layer\n';
+              body += '2. **Extract interfaces** to `port/out` for infrastructure dependencies\n';
+              body += '3. **Use domain events** instead of direct infrastructure calls\n';
+              body += '4. **Move DTOs** to application layer, use domain models in domain\n\n';
+              body += '### 📚 Documentation\n\n';
+              body += '- [Domain Validator Configuration](.domain-validator.yaml)\n';
+              body += '- [Hexagonal Architecture Guide](docs/hexagonal-architecture.md)\n';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Check Blocking Violations
+        if: steps.parse.outputs.blocking_violations != '0'
+        run: |
+          echo "::error::Domain purity violations detected: ${{ steps.parse.outputs.blocking_violations }} blocking violations"
+          echo "::error::CRITICAL: ${{ steps.parse.outputs.critical_violations }}"
+          echo "::error::HIGH: ${{ steps.parse.outputs.high_violations }}"
+          exit 1
+
+      - name: Success Summary
+        if: steps.parse.outputs.total_violations == '0'
+        run: |
+          echo "::notice::✅ Domain layer purity validated successfully"
+          echo "::notice::No violations found in domain layer"
