@@ -1,8 +1,8 @@
 package com.budgetpro.infrastructure.persistence.adapter;
 
 import com.budgetpro.application.recurso.port.out.RecursoRepository;
-import com.budgetpro.domain.recurso.model.Recurso;
-import com.budgetpro.domain.recurso.model.RecursoId;
+import com.budgetpro.domain.finanzas.recurso.model.Recurso;
+import com.budgetpro.domain.finanzas.recurso.model.RecursoId;
 import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.RecursoMapper;
 import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
