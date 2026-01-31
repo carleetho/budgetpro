@@ -57,7 +57,8 @@ public class NamingValidatorCLI implements Callable<Integer> {
 
         // 5. Reportar resultados
         for (NamingViolation violation : result.getAllViolations()) {
-            String prefix = violation.severity() == ViolationSeverity.BLOCKING ? "[BLOCKING]" : "[WARNING]";
+            // String prefix = violation.severity() == ViolationSeverity.BLOCKING ?
+            // "[BLOCKING]" : "[WARNING]";
             // Log violation: prefix + filePath + message
             // Log suggestion: suggestion
         }
@@ -108,6 +109,7 @@ public class NamingValidatorCLI implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
+        java.util.Objects.requireNonNull(args, "Arguments cannot be null");
         int exitCode = new CommandLine(new NamingValidatorCLI()).execute(args);
         System.exit(exitCode);
     }
