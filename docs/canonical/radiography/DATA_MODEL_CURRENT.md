@@ -28,12 +28,12 @@ erDiagram
 
 ### 3.1. Financiero
 
-| Entity        | Attributes                | Relations                      | State Machine                          |
-| ------------- | ------------------------- | ------------------------------ | -------------------------------------- |
-| `Proyecto`    | id, nombre, ubicacion     | 1:N Presupuesto, 1:1 Billetera | `NUEVO` -> `EN_EJECUCION` -> `CERRADO` |
-| `Presupuesto` | id, nombre, esContractual | N:1 Proyecto, 1:N Partida      | `BORRADOR` -> `CONGELADO`              |
-| `Partida`     | id, item, metrado, nivel  | N:1 Presupuesto, 0..1 Padre    | N/A                                    |
-| `Estimacion`  | id, numero, montoNeto     | N:1 Proyecto, 1:N Detalles     | `BORRADOR` -> `APROBADA` -> `PAGADA`   |
+| Entity        | Attributes                     | Relations                      | State Machine                          |
+| ------------- | ------------------------------ | ------------------------------ | -------------------------------------- |
+| `Proyecto`    | id, nombre, ubicacion, cliente | 1:N Presupuesto, 1:1 Billetera | `NUEVO` -> `EN_EJECUCION` -> `CERRADO` |
+| `Presupuesto` | id, nombre, esContractual      | N:1 Proyecto, 1:N Partida      | `BORRADOR` -> `CONGELADO`              |
+| `Partida`     | id, item, metrado, nivel       | N:1 Presupuesto, 0..1 Padre    | N/A                                    |
+| `Estimacion`  | id, numero, montoNeto          | N:1 Proyecto, 1:N Detalles     | `BORRADOR` -> `APROBADA` -> `PAGADA`   |
 
 ### 3.2. Catálogo / Snapshot
 
