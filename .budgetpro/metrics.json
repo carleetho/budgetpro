@@ -1,203 +1,6 @@
 {
   "history": [
     {
-      "timestamp": "2026-01-31T03:31:30.261641+00:00Z",
-      "execution_time_ms": 7706.211090087891,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:31:45.895809+00:00Z",
-      "execution_time_ms": 11739.763498306274,
-      "total_violations": 30,
-      "by_severity": {
-        "blocking": 11,
-        "warning": 19
-      },
-      "by_validator": {
-        "dependency_validator": 1,
-        "semgrep_validator": 28,
-        "security_validator": 1
-      },
-      "by_module": {
-        "backend": 29,
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:31:56.427448+00:00Z",
-      "execution_time_ms": 7697.495460510254,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:32:11.551366+00:00Z",
-      "execution_time_ms": 11718.103647232056,
-      "total_violations": 30,
-      "by_severity": {
-        "blocking": 11,
-        "warning": 19
-      },
-      "by_validator": {
-        "dependency_validator": 1,
-        "semgrep_validator": 28,
-        "security_validator": 1
-      },
-      "by_module": {
-        "backend": 29,
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:32:22.741171+00:00Z",
-      "execution_time_ms": 7982.444047927856,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:32:33.697252+00:00Z",
-      "execution_time_ms": 8629.104614257812,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T03:32:43.970303+00:00Z",
-      "execution_time_ms": 7440.310955047607,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T04:05:47.353650+00:00Z",
-      "execution_time_ms": 11041.935920715332,
-      "total_violations": 12,
-      "by_severity": {
-        "blocking": 11,
-        "warning": 1
-      },
-      "by_validator": {
-        "lazy_code": 9,
-        "blast_radius": 1,
-        "dependency_validator": 1,
-        "security_validator": 1
-      },
-      "by_module": {
-        "tools": 9,
-        "root": 1,
-        "backend": 1,
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-01-31T04:06:12.080744+00:00Z",
-      "execution_time_ms": 11933.334112167358,
-      "total_violations": 14,
-      "by_severity": {
-        "blocking": 13,
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 2,
-        "lazy_code": 9,
-        "blast_radius": 1,
-        "dependency_validator": 1,
-        "naming_validator": 1
-      },
-      "by_module": {
-        "backend": 2,
-        "tools": 9,
-        "root": 1,
-        "home": 2
-      }
-    },
-    {
-      "timestamp": "2026-01-31T05:48:17.577096+00:00Z",
-      "execution_time_ms": 8718.60933303833,
-      "total_violations": 15,
-      "by_severity": {
-        "blocking": 12,
-        "warning": 3
-      },
-      "by_validator": {
-        "lazy_code": 9,
-        "blast_radius": 1,
-        "dependency_validator": 1,
-        "naming_validator": 1,
-        "security_validator": 1,
-        "boundary_validator": 1,
-        "state_machine_validator": 1
-      },
-      "by_module": {
-        "tools": 9,
-        "root": 1,
-        "backend": 1,
-        "home": 4
-      }
-    },
-    {
-      "timestamp": "2026-01-31T05:50:42.682824+00:00Z",
-      "execution_time_ms": 10817.590951919556,
-      "total_violations": 15,
-      "by_severity": {
-        "blocking": 12,
-        "warning": 3
-      },
-      "by_validator": {
-        "lazy_code": 9,
-        "blast_radius": 1,
-        "dependency_validator": 1,
-        "naming_validator": 1,
-        "security_validator": 1,
-        "boundary_validator": 1,
-        "state_machine_validator": 1
-      },
-      "by_module": {
-        "tools": 9,
-        "root": 1,
-        "backend": 1,
-        "home": 4
-      }
-    },
-    {
       "timestamp": "2026-01-31T05:57:00.969864+00:00Z",
       "execution_time_ms": 8570.293188095093,
       "total_violations": 15,
@@ -1708,14 +1511,168 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-01-31T22:37:46.150492+00:00Z",
+      "execution_time_ms": 4200.551748275757,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T22:38:27.707569+00:00Z",
+      "execution_time_ms": 17.19951629638672,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T22:52:53.444500+00:00Z",
+      "execution_time_ms": 21.387100219726562,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T22:54:28.481819+00:00Z",
+      "execution_time_ms": 27.1761417388916,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T23:04:20.505093+00:00Z",
+      "execution_time_ms": 24.068832397460938,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T23:04:29.003892+00:00Z",
+      "execution_time_ms": 25.737524032592773,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T23:10:30.132628+00:00Z",
+      "execution_time_ms": 22.040367126464844,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T23:10:34.362069+00:00Z",
+      "execution_time_ms": 24.750232696533203,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-01-31T23:19:30.993767+00:00Z",
+      "execution_time_ms": 40.856122970581055,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-01T01:03:26.398615+00:00Z",
+      "execution_time_ms": 55.73272705078125,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-01T03:31:27.531288+00:00Z",
+      "execution_time_ms": 57.26313591003418,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
     "total_runs": 100,
-    "avg_violations_per_run": 10.02,
-    "pass_rate": 52.0,
+    "avg_violations_per_run": 8.92,
+    "pass_rate": 58.0,
     "most_common_validator": "lazy_code",
     "most_problematic_module": "tools",
-    "trend": "improving"
+    "trend": "stable"
   }
 }
