@@ -13,12 +13,10 @@ import java.util.UUID;
  * Relación N:1 con Billetera (una billetera tiene muchos movimientos).
  */
 @Entity
-@Table(name = "movimiento_caja",
-       indexes = {
-           @Index(name = "idx_movimiento_caja_billetera", columnList = "billetera_id"),
-           @Index(name = "idx_movimiento_caja_fecha", columnList = "fecha"),
-           @Index(name = "idx_movimiento_caja_tipo", columnList = "tipo")
-       })
+@Table(name = "movimiento_caja", indexes = {
+        @Index(name = "idx_movimiento_caja_billetera", columnList = "billetera_id"),
+        @Index(name = "idx_movimiento_caja_fecha", columnList = "fecha"),
+        @Index(name = "idx_movimiento_caja_tipo", columnList = "tipo") })
 public class MovimientoCajaEntity {
 
     @Id
@@ -28,6 +26,9 @@ public class MovimientoCajaEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billetera_id", nullable = false, updatable = false)
     private BilleteraEntity billetera;
+
+    @Column(name = "moneda", nullable = false, length = 3)
+    private String moneda;
 
     @Column(name = "monto", nullable = false, precision = 19, scale = 4)
     private BigDecimal monto;
@@ -59,13 +60,13 @@ public class MovimientoCajaEntity {
     protected MovimientoCajaEntity() {
     }
 
-    public MovimientoCajaEntity(UUID id, BilleteraEntity billetera, BigDecimal monto,
-                                com.budgetpro.domain.finanzas.model.TipoMovimiento tipo,
-                                LocalDateTime fecha, String referencia, String evidenciaUrl,
-                                com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja estado) {
+    public MovimientoCajaEntity(UUID id, BilleteraEntity billetera, BigDecimal monto, String moneda,
+            com.budgetpro.domain.finanzas.model.TipoMovimiento tipo, LocalDateTime fecha, String referencia,
+            String evidenciaUrl, com.budgetpro.domain.finanzas.model.EstadoMovimientoCaja estado) {
         this.id = id;
         this.billetera = billetera;
         this.monto = monto;
+        this.moneda = moneda;
         this.tipo = tipo;
         this.fecha = fecha;
         this.referencia = referencia;
@@ -97,6 +98,14 @@ public class MovimientoCajaEntity {
 
     public void setMonto(BigDecimal monto) {
         this.monto = monto;
+    }
+
+    public String getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(String moneda) {
+        this.moneda = moneda;
     }
 
     public com.budgetpro.domain.finanzas.model.TipoMovimiento getTipo() {

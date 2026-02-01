@@ -14,11 +14,11 @@
 
 ## 2. Invariants (Business Rules)
 
-| ID   | Rule                                                                                   | Status                               |
-| ---- | -------------------------------------------------------------------------------------- | ------------------------------------ |
-| B-01 | **Non-Negative**: Wallet balance cannot be negative (Debit check).                     | ✅ Implemented                       |
-| B-02 | **Audit Trail**: Every movement must have a source reference (EstimationId, CompraId). | ✅ Implemented                       |
-| B-03 | **Currency Mix**: Cannot mix currencies in same wallet account.                        | 🔴 Missing (Single currency assumed) |
+| ID   | Rule                                                                                   | Status         |
+| ---- | -------------------------------------------------------------------------------------- | -------------- |
+| B-01 | **Non-Negative**: Wallet balance cannot be negative (Debit check).                     | ✅ Implemented |
+| B-02 | **Audit Trail**: Every movement must have a source reference (EstimationId, CompraId). | ✅ Implemented |
+| B-03 | **Currency Mix**: Cannot mix currencies in same wallet account.                        | ✅ Implemented |
 
 ## 3. Domain Events
 
@@ -35,7 +35,18 @@
 ### Entity: Billetera
 
 - `id`: UUID
+- `moneda`: String (ISO-4217, 3 characters) - Wallet currency constraint
 - `saldo`: BigDecimal
+
+### Entity: MovimientoCaja
+
+- `id`: UUID
+- `billeteraId`: UUID
+- `monto`: BigDecimal
+- `moneda`: String (ISO-4217, 3 characters) - Movement currency
+- `tipo`: Enum (INGRESO, EGRESO)
+- `referencia`: String
+- `evidenciaUrl`: String (URL)
 
 ### JSON Schema (Evolution)
 

@@ -16,12 +16,11 @@ import java.util.UUID;
  * Relación 1:1 con Proyecto (cada proyecto tiene una billetera).
  * 
  * CRÍTICO: El constructor acepta version = null. NUNCA se fuerza version = 0.
+ * 
  * @PrePersist solo se usa para fechas, NO para version.
  */
 @Entity
-@Table(name = "billetera",
-       uniqueConstraints = @UniqueConstraint(name = "uq_billetera_proyecto", columnNames = "proyecto_id"),
-       indexes = @Index(name = "idx_billetera_proyecto", columnList = "proyecto_id"))
+@Table(name = "billetera", uniqueConstraints = @UniqueConstraint(name = "uq_billetera_proyecto", columnNames = "proyecto_id"), indexes = @Index(name = "idx_billetera_proyecto", columnList = "proyecto_id"))
 public class BilleteraEntity {
 
     @Id
@@ -30,6 +29,9 @@ public class BilleteraEntity {
 
     @Column(name = "proyecto_id", nullable = false, updatable = false, unique = true)
     private UUID proyectoId;
+
+    @Column(name = "moneda", nullable = false, length = 3)
+    private String moneda;
 
     @Column(name = "saldo_actual", nullable = false, precision = 19, scale = 4)
     private BigDecimal saldoActual;
@@ -50,15 +52,16 @@ public class BilleteraEntity {
     private List<MovimientoCajaEntity> movimientos = new ArrayList<>();
 
     /**
-     * Constructor protegido para JPA.
-     * CRÍTICO: Acepta version = null. Hibernate inicializará la versión automáticamente.
+     * Constructor protegido para JPA. CRÍTICO: Acepta version = null. Hibernate
+     * inicializará la versión automáticamente.
      */
     protected BilleteraEntity() {
     }
 
-    public BilleteraEntity(UUID id, UUID proyectoId, BigDecimal saldoActual, Integer version) {
+    public BilleteraEntity(UUID id, UUID proyectoId, String moneda, BigDecimal saldoActual, Integer version) {
         this.id = id;
         this.proyectoId = proyectoId;
+        this.moneda = moneda;
         this.saldoActual = saldoActual != null ? saldoActual : BigDecimal.ZERO;
         this.version = version; // CRÍTICO: null para nuevas entidades
     }
@@ -79,6 +82,14 @@ public class BilleteraEntity {
 
     public void setProyectoId(UUID proyectoId) {
         this.proyectoId = proyectoId;
+    }
+
+    public String getMoneda() {
+        return moneda;
+    }
+
+    public void setMoneda(String moneda) {
+        this.moneda = moneda;
     }
 
     public BigDecimal getSaldoActual() {
