@@ -42,3 +42,71 @@ Agents have limited context windows. Load only what matters.
    - Copy Invariants verbatim.
    - Reference Section numbers.
    - Flag any conflicts with current implementation.
+
+## Agent Roles and Responsibilities
+
+### NotebookLM (Knowledge Oracle)
+
+**Role:** Answer "what" and "why" questions based on canonical notebooks
+**Input:** User queries
+**Output:** Technical answers with citations
+**Does NOT:** Generate formal requirements, create tasks, write code
+
+**Example Usage:**
+
+- "What are the invariants for budget approval?"
+- "How does Compras integrate with Billetera?"
+- "What is the state machine for Estimacion?"
+
+### BrainGrid (Requirements Generator)
+
+**Role:** Transform user requests into formal requirements and executable tasks
+**Input:**
+
+- User feature requests
+- Canonical notebooks (for specifications)
+- NotebookLM responses (optional clarification)
+- Current codebase state
+  **Output:**
+- REQ-XX documents
+- Implementation tasks
+- Acceptance criteria
+
+**Example Usage:**
+
+- "I need to add budget approval validation" → Generates REQ-XX + Tasks
+- "Sync notebook with code change" → Generates sync task
+
+### Cursor/Claude Code (Code Executor)
+
+**Role:** Implement code based on tasks and notebook specifications
+**Input:**
+
+- Task description (from BrainGrid)
+- Canonical notebooks (as context)
+- Current codebase
+  **Output:**
+- Implemented code
+- Updated notebooks (if specs changed)
+- PR with both code and doc changes
+
+**Example Usage:**
+
+- Reads Task: "Add BAC validation"
+- Loads: PRESUPUESTO_MODULE_CANONICAL.md
+- Implements: Validation code following invariants
+- Updates: Notebook if needed
+
+## Workflow Decision Tree
+
+**For Simple Documentation Updates:**
+NotebookLM (guidance) → Developer (manual execution) → PR
+
+**For Feature Implementation:**
+BrainGrid (requirements + tasks) → Cursor (code generation) → PR
+
+**For Onboarding Tasks:**
+ONBOARDING_FIRST_WEEK_TASKS.md → NotebookLM (clarification) → Developer (execution) → PR
+
+**For Complex Features:**
+User → BrainGrid (consults notebooks) → REQ-XX + Tasks → Cursor (consults notebooks) → Code → PR
