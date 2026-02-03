@@ -256,7 +256,7 @@ class ApuMigrationTest {
         recurso.setUnidad(unidad);
         recurso.setCostoReferencia(costo);
         recurso.setAtributos(new HashMap<>());
-        recurso.setEstado(com.budgetpro.domain.recurso.model.EstadoRecurso.ACTIVO);
+        recurso.setEstado(com.budgetpro.domain.finanzas.recurso.model.EstadoRecurso.ACTIVO);
         recurso.setCreatedBy(testUserId);
         recurso.setCreatedAt(LocalDateTime.now());
         recurso.setUpdatedAt(LocalDateTime.now());

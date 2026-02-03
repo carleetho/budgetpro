@@ -1,41 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Secuencia Snapshot Schema",
-  "description": "Esquema para validar la estructura de secuencia y dependencias del cronograma en snapshots",
   "type": "object",
-  "required": ["actividades"],
   "properties": {
-    "actividades": {
-      "type": "array",
-      "description": "Lista de actividades con su secuencia y dependencias",
-      "items": {
-        "type": "object",
-        "required": ["id", "partidaId", "predecesoras"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID único de la actividad (UUID)"
-          },
-          "partidaId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID de la partida asociada (UUID)"
-          },
-          "predecesoras": {
-            "type": "array",
-            "description": "Lista de IDs de actividades predecesoras (dependencias)",
-            "items": {
-              "type": "string",
-              "format": "uuid",
-              "description": "ID de una actividad predecesora (UUID)"
-            },
-            "uniqueItems": true
-          }
-        },
-        "additionalProperties": false
-      }
+    "secuencia": {
+      "type": "array"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }

@@ -11,33 +11,32 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Mapper para convertir entre Billetera (dominio) y BilleteraEntity (persistencia).
+ * Mapper para convertir entre Billetera (dominio) y BilleteraEntity
+ * (persistencia).
  */
 @Component
 public class BilleteraMapper {
 
     /**
-     * Convierte un Billetera (dominio) a BilleteraEntity (persistencia) para CREACIÓN.
+     * Convierte un Billetera (dominio) a BilleteraEntity (persistencia) para
+     * CREACIÓN.
      * 
-     * CRÍTICO: Para nuevas entidades, pasa null en version.
-     * Hibernate inicializará la versión automáticamente.
+     * CRÍTICO: Para nuevas entidades, pasa null en version. Hibernate inicializará
+     * la versión automáticamente.
      */
     public BilleteraEntity toEntity(Billetera billetera) {
         if (billetera == null) {
-            return null;
+            throw new IllegalArgumentException("La billetera no puede ser nula");
         }
 
-        BilleteraEntity entity = new BilleteraEntity(
-            billetera.getId().getValue(),
-            billetera.getProyectoId(),
-            billetera.getSaldoActual(),
-            null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
+        BilleteraEntity entity = new BilleteraEntity(billetera.getId().getValue(), billetera.getProyectoId(),
+                billetera.getMoneda(), billetera.getSaldoActual(), null // CRÍTICO: null para nuevas entidades,
+                                                                        // Hibernate manejará la versión
         );
 
         // Mapear movimientos nuevos
         List<MovimientoCajaEntity> movimientosEntities = billetera.getMovimientosNuevos().stream()
-                .map(movimiento -> toMovimientoEntity(movimiento, entity))
-                .collect(Collectors.toList());
+                .map(movimiento -> toMovimientoEntity(movimiento, entity)).collect(Collectors.toList());
         entity.setMovimientos(movimientosEntities);
 
         return entity;
@@ -46,16 +45,17 @@ public class BilleteraMapper {
     /**
      * Actualiza una entidad existente con los datos del dominio.
      * 
-     * CRÍTICO: NO se modifica la versión manualmente. Hibernate la incrementa automáticamente.
+     * CRÍTICO: NO se modifica la versión manualmente. Hibernate la incrementa
+     * automáticamente.
      */
     public void updateEntity(BilleteraEntity existingEntity, Billetera billetera) {
         existingEntity.setSaldoActual(billetera.getSaldoActual());
+        existingEntity.setMoneda(billetera.getMoneda());
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
 
         // Agregar movimientos nuevos
         List<MovimientoCajaEntity> movimientosNuevos = billetera.getMovimientosNuevos().stream()
-                .map(movimiento -> toMovimientoEntity(movimiento, existingEntity))
-                .collect(Collectors.toList());
+                .map(movimiento -> toMovimientoEntity(movimiento, existingEntity)).collect(Collectors.toList());
         existingEntity.getMovimientos().addAll(movimientosNuevos);
     }
 
@@ -63,16 +63,9 @@ public class BilleteraMapper {
      * Convierte un MovimientoCaja (dominio) a MovimientoCajaEntity (persistencia).
      */
     private MovimientoCajaEntity toMovimientoEntity(MovimientoCaja movimiento, BilleteraEntity billeteraEntity) {
-        return new MovimientoCajaEntity(
-            movimiento.getId(),
-            billeteraEntity,
-            movimiento.getMonto(),
-            movimiento.getTipo(),
-            movimiento.getFecha(),
-            movimiento.getReferencia(),
-            movimiento.getEvidenciaUrl(),
-            movimiento.getEstado()
-        );
+        return new MovimientoCajaEntity(movimiento.getId(), billeteraEntity, movimiento.getMonto(),
+                movimiento.getMoneda(), movimiento.getTipo(), movimiento.getFecha(), movimiento.getReferencia(),
+                movimiento.getEvidenciaUrl(), movimiento.getEstado());
     }
 
     /**
@@ -80,15 +73,12 @@ public class BilleteraMapper {
      */
     public Billetera toDomain(BilleteraEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("La entidad billetera no puede ser nula");
         }
 
-        return Billetera.reconstruir(
-            BilleteraId.of(entity.getId()),
-            entity.getProyectoId(),
-            entity.getSaldoActual(),
-            entity.getVersion() != null ? entity.getVersion().longValue() : 0L
-        );
+        return Billetera.reconstruir(BilleteraId.of(entity.getId()), entity.getProyectoId(),
+                entity.getMoneda() != null ? entity.getMoneda() : "PEN", entity.getSaldoActual(),
+                entity.getVersion() != null ? entity.getVersion().longValue() : 0L);
     }
 
     /**
@@ -96,18 +86,11 @@ public class BilleteraMapper {
      */
     public MovimientoCaja toMovimientoDomain(MovimientoCajaEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("La entidad movimiento no puede ser nula");
         }
 
-        return MovimientoCaja.reconstruir(
-            entity.getId(),
-            BilleteraId.of(entity.getBilletera().getId()),
-            entity.getMonto(),
-            entity.getTipo(),
-            entity.getFecha(),
-            entity.getReferencia(),
-            entity.getEvidenciaUrl(),
-            entity.getEstado()
-        );
+        return MovimientoCaja.reconstruir(entity.getId(), BilleteraId.of(entity.getBilletera().getId()),
+                entity.getMonto(), entity.getMoneda() != null ? entity.getMoneda() : "PEN", entity.getTipo(),
+                entity.getFecha(), entity.getReferencia(), entity.getEvidenciaUrl(), entity.getEstado());
     }
 }

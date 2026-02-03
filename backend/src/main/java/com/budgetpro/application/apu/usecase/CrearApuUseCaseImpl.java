@@ -15,7 +15,7 @@ import com.budgetpro.domain.finanzas.apu.port.out.ApuRepository;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.application.recurso.port.out.RecursoRepository;
-import com.budgetpro.domain.recurso.model.RecursoId;
+import com.budgetpro.domain.finanzas.recurso.model.RecursoId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

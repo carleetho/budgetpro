@@ -14,8 +14,8 @@ import java.util.Optional;
 /**
  * Adaptador de persistencia para ProyectoRepository.
  * 
- * CRÍTICO: NO se hacen validaciones manuales de versión.
- * Hibernate maneja el Optimistic Locking automáticamente con @Version.
+ * CRÍTICO: NO se hacen validaciones manuales de versión. Hibernate maneja el
+ * Optimistic Locking automáticamente con @Version.
  */
 @Component
 public class ProyectoRepositoryAdapter implements ProyectoRepository {
@@ -48,15 +48,19 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Proyecto> findById(ProyectoId id) {
-        return jpaRepository.findById(id.getValue())
-                .map(mapper::toDomain);
+        return jpaRepository.findById(id.getValue()).map(mapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsById(ProyectoId id) {
+        return jpaRepository.existsById(id.getValue());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Proyecto> findByNombre(String nombre) {
-        return jpaRepository.findByNombre(nombre)
-                .map(mapper::toDomain);
+        return jpaRepository.findByNombre(nombre).map(mapper::toDomain);
     }
 
     @Override
@@ -68,8 +72,6 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository {
     @Override
     @Transactional(readOnly = true)
     public java.util.List<Proyecto> findAll() {
-        return jpaRepository.findAll().stream()
-                .map(mapper::toDomain)
-                .toList();
+        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 }

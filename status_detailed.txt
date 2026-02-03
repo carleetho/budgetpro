@@ -1,0 +1,203 @@
+MM .budgetpro/metrics.json
+ D backend/.env.example
+ D backend/README_SETUP.md
+A  backend/RESEND_API_KEY.env
+A  backend/budgetpro-backend.iws
+ D backend/compose.yaml.example
+ M backend/src/main/java/com/budgetpro/application/apu/usecase/CrearApuUseCaseImpl.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/ActualizarEstimacionCommand.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/ActualizarItemsCommand.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/AvancePartidaResponse.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/ConsumoMaterialResponse.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/CrearEstimacionCommand.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/EstimacionItemResponse.java
+M  backend/src/main/java/com/budgetpro/application/estimacion/dto/EstimacionResponse.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/dto/HorasLaborResponse.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/ActualizarEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/ActualizarItemsEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/AnularEstimacionUseCase.java
+M  backend/src/main/java/com/budgetpro/application/estimacion/port/in/AprobarEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/ConsultarAvancePartidaUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/ConsultarEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/CrearEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/EliminarEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/FacturarEstimacionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/in/ListarEstimacionesPorProyectoUseCase.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/out/InventarioIntegrationPort.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/port/out/RRHHIntegrationPort.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ActualizarEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ActualizarItemsEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/AnularEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/AprobarEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ConsultarAvancePartidaService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ConsultarEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ConsultarInformacionReferenciaService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/CrearEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/EliminarEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/FacturarEstimacionService.java
+ D backend/src/main/java/com/budgetpro/application/estimacion/service/ListarEstimacionesPorProyectoService.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/ActualizarOrdenCambioUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/AgregarDocumentoUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/AgregarPartidaUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/AgregarRecursoUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/AprobarOrdenCambioUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/ConsultarOrdenCambioUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/CrearOrdenCambioUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/EnviarARevisionUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/ListarOrdenesCambioUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/ObtenerResumenUseCase.java
+ D backend/src/main/java/com/budgetpro/application/ordencambio/RechazarOrdenCambioUseCase.java
+ M backend/src/main/java/com/budgetpro/application/recurso/port/out/RecursoRepository.java
+ M backend/src/main/java/com/budgetpro/application/recurso/usecase/CrearRecursoUseCaseImpl.java
+ M backend/src/main/java/com/budgetpro/application/rrhh/usecase/AsignarEmpleadoProyectoUseCaseImpl.java
+M  backend/src/main/java/com/budgetpro/domain/catalogo/service/CalculoApuDinamicoService.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/event/EstimacionAnuladaEvent.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/event/EstimacionAprobadaEvent.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/event/EstimacionCreadaEvent.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/event/EstimacionFacturadaEvent.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/exception/AvanceAcumuladoExcedidoException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/exception/EstimacionCongeladaException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/exception/EstimacionNoEncontradaException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/exception/PeriodoSolapadoException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/exception/PresupuestoNoCongeladoException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/AvancePartida.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/AvancePartidaId.java
+M  backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstadoEstimacion.java
+M  backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java
+M  backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionId.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionItem.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionItemId.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionSnapshot.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionSnapshotId.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/MontoEstimado.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/PeriodoEstimacion.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/PorcentajeAvance.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/RetencionPorcentaje.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/AvancePartidaRepository.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/EstimacionRepository.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/EstimacionSnapshotRepository.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/EventPublisher.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/AvanceCalculatorService.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/EstimacionService.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/PeriodoValidatorService.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/SnapshotGeneratorService.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/exception/OrdenCambioException.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/EstadoOrdenCambio.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambio.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambioDocumento.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambioHistorial.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambioId.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambioPartida.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrdenCambioRecurso.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/OrigenOrdenCambio.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/model/TipoDocumentoOrdenCambio.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/port/NumeroOrdenGenerator.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/port/OrdenCambioFilters.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/port/OrdenCambioQueryPort.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/port/OrdenCambioRepository.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/port/ResumenOrdenCambio.java
+ D backend/src/main/java/com/budgetpro/domain/finanzas/ordencambio/service/PresupuestoVersionService.java
+M  backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityAuditLog.java
+ M backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalcularSalarioRealService.java
+ D backend/src/main/java/com/budgetpro/domain/recurso/model/.gitkeep
+ D backend/src/main/java/com/budgetpro/domain/recurso/model/EstadoRecurso.java
+ D backend/src/main/java/com/budgetpro/domain/recurso/model/Recurso.java
+ D backend/src/main/java/com/budgetpro/domain/recurso/model/RecursoId.java
+ D backend/src/main/java/com/budgetpro/domain/recurso/port/in/.gitkeep
+ D backend/src/main/java/com/budgetpro/domain/recurso/port/out/.gitkeep
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/event/EstimacionEventPublisherAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/integration/InventarioIntegrationAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/integration/RRHHIntegrationAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/AcPublisherStub.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/BudgetAlertPublisherStub.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/ConsumoPartidaRepositoryStub.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/PartidaRepositoryStub.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/PartidaValidatorStub.java
+ D backend/src/main/java/com/budgetpro/infrastructure/adapter/stub/SecurityPortStub.java
+M  backend/src/main/java/com/budgetpro/infrastructure/catalogo/adapter/CapecoApiAdapter.java
+A  backend/src/main/java/com/budgetpro/infrastructure/logistica/inventario/adapter/AcPublisherAdapter.java
+A  backend/src/main/java/com/budgetpro/infrastructure/logistica/inventario/adapter/BudgetAlertPublisherAdapter.java
+A  backend/src/main/java/com/budgetpro/infrastructure/logistica/inventario/adapter/PartidaValidatorAdapter.java
+M  backend/src/main/java/com/budgetpro/infrastructure/observability/IntegrityEventLogger.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/AvancePartidaRepositoryAdapter.java
+A  backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/EstimacionPersistenceAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/EstimacionRepositoryAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/EstimacionSnapshotRepositoryAdapter.java
+M  backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/PresupuestoRepositoryAdapter.java
+M  backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/ProyectoRepositoryAdapter.java
+ M backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/RecursoRepositoryAdapter.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/adapter/estimacion/EstimacionRepositoryAdapter.java
+ M backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/RecursoEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/estimacion/AvancePartidaEntity.java
+M  backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/estimacion/EstimacionEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/estimacion/EstimacionItemEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/estimacion/EstimacionSnapshotEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/organizacion/CuadrillaEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/organizacion/FrenteTrabajoEntity.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/mapper/EstimacionMapper.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/mapper/EstimacionSnapshotMapper.java
+ M backend/src/main/java/com/budgetpro/infrastructure/persistence/mapper/RecursoMapper.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/mapper/estimacion/DetalleEstimacionMapper.java
+M  backend/src/main/java/com/budgetpro/infrastructure/persistence/mapper/estimacion/EstimacionMapper.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/repository/AvancePartidaJpaRepository.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/repository/EstimacionJpaRepository.java
+ D backend/src/main/java/com/budgetpro/infrastructure/persistence/repository/EstimacionSnapshotJpaRepository.java
+M  backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/controller/EstimacionController.java
+ D backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/ActualizarEstimacionRequest.java
+ D backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/ActualizarItemsRequest.java
+ D backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/AnularEstimacionRequest.java
+ D backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/AprobarEstimacionRequest.java
+ D backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/CrearEstimacionRequest.java
+A  backend/src/main/java/com/budgetpro/infrastructure/security/adapter/SecurityPortAdapter.java
+ D backend/src/main/resources/db/migration/V19__create_estimacion_tables.sql
+M  backend/src/main/resources/schemas/calendarios-snapshot-schema.json
+M  backend/src/main/resources/schemas/duraciones-snapshot-schema.json
+M  backend/src/main/resources/schemas/fechas-snapshot-schema.json
+M  backend/src/main/resources/schemas/secuencia-snapshot-schema.json
+ D backend/src/test/java/com/budgetpro/application/rrhh/usecase/AsignarEmpleadoProyectoUseCaseImplTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObraFreezeTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/cronograma/service/CronogramaServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/evm/model/EVMSnapshotTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/exception/SaldoInsuficienteExceptionTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/model/BilleteraTest.java
+ D backend/src/test/java/com/budgetpro/domain/finanzas/partida/model/PartidaTest.java
+ M backend/src/test/java/com/budgetpro/domain/finanzas/presupuesto/BudgetIntegrityIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/backlog/service/BacklogServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/bodega/model/BodegaTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/inventario/model/InventarioItemTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/inventario/service/GestionInventarioServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/inventario/service/ImputacionServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/inventario/service/InventarioSnapshotServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/organizacion/model/CuadrillaTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/requisicion/service/DespachoRequisicionServiceTest.java
+ D backend/src/test/java/com/budgetpro/domain/logistica/transferencia/service/TransferenciaServiceTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/migration/ApuMigrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/migration/RecursoMigrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/persistence/adapter/cronograma/CronogramaSnapshotJsonbPersistenceIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/persistence/adapter/cronograma/CronogramaSnapshotRepositoryAdapterIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/persistence/adapter/cronograma/ProgramaObraFreezePersistenceIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/persistence/entity/PartidaEntityVersionTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/apu/GestionApuIntegrationTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/compra/EjecucionEconomicaIntegrationTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/control/ControlCostosIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/estimacion/EstimacionIntegrationTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/inventario/InventarioIntegrationTest.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/presupuesto/CalculoPresupuestoIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/rrhh/AsistenciaControllerIT.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/rrhh/CostosLaboralesControllerIT.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/rrhh/CuadrillaControllerIT.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/rrhh/EmpleadoControllerIT.java
+ D backend/src/test/java/com/budgetpro/infrastructure/rest/rrhh/NominaControllerIT.java
+ M backend/src/test/java/com/budgetpro/infrastructure/rest/sobrecosto/SobrecostoIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/integration/BaselinePrincipleIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/integration/BaselineTransactionRollbackTest.java
+ D backend/src/test/java/com/budgetpro/integration/FreezeAtomicityIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/integration/FreezeEndToEndIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/integration/TransaccionalidadBaselineIntegrationTest.java
+ D backend/src/test/java/com/budgetpro/shared/validation/JsonSchemaValidatorTest.java
+M  tools/naming-validator/dependency-reduced-pom.xml
+?? backend/src/main/java/com/budgetpro/domain/finanzas/recurso/
+?? status_detailed.txt

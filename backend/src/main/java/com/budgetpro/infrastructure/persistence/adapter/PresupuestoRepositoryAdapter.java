@@ -15,8 +15,8 @@ import java.util.UUID;
 /**
  * Adaptador de persistencia para PresupuestoRepository.
  * 
- * CRÍTICO: NO se hacen validaciones manuales de versión.
- * Hibernate maneja el Optimistic Locking automáticamente con @Version.
+ * CRÍTICO: NO se hacen validaciones manuales de versión. Hibernate maneja el
+ * Optimistic Locking automáticamente con @Version.
  */
 @Component
 public class PresupuestoRepositoryAdapter implements PresupuestoRepository {
@@ -49,14 +49,20 @@ public class PresupuestoRepositoryAdapter implements PresupuestoRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Presupuesto> findById(PresupuestoId id) {
-        return jpaRepository.findById(id.getValue())
-                .map(mapper::toDomain);
+        return jpaRepository.findById(id.getValue()).map(mapper::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Presupuesto> findByProyectoId(UUID proyectoId) {
-        return jpaRepository.findByProyectoId(proyectoId)
+        return jpaRepository.findByProyectoId(proyectoId).map(mapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Presupuesto> findActiveByProyectoId(UUID proyectoId) {
+        return jpaRepository.findByProyectoId(proyectoId) // Assuming finding by ID returns the active one or unique per
+                                                          // project?
                 .map(mapper::toDomain);
     }
 
