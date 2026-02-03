@@ -1,8 +1,8 @@
 package com.budgetpro.infrastructure.persistence.mapper;
 
-import com.budgetpro.domain.recurso.model.EstadoRecurso;
-import com.budgetpro.domain.recurso.model.Recurso;
-import com.budgetpro.domain.recurso.model.RecursoId;
+import com.budgetpro.domain.finanzas.recurso.model.EstadoRecurso;
+import com.budgetpro.domain.finanzas.recurso.model.Recurso;
+import com.budgetpro.domain.finanzas.recurso.model.RecursoId;
 import com.budgetpro.domain.shared.model.TipoRecurso;
 import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import org.springframework.stereotype.Component;

@@ -5,6 +5,7 @@ import com.budgetpro.domain.finanzas.presupuesto.model.IntegrityAuditEntry;
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.IntegrityAuditRepository;
 
+import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -31,6 +32,7 @@ import java.util.UUID;
  * 
  * Contexto: Presupuestos & Integridad Criptográfica
  */
+@Service
 public class IntegrityAuditLog {
 
     private final IntegrityAuditRepository auditRepository;

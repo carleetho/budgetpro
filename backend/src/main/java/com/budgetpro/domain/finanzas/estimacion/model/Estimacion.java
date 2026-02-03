@@ -1,7 +1,7 @@
 package com.budgetpro.domain.finanzas.estimacion.model;
 
-import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,178 +9,254 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Aggregate Root del dominio ESTIMACIÓN.
+ * Agregado Raíz que representa una Estimación de Avance (Cobro al Cliente).
  * 
- * Gestiona el ciclo de vida de una estimación de obra. Invariantes: - Debe
- * estar asociada a un Proyecto (Presupuesto). - El periodo no debe ser nulo. -
- * Los items deben ser válidos.
+ * Relación N:1 con Proyecto.
+ * 
+ * Responsabilidad:
+ * - Representar un corte de estimación para cobro
+ * - Calcular montos (bruto, amortización, retención, neto)
+ * - Gestionar el estado de la estimación (BORRADOR, APROBADA, PAGADA)
+ * 
+ * Invariantes:
+ * - El proyectoId es obligatorio
+ * - El numeroEstimacion debe ser único por proyecto
+ * - El montoNetoPagar = montoBruto - amortizacionAnticipo - retencionFondoGarantia
+ * - El estado solo puede cambiar: BORRADOR -> APROBADA -> PAGADA
  */
-public class Estimacion {
+public final class Estimacion {
 
     private final EstimacionId id;
-    private final PresupuestoId presupuestoId;
-    private PeriodoEstimacion periodo;
+    private final UUID proyectoId;
+    private Integer numeroEstimacion; // Consecutivo: 1, 2, 3...
+    private LocalDate fechaCorte; // Hasta cuándo se reporta avance
+    private LocalDate periodoInicio;
+    private LocalDate periodoFin;
+    private BigDecimal montoBruto; // Suma de avances (calculado)
+    private BigDecimal amortizacionAnticipo; // Monto a descontar del anticipo
+    private BigDecimal retencionFondoGarantia; // Monto retenido (configurable)
+    private BigDecimal montoNetoPagar; // Lo que se factura (calculado)
+    private String evidenciaUrl; // Evidencia contractual obligatoria para aprobación
     private EstadoEstimacion estado;
-    private RetencionPorcentaje retencionPorcentaje;
-    private List<EstimacionItem> items;
-    private EstimacionSnapshot snapshot;
+    private List<DetalleEstimacion> detalles; // Detalles por partida
+    private Long version;
 
-    // Metadata
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime fechaAprobacion;
-    private UUID aprobadoPor;
-
-    private Estimacion(EstimacionId id, PresupuestoId presupuestoId, PeriodoEstimacion periodo, EstadoEstimacion estado,
-            RetencionPorcentaje retencionPorcentaje, List<EstimacionItem> items, EstimacionSnapshot snapshot,
-            LocalDateTime fechaCreacion, LocalDateTime fechaAprobacion, UUID aprobadoPor) {
-        this.id = Objects.requireNonNull(id, "El ID no puede ser nulo");
-        this.presupuestoId = Objects.requireNonNull(presupuestoId, "El PresupuestoId no puede ser nulo");
-        this.periodo = Objects.requireNonNull(periodo, "El periodo no puede ser nulo");
-        this.estado = Objects.requireNonNull(estado, "El estado no puede ser nulo");
-        this.retencionPorcentaje = Objects.requireNonNull(retencionPorcentaje, "La retención no puede ser nula");
-        this.items = new ArrayList<>(Objects.requireNonNull(items, "La lista de items no puede ser nula"));
-        this.snapshot = snapshot; // Puede ser nulo si aun no se aprueba
-        this.fechaCreacion = Objects.requireNonNull(fechaCreacion, "La fecha de creación no puede ser nula");
-        this.fechaAprobacion = fechaAprobacion;
-        this.aprobadoPor = aprobadoPor;
-    }
-
-    public static Estimacion crear(PresupuestoId presupuestoId, PeriodoEstimacion periodo,
-            RetencionPorcentaje retencion) {
-        return new Estimacion(EstimacionId.random(), presupuestoId, periodo, EstadoEstimacion.BORRADOR,
-                retencion != null ? retencion : RetencionPorcentaje.tenPercent(), new ArrayList<>(), null,
-                LocalDateTime.now(), null, null);
-    }
-
-    public static Estimacion reconstruir(EstimacionId id, PresupuestoId presupuestoId, PeriodoEstimacion periodo,
-            EstadoEstimacion estado, RetencionPorcentaje retencion, List<EstimacionItem> items,
-            EstimacionSnapshot snapshot, LocalDateTime fechaCreacion, LocalDateTime fechaAprobacion, UUID aprobadoPor) {
-        return new Estimacion(id, presupuestoId, periodo, estado, retencion, items, snapshot, fechaCreacion,
-                fechaAprobacion, aprobadoPor);
+    /**
+     * Constructor privado. Usar factory methods.
+     */
+    private Estimacion(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
+                      LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
+                      BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
+                      BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar,
+                      String evidenciaUrl, EstadoEstimacion estado, List<DetalleEstimacion> detalles, Long version) {
+        validarInvariantes(proyectoId, numeroEstimacion, periodoInicio, periodoFin);
+        
+        this.id = Objects.requireNonNull(id, "El ID de la estimación no puede ser nulo");
+        this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
+        this.numeroEstimacion = numeroEstimacion;
+        this.fechaCorte = fechaCorte;
+        this.periodoInicio = periodoInicio;
+        this.periodoFin = periodoFin;
+        this.montoBruto = montoBruto != null ? montoBruto : BigDecimal.ZERO;
+        this.amortizacionAnticipo = amortizacionAnticipo != null ? amortizacionAnticipo : BigDecimal.ZERO;
+        this.retencionFondoGarantia = retencionFondoGarantia != null ? retencionFondoGarantia : BigDecimal.ZERO;
+        this.montoNetoPagar = montoNetoPagar != null ? montoNetoPagar : calcularMontoNeto();
+        this.evidenciaUrl = evidenciaUrl;
+        this.estado = estado != null ? estado : EstadoEstimacion.BORRADOR;
+        this.detalles = detalles != null ? new ArrayList<>(detalles) : new ArrayList<>();
+        this.version = version != null ? version : 0L;
     }
 
     /**
-     * Agrega un item a la estimación. Solo permitido en estado BORRADOR.
+     * Factory method para crear una nueva Estimacion.
      */
-    public void agregarItem(EstimacionItem item) {
-        validarModificacion();
-        Objects.requireNonNull(item, "El item no puede ser nulo");
-        this.items.add(item);
+    public static Estimacion crear(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
+                                   LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
+                                   String evidenciaUrl) {
+        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin,
+                            null, null, null, null, evidenciaUrl, EstadoEstimacion.BORRADOR, null, 0L);
     }
 
     /**
-     * Calcula el monto total de la estimación (suma de montos actuales de items).
+     * Factory method para reconstruir una Estimacion desde persistencia.
      */
-    public MontoEstimado calcularTotalEstimado() {
-        return items.stream().map(EstimacionItem::getMontoActual).reduce(MontoEstimado.zero(), MontoEstimado::sumar);
+    public static Estimacion reconstruir(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
+                                         LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
+                                         BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
+                                         BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar,
+                                        String evidenciaUrl, EstadoEstimacion estado, List<DetalleEstimacion> detalles, Long version) {
+        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin,
+                            montoBruto, amortizacionAnticipo, retencionFondoGarantia, montoNetoPagar,
+                            evidenciaUrl, estado, detalles, version);
     }
 
     /**
-     * Calcula el monto de retención basado en el total estimado.
+     * Valida las invariantes del agregado.
      */
-    public MontoEstimado calcularMontoRetencion() {
-        return retencionPorcentaje.calcularRetencion(calcularTotalEstimado());
+    private void validarInvariantes(UUID proyectoId, Integer numeroEstimacion,
+                                   LocalDate periodoInicio, LocalDate periodoFin) {
+        if (proyectoId == null) {
+            throw new IllegalArgumentException("El proyectoId no puede ser nulo");
+        }
+        if (numeroEstimacion != null && numeroEstimacion <= 0) {
+            throw new IllegalArgumentException("El número de estimación debe ser positivo");
+        }
+        if (periodoInicio != null && periodoFin != null) {
+            if (periodoFin.isBefore(periodoInicio)) {
+                throw new IllegalArgumentException("El periodo de fin no puede ser menor al periodo de inicio");
+            }
+        }
     }
 
     /**
-     * Alias para calcular total estimado para consistencia con UI/DTO.
+     * Calcula el monto neto a pagar: montoBruto - amortizacionAnticipo - retencionFondoGarantia.
      */
-    public MontoEstimado calcularSubtotal() {
-        return calcularTotalEstimado();
+    private BigDecimal calcularMontoNeto() {
+        return this.montoBruto
+                .subtract(this.amortizacionAnticipo)
+                .subtract(this.retencionFondoGarantia)
+                .setScale(4, java.math.RoundingMode.HALF_UP);
     }
 
     /**
-     * Calcula el total a pagar (Estimado - Retención).
+     * Recalcula el monto bruto basándose en los detalles.
      */
-    public MontoEstimado calcularTotalPagar() {
-        return calcularTotalEstimado().restar(calcularMontoRetencion());
+    public void recalcularMontoBruto() {
+        this.montoBruto = detalles.stream()
+                .map(DetalleEstimacion::getImporte)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(4, java.math.RoundingMode.HALF_UP);
+        this.montoNetoPagar = calcularMontoNeto();
     }
 
     /**
-     * Aprueba la estimación. Transición: BORRADOR -> APROBADA
+     * Agrega un detalle de estimación.
      */
-    public void aprobar(UUID aprobadoPor, String itemsJson, String totalesJson, String metadataJson) {
+    public void agregarDetalle(DetalleEstimacion detalle) {
+        if (detalle == null) {
+            throw new IllegalArgumentException("El detalle no puede ser nulo");
+        }
+        this.detalles.add(detalle);
+        recalcularMontoBruto();
+    }
+
+    /**
+     * Actualiza la amortización de anticipo.
+     */
+    public void actualizarAmortizacionAnticipo(BigDecimal nuevaAmortizacion) {
+        if (nuevaAmortizacion == null) {
+            this.amortizacionAnticipo = BigDecimal.ZERO;
+        } else if (nuevaAmortizacion.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("La amortización de anticipo no puede ser negativa");
+        } else {
+            this.amortizacionAnticipo = nuevaAmortizacion;
+        }
+        this.montoNetoPagar = calcularMontoNeto();
+    }
+
+    /**
+     * Actualiza la retención de fondo de garantía.
+     */
+    public void actualizarRetencionFondoGarantia(BigDecimal nuevaRetencion) {
+        if (nuevaRetencion == null) {
+            this.retencionFondoGarantia = BigDecimal.ZERO;
+        } else if (nuevaRetencion.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("La retención de fondo de garantía no puede ser negativa");
+        } else {
+            this.retencionFondoGarantia = nuevaRetencion;
+        }
+        this.montoNetoPagar = calcularMontoNeto();
+    }
+
+    /**
+     * Actualiza la evidencia contractual.
+     */
+    public void actualizarEvidenciaUrl(String evidenciaUrl) {
+        this.evidenciaUrl = evidenciaUrl;
+    }
+
+    /**
+     * Aprueba la estimación (cambia estado a APROBADA).
+     */
+    public void aprobar() {
         if (this.estado != EstadoEstimacion.BORRADOR) {
             throw new IllegalStateException("Solo se pueden aprobar estimaciones en estado BORRADOR");
         }
-        if (this.items.isEmpty()) {
-            throw new IllegalStateException("No se puede aprobar una estimación sin items");
-        }
-        Objects.requireNonNull(aprobadoPor, "El usuario aprobador es requerido");
-
         this.estado = EstadoEstimacion.APROBADA;
-        this.fechaAprobacion = LocalDateTime.now();
-        this.aprobadoPor = aprobadoPor;
-
-        // Generar Snapshot inmutable
-        this.snapshot = EstimacionSnapshot.crear(this.id, itemsJson, totalesJson, metadataJson);
     }
 
     /**
-     * Marca la estimación como facturada. Transición: APROBADA -> FACTURADA
+     * Marca la estimación como pagada (cambia estado a PAGADA).
      */
-    public void facturar() {
+    public void marcarComoPagada() {
         if (this.estado != EstadoEstimacion.APROBADA) {
-            throw new IllegalStateException("Solo se pueden facturar estimaciones APROBADAS");
+            throw new IllegalStateException("Solo se pueden marcar como pagadas estimaciones en estado APROBADA");
         }
-        this.estado = EstadoEstimacion.FACTURADA;
-    }
-
-    /**
-     * Anula la estimación. Permitido desde BORRADOR o APROBADA (si no se ha
-     * facturado aún).
-     */
-    public void anular() {
-        if (this.estado == EstadoEstimacion.FACTURADA) {
-            throw new IllegalStateException("No se puede anular una estimación ya FACTURADA");
-        }
-        if (this.estado == EstadoEstimacion.ANULADA) {
-            return; // Ya anulada, idempotente
-        }
-        this.estado = EstadoEstimacion.ANULADA;
-    }
-
-    private void validarModificacion() {
-        if (this.estado != EstadoEstimacion.BORRADOR) {
-            throw new IllegalStateException("La estimación no se puede modificar en estado " + this.estado);
-        }
+        this.estado = EstadoEstimacion.PAGADA;
     }
 
     // Getters
+
     public EstimacionId getId() {
         return id;
     }
 
-    public PresupuestoId getPresupuestoId() {
-        return presupuestoId;
+    public UUID getProyectoId() {
+        return proyectoId;
     }
 
-    public PeriodoEstimacion getPeriodo() {
-        return periodo;
+    public Integer getNumeroEstimacion() {
+        return numeroEstimacion;
+    }
+
+    public LocalDate getFechaCorte() {
+        return fechaCorte;
+    }
+
+    public LocalDate getPeriodoInicio() {
+        return periodoInicio;
+    }
+
+    public LocalDate getPeriodoFin() {
+        return periodoFin;
+    }
+
+    public BigDecimal getMontoBruto() {
+        return montoBruto;
+    }
+
+    public BigDecimal getAmortizacionAnticipo() {
+        return amortizacionAnticipo;
+    }
+
+    public BigDecimal getRetencionFondoGarantia() {
+        return retencionFondoGarantia;
+    }
+
+    public BigDecimal getMontoNetoPagar() {
+        return montoNetoPagar;
+    }
+
+    public String getEvidenciaUrl() {
+        return evidenciaUrl;
     }
 
     public EstadoEstimacion getEstado() {
         return estado;
     }
 
-    public RetencionPorcentaje getRetencionPorcentaje() {
-        return retencionPorcentaje;
+    public List<DetalleEstimacion> getDetalles() {
+        return Collections.unmodifiableList(detalles);
     }
 
-    public List<EstimacionItem> getItems() {
-        return Collections.unmodifiableList(items);
-    }
-
-    public EstimacionSnapshot getSnapshot() {
-        return snapshot;
+    public Long getVersion() {
+        return version;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Estimacion that = (Estimacion) o;
         return Objects.equals(id, that.id);
     }
@@ -188,5 +264,11 @@ public class Estimacion {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Estimacion{id=%s, proyectoId=%s, numeroEstimacion=%d, estado=%s, montoNetoPagar=%s}", 
+                           id, proyectoId, numeroEstimacion, estado, montoNetoPagar);
     }
 }

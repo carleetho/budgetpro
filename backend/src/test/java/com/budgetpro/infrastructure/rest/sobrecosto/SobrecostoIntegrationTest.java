@@ -125,7 +125,7 @@ class SobrecostoIntegrationTest extends AbstractIntegrationTest {
             com.budgetpro.domain.shared.model.TipoRecurso.MATERIAL,
             "BOLSA",
             null,
-            com.budgetpro.domain.recurso.model.EstadoRecurso.ACTIVO,
+            com.budgetpro.domain.finanzas.recurso.model.EstadoRecurso.ACTIVO,
             createdByValue
         );
         recurso = recursoJpaRepository.save(recurso);

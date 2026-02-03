@@ -373,7 +373,7 @@ class BudgetIntegrityIntegrationTest extends AbstractIntegrationTest {
                 com.budgetpro.domain.shared.model.TipoRecurso.MATERIAL,
                 "BOLSA",
                 null,
-                com.budgetpro.domain.recurso.model.EstadoRecurso.ACTIVO,
+                com.budgetpro.domain.finanzas.recurso.model.EstadoRecurso.ACTIVO,
                 UUID.randomUUID()
         );
         recurso = recursoJpaRepository.save(recurso);
