@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AXIOM Configuration Schema",
+  "description": "Schema for validating axiom.config.yaml files",
+  "type": "object",
+  "required": ["system", "axioms", "history"],
+  "properties": {
+    "system": {
+      "type": "object",
+      "required": ["role", "priorities"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "The persona/role the AI assistant should adopt"
+        },
+        "priorities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of top priorities for the system"
+        }
+      }
+    },
+    "axioms": {
+      "type": "object",
+      "required": ["protection_zones", "prohibitions", "hexagonal_boundaries", "override_keywords"],
+      "properties": {
+        "protection_zones": {
+          "type": "object",
+          "properties": {
+            "red": {
+              "type": "array",
+              "items": {
+                 "type": "object",
+                 "required": ["path", "max_files"],
+                 "properties": {
+                   "path": { "type": "string"},
+                   "max_files": { "type": "integer"}
+                 }
+              }
+            },
+            "yellow": {
+               "type": "array",
+              "items": {
+                 "type": "object",
+                 "required": ["path", "max_files"],
+                 "properties": {
+                   "path": { "type": "string"},
+                   "max_files": { "type": "integer"}
+                 }
+              }
+            },
+            "green": {
+               "type": "array",
+              "items": {
+                 "type": "object",
+                 "required": ["path", "max_files"],
+                 "properties": {
+                   "path": { "type": "string"},
+                   "max_files": { "type": "integer"}
+                 }
+              }
+            }
+          }
+        },
+        "prohibitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule", "reason"],
+            "properties": {
+              "rule": { "type": "string" },
+              "reason": { "type": "string" },
+              "severity": { "type": "string", "enum": ["BLOCKING", "WARNING"] }
+            }
+          }
+        },
+        "hexagonal_boundaries": {
+          "type": "object",
+          "required": ["permitted", "forbidden"],
+          "properties": {
+            "permitted": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "forbidden": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "override_keywords": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["keyword", "context"],
+            "properties": {
+              "keyword": { "type": "string" },
+              "context": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "history": {
+      "type": "object",
+      "properties": {
+        "lessons_learned": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "incidents": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
