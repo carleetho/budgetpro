@@ -73,6 +73,10 @@ echo "Instalando dependencias..."
 pip3 install pyyaml --quiet
 echo -e "${GREEN}✅ Dependencias instaladas${NC}"
 
+# 7.5 AI Assistant Setup
+echo "Configurando integración AI..."
+python3 tools/axiom/install_hook.py || echo -e "${YELLOW}⚠️ Hubo un problema configurando la integración AI (no crítico)${NC}"
+
 # 8. Run Verification
 echo "Verificando instalación..."
 if [ -f "./axiom.sh" ]; then

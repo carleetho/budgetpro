@@ -16,6 +16,7 @@ Exit Codes:
 import sys
 import logging
 import traceback
+import subprocess
 from tools.axiom.axiom_sentinel import AxiomSentinel
 
 def main():
@@ -36,6 +37,14 @@ def main():
         # 3. Instantiate and run orchestrator
         sentinel = AxiomSentinel(dry_run=dry_run)
         exit_code = sentinel.run()
+        
+        # 3.5. If validation passed, auto-stage the updated metrics file
+        if exit_code == 0:
+            try:
+                subprocess.run(["git", "add", ".budgetpro/metrics.json"], check=False, capture_output=True)
+                logger.info("Auto-staged updated metrics.json")
+            except Exception as e:
+                logger.warning(f"Failed to auto-stage metrics.json: {e}")
         
         # 4. Exit with orchestrator's decision
         sys.exit(exit_code)
