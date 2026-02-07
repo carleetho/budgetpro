@@ -95,10 +95,38 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-02-07T19:52:30.711149+00:00Z",
+      "execution_time_ms": 32696.855068206787,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-07T19:52:46.700777+00:00Z",
+      "execution_time_ms": 5500.38743019104,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 6,
+    "total_runs": 8,
     "avg_violations_per_run": 1.0,
     "pass_rate": 100.0,
     "most_common_validator": "security_validator",
