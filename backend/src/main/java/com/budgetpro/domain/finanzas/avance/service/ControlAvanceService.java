@@ -1,5 +1,6 @@
 package com.budgetpro.domain.finanzas.avance.service;
 
+import com.budgetpro.domain.finanzas.avance.exception.MetradoExcedidoException;
 import com.budgetpro.domain.finanzas.avance.model.AvanceFisico;
 import com.budgetpro.domain.finanzas.avance.port.out.AvanceFisicoRepository;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
@@ -12,10 +13,9 @@ import java.util.UUID;
 /**
  * Servicio de Dominio para controlar el avance físico de partidas.
  * 
- * Responsabilidad:
- * - Registrar avances físicos
- * - Calcular porcentaje de avance acumulado
- * - Validar que el acumulado no supere el metrado total (alertar, no bloquear)
+ * Responsabilidad: - Registrar avances físicos - Calcular porcentaje de avance
+ * acumulado - **APLICAR STRICT MODE**: Validar que el acumulado no supere el
+ * metrado total (BLOQUEAR)
  * 
  * No persiste directamente, orquesta la lógica de dominio.
  */
@@ -23,44 +23,66 @@ public class ControlAvanceService {
 
     private final AvanceFisicoRepository avanceFisicoRepository;
 
+    /**
+     * Strict mode para enforcement de metrado cap. true: Lanza
+     * MetradoExcedidoException si se excede el metrado (PRODUCTION) false: Solo
+     * alerta (legacy/development mode)
+     * 
+     * AXIOM: Default TRUE para Phase 0 (E-01 gap remediation)
+     */
+    private final boolean strictMetradoCap;
+
     public ControlAvanceService(AvanceFisicoRepository avanceFisicoRepository) {
+        this(avanceFisicoRepository, true); // Strict mode por defecto
+    }
+
+    public ControlAvanceService(AvanceFisicoRepository avanceFisicoRepository, boolean strictMetradoCap) {
         this.avanceFisicoRepository = avanceFisicoRepository;
+        this.strictMetradoCap = strictMetradoCap;
     }
 
     /**
      * Registra un avance físico para una partida.
      * 
-     * @param partida La partida a la que se le registra el avance
+     * @param partida          La partida a la que se le registra el avance
      * @param metradoEjecutado La cantidad física ejecutada
-     * @param fecha La fecha del avance
-     * @param observacion Observación opcional
+     * @param fecha            La fecha del avance
+     * @param observacion      Observación opcional
      * @return El avance físico creado
+     * @throws MetradoExcedidoException Si strict mode está activo y el acumulado
+     *                                  excede el metrado
      */
-    public AvanceFisico registrarAvance(Partida partida, BigDecimal metradoEjecutado,
-                                        java.time.LocalDate fecha, String observacion) {
+    public AvanceFisico registrarAvance(Partida partida, BigDecimal metradoEjecutado, java.time.LocalDate fecha,
+            String observacion) {
         // Validar que el metrado ejecutado no sea negativo
         if (metradoEjecutado == null || metradoEjecutado.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El metrado ejecutado no puede ser negativo");
         }
 
-        // (Opcional MVP) Validar que el acumulado no supere el metrado total (solo alertar)
+        // E-01: Validar que el acumulado no supere el metrado total (STRICT MODE)
         BigDecimal acumulado = calcularMetradoAcumulado(partida.getId().getValue());
         BigDecimal nuevoAcumulado = acumulado.add(metradoEjecutado);
-        
-        if (partida.getMetrado().compareTo(BigDecimal.ZERO) > 0 && 
-            nuevoAcumulado.compareTo(partida.getMetrado()) > 0) {
-            // Alertar pero no bloquear (MVP)
-            // En producción, se podría lanzar una excepción o generar un evento de dominio
-            System.out.println(String.format(
-                "ADVERTENCIA: El acumulado (%s) supera el metrado total (%s) de la partida %s",
-                nuevoAcumulado, partida.getMetrado(), partida.getId()
-            ));
+
+        if (partida.getMetrado().compareTo(BigDecimal.ZERO) > 0 && nuevoAcumulado.compareTo(partida.getMetrado()) > 0) {
+
+            if (strictMetradoCap) {
+                // STRICT MODE: Lanzar excepción (AXIOM E-01 enforcement)
+                throw new MetradoExcedidoException(partida.getId().getValue(), partida.getMetrado(), nuevoAcumulado,
+                        String.format(
+                                "Cannot exceed budgeted metrado (%s). Accumulated: %s. Requires Change Order approval.",
+                                partida.getMetrado(), nuevoAcumulado));
+            } else {
+                // LEGACY MODE: Solo alertar (deprecated - to be removed in future versions)
+                System.out.println(
+                        String.format("ADVERTENCIA: El acumulado (%s) supera el metrado total (%s) de la partida %s",
+                                nuevoAcumulado, partida.getMetrado(), partida.getId()));
+            }
         }
 
         // Crear el avance físico
-        com.budgetpro.domain.finanzas.avance.model.AvanceFisicoId id = 
-            com.budgetpro.domain.finanzas.avance.model.AvanceFisicoId.nuevo();
-        
+        com.budgetpro.domain.finanzas.avance.model.AvanceFisicoId id = com.budgetpro.domain.finanzas.avance.model.AvanceFisicoId
+                .nuevo();
+
         return AvanceFisico.crear(id, partida.getId().getValue(), fecha, metradoEjecutado, observacion);
     }
 
@@ -72,9 +94,7 @@ public class ControlAvanceService {
      */
     public BigDecimal calcularMetradoAcumulado(UUID partidaId) {
         List<AvanceFisico> avances = avanceFisicoRepository.findByPartidaId(partidaId);
-        return avances.stream()
-                .map(AvanceFisico::getMetradoEjecutado)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return avances.stream().map(AvanceFisico::getMetradoEjecutado).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -92,13 +112,11 @@ public class ControlAvanceService {
         }
 
         BigDecimal acumulado = calcularMetradoAcumulado(partida.getId().getValue());
-        
+
         if (acumulado.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
 
-        return acumulado
-                .divide(partida.getMetrado(), 4, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal("100"));
+        return acumulado.divide(partida.getMetrado(), 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
     }
 }
