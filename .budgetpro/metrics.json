@@ -123,10 +123,38 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-02-07T20:44:28.965868+00:00Z",
+      "execution_time_ms": 27938.91716003418,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-07T20:44:45.812270+00:00Z",
+      "execution_time_ms": 6537.952423095703,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 8,
+    "total_runs": 10,
     "avg_violations_per_run": 1.0,
     "pass_rate": 100.0,
     "most_common_validator": "security_validator",
