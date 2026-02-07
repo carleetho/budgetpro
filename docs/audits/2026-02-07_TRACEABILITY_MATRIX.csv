@@ -1,0 +1,18 @@
+Rule ID,Rule Description,Rule Type,Affected Modules,Code Location,Code Evidence,Canonical Notebook Reference,Implementation Status,Documentation Status,Gap Priority
+P-01,No Modification Frozen,Domain,Presupuesto,Presupuesto.java / CrearPartidaUseCaseImpl.java,"if (integrityHashApproval != null) vs No Check in UseCase",PRESUPUESTO_MODULE_CANONICAL.md,PARTIAL,UPDATE_NEEDED,CRITICAL
+P-02,WBS Hierarchy,Domain,Presupuesto,Partida.java / CrearPartidaUseCaseImpl.java,"nivel checks, padreId checks",PRESUPUESTO_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+P-03,Leaf Node APU,Domain,Presupuesto,CrearApuUseCaseImpl.java,Missing check for Partida children,PRESUPUESTO_MODULE_CANONICAL.md,MISSING,UPDATE_NEEDED,HIGH
+P-04,Snapshot Immutability,Domain,Catalogo/Presupuesto,APUSnapshot.java,"final fields, audit trail for editable fields",PRESUPUESTO_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+P-05,Unique Item Code,Domain,Presupuesto,CrearPartidaUseCaseImpl.java,Missing uniqueness check,PRESUPUESTO_MODULE_CANONICAL.md,MISSING,UPDATE_NEEDED,HIGH
+P-06,Indirect Costs,Domain,Presupuesto/Sobrecosto,-,-,PRESUPUESTO_MODULE_CANONICAL.md,NOT_AUDITED,VERIFIED,LOW
+ES-01,Sequential Approval,Domain,Estimacion,AprobarEstimacionUseCaseImpl.java,Missing N-1 check,ESTIMACION_MODULE_CANONICAL.md,MISSING,UPDATE_NEEDED,CRITICAL
+ES-02,Wallet Impact,Domain,Estimacion,AprobarEstimacionUseCaseImpl.java,Missing CuentaPorPagar generation,ESTIMACION_MODULE_CANONICAL.md,PARTIAL,UPDATE_NEEDED,HIGH
+ES-03,Non-Negative Payments,Domain,Estimacion,Estimacion.java,Missing zero-floor validation,ESTIMACION_MODULE_CANONICAL.md,MISSING,UPDATE_NEEDED,MEDIUM
+ES-04,Advance Amortization,Domain,Estimacion,GeneradorEstimacionService.java,Implemented min logic,ESTIMACION_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+L-01,Budget Check,Domain,Compras,ProcesarCompraService.java,Strict check vs SaldoDisponible,COMPRAS_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+L-02,Price Independence,Domain,Compras,Compra.java/ProcesarCompraService.java,Uses CompraDetalle price not APU,COMPRAS_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+L-03,Stock Updates,Domain,Compras/Inventario,ProcesarCompraService.java,Delegates to GestionInventarioService,COMPRAS_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+L-04,Valid Provider,Domain,Compras,Compra.java,String based validation only,COMPRAS_MODULE_CANONICAL.md,PARTIAL,VERIFIED,LOW
+I-01,No Negative Stock,Domain,Inventario,InventarioItem.java,Exceptions for negative stock,INVENTARIO_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+I-02,Average Cost Update,Domain,Inventario,InventarioItem.java,PMP formula in ingress,INVENTARIO_MODULE_CANONICAL.md,IMPLEMENTED,VERIFIED,NONE
+I-03,FIFO Support,Domain,Inventario,-,No Batch/Lot tracking found,INVENTARIO_MODULE_CANONICAL.md,MISSING,VERIFIED,MEDIUM
