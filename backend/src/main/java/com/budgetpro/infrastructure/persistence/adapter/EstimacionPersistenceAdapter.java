@@ -51,4 +51,9 @@ public class EstimacionPersistenceAdapter implements EstimacionRepository {
         return repository.findAprobadasByProyectoId(proyectoId).stream().map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Optional<Estimacion> findByProyectoIdAndNumero(UUID proyectoId, Integer numeroEstimacion) {
+        return repository.findByProyectoIdAndNumeroEstimacion(proyectoId, numeroEstimacion).map(mapper::toDomain);
+    }
 }
