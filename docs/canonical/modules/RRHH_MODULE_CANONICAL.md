@@ -37,6 +37,7 @@
 | R-01 | **Labor Regime**: Construction Civil Regime (Civil Construction) rules must apply for worker category caps.                       | 🟡 Config only    |
 | R-02 | **Attendance**: Cannot register attendance for inactive workers. InactiveWorkerException validation **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
 | R-03 | **Double Booking**: Worker cannot be in two sites on same day.                                                                    | 🔴 Missing        |
+| R-04 | **Config Integrity**: Regime config values must be non-negative (days) and positive (factors).                                    | ✅ Implemented    |
 
 ## 3. Domain Events
 
