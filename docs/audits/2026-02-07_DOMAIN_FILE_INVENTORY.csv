@@ -1,0 +1,214 @@
+File Path,Bounded Context,Status
+backend/src/main/java/com/budgetpro/domain/catalogo/model/ComposicionCuadrillaSnapshot.java,catalogo,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoSnapshot.java,catalogo,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/catalogo/model/APUSnapshotId.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/APUInsumoSnapshotId.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/EstadoProxy.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/APUSnapshot.java,catalogo,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoSearchCriteria.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoProxy.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/RecursoProxyId.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/model/APUInsumoSnapshot.java,catalogo,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/catalogo/service/SnapshotService.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/service/CalculoApuDinamicoService.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/port/CatalogPort.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/port/RecursoProxyRepository.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/port/ApuSnapshotRepository.java,catalogo,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/exception/CatalogServiceException.java,catalogo/exception,Unprotected
+backend/src/main/java/com/budgetpro/domain/catalogo/exception/CatalogNotFoundException.java,catalogo/exception,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/EstadoValuacion.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/ValuacionId.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/Valuacion.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisicoId.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/service/ControlAvanceService.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/port/out/AvanceFisicoRepository.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/avance/port/out/ValuacionRepository.java,finanzas/avance,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/model/TipoMovimientoAnticipo.java,finanzas/anticipo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/model/AnticipoMovimiento.java,finanzas/anticipo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/anticipo/port/out/AnticipoMovimientoRepository.java,finanzas/anticipo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/EstadoPresupuesto.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/Presupuesto.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/IntegrityAuditEntry.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/PresupuestoId.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/PresupuestoService.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityAuditLog.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/CalculoPresupuestoService.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/service/IntegrityHashService.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/port/out/IntegrityAuditRepository.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/port/out/PresupuestoRepository.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/exception/PresupuestoSinCronogramaException.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/exception/BudgetIntegrityViolationException.java,finanzas/presupuesto,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObraId.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramadaId.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/CronogramaSnapshot.java,finanzas/cronograma,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/CronogramaSnapshotId.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CalculoCronogramaService.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/SnapshotGeneratorService.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CronogramaService.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ConsultaDuracionProyectoPort.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ActividadProgramadaRepository.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/CronogramaSnapshotRepository.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/port/out/ProgramaObraRepository.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/exception/CronogramaCongeladoException.java,finanzas/cronograma,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/model/MovimientoCaja.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/model/EstadoMovimientoCaja.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/model/Billetera.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/model/BilleteraId.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/model/TipoMovimiento.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecostoId.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecosto.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboralId.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/InteligenciaMaquinariaService.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalculadoraPrecioVentaService.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/CalcularSalarioRealService.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/port/out/ConfiguracionLaboralRepository.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/port/out/AnalisisSobrecostoRepository.java,finanzas/sobrecosto,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuInsumo.java,finanzas/apu,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/APU.java,finanzas/apu,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuId.java,finanzas/apu,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuInsumoId.java,finanzas/apu,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/apu/port/out/ApuRepository.java,finanzas/apu,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/port/out/BilleteraRepository.java,finanzas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/PartidaId.java,finanzas/partida,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/Partida.java,finanzas/partida,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/partida/port/out/PartidaRepository.java,finanzas/partida,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/exception/SaldoInsuficienteException.java,finanzas/exception,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/evm/model/EVMSnapshot.java,finanzas/evm,Hardened (Snapshot)
+backend/src/main/java/com/budgetpro/domain/finanzas/evm/model/EVMSnapshotId.java,finanzas/evm,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/evm/port/out/EVMSnapshotRepository.java,finanzas/evm,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/evm/port/out/EVMDataProvider.java,finanzas/evm,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/TipoAlertaParametrica.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/AlertaParametrica.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/AnalisisPresupuesto.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/model/NivelAlerta.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/alertas/port/out/AnalisisPresupuestoRepository.java,finanzas/alertas,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/TipoConsumo.java,finanzas/consumo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartida.java,finanzas/consumo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartidaId.java,finanzas/consumo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/consumo/port/out/ConsumoPartidaRepository.java,finanzas/consumo,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/control/service/AgregacionControlCostosService.java,finanzas/control,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/recurso/model/Recurso.java,finanzas/recurso,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/recurso/model/EstadoRecurso.java,finanzas/recurso,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/recurso/model/RecursoId.java,finanzas/recurso,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacion.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacionId.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstimacionId.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/EstadoEstimacion.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/port/out/EstimacionRepository.java,finanzas/estimacion,Hardened (Critical Context)
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/IndicePrecios.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/DetalleReajustePartidaId.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/TipoIndicePrecios.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstadoEstimacionReajuste.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstimacionReajusteId.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/EstimacionReajuste.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/DetalleReajustePartida.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/model/IndicePreciosId.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/service/CalculadorReajusteService.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/port/out/IndicePreciosRepository.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/finanzas/reajuste/port/out/EstimacionReajusteRepository.java,finanzas/reajuste,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/Contacto.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/HistorialId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/AsistenciaId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/Empleado.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/NominaId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoEmpleado.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionProyectoId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/EmpleadoId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/DetalleNomina.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/Nomina.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/Cuadrilla.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionProyecto.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/HistorialLaboral.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoAsistencia.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaMiembroId.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/EstadoCuadrilla.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/CuadrillaMiembro.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/AsistenciaRegistro.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/AsignacionActividad.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/TipoEmpleado.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/model/ConfiguracionLaboralExtendida.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/rrhh/service/CalculadorFSR.java,rrhh,Unprotected
+backend/src/main/java/com/budgetpro/domain/proyecto/model/EstadoProyecto.java,proyecto,Unprotected
+backend/src/main/java/com/budgetpro/domain/proyecto/model/ProyectoId.java,proyecto,Unprotected
+backend/src/main/java/com/budgetpro/domain/proyecto/model/Proyecto.java,proyecto,Unprotected
+backend/src/main/java/com/budgetpro/domain/proyecto/port/out/ProyectoRepository.java,proyecto,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/RegistroKardex.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/TipoMovimientoAlmacen.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/AlmacenId.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/MovimientoAlmacen.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/MovimientoAlmacenId.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/model/Almacen.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/service/GestionKardexService.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/RegistroKardexRepository.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/AlmacenRepository.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/almacen/port/out/MovimientoAlmacenRepository.java,logistica/almacen,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionItemId.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionId.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/EstadoRequisicion.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/RequisicionItem.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/model/Requisicion.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/service/DespachoRequisicionService.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/service/DespachoItem.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/port/out/RequisicionRepository.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/exception/UsuarioNoAutorizadoException.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/requisicion/exception/RequisicionNoAprobadaException.java,logistica/requisicion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/EstadoRequerimiento.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/PrioridadCompra.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/RequerimientoCompraId.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/model/RequerimientoCompra.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/service/BacklogService.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/backlog/port/out/RequerimientoCompraRepository.java,logistica/backlog,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraDetalleId.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraId.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/RubroInsumo.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraDetalle.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/Compra.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/EstadoCompra.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/RelacionContractual.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/model/NaturalezaGasto.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/compra/port/out/CompraRepository.java,logistica/compra,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/MovimientoInventario.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/MovimientoInventarioId.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/TipoMovimientoInventario.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/InventarioId.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/model/InventarioItem.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/GestionInventarioService.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/InventarioSnapshotService.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/service/ImputacionService.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/InventarioRepository.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/ConsumoPartidaRepository.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/PartidaValidator.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/AcPublisher.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/BudgetAlertPublisher.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/port/out/PartidaRepository.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/ExcesoRecepcionException.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/ImputacionObligatoriaException.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/exception/CantidadInsuficienteException.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/event/MaterialConsumed.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/inventario/event/BudgetAlertEvent.java,logistica/inventario,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/model/TransferenciaId.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/service/TransferenciaService.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/port/out/ExcepcionValidator.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/port/out/TransferenciaEventPublisher.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/exception/ExcepcionNoEncontradaException.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/transferencia/event/MaterialTransferredBetweenProjects.java,logistica/transferencia,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/CuadrillaId.java,logistica/organizacion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/Cuadrilla.java,logistica/organizacion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/FrenteTrabajo.java,logistica/organizacion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/organizacion/model/FrenteTrabajoId.java,logistica/organizacion,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/bodega/model/BodegaId.java,logistica/bodega,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/bodega/model/Bodega.java,logistica/bodega,Unprotected
+backend/src/main/java/com/budgetpro/domain/logistica/bodega/port/out/DefaultBodegaPort.java,logistica/bodega,Unprotected
+backend/src/main/java/com/budgetpro/domain/shared/model/TipoRecurso.java,shared,Unprotected
+backend/src/main/java/com/budgetpro/domain/shared/port/out/JsonSerializerPort.java,shared,Unprotected
+backend/src/main/java/com/budgetpro/domain/shared/port/out/ObservabilityPort.java,shared,Unprotected
+backend/src/main/java/com/budgetpro/domain/shared/port/out/SecurityPort.java,shared,Unprotected
