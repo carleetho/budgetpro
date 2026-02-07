@@ -14,14 +14,14 @@
 
 ## 2. Invariants (Business Rules)
 
-| ID   | Rule                                                                                                        | Status         |
-| ---- | ----------------------------------------------------------------------------------------------------------- | -------------- |
-| P-01 | **No Modification Frozen**: A budget cannot be modified (add/remove items) once it is in `CONGELADO` state. | ✅ Implemented |
-| P-02 | **WBS Hierarchy**: Partidas must form a strict hierarchical tree structure (Parent-Child).                  | ✅ Implemented |
-| P-03 | **Leaf Node APU**: Only leaf partidas (lowest level) can have an associated APU or APUSnapshot.             | ✅ Implemented |
-| P-04 | **Snapshot Immutability**: APUSnapshots are immutable upon creation, except for `rendimientoVigente`.       | ✅ Implemented |
-| P-05 | **Unique Item Code**: Each partida must have a unique WBS item code within the project.                     | ✅ Implemented |
-| P-06 | **Indirect Costs**: Overhead calculations must be based on standard formulas (percentage of direct costs).  | ✅ Implemented |
+| ID   | Rule                                                                                                                                                         | Status            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| P-01 | **No Modification Frozen**: A budget cannot be modified (add/remove items) once it is in `CONGELADO` state. Application layer bypass **FIXED** (2026-02-07). | ✅ Fully Enforced |
+| P-02 | **WBS Hierarchy**: Partidas must form a strict hierarchical tree structure (Parent-Child).                                                                   | ✅ Implemented    |
+| P-03 | **Leaf Node APU**: Only leaf partidas (lowest level) can have an associated APU or APUSnapshot.                                                              | ✅ Implemented    |
+| P-04 | **Snapshot Immutability**: APUSnapshots are immutable upon creation, except for `rendimientoVigente`.                                                        | ✅ Implemented    |
+| P-05 | **Unique Item Code**: Each partida must have a unique WBS item code within the project.                                                                      | ✅ Implemented    |
+| P-06 | **Indirect Costs**: Overhead calculations must be based on standard formulas (percentage of direct costs).                                                   | ✅ Implemented    |
 
 ## 3. Domain Events
 
