@@ -2,7 +2,25 @@
 
 > **Status**: Skeletal (20%)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-02-07
+
+> [!CAUTION]
+> **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
+>
+> **Current Maturity:** 20% (Skeletal)  
+> **Grounding Score:** 1.5 / 5.0 (Critical)  
+> **Hallucination Risk:** 60%+
+>
+> This module is under active development with incomplete documentation. AI assistants may hallucinate implementations based on general HR knowledge that do not match BudgetPro's specific Civil Construction regime rules (rain days, altitude bonuses, regional factors).
+>
+> **Safe AI Usage:**
+>
+> - ✅ Asking clarifying questions
+> - ✅ Reviewing existing code
+> - ❌ Generating new features or business logic
+>
+> **Minimum Maturity for AI Code Generation:** 50%  
+> **Current Status:** Questions only
 
 ## 1. Module Maturity Roadmap
 
@@ -14,11 +32,11 @@
 
 ## 2. Invariants (Business Rules)
 
-| ID   | Rule                                                                                                        | Status         |
-| ---- | ----------------------------------------------------------------------------------------------------------- | -------------- |
-| R-01 | **Labor Regime**: Construction Civil Regime (Civil Construction) rules must apply for worker category caps. | 🟡 Config only |
-| R-02 | **Attendance**: Cannot register attendance for inactive workers.                                            | 🔴 Missing     |
-| R-03 | **Double Booking**: Worker cannot be in two sites on same day.                                              | 🔴 Missing     |
+| ID   | Rule                                                                                                                              | Status            |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| R-01 | **Labor Regime**: Construction Civil Regime (Civil Construction) rules must apply for worker category caps.                       | 🟡 Config only    |
+| R-02 | **Attendance**: Cannot register attendance for inactive workers. InactiveWorkerException validation **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
+| R-03 | **Double Booking**: Worker cannot be in two sites on same day.                                                                    | 🔴 Missing        |
 
 ## 3. Domain Events
 
