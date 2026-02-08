@@ -9,10 +9,8 @@ import java.util.UUID;
  * Una Cuadrilla está vinculada a un FrenteTrabajo y tiene un capataz (foreman).
  * Pertenece al contexto del Proyecto (no es aggregate root).
  * 
- * Invariantes:
- * - Código único por proyecto (proyectoId + codigo)
- * - codigo no puede estar en blanco
- * - proyectoId, capataz y frenteTrabajo son obligatorios
+ * Invariantes: - Código único por proyecto (proyectoId + codigo) - codigo no
+ * puede estar en blanco - proyectoId, capataz y frenteTrabajo son obligatorios
  * - Estado activa/inactiva para ciclo de vida
  */
 public final class Cuadrilla {
@@ -23,13 +21,16 @@ public final class Cuadrilla {
     private final String nombre;
     private final String capataz; // Capataz (foreman) de la cuadrilla
     private final FrenteTrabajoId frenteTrabajoId; // FK al frente de trabajo
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
+    // - activa: ciclo de vida de la cuadrilla (activar/desactivar)
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private boolean activa;
 
     /**
      * Constructor privado. Usar factory methods crear() y reconstruir().
      */
-    private Cuadrilla(CuadrillaId id, UUID proyectoId, String codigo, String nombre,
-                     String capataz, FrenteTrabajoId frenteTrabajoId, boolean activa) {
+    private Cuadrilla(CuadrillaId id, UUID proyectoId, String codigo, String nombre, String capataz,
+            FrenteTrabajoId frenteTrabajoId, boolean activa) {
         this.id = Objects.requireNonNull(id, "El ID de la cuadrilla no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId es obligatorio");
         if (codigo == null || codigo.isBlank()) {
@@ -46,8 +47,7 @@ public final class Cuadrilla {
     }
 
     /**
-     * Factory method para crear una nueva cuadrilla.
-     * La cuadrilla se crea activa.
+     * Factory method para crear una nueva cuadrilla. La cuadrilla se crea activa.
      *
      * @param id              Identificador único de la cuadrilla
      * @param proyectoId      ID del proyecto (obligatorio)
@@ -57,16 +57,16 @@ public final class Cuadrilla {
      * @param frenteTrabajoId ID del frente de trabajo (obligatorio)
      * @return Nueva Cuadrilla activa
      */
-    public static Cuadrilla crear(CuadrillaId id, UUID proyectoId, String codigo, String nombre,
-                                 String capataz, FrenteTrabajoId frenteTrabajoId) {
+    public static Cuadrilla crear(CuadrillaId id, UUID proyectoId, String codigo, String nombre, String capataz,
+            FrenteTrabajoId frenteTrabajoId) {
         return new Cuadrilla(id, proyectoId, codigo, nombre, capataz, frenteTrabajoId, true);
     }
 
     /**
      * Factory method para reconstruir una cuadrilla desde persistencia.
      */
-    public static Cuadrilla reconstruir(CuadrillaId id, UUID proyectoId, String codigo, String nombre,
-                                        String capataz, FrenteTrabajoId frenteTrabajoId, boolean activa) {
+    public static Cuadrilla reconstruir(CuadrillaId id, UUID proyectoId, String codigo, String nombre, String capataz,
+            FrenteTrabajoId frenteTrabajoId, boolean activa) {
         return new Cuadrilla(id, proyectoId, codigo, nombre, capataz, frenteTrabajoId, activa);
     }
 
@@ -116,8 +116,10 @@ public final class Cuadrilla {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Cuadrilla that = (Cuadrilla) o;
         return Objects.equals(id, that.id);
     }
