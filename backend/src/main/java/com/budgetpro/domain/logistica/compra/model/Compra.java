@@ -13,12 +13,9 @@ import java.util.stream.Collectors;
  * 
  * Representa una compra realizada en el proyecto.
  * 
- * Invariantes:
- * - El proyectoId es obligatorio
- * - La fecha no puede ser nula
- * - El proveedor no puede estar vacío
- * - La lista de detalles no puede ser nula ni vacía
- * - El total = Σ subtotales de detalles
+ * Invariantes: - El proyectoId es obligatorio - La fecha no puede ser nula - El
+ * proveedor no puede estar vacío - La lista de detalles no puede ser nula ni
+ * vacía - El total = Σ subtotales de detalles
  * 
  * Contexto: Logística & Costos
  */
@@ -26,22 +23,36 @@ public final class Compra {
 
     private final CompraId id;
     private final UUID proyectoId;
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Aggregate Root con estado transaccional
+    // mutable.
+    // Campos que representan el estado evolutivo de la compra (antes de
+    // aprobación):
+    // - fecha: puede actualizarse (actualizarFecha)
+    // - proveedor: puede cambiarse (actualizarProveedor)
+    // - estado: workflow transitions (BORRADOR → APROBADA)
+    // - total: recalculado dinámicamente cuando se agregan/modifican detalles
+    // - version: optimistic locking
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private LocalDate fecha;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private String proveedor;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private EstadoCompra estado;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private BigDecimal total; // Calculado: Σ subtotales de detalles
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private Long version;
-    
+
     // Lista de detalles (entidades internas del agregado)
     private final List<CompraDetalle> detalles;
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private Compra(CompraId id, UUID proyectoId, LocalDate fecha, String proveedor, 
-                  EstadoCompra estado, Long version, List<CompraDetalle> detalles) {
+    private Compra(CompraId id, UUID proyectoId, LocalDate fecha, String proveedor, EstadoCompra estado, Long version,
+            List<CompraDetalle> detalles) {
         validarInvariantes(proyectoId, fecha, proveedor, detalles);
-        
+
         this.id = Objects.requireNonNull(id, "El ID de la compra no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.fecha = Objects.requireNonNull(fecha, "La fecha no puede ser nula");
@@ -56,7 +67,7 @@ public final class Compra {
      * Factory method para crear una nueva Compra en estado BORRADOR.
      */
     public static Compra crear(CompraId id, UUID proyectoId, LocalDate fecha, String proveedor,
-                               List<CompraDetalle> detalles) {
+            List<CompraDetalle> detalles) {
         return new Compra(id, proyectoId, fecha, proveedor, EstadoCompra.BORRADOR, 0L, detalles);
     }
 
@@ -64,8 +75,7 @@ public final class Compra {
      * Factory method para reconstruir una Compra desde persistencia.
      */
     public static Compra reconstruir(CompraId id, UUID proyectoId, LocalDate fecha, String proveedor,
-                                     EstadoCompra estado, BigDecimal total, Long version,
-                                     List<CompraDetalle> detalles) {
+            EstadoCompra estado, BigDecimal total, Long version, List<CompraDetalle> detalles) {
         Compra compra = new Compra(id, proyectoId, fecha, proveedor, estado, version, detalles);
         compra.total = total != null ? total : compra.calcularTotal();
         return compra;
@@ -103,9 +113,7 @@ public final class Compra {
      * Calcula el total de la compra: Σ subtotales de detalles.
      */
     private BigDecimal calcularTotal() {
-        return detalles.stream()
-                .map(CompraDetalle::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return detalles.stream().map(CompraDetalle::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -196,8 +204,10 @@ public final class Compra {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Compra compra = (Compra) o;
         return Objects.equals(id, compra.id);
     }
@@ -209,7 +219,7 @@ public final class Compra {
 
     @Override
     public String toString() {
-        return String.format("Compra{id=%s, proyectoId=%s, fecha=%s, proveedor='%s', estado=%s, total=%s, detalles=%d}", 
-                           id, proyectoId, fecha, proveedor, estado, total, detalles.size());
+        return String.format("Compra{id=%s, proyectoId=%s, fecha=%s, proveedor='%s', estado=%s, total=%s, detalles=%d}",
+                id, proyectoId, fecha, proveedor, estado, total, detalles.size());
     }
 }

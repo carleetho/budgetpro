@@ -10,11 +10,9 @@ import java.util.UUID;
  * Representa un almacén físico por proyecto para el seguimiento de inventario
  * multi-bodega. Cada proyecto puede tener múltiples bodegas (relación 1:N).
  *
- * Invariantes:
- * - Código único por proyecto (proyectoId + codigo)
- * - codigo no puede estar en blanco
- * - proyectoId y responsable son obligatorios
- * - Estado activa/inactiva para ciclo de vida
+ * Invariantes: - Código único por proyecto (proyectoId + codigo) - codigo no
+ * puede estar en blanco - proyectoId y responsable son obligatorios - Estado
+ * activa/inactiva para ciclo de vida
  */
 public final class Bodega {
 
@@ -24,16 +22,20 @@ public final class Bodega {
     private final String nombre;
     private final String ubicacionFisica;
     private final String responsable;
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
+    // - activa: estado del ciclo de vida (activar/desactivar bodega)
+    // - version: optimistic locking para concurrencia
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private boolean activa;
     private final LocalDateTime fechaCreacion;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     private Long version;
 
     /**
      * Constructor privado. Usar factory methods crear() y reconstruir().
      */
-    private Bodega(BodegaId id, UUID proyectoId, String codigo, String nombre,
-                   String ubicacionFisica, String responsable, boolean activa,
-                   LocalDateTime fechaCreacion, Long version) {
+    private Bodega(BodegaId id, UUID proyectoId, String codigo, String nombre, String ubicacionFisica,
+            String responsable, boolean activa, LocalDateTime fechaCreacion, Long version) {
         this.id = Objects.requireNonNull(id, "El ID de la bodega no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId es obligatorio");
         if (codigo == null || codigo.isBlank()) {
@@ -52,31 +54,28 @@ public final class Bodega {
     }
 
     /**
-     * Factory method para crear una nueva bodega.
-     * La bodega se crea activa, con fechaCreación actual y version 0.
+     * Factory method para crear una nueva bodega. La bodega se crea activa, con
+     * fechaCreación actual y version 0.
      *
-     * @param id           Identificador único de la bodega
-     * @param proyectoId   ID del proyecto (obligatorio)
-     * @param codigo       Código único por proyecto (no puede estar en blanco)
-     * @param nombre       Nombre de la bodega
+     * @param id              Identificador único de la bodega
+     * @param proyectoId      ID del proyecto (obligatorio)
+     * @param codigo          Código único por proyecto (no puede estar en blanco)
+     * @param nombre          Nombre de la bodega
      * @param ubicacionFisica Ubicación física (opcional)
-     * @param responsable  Responsable de la bodega (obligatorio)
+     * @param responsable     Responsable de la bodega (obligatorio)
      * @return Nueva Bodega activa
      */
-    public static Bodega crear(BodegaId id, UUID proyectoId, String codigo, String nombre,
-                              String ubicacionFisica, String responsable) {
-        return new Bodega(id, proyectoId, codigo, nombre, ubicacionFisica, responsable,
-                true, LocalDateTime.now(), 0L);
+    public static Bodega crear(BodegaId id, UUID proyectoId, String codigo, String nombre, String ubicacionFisica,
+            String responsable) {
+        return new Bodega(id, proyectoId, codigo, nombre, ubicacionFisica, responsable, true, LocalDateTime.now(), 0L);
     }
 
     /**
      * Factory method para reconstruir una bodega desde persistencia.
      */
-    public static Bodega reconstruir(BodegaId id, UUID proyectoId, String codigo, String nombre,
-                                    String ubicacionFisica, String responsable, boolean activa,
-                                    LocalDateTime fechaCreacion, Long version) {
-        return new Bodega(id, proyectoId, codigo, nombre, ubicacionFisica, responsable,
-                activa, fechaCreacion, version);
+    public static Bodega reconstruir(BodegaId id, UUID proyectoId, String codigo, String nombre, String ubicacionFisica,
+            String responsable, boolean activa, LocalDateTime fechaCreacion, Long version) {
+        return new Bodega(id, proyectoId, codigo, nombre, ubicacionFisica, responsable, activa, fechaCreacion, version);
     }
 
     /**
@@ -135,8 +134,10 @@ public final class Bodega {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Bodega bodega = (Bodega) o;
         return Objects.equals(id, bodega.id);
     }
@@ -148,7 +149,7 @@ public final class Bodega {
 
     @Override
     public String toString() {
-        return String.format("Bodega{id=%s, proyectoId=%s, codigo='%s', nombre='%s', activa=%s}",
-                id, proyectoId, codigo, nombre, activa);
+        return String.format("Bodega{id=%s, proyectoId=%s, codigo='%s', nombre='%s', activa=%s}", id, proyectoId,
+                codigo, nombre, activa);
     }
 }
