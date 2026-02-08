@@ -25,6 +25,23 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Setup Python for AXIOM domain hardening rule generation
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # Generate domain hardening rules from .domain-validator.yaml config
+      - name: Generate Domain Hardening Rules
+        run: |
+          echo "📦 Installing dependencies..."
+          pip install pyyaml
+          echo "🔧 Generating AXIOM domain hardening rules..."
+          python3 tools/generate_domain_rules.py --report-coverage
+          echo "✅ Generated .semgrep/generated-domain-hardening.yml"
+          ls -lh .semgrep/generated-domain-hardening.yml
+
       # Runs Semgrep with PR profile configuration
       # Scans all rules in .semgrep/rules/ including:
       # - Security rules (hardcoded secrets, JWT, etc.)
@@ -34,7 +51,7 @@ jobs:
       #   * 06-valueobject-no-setters.yaml: Setters in value objects
       # - Architecture rules (hexagonal boundaries)
       # - Quality rules (null safety, exception handling)
-      # 
+      #
       # Blocking violations (ERROR severity) fail the workflow and prevent merge.
       # Warnings (WARNING severity) are reported but don't block merge.
       # Semgrep Action automatically scans .semgrep/rules/ when using a config file.
