@@ -9,43 +9,53 @@ import java.util.UUID;
  * 
  * Representa un ítem comprado que está asociado a una partida específica.
  * 
- * Invariantes:
- * - El recursoExternalId no puede ser nulo o vacío
- * - El recursoNombre no puede ser nulo o vacío
- * - La clasificación es obligatoria
- * - La cantidad no puede ser negativa
- * - El precioUnitario no puede ser negativo
- * - El subtotal = cantidad * precioUnitario
+ * Invariantes: - El recursoExternalId no puede ser nulo o vacío - El
+ * recursoNombre no puede ser nulo o vacío - La clasificación es obligatoria -
+ * La cantidad no puede ser negativa - El precioUnitario no puede ser negativo -
+ * El subtotal = cantidad * precioUnitario
  */
 public final class CompraDetalle {
 
     private final CompraDetalleId id;
     private final String recursoExternalId; // Referencia externa al recurso (ej. "MAT-001" de catálogo)
     private final String recursoNombre; // Snapshot del nombre del recurso para display/reporting
-    private final String unidad; // Unidad en que llega la compra (Authority by PO). Para detección de cambio de unidad vs catálogo.
+    private final String unidad; // Unidad en que llega la compra (Authority by PO). Para detección de cambio de
+                                 // unidad vs catálogo.
     private final UUID partidaId; // Puede ser null si compra es no imputable
     private final NaturalezaGasto naturalezaGasto;
     private final RelacionContractual relacionContractual;
     private final RubroInsumo rubroInsumo;
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Entidad interna con campos editables.
+    // Estos campos pueden modificarse durante la edición de la orden de compra:
+    // - cantidad: puede ajustarse (actualizarCantidad)
+    // - precioUnitario: puede negociarse (actualizarPrecioUnitario)
+    // - subtotal: calculado dinámicamente = cantidad * precioUnitario
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal cantidad;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal precioUnitario;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal subtotal; // Calculado: cantidad * precioUnitario
 
     /**
      * Constructor privado. Usar factory methods.
      */
     private CompraDetalle(CompraDetalleId id, String recursoExternalId, String recursoNombre, String unidad,
-                          UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
-                          RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
-        validarInvariantes(recursoExternalId, recursoNombre, unidad, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
-        
+            UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
+            RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
+        validarInvariantes(recursoExternalId, recursoNombre, unidad, naturalezaGasto, relacionContractual, rubroInsumo,
+                cantidad, precioUnitario);
+
         this.id = Objects.requireNonNull(id, "El ID del detalle no puede ser nulo");
-        this.recursoExternalId = Objects.requireNonNull(recursoExternalId, "El recursoExternalId no puede ser nulo").trim();
+        this.recursoExternalId = Objects.requireNonNull(recursoExternalId, "El recursoExternalId no puede ser nulo")
+                .trim();
         this.recursoNombre = Objects.requireNonNull(recursoNombre, "El recursoNombre no puede ser nulo").trim();
-        this.unidad = unidad != null && !unidad.isBlank() ? unidad.trim() : null; // Opcional; si null, se usa unidad del catálogo
+        this.unidad = unidad != null && !unidad.isBlank() ? unidad.trim() : null; // Opcional; si null, se usa unidad
+                                                                                  // del catálogo
         this.partidaId = partidaId;
         this.naturalezaGasto = Objects.requireNonNull(naturalezaGasto, "La naturaleza del gasto es obligatoria");
-        this.relacionContractual = Objects.requireNonNull(relacionContractual, "La relación contractual es obligatoria");
+        this.relacionContractual = Objects.requireNonNull(relacionContractual,
+                "La relación contractual es obligatoria");
         this.rubroInsumo = Objects.requireNonNull(rubroInsumo, "El rubro es obligatorio");
         this.cantidad = cantidad != null ? cantidad : BigDecimal.ZERO;
         this.precioUnitario = precioUnitario != null ? precioUnitario : BigDecimal.ZERO;
@@ -55,24 +65,24 @@ public final class CompraDetalle {
     /**
      * Factory method para crear un nuevo CompraDetalle.
      *
-     * @param unidad Unidad en que llega la compra (Authority by PO). Si null, se usará la unidad del catálogo.
+     * @param unidad Unidad en que llega la compra (Authority by PO). Si null, se
+     *               usará la unidad del catálogo.
      */
     public static CompraDetalle crear(CompraDetalleId id, String recursoExternalId, String recursoNombre, String unidad,
-                                      UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
-                                      RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
-        return new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto, relacionContractual, rubroInsumo,
-                cantidad, precioUnitario);
+            UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
+            RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario) {
+        return new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto,
+                relacionContractual, rubroInsumo, cantidad, precioUnitario);
     }
 
     /**
      * Factory method para reconstruir un CompraDetalle desde persistencia.
      */
-    public static CompraDetalle reconstruir(CompraDetalleId id, String recursoExternalId, String recursoNombre, String unidad,
-                                            UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
-                                            RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario,
-                                            BigDecimal subtotal) {
-        CompraDetalle detalle = new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto, relacionContractual,
-                rubroInsumo, cantidad, precioUnitario);
+    public static CompraDetalle reconstruir(CompraDetalleId id, String recursoExternalId, String recursoNombre,
+            String unidad, UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
+            RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subtotal) {
+        CompraDetalle detalle = new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId,
+                naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
         detalle.subtotal = subtotal != null ? subtotal : detalle.calcularSubtotal();
         return detalle;
     }
@@ -81,8 +91,8 @@ public final class CompraDetalle {
      * Valida las invariantes del agregado.
      */
     private void validarInvariantes(String recursoExternalId, String recursoNombre, String unidad,
-                                    NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual, RubroInsumo rubroInsumo,
-                                    BigDecimal cantidad, BigDecimal precioUnitario) {
+            NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual, RubroInsumo rubroInsumo,
+            BigDecimal cantidad, BigDecimal precioUnitario) {
         if (recursoExternalId == null || recursoExternalId.isBlank()) {
             throw new IllegalArgumentException("El recursoExternalId no puede ser nulo o vacío");
         }
@@ -150,8 +160,8 @@ public final class CompraDetalle {
     }
 
     /**
-     * Unidad en que llega la compra (Authority by PO).
-     * Si null, se usa la unidad base del catálogo al resolver inventario.
+     * Unidad en que llega la compra (Authority by PO). Si null, se usa la unidad
+     * base del catálogo al resolver inventario.
      */
     public String getUnidad() {
         return unidad;
@@ -187,8 +197,10 @@ public final class CompraDetalle {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         CompraDetalle that = (CompraDetalle) o;
         return Objects.equals(id, that.id);
     }
@@ -200,7 +212,9 @@ public final class CompraDetalle {
 
     @Override
     public String toString() {
-        return String.format("CompraDetalle{id=%s, recursoExternalId='%s', recursoNombre='%s', unidad=%s, partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}",
-                id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario, subtotal);
+        return String.format(
+                "CompraDetalle{id=%s, recursoExternalId='%s', recursoNombre='%s', unidad=%s, partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}",
+                id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto, relacionContractual,
+                rubroInsumo, cantidad, precioUnitario, subtotal);
     }
 }

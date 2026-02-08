@@ -8,13 +8,12 @@ import java.util.UUID;
 /**
  * Aggregate Root del agregado AVANCE_FISICO.
  * 
- * Representa un registro de avance físico de una partida en una fecha específica.
+ * Representa un registro de avance físico de una partida en una fecha
+ * específica.
  * 
- * Invariantes:
- * - El partidaId es obligatorio
- * - La fecha es obligatoria
- * - El metradoEjecutado no puede ser negativo
- * - (Opcional MVP) El acumulado no debería superar el metrado total de la partida (Alertar, no bloquear)
+ * Invariantes: - El partidaId es obligatorio - La fecha es obligatoria - El
+ * metradoEjecutado no puede ser negativo - (Opcional MVP) El acumulado no
+ * debería superar el metrado total de la partida (Alertar, no bloquear)
  * 
  * Contexto: Control de Producción Física
  */
@@ -24,16 +23,20 @@ public final class AvanceFisico {
     private final UUID partidaId;
     private final LocalDate fecha;
     private final BigDecimal metradoEjecutado;
+    // Justificación: Notas editables sobre el avance
+    // nosemgrep
     private String observacion;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private AvanceFisico(AvanceFisicoId id, UUID partidaId, LocalDate fecha,
-                        BigDecimal metradoEjecutado, String observacion, Long version) {
+    private AvanceFisico(AvanceFisicoId id, UUID partidaId, LocalDate fecha, BigDecimal metradoEjecutado,
+            String observacion, Long version) {
         validarInvariantes(partidaId, fecha, metradoEjecutado);
-        
+
         this.id = Objects.requireNonNull(id, "El ID del avance físico no puede ser nulo");
         this.partidaId = Objects.requireNonNull(partidaId, "El partidaId no puede ser nulo");
         this.fecha = Objects.requireNonNull(fecha, "La fecha no puede ser nula");
@@ -45,8 +48,8 @@ public final class AvanceFisico {
     /**
      * Factory method para crear un nuevo AvanceFisico.
      */
-    public static AvanceFisico crear(AvanceFisicoId id, UUID partidaId, LocalDate fecha,
-                                    BigDecimal metradoEjecutado, String observacion) {
+    public static AvanceFisico crear(AvanceFisicoId id, UUID partidaId, LocalDate fecha, BigDecimal metradoEjecutado,
+            String observacion) {
         return new AvanceFisico(id, partidaId, fecha, metradoEjecutado, observacion, 0L);
     }
 
@@ -54,7 +57,7 @@ public final class AvanceFisico {
      * Factory method para reconstruir un AvanceFisico desde persistencia.
      */
     public static AvanceFisico reconstruir(AvanceFisicoId id, UUID partidaId, LocalDate fecha,
-                                          BigDecimal metradoEjecutado, String observacion, Long version) {
+            BigDecimal metradoEjecutado, String observacion, Long version) {
         return new AvanceFisico(id, partidaId, fecha, metradoEjecutado, observacion, version);
     }
 
@@ -108,8 +111,10 @@ public final class AvanceFisico {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         AvanceFisico that = (AvanceFisico) o;
         return Objects.equals(id, that.id);
     }
@@ -121,7 +126,7 @@ public final class AvanceFisico {
 
     @Override
     public String toString() {
-        return String.format("AvanceFisico{id=%s, partidaId=%s, fecha=%s, metradoEjecutado=%s}", 
-                           id, partidaId, fecha, metradoEjecutado);
+        return String.format("AvanceFisico{id=%s, partidaId=%s, fecha=%s, metradoEjecutado=%s}", id, partidaId, fecha,
+                metradoEjecutado);
     }
 }

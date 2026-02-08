@@ -19,8 +19,11 @@ public final class ApuInsumo {
 
     private final ApuInsumoId id;
     private final UUID recursoId;
+    // nosemgrep
     private BigDecimal cantidad; // Cantidad técnica por unidad de partida
+    // nosemgrep
     private BigDecimal precioUnitario; // Snapshot del precio del recurso al momento de agregar
+    // nosemgrep
     private BigDecimal subtotal; // Calculado: cantidad * precioUnitario
 
     /**

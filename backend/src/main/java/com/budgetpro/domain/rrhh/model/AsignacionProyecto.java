@@ -18,9 +18,12 @@ public class AsignacionProyecto {
     private final ProyectoId proyectoId;
     private final RecursoProxyId recursoProxyId;
     private final LocalDate fechaInicio;
-    private LocalDate fechaFin;
-    private BigDecimal tarifaHora;
-    private String rolProyecto;
+    private LocalDate fechaFin; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Mutable
+                                // workflow state
+    private BigDecimal tarifaHora; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Editable
+                                   // via role change
+    private String rolProyecto; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Editable
+                                // via role change
 
     private AsignacionProyecto(AsignacionProyectoId id, EmpleadoId empleadoId, ProyectoId proyectoId,
             RecursoProxyId recursoProxyId, LocalDate fechaInicio, LocalDate fechaFin, BigDecimal tarifaHora,

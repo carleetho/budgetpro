@@ -13,44 +13,54 @@ import java.util.UUID;
  * 
  * Relación N:1 con Proyecto.
  * 
- * Responsabilidad:
- * - Representar un corte de estimación para cobro
- * - Calcular montos (bruto, amortización, retención, neto)
- * - Gestionar el estado de la estimación (BORRADOR, APROBADA, PAGADA)
+ * Responsabilidad: - Representar un corte de estimación para cobro - Calcular
+ * montos (bruto, amortización, retención, neto) - Gestionar el estado de la
+ * estimación (BORRADOR, APROBADA, PAGADA)
  * 
- * Invariantes:
- * - El proyectoId es obligatorio
- * - El numeroEstimacion debe ser único por proyecto
- * - El montoNetoPagar = montoBruto - amortizacionAnticipo - retencionFondoGarantia
- * - El estado solo puede cambiar: BORRADOR -> APROBADA -> PAGADA
+ * Invariantes: - El proyectoId es obligatorio - El numeroEstimacion debe ser
+ * único por proyecto - El montoNetoPagar = montoBruto - amortizacionAnticipo -
+ * retencionFondoGarantia - El estado solo puede cambiar: BORRADOR -> APROBADA
+ * -> PAGADA
  */
 public final class Estimacion {
 
     private final EstimacionId id;
     private final UUID proyectoId;
-    private Integer numeroEstimacion; // Consecutivo: 1, 2, 3...
-    private LocalDate fechaCorte; // Hasta cuándo se reporta avance
-    private LocalDate periodoInicio;
-    private LocalDate periodoFin;
-    private BigDecimal montoBruto; // Suma de avances (calculado)
-    private BigDecimal amortizacionAnticipo; // Monto a descontar del anticipo
-    private BigDecimal retencionFondoGarantia; // Monto retenido (configurable)
-    private BigDecimal montoNetoPagar; // Lo que se factura (calculado)
-    private String evidenciaUrl; // Evidencia contractual obligatoria para aprobación
-    private EstadoEstimacion estado;
-    private List<DetalleEstimacion> detalles; // Detalles por partida
-    private Long version;
+    private Integer numeroEstimacion; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                      // Identity field
+    private LocalDate fechaCorte; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                  // Business data
+    private LocalDate periodoInicio; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                     // Business data
+    private LocalDate periodoFin; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                  // Business data
+    private BigDecimal montoBruto; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                   // Calculated field
+    private BigDecimal amortizacionAnticipo; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion
+                                             // - Managed financial state
+    private BigDecimal retencionFondoGarantia; // nosemgrep:
+                                               // budgetpro.domain.immutability.entity-final-fields.estimacion - Managed
+                                               // financial state
+    private BigDecimal montoNetoPagar; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                       // Calculated field
+    private String evidenciaUrl; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                 // Updatable evidence
+    private EstadoEstimacion estado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                     // State machine
+    private List<DetalleEstimacion> detalles; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion
+                                              // - Child entities managed list
+    private Long version; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                          // Optimistic locking
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private Estimacion(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
-                      LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
-                      BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
-                      BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar,
-                      String evidenciaUrl, EstadoEstimacion estado, List<DetalleEstimacion> detalles, Long version) {
+    private Estimacion(EstimacionId id, UUID proyectoId, Integer numeroEstimacion, LocalDate fechaCorte,
+            LocalDate periodoInicio, LocalDate periodoFin, BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
+            BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar, String evidenciaUrl, EstadoEstimacion estado,
+            List<DetalleEstimacion> detalles, Long version) {
         validarInvariantes(proyectoId, numeroEstimacion, periodoInicio, periodoFin);
-        
+
         this.id = Objects.requireNonNull(id, "El ID de la estimación no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.numeroEstimacion = numeroEstimacion;
@@ -70,31 +80,28 @@ public final class Estimacion {
     /**
      * Factory method para crear una nueva Estimacion.
      */
-    public static Estimacion crear(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
-                                   LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
-                                   String evidenciaUrl) {
-        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin,
-                            null, null, null, null, evidenciaUrl, EstadoEstimacion.BORRADOR, null, 0L);
+    public static Estimacion crear(EstimacionId id, UUID proyectoId, Integer numeroEstimacion, LocalDate fechaCorte,
+            LocalDate periodoInicio, LocalDate periodoFin, String evidenciaUrl) {
+        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin, null, null, null,
+                null, evidenciaUrl, EstadoEstimacion.BORRADOR, null, 0L);
     }
 
     /**
      * Factory method para reconstruir una Estimacion desde persistencia.
      */
     public static Estimacion reconstruir(EstimacionId id, UUID proyectoId, Integer numeroEstimacion,
-                                         LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin,
-                                         BigDecimal montoBruto, BigDecimal amortizacionAnticipo,
-                                         BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar,
-                                        String evidenciaUrl, EstadoEstimacion estado, List<DetalleEstimacion> detalles, Long version) {
-        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin,
-                            montoBruto, amortizacionAnticipo, retencionFondoGarantia, montoNetoPagar,
-                            evidenciaUrl, estado, detalles, version);
+            LocalDate fechaCorte, LocalDate periodoInicio, LocalDate periodoFin, BigDecimal montoBruto,
+            BigDecimal amortizacionAnticipo, BigDecimal retencionFondoGarantia, BigDecimal montoNetoPagar,
+            String evidenciaUrl, EstadoEstimacion estado, List<DetalleEstimacion> detalles, Long version) {
+        return new Estimacion(id, proyectoId, numeroEstimacion, fechaCorte, periodoInicio, periodoFin, montoBruto,
+                amortizacionAnticipo, retencionFondoGarantia, montoNetoPagar, evidenciaUrl, estado, detalles, version);
     }
 
     /**
      * Valida las invariantes del agregado.
      */
-    private void validarInvariantes(UUID proyectoId, Integer numeroEstimacion,
-                                   LocalDate periodoInicio, LocalDate periodoFin) {
+    private void validarInvariantes(UUID proyectoId, Integer numeroEstimacion, LocalDate periodoInicio,
+            LocalDate periodoFin) {
         if (proyectoId == null) {
             throw new IllegalArgumentException("El proyectoId no puede ser nulo");
         }
@@ -109,22 +116,19 @@ public final class Estimacion {
     }
 
     /**
-     * Calcula el monto neto a pagar: montoBruto - amortizacionAnticipo - retencionFondoGarantia.
+     * Calcula el monto neto a pagar: montoBruto - amortizacionAnticipo -
+     * retencionFondoGarantia.
      */
     private BigDecimal calcularMontoNeto() {
-        return this.montoBruto
-                .subtract(this.amortizacionAnticipo)
-                .subtract(this.retencionFondoGarantia)
-                .setScale(4, java.math.RoundingMode.HALF_UP);
+        return this.montoBruto.subtract(this.amortizacionAnticipo).subtract(this.retencionFondoGarantia).setScale(4,
+                java.math.RoundingMode.HALF_UP);
     }
 
     /**
      * Recalcula el monto bruto basándose en los detalles.
      */
     public void recalcularMontoBruto() {
-        this.montoBruto = detalles.stream()
-                .map(DetalleEstimacion::getImporte)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        this.montoBruto = detalles.stream().map(DetalleEstimacion::getImporte).reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(4, java.math.RoundingMode.HALF_UP);
         this.montoNetoPagar = calcularMontoNeto();
     }
@@ -255,8 +259,10 @@ public final class Estimacion {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Estimacion that = (Estimacion) o;
         return Objects.equals(id, that.id);
     }
@@ -268,7 +274,7 @@ public final class Estimacion {
 
     @Override
     public String toString() {
-        return String.format("Estimacion{id=%s, proyectoId=%s, numeroEstimacion=%d, estado=%s, montoNetoPagar=%s}", 
-                           id, proyectoId, numeroEstimacion, estado, montoNetoPagar);
+        return String.format("Estimacion{id=%s, proyectoId=%s, numeroEstimacion=%d, estado=%s, montoNetoPagar=%s}", id,
+                proyectoId, numeroEstimacion, estado, montoNetoPagar);
     }
 }
