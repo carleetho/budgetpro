@@ -27,9 +27,17 @@ public final class ProgramaObra {
 
     private final ProgramaObraId id;
     private final UUID proyectoId;
+    // Justificación: Ajustes de cronograma antes de congelamiento
+    // nosemgrep
     private LocalDate fechaInicio;
+    // Justificación: Fecha fin estimada recalculable
+    // nosemgrep
     private LocalDate fechaFinEstimada;
-    private Integer duracionTotalDias; // Calculada: diferencia entre fechaInicio y fechaFinEstimada
+    // Justificación: Campo calculado automáticamente
+    // nosemgrep
+    private Integer duracionTotalDias;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     // Freeze state fields
@@ -37,22 +45,30 @@ public final class ProgramaObra {
      * Indica si el cronograma ha sido congelado (baseline establecido). Una vez
      * congelado, no se pueden modificar las fechas.
      */
-    private Boolean congelado;
+    // Justificación: Workflow state - transición de estado false → true en
+    // congelamiento de baseline
+    private Boolean congelado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
 
     /**
      * Timestamp de cuando se congeló el cronograma.
      */
-    private LocalDateTime congeladoAt;
+    // Justificación: Workflow state - timestamp de auditoría, se establece al
+    // congelar
+    private LocalDateTime congeladoAt; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
 
     /**
      * ID del usuario que congeló el cronograma.
      */
+    // Justificación: Workflow state - RBAC tracking
+    // nosemgrep
     private UUID congeladoBy;
 
     /**
      * Versión del algoritmo usado para generar el snapshot del cronograma. Permite
      * migración futura a algoritmos diferentes sin romper compatibilidad.
      */
+    // Justificación: Administrative metadata - snapshot algorithm
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
     private String snapshotAlgorithm;
 
     /**
