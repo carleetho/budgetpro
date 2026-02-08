@@ -54,7 +54,7 @@ bounded_contexts:
 
   - name: rrhh
     priority: MEDIUM
-    strict_mode: false # WARNING severity - Phase 1D rollout
+    strict_mode: true # ERROR severity - Phase 1D enabled 2026-02-08
     description: "Human resources and attendance tracking"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/rrhh/**/*.java"

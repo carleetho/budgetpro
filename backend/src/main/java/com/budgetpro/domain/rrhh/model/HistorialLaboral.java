@@ -15,7 +15,7 @@ public class HistorialLaboral {
     private final BigDecimal salarioBase;
     private final TipoEmpleado tipoEmpleado;
     private final LocalDate fechaInicio;
-    private LocalDate fechaFin; // Null means active
+    private LocalDate fechaFin; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - End date set when employment record closed
     private String unidadSalario = "MENSUAL"; // Default
 
     private HistorialLaboral(HistorialId id, String cargo, BigDecimal salarioBase, TipoEmpleado tipoEmpleado,

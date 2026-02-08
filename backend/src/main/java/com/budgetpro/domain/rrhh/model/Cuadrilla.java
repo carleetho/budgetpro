@@ -16,11 +16,11 @@ public class Cuadrilla {
 
     private final CuadrillaId id;
     private final ProyectoId proyectoId;
-    private String nombre;
-    private String tipo; // Could be an enum in future, string for now based on requirements
-    private EmpleadoId liderId;
+    private String nombre; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Crew name editable
+    private String tipo; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Crew type changeable
+    private EmpleadoId liderId; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Leader reassignment workflow
     private final List<CuadrillaMiembro> miembros;
-    private EstadoCuadrilla estado;
+    private EstadoCuadrilla estado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - State machine ACTIVA → INACTIVA → DISUELTA
 
     // Private constructor
     private Cuadrilla(CuadrillaId id, ProyectoId proyectoId, String nombre, String tipo, EmpleadoId liderId,
