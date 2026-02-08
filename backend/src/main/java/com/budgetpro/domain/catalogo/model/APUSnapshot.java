@@ -15,12 +15,10 @@ import java.util.UUID;
  * Representa un snapshot de APU con rendimiento editable (Opción C),
  * preservando el rendimiento original del catálogo para auditoría.
  *
- * Invariantes:
- * - partidaId no puede ser nulo
- * - externalApuId y catalogSource no pueden estar vacíos
- * - rendimientoOriginal y rendimientoVigente deben ser positivos
- * - unidadSnapshot no puede estar vacía
- * - snapshotDate no puede ser nula
+ * Invariantes: - partidaId no puede ser nulo - externalApuId y catalogSource no
+ * pueden estar vacíos - rendimientoOriginal y rendimientoVigente deben ser
+ * positivos - unidadSnapshot no puede estar vacía - snapshotDate no puede ser
+ * nula
  */
 public final class APUSnapshot {
 
@@ -29,29 +27,25 @@ public final class APUSnapshot {
     private final String externalApuId;
     private final String catalogSource;
     private final BigDecimal rendimientoOriginal;
-    private BigDecimal rendimientoVigente;
-    private boolean rendimientoModificado;
-    private UUID rendimientoModificadoPor;
-    private LocalDateTime rendimientoModificadoEn;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private BigDecimal rendimientoVigente; // Mutable by design (Opción C: rendimiento editable)
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private boolean rendimientoModificado; // Audit trail field
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private UUID rendimientoModificadoPor; // Audit trail field
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private LocalDateTime rendimientoModificadoEn; // Audit trail field
     private final String unidadSnapshot;
     private final LocalDateTime snapshotDate;
     private final List<APUInsumoSnapshot> insumos;
     private final Long version;
 
-    private APUSnapshot(APUSnapshotId id,
-                        UUID partidaId,
-                        String externalApuId,
-                        String catalogSource,
-                        BigDecimal rendimientoOriginal,
-                        BigDecimal rendimientoVigente,
-                        boolean rendimientoModificado,
-                        UUID rendimientoModificadoPor,
-                        LocalDateTime rendimientoModificadoEn,
-                        String unidadSnapshot,
-                        LocalDateTime snapshotDate,
-                        List<APUInsumoSnapshot> insumos,
-                        Long version) {
-        validarInvariantes(partidaId, externalApuId, catalogSource, rendimientoOriginal, rendimientoVigente, unidadSnapshot, snapshotDate);
+    private APUSnapshot(APUSnapshotId id, UUID partidaId, String externalApuId, String catalogSource,
+            BigDecimal rendimientoOriginal, BigDecimal rendimientoVigente, boolean rendimientoModificado,
+            UUID rendimientoModificadoPor, LocalDateTime rendimientoModificadoEn, String unidadSnapshot,
+            LocalDateTime snapshotDate, List<APUInsumoSnapshot> insumos, Long version) {
+        validarInvariantes(partidaId, externalApuId, catalogSource, rendimientoOriginal, rendimientoVigente,
+                unidadSnapshot, snapshotDate);
 
         this.id = Objects.requireNonNull(id, "El ID del APUSnapshot no puede ser nulo");
         this.partidaId = partidaId;
@@ -68,67 +62,24 @@ public final class APUSnapshot {
         this.version = version != null ? version : 0L;
     }
 
-    public static APUSnapshot crear(APUSnapshotId id,
-                                    UUID partidaId,
-                                    String externalApuId,
-                                    String catalogSource,
-                                    BigDecimal rendimiento,
-                                    String unidadSnapshot,
-                                    LocalDateTime snapshotDate) {
-        return new APUSnapshot(
-                id,
-                partidaId,
-                externalApuId,
-                catalogSource,
-                rendimiento,
-                rendimiento,
-                false,
-                null,
-                null,
-                unidadSnapshot,
-                snapshotDate,
-                new ArrayList<>(),
-                0L
-        );
+    public static APUSnapshot crear(APUSnapshotId id, UUID partidaId, String externalApuId, String catalogSource,
+            BigDecimal rendimiento, String unidadSnapshot, LocalDateTime snapshotDate) {
+        return new APUSnapshot(id, partidaId, externalApuId, catalogSource, rendimiento, rendimiento, false, null, null,
+                unidadSnapshot, snapshotDate, new ArrayList<>(), 0L);
     }
 
-    public static APUSnapshot reconstruir(APUSnapshotId id,
-                                          UUID partidaId,
-                                          String externalApuId,
-                                          String catalogSource,
-                                          BigDecimal rendimientoOriginal,
-                                          BigDecimal rendimientoVigente,
-                                          boolean rendimientoModificado,
-                                          UUID rendimientoModificadoPor,
-                                          LocalDateTime rendimientoModificadoEn,
-                                          String unidadSnapshot,
-                                          LocalDateTime snapshotDate,
-                                          List<APUInsumoSnapshot> insumos,
-                                          Long version) {
-        return new APUSnapshot(
-                id,
-                partidaId,
-                externalApuId,
-                catalogSource,
-                rendimientoOriginal,
-                rendimientoVigente,
-                rendimientoModificado,
-                rendimientoModificadoPor,
-                rendimientoModificadoEn,
-                unidadSnapshot,
-                snapshotDate,
-                insumos,
-                version
-        );
+    public static APUSnapshot reconstruir(APUSnapshotId id, UUID partidaId, String externalApuId, String catalogSource,
+            BigDecimal rendimientoOriginal, BigDecimal rendimientoVigente, boolean rendimientoModificado,
+            UUID rendimientoModificadoPor, LocalDateTime rendimientoModificadoEn, String unidadSnapshot,
+            LocalDateTime snapshotDate, List<APUInsumoSnapshot> insumos, Long version) {
+        return new APUSnapshot(id, partidaId, externalApuId, catalogSource, rendimientoOriginal, rendimientoVigente,
+                rendimientoModificado, rendimientoModificadoPor, rendimientoModificadoEn, unidadSnapshot, snapshotDate,
+                insumos, version);
     }
 
-    private void validarInvariantes(UUID partidaId,
-                                    String externalApuId,
-                                    String catalogSource,
-                                    BigDecimal rendimientoOriginal,
-                                    BigDecimal rendimientoVigente,
-                                    String unidadSnapshot,
-                                    LocalDateTime snapshotDate) {
+    private void validarInvariantes(UUID partidaId, String externalApuId, String catalogSource,
+            BigDecimal rendimientoOriginal, BigDecimal rendimientoVigente, String unidadSnapshot,
+            LocalDateTime snapshotDate) {
         if (partidaId == null) {
             throw new IllegalArgumentException("El partidaId no puede ser nulo");
         }
@@ -175,19 +126,19 @@ public final class APUSnapshot {
     }
 
     /**
-     * Calcula el costo total usando el rendimiento vigente (método legacy).
-     * Para nuevos APUs con cálculo dinámico, usar calcularCostoTotal(CalculoApuDinamicoService, String).
+     * Calcula el costo total usando el rendimiento vigente (método legacy). Para
+     * nuevos APUs con cálculo dinámico, usar
+     * calcularCostoTotal(CalculoApuDinamicoService, String).
      */
     public BigDecimal calcularCostoTotal() {
-        BigDecimal base = insumos.stream()
-                .map(APUInsumoSnapshot::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal base = insumos.stream().map(APUInsumoSnapshot::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         return base.multiply(rendimientoVigente);
     }
 
     /**
-     * Calcula el costo total usando el servicio de cálculo dinámico con fórmulas de ingeniería civil.
-     * Respeta el orden de dependencias: MATERIAL, MANO_OBRA, EQUIPO_MAQUINA → EQUIPO_HERRAMIENTA
+     * Calcula el costo total usando el servicio de cálculo dinámico con fórmulas de
+     * ingeniería civil. Respeta el orden de dependencias: MATERIAL, MANO_OBRA,
+     * EQUIPO_MAQUINA → EQUIPO_HERRAMIENTA
      * 
      * @param calculoService El servicio de cálculo dinámico
      * @param monedaProyecto La moneda del proyecto para normalización
@@ -261,8 +212,10 @@ public final class APUSnapshot {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         APUSnapshot that = (APUSnapshot) o;
         return Objects.equals(id, that.id);
     }
