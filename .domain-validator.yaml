@@ -81,8 +81,8 @@ bounded_contexts:
 
   - name: finanzas_other
     priority: HIGH
-    strict_mode: false # WARNING severity - uncategorized finanzas modules
-    description: "Other financial domain modules (anticipo, reajuste, sobrecosto, etc.)"
+    strict_mode: true # ERROR severity - Phase 1C Rollouts 1D-1F enabled 2026-02-08 (batch)
+    description: "Remaining financial modules (anticipo, apu, reajuste, sobrecosto, recurso, consumo, control, shared)"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/**/*.java"
     exclusions:

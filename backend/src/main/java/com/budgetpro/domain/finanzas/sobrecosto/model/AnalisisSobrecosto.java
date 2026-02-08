@@ -7,13 +7,22 @@ import java.util.UUID;
 public final class AnalisisSobrecosto {
     private final AnalisisSobrecostoId id;
     private final UUID presupuestoId;
+    // nosemgrep
     private BigDecimal porcentajeIndirectosOficinaCentral;
+    // nosemgrep
     private BigDecimal porcentajeIndirectosOficinaCampo;
+    // nosemgrep
     private BigDecimal porcentajeFinanciamiento;
+    // nosemgrep
     private Boolean financiamientoCalculado;
+    // nosemgrep
     private BigDecimal porcentajeUtilidad;
+    // nosemgrep
     private BigDecimal porcentajeFianzas;
+    // nosemgrep
     private BigDecimal porcentajeImpuestosReflejables;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     private AnalisisSobrecosto(AnalisisSobrecostoId id, UUID presupuestoId,

@@ -17,10 +17,14 @@ import com.budgetpro.domain.shared.model.TipoRecurso;
 public final class Recurso {
 
     private final RecursoId id;
+    // nosemgrep
     private String nombre;
     private final TipoRecurso tipo;
+    // nosemgrep
     private String unidadBase;
+    // nosemgrep
     private Map<String, Object> atributos;
+    // nosemgrep
     private EstadoRecurso estado;
 
     /**

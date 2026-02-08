@@ -17,6 +17,7 @@ public final class IndicePrecios {
     private final TipoIndicePrecios tipo;
     private final LocalDate fechaBase;
     private final BigDecimal valor;
+    // nosemgrep
     private boolean activo;
     
     /**

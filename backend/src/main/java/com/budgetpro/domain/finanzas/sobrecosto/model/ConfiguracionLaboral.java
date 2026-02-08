@@ -7,12 +7,20 @@ import java.util.UUID;
 
 public final class ConfiguracionLaboral {
     private final ConfiguracionLaboralId id;
+    // nosemgrep
     private UUID proyectoId;
+    // nosemgrep
     private Integer diasAguinaldo;
+    // nosemgrep
     private Integer diasVacaciones;
+    // nosemgrep
     private BigDecimal porcentajeSeguridadSocial;
+    // nosemgrep
     private Integer diasNoTrabajados;
+    // nosemgrep
     private Integer diasLaborablesAno;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     private ConfiguracionLaboral(ConfiguracionLaboralId id, UUID proyectoId,

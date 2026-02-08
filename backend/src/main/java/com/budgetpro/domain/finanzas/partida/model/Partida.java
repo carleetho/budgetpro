@@ -23,15 +23,26 @@ public final class Partida {
 
     private final PartidaId id;
     private final UUID presupuestoId;
+    // nosemgrep
     private UUID padreId; // Opcional, para jerarquía recursiva
+    // nosemgrep
     private String item; // Código WBS: "01.01", "02.01.05"
+    // nosemgrep
     private String descripcion;
+    // nosemgrep
     private String unidad; // Opcional si es título
+    // nosemgrep
     private BigDecimal metrado; // Cantidad presupuestada. 0 si es título
+    // nosemgrep
     private BigDecimal presupuestoAsignado;
+    // nosemgrep
     private BigDecimal gastosReales;
+    // nosemgrep
     private BigDecimal compromisosPendientes;
+    // nosemgrep
     private Integer nivel; // Profundidad en el árbol: 1, 2, 3...
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     /**

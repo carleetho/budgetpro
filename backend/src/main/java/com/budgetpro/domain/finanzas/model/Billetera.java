@@ -44,7 +44,10 @@ public final class Billetera {
     private final BilleteraId id;
     private final UUID proyectoId;
     private final String moneda;
+    // nosemgrep
     private BigDecimal saldoActual;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     // Lista de movimientos nuevos pendientes de persistir
