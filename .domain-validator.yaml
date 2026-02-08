@@ -28,7 +28,7 @@ bounded_contexts:
 
   - name: cronograma
     priority: HIGH
-    strict_mode: false # WARNING severity - Phase 1C rollout
+    strict_mode: true # ERROR severity - Phase 1C Rollout 1A enabled 2026-02-08
     description: "Schedule and timeline management"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/**/*.java"
