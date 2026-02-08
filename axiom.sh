@@ -37,7 +37,7 @@ if [ ! -d "$AXIOM_DIR" ]; then
 fi
 
 # 4. Check Configuration File
-if [ ! -f "$START_DIR/axiom.config.yaml" ]; then
+if [ ! -f "$START_DIR/.budgetpro/axiom.config.yaml" ]; then
     echo -e "${YELLOW}⚠️ Configuración no encontrada, usando valores por defecto${NC}"
 fi
 

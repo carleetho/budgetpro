@@ -9,6 +9,8 @@ import com.budgetpro.application.partida.port.in.CrearPartidaUseCase;
 import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
+import com.budgetpro.domain.finanzas.presupuesto.exception.FrozenBudgetException;
+import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,7 @@ public class CrearPartidaUseCaseImpl implements CrearPartidaUseCase {
     private final PartidaRepository partidaRepository;
     private final PresupuestoRepository presupuestoRepository;
 
-    public CrearPartidaUseCaseImpl(PartidaRepository partidaRepository,
-                                  PresupuestoRepository presupuestoRepository) {
+    public CrearPartidaUseCaseImpl(PartidaRepository partidaRepository, PresupuestoRepository presupuestoRepository) {
         this.partidaRepository = partidaRepository;
         this.presupuestoRepository = presupuestoRepository;
     }
@@ -36,8 +37,13 @@ public class CrearPartidaUseCaseImpl implements CrearPartidaUseCase {
     public PartidaResponse crear(CrearPartidaCommand command) {
         // Validar que el presupuesto exista
         PresupuestoId presupuestoId = PresupuestoId.from(command.presupuestoId());
-        if (presupuestoRepository.findById(presupuestoId).isEmpty()) {
-            throw new PresupuestoNoEncontradoException(command.presupuestoId());
+        Presupuesto presupuesto = presupuestoRepository.findById(presupuestoId)
+                .orElseThrow(() -> new PresupuestoNoEncontradoException(command.presupuestoId()));
+
+        // P-01: Validar que el presupuesto NO esté congelado (AXIOM Critical Fix)
+        if (presupuesto.isAprobado()) {
+            throw new FrozenBudgetException(presupuestoId,
+                    "Cannot create partida: Budget is frozen (ESTADO=CONGELADO)");
         }
 
         // Validar padre si se especifica
@@ -49,11 +55,8 @@ public class CrearPartidaUseCaseImpl implements CrearPartidaUseCase {
 
             // Validar que el padre pertenezca al mismo presupuesto
             if (!padre.getPresupuestoId().equals(command.presupuestoId())) {
-                throw new PartidaPadreDiferentePresupuestoException(
-                    command.padreId(),
-                    command.presupuestoId(),
-                    padre.getPresupuestoId()
-                );
+                throw new PartidaPadreDiferentePresupuestoException(command.padreId(), command.presupuestoId(),
+                        padre.getPresupuestoId());
             }
 
             // Si no se especifica nivel, calcularlo como nivel del padre + 1
@@ -76,31 +79,23 @@ public class CrearPartidaUseCaseImpl implements CrearPartidaUseCase {
         Partida partida;
         if (command.padreId() == null) {
             // Partida raíz
-            partida = Partida.crearRaiz(id, command.presupuestoId(), command.item(),
-                                       command.descripcion(), command.unidad(), metrado);
+            partida = Partida.crearRaiz(id, command.presupuestoId(), command.item(), command.descripcion(),
+                    command.unidad(), metrado);
         } else {
             // Partida hija
-            partida = Partida.crearHija(id, command.presupuestoId(), command.padreId(),
-                                       command.item(), command.descripcion(), command.unidad(),
-                                       metrado, nivel);
+            partida = Partida.crearHija(id, command.presupuestoId(), command.padreId(), command.item(),
+                    command.descripcion(), command.unidad(), metrado, nivel);
         }
 
         // Persistir
         partidaRepository.save(partida);
 
         // Retornar respuesta
-        return new PartidaResponse(
-                partida.getId().getValue(),
-                partida.getPresupuestoId(),
-                partida.getPadreId(),
-                partida.getItem(),
-                partida.getDescripcion(),
-                partida.getUnidad(),
-                partida.getMetrado(),
-                partida.getNivel(),
-                partida.getVersion().intValue(),
-                null, // createdAt se obtiene de la entidad después de persistir
-                null  // updatedAt se obtiene de la entidad después de persistir
+        return new PartidaResponse(partida.getId().getValue(), partida.getPresupuestoId(), partida.getPadreId(),
+                partida.getItem(), partida.getDescripcion(), partida.getUnidad(), partida.getMetrado(),
+                partida.getNivel(), partida.getVersion().intValue(), null, // createdAt se obtiene de la entidad después
+                                                                           // de persistir
+                null // updatedAt se obtiene de la entidad después de persistir
         );
     }
 }

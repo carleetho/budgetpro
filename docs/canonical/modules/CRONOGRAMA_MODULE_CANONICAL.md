@@ -20,6 +20,7 @@
 | C-02 | **Dependency Integrity**: Start-to-Finish dependencies cannot create circular references.    | 🟡 Partial            |
 | C-03 | **One Activity Per Leaf**: Currently simplified to one activity per partida leaf.            | 🟡 Partial (Need 1:N) |
 | C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🔴 Missing            |
+| C-05 | **Temporal Consistency**: Activity end date must be ≥ start date (zero duration allowed).    | ✅ Implemented        |
 
 ## 3. Domain Events
 
