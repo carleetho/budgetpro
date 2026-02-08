@@ -71,10 +71,18 @@ bounded_contexts:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/evm/**/*.java"
     exclusions: []
 
+  - name: finanzas_alertas
+    priority: HIGH
+    strict_mode: true # ERROR severity - Phase 1C Rollout 1C enabled 2026-02-08
+    description: "Budget alerts and notifications (Alertas)"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/alertas/**/*.java"
+    exclusions: []
+
   - name: finanzas_other
     priority: HIGH
     strict_mode: false # WARNING severity - uncategorized finanzas modules
-    description: "Other financial domain modules (billetera, reajuste, sobrecosto, etc.)"
+    description: "Other financial domain modules (anticipo, reajuste, sobrecosto, etc.)"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/**/*.java"
     exclusions:
@@ -83,6 +91,7 @@ bounded_contexts:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/**"
       - "backend/src/main/java/com/budgetpro/domain/finanzas/avance/**"
       - "backend/src/main/java/com/budgetpro/domain/finanzas/evm/**"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/alertas/**"
 
 # Immutability Rules: Define validation rules for domain layer hardening
 # Each rule generates Semgrep rules for all bounded contexts
