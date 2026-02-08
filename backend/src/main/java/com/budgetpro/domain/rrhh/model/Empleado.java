@@ -26,8 +26,8 @@ import java.util.Optional;
 public class Empleado {
 
     private final EmpleadoId id;
-    private String nombre;
-    private String apellido;
+    private String nombre; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - PII editable via actualizarDatosPersonales()
+    private String apellido; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - PII editable via actualizarDatosPersonales()
 
     /**
      * National Identification Number (DNI, SSN, etc.).
@@ -38,10 +38,10 @@ public class Empleado {
      */
     private final String numeroIdentificacion;
 
-    private Contacto contacto;
-    private EstadoEmpleado estado;
+    private Contacto contacto; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Contact info updatable
+    private EstadoEmpleado estado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - State machine ACTIVO → INACTIVO
 
-    private Map<String, Object> atributos; // Certifications, Skills, etc.
+    private Map<String, Object> atributos; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Certifications/Skills map mutated via agregarAtributo()
 
     private final List<HistorialLaboral> historial;
 

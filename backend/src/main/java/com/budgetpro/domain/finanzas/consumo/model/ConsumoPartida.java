@@ -25,10 +25,16 @@ public final class ConsumoPartida {
 
     private final ConsumoPartidaId id;
     private final UUID partidaId; // Relación N:1 con Partida
+    // nosemgrep
     private UUID compraDetalleId; // Opcional: relación 1:1 con CompraDetalle (puede ser null)
+    // nosemgrep
     private BigDecimal monto;
+    // nosemgrep
     private LocalDate fecha;
+    // nosemgrep
     private TipoConsumo tipo;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     /**

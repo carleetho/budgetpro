@@ -9,11 +9,9 @@ import java.util.UUID;
  * Un FrenteTrabajo agrupa cuadrillas y actividades dentro de un proyecto.
  * Pertenece al contexto del Proyecto (no es aggregate root).
  * 
- * Invariantes:
- * - Código único por proyecto (proyectoId + codigo)
- * - codigo no puede estar en blanco
- * - proyectoId y responsable son obligatorios
- * - Estado activo/inactivo para ciclo de vida
+ * Invariantes: - Código único por proyecto (proyectoId + codigo) - codigo no
+ * puede estar en blanco - proyectoId y responsable son obligatorios - Estado
+ * activo/inactivo para ciclo de vida
  */
 public final class FrenteTrabajo {
 
@@ -22,13 +20,16 @@ public final class FrenteTrabajo {
     private final String codigo;
     private final String nombre;
     private final String responsable; // Ingeniero responsable
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
+    // - activo: ciclo de vida del frente de trabajo (activar/desactivar)
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activo;
 
     /**
      * Constructor privado. Usar factory methods crear() y reconstruir().
      */
-    private FrenteTrabajo(FrenteTrabajoId id, UUID proyectoId, String codigo, String nombre,
-                         String responsable, boolean activo) {
+    private FrenteTrabajo(FrenteTrabajoId id, UUID proyectoId, String codigo, String nombre, String responsable,
+            boolean activo) {
         this.id = Objects.requireNonNull(id, "El ID del frente de trabajo no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId es obligatorio");
         if (codigo == null || codigo.isBlank()) {
@@ -44,26 +45,26 @@ public final class FrenteTrabajo {
     }
 
     /**
-     * Factory method para crear un nuevo frente de trabajo.
-     * El frente se crea activo.
+     * Factory method para crear un nuevo frente de trabajo. El frente se crea
+     * activo.
      *
-     * @param id           Identificador único del frente
-     * @param proyectoId   ID del proyecto (obligatorio)
-     * @param codigo       Código único por proyecto (no puede estar en blanco)
-     * @param nombre       Nombre del frente de trabajo
-     * @param responsable  Ingeniero responsable (obligatorio)
+     * @param id          Identificador único del frente
+     * @param proyectoId  ID del proyecto (obligatorio)
+     * @param codigo      Código único por proyecto (no puede estar en blanco)
+     * @param nombre      Nombre del frente de trabajo
+     * @param responsable Ingeniero responsable (obligatorio)
      * @return Nuevo FrenteTrabajo activo
      */
-    public static FrenteTrabajo crear(FrenteTrabajoId id, UUID proyectoId, String codigo,
-                                     String nombre, String responsable) {
+    public static FrenteTrabajo crear(FrenteTrabajoId id, UUID proyectoId, String codigo, String nombre,
+            String responsable) {
         return new FrenteTrabajo(id, proyectoId, codigo, nombre, responsable, true);
     }
 
     /**
      * Factory method para reconstruir un frente de trabajo desde persistencia.
      */
-    public static FrenteTrabajo reconstruir(FrenteTrabajoId id, UUID proyectoId, String codigo,
-                                           String nombre, String responsable, boolean activo) {
+    public static FrenteTrabajo reconstruir(FrenteTrabajoId id, UUID proyectoId, String codigo, String nombre,
+            String responsable, boolean activo) {
         return new FrenteTrabajo(id, proyectoId, codigo, nombre, responsable, activo);
     }
 
@@ -109,8 +110,10 @@ public final class FrenteTrabajo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         FrenteTrabajo that = (FrenteTrabajo) o;
         return Objects.equals(id, that.id);
     }
@@ -122,7 +125,7 @@ public final class FrenteTrabajo {
 
     @Override
     public String toString() {
-        return String.format("FrenteTrabajo{id=%s, proyectoId=%s, codigo='%s', nombre='%s', activo=%s}",
-                id, proyectoId, codigo, nombre, activo);
+        return String.format("FrenteTrabajo{id=%s, proyectoId=%s, codigo='%s', nombre='%s', activo=%s}", id, proyectoId,
+                codigo, nombre, activo);
     }
 }

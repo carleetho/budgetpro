@@ -5,38 +5,39 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Entidad del agregado Estimacion que representa un detalle de estimación por partida.
+ * Entidad del agregado Estimacion que representa un detalle de estimación por
+ * partida.
  * 
  * Relación N:1 con Estimacion, 1:1 con Partida.
  * 
- * Responsabilidad:
- * - Representar el avance de una partida en un periodo de estimación
- * - Calcular el importe basándose en cantidad y precio unitario
- * - Validar que no se estime más del 100% del volumen contratado
+ * Responsabilidad: - Representar el avance de una partida en un periodo de
+ * estimación - Calcular el importe basándose en cantidad y precio unitario -
+ * Validar que no se estime más del 100% del volumen contratado
  * 
- * Invariantes:
- * - El partidaId es obligatorio
- * - La cantidadAvance no puede ser negativa
- * - El precioUnitario no puede ser negativo
- * - El importe = cantidadAvance * precioUnitario
+ * Invariantes: - El partidaId es obligatorio - La cantidadAvance no puede ser
+ * negativa - El precioUnitario no puede ser negativo - El importe =
+ * cantidadAvance * precioUnitario
  */
 public final class DetalleEstimacion {
 
     private final DetalleEstimacionId id;
     private final UUID partidaId;
-    private BigDecimal cantidadAvance; // Lo ejecutado en este periodo
-    private BigDecimal precioUnitario; // Viene del Presupuesto Autorizado
-    private BigDecimal importe; // Calculado: cantidadAvance * precioUnitario
-    private BigDecimal acumuladoAnterior; // Acumulado de estimaciones anteriores (para validar 100%)
+    private BigDecimal cantidadAvance; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                       // Updated during calculation
+    private BigDecimal precioUnitario; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                       // Updates from contract
+    private BigDecimal importe; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                // Calculated
+    private BigDecimal acumuladoAnterior; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.estimacion -
+                                          // Historical data
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private DetalleEstimacion(DetalleEstimacionId id, UUID partidaId,
-                             BigDecimal cantidadAvance, BigDecimal precioUnitario,
-                             BigDecimal importe, BigDecimal acumuladoAnterior) {
+    private DetalleEstimacion(DetalleEstimacionId id, UUID partidaId, BigDecimal cantidadAvance,
+            BigDecimal precioUnitario, BigDecimal importe, BigDecimal acumuladoAnterior) {
         validarInvariantes(partidaId, cantidadAvance, precioUnitario);
-        
+
         this.id = Objects.requireNonNull(id, "El ID del detalle de estimación no puede ser nulo");
         this.partidaId = Objects.requireNonNull(partidaId, "El partidaId no puede ser nulo");
         this.cantidadAvance = cantidadAvance != null ? cantidadAvance : BigDecimal.ZERO;
@@ -48,18 +49,16 @@ public final class DetalleEstimacion {
     /**
      * Factory method para crear un nuevo DetalleEstimacion.
      */
-    public static DetalleEstimacion crear(DetalleEstimacionId id, UUID partidaId,
-                                          BigDecimal cantidadAvance, BigDecimal precioUnitario,
-                                          BigDecimal acumuladoAnterior) {
+    public static DetalleEstimacion crear(DetalleEstimacionId id, UUID partidaId, BigDecimal cantidadAvance,
+            BigDecimal precioUnitario, BigDecimal acumuladoAnterior) {
         return new DetalleEstimacion(id, partidaId, cantidadAvance, precioUnitario, null, acumuladoAnterior);
     }
 
     /**
      * Factory method para reconstruir un DetalleEstimacion desde persistencia.
      */
-    public static DetalleEstimacion reconstruir(DetalleEstimacionId id, UUID partidaId,
-                                                BigDecimal cantidadAvance, BigDecimal precioUnitario,
-                                                BigDecimal importe, BigDecimal acumuladoAnterior) {
+    public static DetalleEstimacion reconstruir(DetalleEstimacionId id, UUID partidaId, BigDecimal cantidadAvance,
+            BigDecimal precioUnitario, BigDecimal importe, BigDecimal acumuladoAnterior) {
         return new DetalleEstimacion(id, partidaId, cantidadAvance, precioUnitario, importe, acumuladoAnterior);
     }
 
@@ -82,8 +81,7 @@ public final class DetalleEstimacion {
      * Calcula el importe: cantidadAvance * precioUnitario.
      */
     private BigDecimal calcularImporte() {
-        return this.cantidadAvance.multiply(this.precioUnitario)
-                .setScale(4, java.math.RoundingMode.HALF_UP);
+        return this.cantidadAvance.multiply(this.precioUnitario).setScale(4, java.math.RoundingMode.HALF_UP);
     }
 
     /**
@@ -149,8 +147,10 @@ public final class DetalleEstimacion {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         DetalleEstimacion that = (DetalleEstimacion) o;
         return Objects.equals(id, that.id);
     }
@@ -162,7 +162,7 @@ public final class DetalleEstimacion {
 
     @Override
     public String toString() {
-        return String.format("DetalleEstimacion{id=%s, partidaId=%s, cantidadAvance=%s, importe=%s}", 
-                           id, partidaId, cantidadAvance, importe);
+        return String.format("DetalleEstimacion{id=%s, partidaId=%s, cantidadAvance=%s, importe=%s}", id, partidaId,
+                cantidadAvance, importe);
     }
 }

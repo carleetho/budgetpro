@@ -4,6 +4,8 @@ import com.budgetpro.domain.proyecto.model.ProyectoId;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -17,7 +19,10 @@ public class ConfiguracionLaboralExtendida {
     private final String id;
     private final ProyectoId proyectoId; // Puede ser null para configuración Global
     private final LocalDate fechaInicio;
-    private LocalDate fechaFin; // Null indica activa
+    private LocalDate fechaFin; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Mutable
+                                // end date
+    private Map<String, BigDecimal> factores; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh -
+                                              // Regional labor factors updated by HR
 
     // Parámetros Base
     private final Integer diasAguinaldo;

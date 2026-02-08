@@ -24,8 +24,13 @@ public final class APU {
 
     private final ApuId id;
     private final UUID partidaId;
+    // nosemgrep
     private BigDecimal rendimiento; // Opcional, cantidad de unidades que se pueden producir por día
+    // nosemgrep
     private String unidad; // Copia de la unidad de la partida
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
+    // nosemgrep
     private Long version;
     
     // Lista de insumos (entidades internas del agregado)

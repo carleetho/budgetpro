@@ -5,8 +5,8 @@ import com.budgetpro.domain.shared.model.TipoRecurso;
 import java.util.Objects;
 
 /**
- * Criterios de búsqueda para recursos en catálogo externo.
- * Inmutable y creado mediante builder.
+ * Criterios de búsqueda para recursos en catálogo externo. Inmutable y creado
+ * mediante builder.
  */
 public final class RecursoSearchCriteria {
 
@@ -49,11 +49,16 @@ public final class RecursoSearchCriteria {
     }
 
     public static final class Builder {
-        private String query;
-        private TipoRecurso tipo;
-        private String unidad;
-        private Integer limit;
-        private Integer offset;
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        private String query; // Builder pattern: intentionally mutable
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        private TipoRecurso tipo; // Builder pattern: intentionally mutable
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        private String unidad; // Builder pattern: intentionally mutable
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        private Integer limit; // Builder pattern: intentionally mutable
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        private Integer offset; // Builder pattern: intentionally mutable
 
         private Builder() {
         }
@@ -106,14 +111,13 @@ public final class RecursoSearchCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RecursoSearchCriteria that = (RecursoSearchCriteria) o;
-        return Objects.equals(query, that.query)
-                && tipo == that.tipo
-                && Objects.equals(unidad, that.unidad)
-                && Objects.equals(limit, that.limit)
-                && Objects.equals(offset, that.offset);
+        return Objects.equals(query, that.query) && tipo == that.tipo && Objects.equals(unidad, that.unidad)
+                && Objects.equals(limit, that.limit) && Objects.equals(offset, that.offset);
     }
 
     @Override
@@ -123,12 +127,7 @@ public final class RecursoSearchCriteria {
 
     @Override
     public String toString() {
-        return "RecursoSearchCriteria{" +
-                "query='" + query + '\'' +
-                ", tipo=" + tipo +
-                ", unidad='" + unidad + '\'' +
-                ", limit=" + limit +
-                ", offset=" + offset +
-                '}';
+        return "RecursoSearchCriteria{" + "query='" + query + '\'' + ", tipo=" + tipo + ", unidad='" + unidad + '\''
+                + ", limit=" + limit + ", offset=" + offset + '}';
     }
 }

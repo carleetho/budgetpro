@@ -7,20 +7,32 @@ import java.util.UUID;
  * Agregado que representa un almacén físico.
  */
 public final class Almacen {
-    
+
     private final AlmacenId id;
     private final UUID proyectoId;
     private final String codigo;
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Aggregate Root con estado administrativo
+    // mutable.
+    // Estos campos representan configuración operativa del almacén que DEBE poder
+    // modificarse:
+    // - nombre: puede renombrarse para reflejar reorganizaciones
+    // - ubicacion: puede reubicarse físicamente
+    // - responsableId: el responsable puede cambiar
+    // - activo: lifecycle state (activar/desactivar)
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String nombre;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String ubicacion;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private UUID responsableId;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activo;
-    
+
     /**
      * Constructor privado. Usar factory methods.
      */
-    private Almacen(AlmacenId id, UUID proyectoId, String codigo, String nombre,
-                   String ubicacion, UUID responsableId, boolean activo) {
+    private Almacen(AlmacenId id, UUID proyectoId, String codigo, String nombre, String ubicacion, UUID responsableId,
+            boolean activo) {
         this.id = Objects.requireNonNull(id, "El ID del almacén no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.codigo = Objects.requireNonNull(codigo, "El código del almacén no puede ser nulo");
@@ -29,58 +41,89 @@ public final class Almacen {
         this.responsableId = responsableId;
         this.activo = activo;
     }
-    
+
     /**
      * Factory method para crear un nuevo almacén.
      */
-    public static Almacen crear(AlmacenId id, UUID proyectoId, String codigo, String nombre,
-                               String ubicacion, UUID responsableId) {
+    public static Almacen crear(AlmacenId id, UUID proyectoId, String codigo, String nombre, String ubicacion,
+            UUID responsableId) {
         return new Almacen(id, proyectoId, codigo, nombre, ubicacion, responsableId, true);
     }
-    
+
     /**
      * Factory method para reconstruir desde persistencia.
      */
-    public static Almacen reconstruir(AlmacenId id, UUID proyectoId, String codigo, String nombre,
-                                     String ubicacion, UUID responsableId, boolean activo) {
+    public static Almacen reconstruir(AlmacenId id, UUID proyectoId, String codigo, String nombre, String ubicacion,
+            UUID responsableId, boolean activo) {
         return new Almacen(id, proyectoId, codigo, nombre, ubicacion, responsableId, activo);
     }
-    
+
     /**
      * Desactiva el almacén.
      */
     public void desactivar() {
         this.activo = false;
     }
-    
+
     /**
      * Activa el almacén.
      */
     public void activar() {
         this.activo = true;
     }
-    
+
     // Getters
-    
-    public AlmacenId getId() { return id; }
-    public UUID getProyectoId() { return proyectoId; }
-    public String getCodigo() { return codigo; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getUbicacion() { return ubicacion; }
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
-    public UUID getResponsableId() { return responsableId; }
-    public void setResponsableId(UUID responsableId) { this.responsableId = responsableId; }
-    public boolean isActivo() { return activo; }
-    
+
+    public AlmacenId getId() {
+        return id;
+    }
+
+    public UUID getProyectoId() {
+        return proyectoId;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getUbicacion() {
+        return ubicacion;
+    }
+
+    public void setUbicacion(String ubicacion) {
+        this.ubicacion = ubicacion;
+    }
+
+    public UUID getResponsableId() {
+        return responsableId;
+    }
+
+    public void setResponsableId(UUID responsableId) {
+        this.responsableId = responsableId;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Almacen almacen = (Almacen) o;
         return Objects.equals(id, almacen.id);
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(id);

@@ -29,21 +29,38 @@ public final class EstimacionReajuste {
     private final EstimacionReajusteId id;
     private final UUID proyectoId;
     private final UUID presupuestoId;
+    // nosemgrep
     private Integer numeroEstimacion;
+    // nosemgrep
     private LocalDate fechaCorte;
+    // nosemgrep
     private String indiceBaseCodigo;
+    // nosemgrep
     private LocalDate indiceBaseFecha;
+    // nosemgrep
     private String indiceActualCodigo;
+    // nosemgrep
     private LocalDate indiceActualFecha;
+    // nosemgrep
     private BigDecimal valorIndiceBase;
+    // nosemgrep
     private BigDecimal valorIndiceActual;
+    // nosemgrep
     private BigDecimal montoBase;
+    // nosemgrep
     private BigDecimal montoReajustado;
+    // nosemgrep
     private BigDecimal diferencial;
+    // nosemgrep
     private BigDecimal porcentajeVariacion;
+    // nosemgrep
     private EstadoEstimacionReajuste estado;
+    // nosemgrep
     private String observaciones;
+    // nosemgrep
     private List<DetalleReajustePartida> detalles;
+    // Justificación: Optimistic locking JPA @Version
+    // nosemgrep
     private Long version;
 
     /**

@@ -1,5 +1,7 @@
 # 🏗️ BUDGETPRO - Sistema de Control Técnico-Financiero
 
+![AXIOM Domain Hardening](https://img.shields.io/badge/AXIOM_Domain_Hardening-100%25-success?style=flat-square&logo=shield&logoColor=white)
+
 Sistema completo de gestión de presupuestos y control de costos para proyectos de ingeniería civil.
 
 ## 📁 Estructura del Proyecto

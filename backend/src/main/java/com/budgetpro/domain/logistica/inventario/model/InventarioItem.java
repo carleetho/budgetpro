@@ -18,13 +18,11 @@ import java.util.UUID;
  * 
  * Un registro por Proyecto + Recurso + UnidadBase + Bodega (relación única).
  * 
- * Invariantes Críticas:
- * - La cantidadFisica NUNCA puede ser negativa
- * - Todo movimiento genera un registro en el Kardex (MovimientoInventario)
- * - El costoPromedio se calcula ponderadamente cuando hay entradas
- * - No existe stock sin movimiento
- * - Los campos snapshot (nombre, clasificacion, unidadBase) son inmutables
- * después de creación
+ * Invariantes Críticas: - La cantidadFisica NUNCA puede ser negativa - Todo
+ * movimiento genera un registro en el Kardex (MovimientoInventario) - El
+ * costoPromedio se calcula ponderadamente cuando hay entradas - No existe stock
+ * sin movimiento - Los campos snapshot (nombre, clasificacion, unidadBase) son
+ * inmutables después de creación
  */
 public final class InventarioItem {
 
@@ -42,13 +40,26 @@ public final class InventarioItem {
     private final String clasificacion; // Clasificación del recurso (snapshot)
     private final String unidadBase; // Unidad base del recurso (snapshot)
 
+    // JUSTIFICACIÓN ARQUITECTÓNICA: Aggregate Root con estado mutable intencional.
+    // Estos campos representan el estado evolutivo del inventario y DEBEN ser
+    // mutables:
+    // - cantidadFisica: se actualiza en cada movimiento (ingresar/egresar/ajustar)
+    // - costoPromedio: se recalcula con cada entrada (fórmula PMP)
+    // - ultimaActualizacion: timestamp de última modificación
+    // - version: optimistic locking para concurrencia
+    // Pattern: Aggregate Root con Invariantes (cantidadFisica >= 0)
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal cantidadFisica; // Stock actual
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal costoPromedio; // Costo promedio ponderado
 
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     @Deprecated
     private String ubicacion; // DEPRECATED: Usar bodegaId en su lugar. Mantener para compatibilidad.
 
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDateTime ultimaActualizacion;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     // Lista de movimientos nuevos pendientes de persistir
@@ -58,9 +69,8 @@ public final class InventarioItem {
      * Constructor privado. Usar factory methods.
      */
     private InventarioItem(InventarioId id, UUID proyectoId, UUID recursoId, String recursoExternalId,
-            BodegaId bodegaId, String nombre, String clasificacion, String unidadBase,
-            BigDecimal cantidadFisica, BigDecimal costoPromedio,
-            String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
+            BodegaId bodegaId, String nombre, String clasificacion, String unidadBase, BigDecimal cantidadFisica,
+            BigDecimal costoPromedio, String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
         this.id = Objects.requireNonNull(id, "El ID del inventario no puede ser nulo");
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.recursoId = recursoId; // Puede ser null durante migración
@@ -124,31 +134,29 @@ public final class InventarioItem {
         // Para compatibilidad: crear con valores por defecto para campos nuevos
         // Esto requiere que se migre después a crearConSnapshot()
         throw new UnsupportedOperationException(
-                "Usar crearConSnapshot() con recursoExternalId, bodegaId y campos snapshot. " +
-                        "Este método está deprecado y no debe usarse en nuevo código.");
+                "Usar crearConSnapshot() con recursoExternalId, bodegaId y campos snapshot. "
+                        + "Este método está deprecado y no debe usarse en nuevo código.");
     }
 
     /**
      * Factory method para reconstruir un item de inventario desde persistencia.
      */
     public static InventarioItem reconstruir(InventarioId id, UUID proyectoId, UUID recursoId, String recursoExternalId,
-            BodegaId bodegaId, String nombre, String clasificacion, String unidadBase,
-            BigDecimal cantidadFisica, BigDecimal costoPromedio,
-            String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
+            BodegaId bodegaId, String nombre, String clasificacion, String unidadBase, BigDecimal cantidadFisica,
+            BigDecimal costoPromedio, String ubicacion, LocalDateTime ultimaActualizacion, Long version) {
         return new InventarioItem(id, proyectoId, recursoId, recursoExternalId, bodegaId, nombre, clasificacion,
-                unidadBase,
-                cantidadFisica, costoPromedio, ubicacion, ultimaActualizacion, version);
+                unidadBase, cantidadFisica, costoPromedio, ubicacion, ultimaActualizacion, version);
     }
 
     /**
      * Registra una ENTRADA de material (por compra).
      * 
-     * Aumenta la cantidad física y recalcula el costo promedio ponderado.
-     * Crea un MovimientoInventario de tipo ENTRADA_COMPRA.
+     * Aumenta la cantidad física y recalcula el costo promedio ponderado. Crea un
+     * MovimientoInventario de tipo ENTRADA_COMPRA.
      * 
-     * Fórmula del costo promedio ponderado:
-     * nuevoCostoPromedio = (cantidadActual * costoPromedioActual + cantidadEntrada
-     * * costoUnitario) / (cantidadActual + cantidadEntrada)
+     * Fórmula del costo promedio ponderado: nuevoCostoPromedio = (cantidadActual *
+     * costoPromedioActual + cantidadEntrada * costoUnitario) / (cantidadActual +
+     * cantidadEntrada)
      * 
      * @param cantidad        Cantidad a ingresar (debe ser positiva)
      * @param costoUnitario   Costo unitario de la entrada
@@ -158,8 +166,8 @@ public final class InventarioItem {
      * @throws IllegalArgumentException si la cantidad no es positiva o el costo es
      *                                  negativo
      */
-    public MovimientoInventario ingresar(BigDecimal cantidad, BigDecimal costoUnitario,
-            UUID compraDetalleId, String referencia) {
+    public MovimientoInventario ingresar(BigDecimal cantidad, BigDecimal costoUnitario, UUID compraDetalleId,
+            String referencia) {
         if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad de entrada debe ser positiva");
         }
@@ -172,8 +180,8 @@ public final class InventarioItem {
 
         // Crear movimiento
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearEntradaPorCompra(
-                movimientoId, this.id.getValue(), cantidad, costoUnitario, compraDetalleId, referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearEntradaPorCompra(movimientoId, this.id.getValue(),
+                cantidad, costoUnitario, compraDetalleId, referencia);
 
         // Calcular nuevo costo promedio ponderado
         if (this.cantidadFisica.compareTo(BigDecimal.ZERO) == 0) {
@@ -203,8 +211,8 @@ public final class InventarioItem {
     /**
      * Registra una SALIDA de material (por consumo).
      * 
-     * Disminuye la cantidad física usando el costo promedio actual.
-     * Crea un MovimientoInventario de tipo SALIDA_CONSUMO.
+     * Disminuye la cantidad física usando el costo promedio actual. Crea un
+     * MovimientoInventario de tipo SALIDA_CONSUMO.
      * 
      * INVARIANTE CRÍTICA: Si la cantidad resultante sería negativa, lanza
      * CantidadInsuficienteException.
@@ -227,14 +235,13 @@ public final class InventarioItem {
         // Validar stock suficiente
         if (this.cantidadFisica.compareTo(cantidad) < 0) {
             throw new CantidadInsuficienteException(
-                    String.format("Stock insuficiente. Disponible: %s, Requerido: %s",
-                            this.cantidadFisica, cantidad));
+                    String.format("Stock insuficiente. Disponible: %s, Requerido: %s", this.cantidadFisica, cantidad));
         }
 
         // Crear movimiento usando el costo promedio actual
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearSalidaPorConsumo(
-                movimientoId, this.id.getValue(), cantidad, this.costoPromedio, referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearSalidaPorConsumo(movimientoId, this.id.getValue(),
+                cantidad, this.costoPromedio, referencia);
 
         // Actualizar cantidad física
         this.cantidadFisica = this.cantidadFisica.subtract(cantidad);
@@ -251,8 +258,7 @@ public final class InventarioItem {
      * Registra una SALIDA de material por requisición.
      * 
      * Similar a egresar() pero crea MovimientoInventario con referencias a
-     * requisición
-     * para trazabilidad completa del despacho.
+     * requisición para trazabilidad completa del despacho.
      * 
      * @param cantidad          Cantidad a egresar (debe ser positiva)
      * @param requisicionId     ID de la requisición
@@ -264,9 +270,8 @@ public final class InventarioItem {
      *                                       referencia está vacía
      * @throws CantidadInsuficienteException si no hay suficiente stock
      */
-    public MovimientoInventario egresarPorRequisicion(BigDecimal cantidad, UUID requisicionId,
-            UUID requisicionItemId, UUID partidaId,
-            String referencia) {
+    public MovimientoInventario egresarPorRequisicion(BigDecimal cantidad, UUID requisicionId, UUID requisicionItemId,
+            UUID partidaId, String referencia) {
         if (cantidad == null || cantidad.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad de salida debe ser positiva");
         }
@@ -283,15 +288,14 @@ public final class InventarioItem {
         // Validar stock suficiente
         if (this.cantidadFisica.compareTo(cantidad) < 0) {
             throw new CantidadInsuficienteException(
-                    String.format("Stock insuficiente. Disponible: %s, Requerido: %s",
-                            this.cantidadFisica, cantidad));
+                    String.format("Stock insuficiente. Disponible: %s, Requerido: %s", this.cantidadFisica, cantidad));
         }
 
         // Crear movimiento con referencias a requisición
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearSalidaConRequisicion(
-                movimientoId, this.id.getValue(), cantidad, this.costoPromedio,
-                requisicionId, requisicionItemId, partidaId, referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearSalidaConRequisicion(movimientoId,
+                this.id.getValue(), cantidad, this.costoPromedio, requisicionId, requisicionItemId, partidaId,
+                referencia);
 
         // Actualizar cantidad física
         this.cantidadFisica = this.cantidadFisica.subtract(cantidad);
@@ -307,8 +311,8 @@ public final class InventarioItem {
     /**
      * Registra una SALIDA por transferencia a otra bodega del mismo proyecto.
      * 
-     * Disminuye la cantidad física usando el costo promedio actual.
-     * Crea un MovimientoInventario de tipo SALIDA_TRANSFERENCIA.
+     * Disminuye la cantidad física usando el costo promedio actual. Crea un
+     * MovimientoInventario de tipo SALIDA_TRANSFERENCIA.
      * 
      * @param cantidad        Cantidad a transferir (debe ser positiva)
      * @param transferenciaId ID de la transferencia (vincula con la entrada)
@@ -338,9 +342,8 @@ public final class InventarioItem {
 
         // Crear movimiento usando el costo promedio actual
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearSalidaTransferencia(
-                movimientoId, this.id.getValue(), cantidad, this.costoPromedio,
-                transferenciaId.getValue(), referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearSalidaTransferencia(movimientoId,
+                this.id.getValue(), cantidad, this.costoPromedio, transferenciaId.getValue(), referencia);
 
         // Actualizar cantidad física
         this.cantidadFisica = this.cantidadFisica.subtract(cantidad);
@@ -356,8 +359,8 @@ public final class InventarioItem {
     /**
      * Registra una ENTRADA por transferencia desde otra bodega del mismo proyecto.
      * 
-     * Aumenta la cantidad física y recalcula el PMP.
-     * Crea un MovimientoInventario de tipo ENTRADA_TRANSFERENCIA.
+     * Aumenta la cantidad física y recalcula el PMP. Crea un MovimientoInventario
+     * de tipo ENTRADA_TRANSFERENCIA.
      * 
      * @param cantidad        Cantidad recibida
      * @param costoUnitario   Costo unitario (viene del origen)
@@ -382,9 +385,8 @@ public final class InventarioItem {
 
         // Crear movimiento
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearEntradaTransferencia(
-                movimientoId, this.id.getValue(), cantidad, costoUnitario,
-                transferenciaId.getValue(), referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearEntradaTransferencia(movimientoId,
+                this.id.getValue(), cantidad, costoUnitario, transferenciaId.getValue(), referencia);
 
         // Calcular nuevo costo promedio ponderado (misma lógica que ingresar)
         if (this.cantidadFisica.compareTo(BigDecimal.ZERO) == 0) {
@@ -437,8 +439,8 @@ public final class InventarioItem {
 
         // Crear Movimiento usando el factory de AJUSTE
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearAjuste(
-                movimientoId, this.id.getValue(), cantidad, this.costoPromedio, justificacion, referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearAjuste(movimientoId, this.id.getValue(), cantidad,
+                this.costoPromedio, justificacion, referencia);
 
         // Recalcular PMP si es entrada positiva?
         // REGLA: Los ajustes positivos se valoran típicamente al PMP actual o a un
@@ -462,8 +464,8 @@ public final class InventarioItem {
     /**
      * Registra una SALIDA por préstamo a otro proyecto.
      * 
-     * Disminuye la cantidad física usando el costo promedio actual.
-     * Crea un MovimientoInventario de tipo SALIDA_PRESTAMO.
+     * Disminuye la cantidad física usando el costo promedio actual. Crea un
+     * MovimientoInventario de tipo SALIDA_PRESTAMO.
      * 
      * @param cantidad        Cantidad a transferir (debe ser positiva)
      * @param transferenciaId ID de la transferencia (vincula con la entrada)
@@ -486,16 +488,14 @@ public final class InventarioItem {
 
         // Validar stock suficiente
         if (this.cantidadFisica.compareTo(cantidad) < 0) {
-            throw new CantidadInsuficienteException(
-                    String.format("Stock insuficiente para préstamo. Disponible: %s, Requerido: %s",
-                            this.cantidadFisica, cantidad));
+            throw new CantidadInsuficienteException(String.format(
+                    "Stock insuficiente para préstamo. Disponible: %s, Requerido: %s", this.cantidadFisica, cantidad));
         }
 
         // Crear movimiento usando el costo promedio actual
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearSalidaPrestamo(
-                movimientoId, this.id.getValue(), cantidad, this.costoPromedio,
-                transferenciaId.getValue(), referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearSalidaPrestamo(movimientoId, this.id.getValue(),
+                cantidad, this.costoPromedio, transferenciaId.getValue(), referencia);
 
         // Actualizar cantidad física
         this.cantidadFisica = this.cantidadFisica.subtract(cantidad);
@@ -509,8 +509,8 @@ public final class InventarioItem {
     /**
      * Registra una ENTRADA por préstamo desde otro proyecto.
      * 
-     * Aumenta la cantidad física y recalcula el PMP.
-     * Crea un MovimientoInventario de tipo ENTRADA_PRESTAMO.
+     * Aumenta la cantidad física y recalcula el PMP. Crea un MovimientoInventario
+     * de tipo ENTRADA_PRESTAMO.
      * 
      * @param cantidad        Cantidad recibida
      * @param costoUnitario   Costo unitario (viene del origen)
@@ -535,9 +535,8 @@ public final class InventarioItem {
 
         // Crear movimiento
         MovimientoInventarioId movimientoId = MovimientoInventarioId.generate();
-        MovimientoInventario movimiento = MovimientoInventario.crearEntradaPrestamo(
-                movimientoId, this.id.getValue(), cantidad, costoUnitario,
-                transferenciaId.getValue(), referencia);
+        MovimientoInventario movimiento = MovimientoInventario.crearEntradaPrestamo(movimientoId, this.id.getValue(),
+                cantidad, costoUnitario, transferenciaId.getValue(), referencia);
 
         // Calcular nuevo costo promedio ponderado
         if (this.cantidadFisica.compareTo(BigDecimal.ZERO) == 0) {
