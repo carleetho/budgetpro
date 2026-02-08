@@ -46,7 +46,7 @@ bounded_contexts:
 
   - name: logistica
     priority: HIGH
-    strict_mode: false # WARNING severity - Phase 1B rollout
+    strict_mode: true # ERROR severity - Phase 1B enabled (2026-02-07)
     description: "Inventory, warehouses, purchases, and logistics"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/logistica/**/*.java"
