@@ -25,7 +25,7 @@ public final class RequisicionItem {
     // (registrarDespacho)
     // Este patrón acumulativo es esencial para registrar entregas parciales de
     // inventario
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal cantidadDespachada; // Cantidad despachada (acumulativa)
     private final String unidadMedida; // Unidad de medida (ej. "SACOS", "TONELADAS")
     private final String justificacion; // Justificación de la solicitud

@@ -19,7 +19,8 @@ public class ConfiguracionLaboralExtendida {
     private final String id;
     private final ProyectoId proyectoId; // Puede ser null para configuración Global
     private final LocalDate fechaInicio;
-    private LocalDate fechaFin;
+    private LocalDate fechaFin; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Mutable
+                                // end date
     private Map<String, BigDecimal> factores; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh -
                                               // Regional labor factors updated by HR
 

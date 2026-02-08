@@ -23,7 +23,7 @@ public final class Cuadrilla {
     private final FrenteTrabajoId frenteTrabajoId; // FK al frente de trabajo
     // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
     // - activa: ciclo de vida de la cuadrilla (activar/desactivar)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activa;
 
     /**

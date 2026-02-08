@@ -48,18 +48,18 @@ public final class InventarioItem {
     // - ultimaActualizacion: timestamp de última modificación
     // - version: optimistic locking para concurrencia
     // Pattern: Aggregate Root con Invariantes (cantidadFisica >= 0)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal cantidadFisica; // Stock actual
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal costoPromedio; // Costo promedio ponderado
 
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     @Deprecated
     private String ubicacion; // DEPRECATED: Usar bodegaId en su lugar. Mantener para compatibilidad.
 
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDateTime ultimaActualizacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     // Lista de movimientos nuevos pendientes de persistir

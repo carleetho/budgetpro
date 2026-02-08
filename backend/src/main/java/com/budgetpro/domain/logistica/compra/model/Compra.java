@@ -32,15 +32,15 @@ public final class Compra {
     // - estado: workflow transitions (BORRADOR → APROBADA)
     // - total: recalculado dinámicamente cuando se agregan/modifican detalles
     // - version: optimistic locking
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDate fecha;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String proveedor;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private EstadoCompra estado;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal total; // Calculado: Σ subtotales de detalles
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     // Lista de detalles (entidades internas del agregado)

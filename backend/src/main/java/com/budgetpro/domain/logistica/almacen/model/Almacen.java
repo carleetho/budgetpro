@@ -19,13 +19,13 @@ public final class Almacen {
     // - ubicacion: puede reubicarse físicamente
     // - responsableId: el responsable puede cambiar
     // - activo: lifecycle state (activar/desactivar)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String nombre;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String ubicacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private UUID responsableId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activo;
 
     /**
