@@ -13,7 +13,7 @@ public class CuadrillaMiembro {
     private final EmpleadoId empleadoId;
     private final String rol;
     private final LocalDate fechaIngreso;
-    private LocalDate fechaSalida;
+    private LocalDate fechaSalida; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.rrhh - Exit date set when member removed
 
     private CuadrillaMiembro(CuadrillaMiembroId id, EmpleadoId empleadoId, String rol, LocalDate fechaIngreso,
             LocalDate fechaSalida) {
