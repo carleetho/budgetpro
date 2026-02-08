@@ -93,6 +93,22 @@ bounded_contexts:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/evm/**"
       - "backend/src/main/java/com/budgetpro/domain/finanzas/alertas/**"
 
+  - name: proyecto
+    priority: CRITICAL
+    strict_mode: true # ERROR severity - Phase 1E enabled 2026-02-08
+    description: "Project aggregate and lifecycle management"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/proyecto/**/*.java"
+    exclusions: []
+
+  - name: shared
+    priority: HIGH
+    strict_mode: true # ERROR severity - Phase 1E enabled 2026-02-08
+    description: "Cross-cutting domain ports (Security, Observability, Serialization)"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/shared/**/*.java"
+    exclusions: []
+
 # Immutability Rules: Define validation rules for domain layer hardening
 # Each rule generates Semgrep rules for all bounded contexts
 immutability_rules:
