@@ -36,8 +36,19 @@ public interface EstimacionJpaRepository extends JpaRepository<EstimacionEntity,
      * Obtiene el siguiente número de estimación para un proyecto.
      * 
      * @param proyectoId El ID del proyecto
-     * @return El número de la última estimación + 1, o 1 si no hay estimaciones previas
+     * @return El número de la última estimación + 1, o 1 si no hay estimaciones
+     *         previas
      */
     @Query("SELECT COALESCE(MAX(e.numeroEstimacion), 0) + 1 FROM EstimacionEntity e WHERE e.proyectoId = :proyectoId")
     Integer obtenerSiguienteNumeroEstimacion(UUID proyectoId);
+
+    /**
+     * Busca una estimación por proyecto y número de estimación. Usado para validar
+     * la regla de aprobación secuencial (ES-01/REGLA-010).
+     * 
+     * @param proyectoId       El ID del proyecto
+     * @param numeroEstimacion El número de la estimación
+     * @return Optional con la estimación si existe
+     */
+    Optional<EstimacionEntity> findByProyectoIdAndNumeroEstimacion(UUID proyectoId, Integer numeroEstimacion);
 }

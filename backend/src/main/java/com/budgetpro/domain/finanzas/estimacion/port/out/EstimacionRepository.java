@@ -8,7 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Puerto de Salida (Outbound Port) para la persistencia del agregado Estimacion.
+ * Puerto de Salida (Outbound Port) para la persistencia del agregado
+ * Estimacion.
  * 
  * Define el contrato de persistencia sin depender de tecnologías específicas.
  * La implementación estará en la capa de infraestructura.
@@ -42,15 +43,27 @@ public interface EstimacionRepository {
      * Busca la siguiente estimación (para calcular el número consecutivo).
      * 
      * @param proyectoId El ID del proyecto
-     * @return El número de la última estimación + 1, o 1 si no hay estimaciones previas
+     * @return El número de la última estimación + 1, o 1 si no hay estimaciones
+     *         previas
      */
     Integer obtenerSiguienteNumeroEstimacion(UUID proyectoId);
 
     /**
-     * Busca todas las estimaciones aprobadas de un proyecto (para calcular acumulados).
+     * Busca todas las estimaciones aprobadas de un proyecto (para calcular
+     * acumulados).
      * 
      * @param proyectoId El ID del proyecto
      * @return Lista de estimaciones aprobadas
      */
     List<Estimacion> findAprobadasByProyectoId(UUID proyectoId);
+
+    /**
+     * Busca una estimación por proyecto y número de estimación. Usado para validar
+     * la regla de aprobación secuencial (ES-01/REGLA-010).
+     * 
+     * @param proyectoId       El ID del proyecto
+     * @param numeroEstimacion El número de la estimación (consecutivo: 1, 2, 3...)
+     * @return Optional con la estimación si existe, vacío en caso contrario
+     */
+    Optional<Estimacion> findByProyectoIdAndNumero(UUID proyectoId, Integer numeroEstimacion);
 }

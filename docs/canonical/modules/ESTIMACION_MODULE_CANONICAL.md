@@ -14,12 +14,12 @@
 
 ## 2. Invariants (Business Rules)
 
-| ID    | Rule                                                                                                                | Status         |
-| ----- | ------------------------------------------------------------------------------------------------------------------- | -------------- |
-| ES-01 | **Sequential Approval**: Estimations must be generated and approved in strict sequential order number (1, 2, 3...). | ✅ Implemented |
-| ES-02 | **Wallet Impact**: Approval of an estimation automatically triggers an ingress movement in the Project Wallet.      | ✅ Implemented |
-| ES-03 | **Non-Negative Payment**: Net payment amount cannot be negative after deductions.                                   | ✅ Implemented |
-| ES-04 | **Advance Amortization**: Must amortize proportional% of the Advance Payment until fully repaid.                    | 🟡 Partial     |
+| ID    | Rule                                                                                                                                                                   | Status            |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| ES-01 | **Sequential Approval**: Estimations must be generated and approved in strict sequential order number (1, 2, 3...). N-1 state validation **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
+| ES-02 | **Wallet Impact**: Approval of an estimation automatically triggers an ingress movement in the Project Wallet. Billetera integration **COMPLETED** (2026-02-07).       | ✅ Fully Enforced |
+| ES-03 | **Non-Negative Payment**: Net payment amount cannot be negative after deductions.                                                                                      | ✅ Implemented    |
+| ES-04 | **Advance Amortization**: Must amortize proportional% of the Advance Payment until fully repaid.                                                                       | 🟡 Partial        |
 
 ## 3. Domain Events
 

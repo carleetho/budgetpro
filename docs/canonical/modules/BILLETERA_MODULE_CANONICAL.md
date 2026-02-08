@@ -19,6 +19,8 @@
 | B-01 | **Non-Negative**: Wallet balance cannot be negative (Debit check).                     | ✅ Implemented |
 | B-02 | **Audit Trail**: Every movement must have a source reference (EstimationId, CompraId). | ✅ Implemented |
 | B-03 | **Currency Mix**: Cannot mix currencies in same wallet account.                        | ✅ Implemented |
+| B-04 | **Evidence Lock**: Max 3 pending movements awaiting evidence before blocking new ops.  | ✅ Implemented |
+| B-05 | **Crypto Integrity**: Budget hash validation before egress to prevent tampering.       | ✅ Implemented |
 
 ## 3. Domain Events
 
