@@ -36,7 +36,7 @@ bounded_contexts:
 
   - name: catalogo
     priority: CRITICAL
-    strict_mode: false # WARNING severity - Phase 1A rollout
+    strict_mode: true # ERROR severity - Phase 1A enabled (2026-02-07)
     description: "APUs, insumos, and resource catalog"
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/catalogo/**/*.java"
