@@ -86,12 +86,12 @@ bounded_contexts:
     file_patterns:
       - "backend/src/main/java/com/budgetpro/domain/finanzas/**/*.java"
     exclusions:
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/**"
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/**"
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/**"
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/avance/**"
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/evm/**"
-      - "backend/src/main/java/com/budgetpro/domain/finanzas/alertas/**"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/estimacion"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/avance"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/evm"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/alertas"
 
   - name: proyecto
     priority: CRITICAL
