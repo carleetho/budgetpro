@@ -28,8 +28,10 @@ public final class RecursoProxy {
     private final String unidadSnapshot;
     private final BigDecimal precioSnapshot;
     private final LocalDateTime snapshotDate;
-    private EstadoProxy estado;
-    private BigDecimal costoReal;
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private EstadoProxy estado; // Mutable: can transition to OBSOLETO
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+    private BigDecimal costoReal; // Mutable: updated when actual cost is known
     private final Long version;
 
     private RecursoProxy(RecursoProxyId id, String externalId, String catalogSource, String nombreSnapshot,
