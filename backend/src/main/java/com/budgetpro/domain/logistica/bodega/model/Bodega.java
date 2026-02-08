@@ -25,10 +25,10 @@ public final class Bodega {
     // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
     // - activa: estado del ciclo de vida (activar/desactivar bodega)
     // - version: optimistic locking para concurrencia
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activa;
     private final LocalDateTime fechaCreacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     /**

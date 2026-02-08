@@ -25,13 +25,13 @@ public final class MovimientoAlmacen {
     // - partidaId: imputación presupuestal (puede actualizarse)
     // - centroCostoId: centro de costo (puede reasignarse)
     // - observaciones: notas adicionales (pueden agregarse/editarse)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String numeroDocumento;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private UUID partidaId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private UUID centroCostoId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String observaciones;
 
     /**

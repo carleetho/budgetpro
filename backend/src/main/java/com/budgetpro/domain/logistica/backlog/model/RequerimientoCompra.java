@@ -33,13 +33,13 @@ public final class RequerimientoCompra {
     // - estado: transiciones de workflow (PENDIENTE → RECIBIDA/CANCELADA)
     // - fechaCreacion/fechaActualizacion: timestamps de auditoría
     // - version: optimistic locking
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private EstadoRequerimiento estado; // Estado en el workflow de compras
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDateTime fechaCreacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDateTime fechaActualizacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     /**

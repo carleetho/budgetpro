@@ -35,15 +35,15 @@ public final class Requisicion {
     // DESPACHADA_PARCIAL/TOTAL → CERRADA)
     // - observaciones: pueden agregarse/editarse
     // - version: optimistic locking
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private LocalDate fechaSolicitud;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private UUID aprobadoPor; // ID del usuario que aprobó (null si no está aprobada)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private EstadoRequisicion estado;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private String observaciones; // Observaciones generales
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private Long version;
 
     // Lista de ítems (entidades internas del agregado)

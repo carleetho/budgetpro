@@ -22,7 +22,7 @@ public final class FrenteTrabajo {
     private final String responsable; // Ingeniero responsable
     // JUSTIFICACIÓN ARQUITECTÓNICA: Estado de lifecycle mutable.
     // - activo: ciclo de vida del frente de trabajo (activar/desactivar)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private boolean activo;
 
     /**
