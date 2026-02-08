@@ -7,26 +7,27 @@ import java.util.Objects;
  * 
  * Representa un proyecto de construcción con su identidad, ubicación y estado.
  * 
- * Invariantes:
- * - El nombre no puede estar vacío
- * - El nombre debe ser único (validado a nivel de persistencia)
- * - El estado no puede ser nulo
+ * Invariantes: - El nombre no puede estar vacío - El nombre debe ser único
+ * (validado a nivel de persistencia) - El estado no puede ser nulo
  * 
  * Contexto: Gestión de Proyectos
  */
 public final class Proyecto {
 
     private final ProyectoId id;
-    private String nombre;
-    private String ubicacion;
-    private EstadoProyecto estado;
+    private String nombre; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
+                           // Project name editable via actualizarNombre()
+    private String ubicacion; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
+                              // Project location editable via actualizarUbicacion()
+    private EstadoProyecto estado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
+                                   // Project state machine (BORRADOR -> ACTIVO -> CERRADO)
 
     /**
      * Constructor privado. Usar factory methods.
      */
     private Proyecto(ProyectoId id, String nombre, String ubicacion, EstadoProyecto estado) {
         validarInvariantes(nombre, estado);
-        
+
         this.id = Objects.requireNonNull(id, "El ID del proyecto no puede ser nulo");
         this.nombre = normalizarNombre(nombre);
         this.ubicacion = ubicacion != null ? ubicacion.trim() : null;
@@ -131,8 +132,10 @@ public final class Proyecto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Proyecto proyecto = (Proyecto) o;
         return Objects.equals(id, proyecto.id);
     }
@@ -144,7 +147,6 @@ public final class Proyecto {
 
     @Override
     public String toString() {
-        return String.format("Proyecto{id=%s, nombre='%s', ubicacion='%s', estado=%s}", 
-                           id, nombre, ubicacion, estado);
+        return String.format("Proyecto{id=%s, nombre='%s', ubicacion='%s', estado=%s}", id, nombre, ubicacion, estado);
     }
 }
