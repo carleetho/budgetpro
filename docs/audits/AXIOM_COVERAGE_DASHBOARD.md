@@ -1,8 +1,8 @@
 # AXIOM Domain Hardening Coverage Dashboard
 
-**Overall**: 21/209 files (10.0%) 🟡  
-**Last Updated**: 2026-02-07 21:38:00  
-**Baseline**: presupuesto + estimacion contexts hardened
+**Overall**: 38/209 files (18.2%) 🟡  
+**Last Updated**: 2026-02-07  
+**Status**: Phase 1A Complete ✅ (Catalogo hardened)
 
 ---
 
@@ -12,8 +12,8 @@
 | -------------------- | ----- | -------- | -------- | ------------------ | ----------------------- |
 | **Presupuesto**      | 13    | 13       | 100% ✅  | **Strict (ERROR)** | Baseline                |
 | **Estimacion**       | 8     | 8        | 100% ✅  | **Strict (ERROR)** | Baseline                |
+| **Catalogo**         | 17    | 17       | 100% ✅  | **Strict (ERROR)** | Phase 1A Complete ✅    |
 | **Cronograma**       | 14    | 0        | 0% ⬜    | Planned (WARNING)  | Phase 1C (Week 5)       |
-| **Catalogo**         | 17    | 0        | 0% ⬜    | Planned (WARNING)  | Phase 1A (Week 3)       |
 | **Logistica**        | 68    | 0        | 0% ⬜    | Planned (WARNING)  | Phase 1B (Week 4)       |
 | **RRHH**             | 24    | 0        | 0% ⬜    | Planned (WARNING)  | Phase 1D (Week 5)       |
 | **Finanzas (Other)** | 65    | 0        | 0% ⬜    | Planned(WARNING)   | Scattered across phases |
