@@ -1,0 +1,147 @@
+# Domain Hardening Configuration
+# Configuration-driven AXIOM domain validation for BudgetPro
+# Defines bounded contexts, strictness levels, and immutability rules for Semgrep generation
+
+version: "1.0"
+
+# Bounded Contexts: Define all domain contexts with priority and strictness levels
+bounded_contexts:
+  # CRITICAL CONTEXTS (strict_mode: true = ERROR severity, blocking violations)
+
+  - name: presupuesto
+    priority: CRITICAL
+    strict_mode: true # ERROR severity - already hardened (13 files)
+    description: "Budget management and financial planning core"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/**/*.java"
+    exclusions: []
+
+  - name: estimacion
+    priority: CRITICAL
+    strict_mode: true # ERROR severity - already hardened (8 files)
+    description: "Construction estimation and billing sequence"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/**/*.java"
+    exclusions: []
+
+  # HIGH PRIORITY CONTEXTS (strict_mode: false = WARNING severity, planned for rollout)
+
+  - name: cronograma
+    priority: HIGH
+    strict_mode: false # WARNING severity - Phase 1C rollout
+    description: "Schedule and timeline management"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/**/*.java"
+    exclusions: []
+
+  - name: catalogo
+    priority: CRITICAL
+    strict_mode: false # WARNING severity - Phase 1A rollout
+    description: "APUs, insumos, and resource catalog"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/catalogo/**/*.java"
+    exclusions: []
+
+  # MEDIUM/HIGH PRIORITY CONTEXTS
+
+  - name: logistica
+    priority: HIGH
+    strict_mode: false # WARNING severity - Phase 1B rollout
+    description: "Inventory, warehouses, purchases, and logistics"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/logistica/**/*.java"
+    exclusions: []
+
+  - name: rrhh
+    priority: MEDIUM
+    strict_mode: false # WARNING severity - Phase 1D rollout
+    description: "Human resources and attendance tracking"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/rrhh/**/*.java"
+    exclusions: []
+
+  # CATCH-ALL FOR OTHER FINANZAS MODULES
+
+  - name: finanzas_other
+    priority: HIGH
+    strict_mode: false # WARNING severity - uncategorized finanzas modules
+    description: "Other financial domain modules (billetera, avance, anticipo)"
+    file_patterns:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/**/*.java"
+    exclusions:
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/**"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/**"
+      - "backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/**"
+
+# Immutability Rules: Define validation rules for domain layer hardening
+# Each rule generates Semgrep rules for all bounded contexts
+immutability_rules:
+  - id: entity-final-fields
+    severity_strict: ERROR # Used when context has strict_mode: true
+    severity_warning: WARNING # Used when context has strict_mode: false
+    description: "Domain entity fields must be immutable (private final)"
+    message: |
+      INMUTABILIDAD: Campos sin 'final' en entidad de dominio.
+      Los campos privados en entidades de dominio deben ser inmutables para garantizar la integridad del modelo.
+      Usa 'private final' para campos de entidades de dominio.
+      Contexto: {context}
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
+
+  - id: snapshot-no-setters
+    severity_strict: ERROR
+    severity_warning: WARNING
+    description: "Snapshot classes must not have setter methods"
+    message: |
+      INMUTABILIDAD: Snapshot con setters detectado.
+      Los snapshots deben ser inmutables para garantizar la integridad de los datos históricos.
+      Usa constructor o builder pattern en lugar de setters.
+      Contexto: {context}
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
+
+  - id: valueobject-no-setters
+    severity_strict: ERROR
+    severity_warning: WARNING
+    description: "Value objects must be immutable (no setters)"
+    message: |
+      INMUTABILIDAD: Value object con setters detectado.
+      Los value objects deben ser completamente inmutables.
+      Usa constructor o builder pattern.
+      Contexto: {context}
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: HIGH
+
+  - id: collection-encapsulation
+    severity_strict: WARNING # Even in strict mode, this is WARNING
+    severity_warning: INFO # In non-strict contexts, just informational
+    description: "Collections must be properly encapsulated to prevent mutation"
+    message: |
+      INMUTABILIDAD: Colección sin encapsulación adecuada.
+      Retorna Collections.unmodifiableList() para prevenir mutación externa.
+      Contexto: {context}
+    metadata:
+      category: domain
+      technology: budgetpro
+      confidence: MEDIUM
+
+# Metadata
+generator:
+  script: "tools/generate_domain_rules.py"
+  output: ".semgrep/generated-domain-hardening.yml"
+  version: "1.0"
+
+# Coverage Tracking
+coverage:
+  total_domain_files: 217
+  baseline_hardened_files: 25
+  baseline_contexts:
+    - presupuesto # 13 files
+    - estimacion # 8 files
+    - finanzas_other # 4 files partial
