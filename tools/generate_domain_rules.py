@@ -82,7 +82,7 @@ def generate_entity_final_fields_rule(context: Dict, rule_config: Dict) -> Dict:
         ],
         'paths': {
             'include': context['file_patterns'],
-            'exclude': context.get(' exclusions', [])
+            'exclude': context.get('exclusions', [])
         },
         'message': message,
         'languages': ['java'],
