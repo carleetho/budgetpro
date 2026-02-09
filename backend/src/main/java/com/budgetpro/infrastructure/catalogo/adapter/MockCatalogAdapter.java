@@ -130,8 +130,8 @@ public class MockCatalogAdapter implements CatalogPort {
                 "CEMENTO PORTLAND TIPO I", new BigDecimal("2.0"), new BigDecimal("25.50"));
         APUInsumoSnapshot insumo2 = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-002",
                 "ACERO CORRUGADO 3/8\"", new BigDecimal("3.5"), new BigDecimal("4.20"));
-        apu.agregarInsumo(insumo1);
-        apu.agregarInsumo(insumo2);
+        apu = apu.agregarInsumo(insumo1);
+        apu = apu.agregarInsumo(insumo2);
         apusPorClave.put(buildKey("APU-001", "CAPECO"), apu);
     }
 
