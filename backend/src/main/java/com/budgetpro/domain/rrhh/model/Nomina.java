@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Nomina {
+public final class Nomina {
     private final NominaId id;
     private final ProyectoId proyectoId;
     private final LocalDate periodoInicio;
