@@ -22,6 +22,23 @@
 | E-04 | **Period Consistency**: Valuations must align with defined reporting periods (weekly/monthly).                                                                         | 🟡 Partial        |
 | E-05 | **EV Cap**: Earned Value (EV) cannot exceed Budget At Completion (BAC) - prevents >100% reporting.                                                                     | ✅ Implemented    |
 
+
+### 2.2 Extended Rule Inventory (Phase 1 Alignment)
+
+| ID | Rule | Status |
+| --- | --- | --- |
+| REGLA-003 | **Solo se puede reportar avance en proyectos en estado EJECUCION.** | ✅ Implemented |
+| REGLA-004 | **La cantidad reportada es obligatoria y el reporte no puede exceder el metrado vigente de la partida.** | ✅ Implemented |
+| REGLA-015 | **La cantidad de avance y el precio unitario en un detalle de estimación no pueden ser negativos.** | ✅ Implemented |
+| REGLA-066 | **En estimación: periodo_fin >= periodo_inicio; montos y acumulados no negativos; estado en {BORRADOR, APROBADA, PAGADA}.** | ✅ Implemented |
+| REGLA-068 | **En avance_fisico: metrado_ejecutado >= 0; valuación con (proyecto_id, codigo) único.** | ✅ Implemented |
+| REGLA-088 | **En detalle de estimación request: partidaId, cantidadAvance y precioUnitario obligatorios; no negativos.** | ✅ Implemented |
+| REGLA-091 | **Para registrar avance físico: fecha y metradoEjecutado obligatorios; metradoEjecutado positivo.** | ✅ Implemented |
+| REGLA-105 | **Un Proyecto en BORRADOR no puede ejecutar compras, inventarios, mano de obra ni avances físicos.** | 🟡 Implemented |
+| REGLA-126 | **El avance físico: partidaId obligatorio, fecha obligatoria, metradoEjecutado no negativo.** | ✅ Implemented |
+| REGLA-127 | **La valuación requiere proyectoId, fechaCorte, código no vacío y estado no nulo.** | ✅ Implemented |
+| REGLA-142 | **El acumulado no debería superar el metrado total de la partida (alertar, no bloquear).** | ✅ Implemented |
+
 ## 3. Domain Events
 
 | Event Name                    | Trigger        | Content (Payload)                | Status |

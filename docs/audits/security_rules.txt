@@ -1,0 +1,264 @@
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (diasAguinaldo != null && diasAguinaldo < 0) { throw new IllegalArgumentException("Los días de aguinaldo no pueden ser negativos"); }`
+    - `if (porcentajeSeguridadSocial.compareTo(new BigDecimal("100")) > 0) { throw new IllegalArgumentException("El porcentaje de seguridad social no puede ser mayor a 100%"); }`
+- Estado:
+  - Explícita
+
+## REGLA-025
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El salario base debe ser positivo para calcular salario real.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `calcularSalarioReal`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (salarioBase == null || salarioBase.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El salario base debe ser positivo"); }`
+- Estado:
+  - Explícita
+
+--
+    - `if (tipo == null) { tipo = tipoMovimiento; }`
+- Estado:
+  - Explícita
+
+## REGLA-051
+- Descripción exacta de la regla (lenguaje declarativo)
+  - JWT_SECRET es obligatorio y debe tener al menos 32 caracteres.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/security/jwt/JwtService.java`
+  - clase: `JwtService`
+  - método o sección: constructor
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (secret == null || secret.isBlank()) { throw new IllegalStateException("JWT_SECRET es obligatorio."); }`
+    - `if (secret.length() < 32) { throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres."); }`
+- Estado:
+  - Explícita
+
+## REGLA-052
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Las rutas `/api/public/**` y `/api/v1/auth/**` son públicas; el resto requiere autenticación.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/config/SecurityConfig.java`
+  - clase: `SecurityConfig`
+  - método o sección: `securityFilterChain`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `.requestMatchers("/api/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()`
+    - `.anyRequest().authenticated()`
+- Estado:
+  - Explícita
+
+## REGLA-053
+- Descripción exacta de la regla (lenguaje declarativo)
+  - CORS permite origen `http://localhost:3000` y métodos GET, POST, PUT, DELETE, PATCH, OPTIONS.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/config/SecurityConfig.java`
+  - clase: `SecurityConfig`
+  - método o sección: `corsConfigurationSource`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `config.setAllowedOrigins(List.of("http://localhost:3000"));`
+    - `config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));`
+- Estado:
+  - Explícita
+
+## REGLA-054
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Las variables RESEND_API_KEY, ADMIN_EMAIL y JWT_SECRET se requieren por configuración.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Configuración
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/application.yml`
+--
+    - `jwt.secret: ${JWT_SECRET}`
+- Estado:
+  - Explícita
+
+## REGLA-055
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La entidad Usuario exige email único.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/seguridad/UsuarioEntity.java`
+  - clase: `UsuarioEntity`
+  - método o sección: anotación `@Table`
+  - archivo: `backend/src/main/resources/db/migration/V19__create_usuarios_schema.sql`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@UniqueConstraint(name = "uq_usuarios_email", columnNames = "email")`
+    - `CREATE UNIQUE INDEX IF NOT EXISTS uq_usuarios_email ON usuarios(email);`
+- Estado:
+  - Explícita
+
+## REGLA-056
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El rol de usuario debe estar en {ADMIN, RESIDENTE, GERENTE, AUDITOR}.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V19__create_usuarios_schema.sql`
+  - clase: N/A
+  - método o sección: CHECK
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (rol IN ('ADMIN', 'RESIDENTE', 'GERENTE', 'AUDITOR'));`
+- Estado:
+  - Explícita
+
+## REGLA-057
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El estado de Lead debe estar en {NUEVO, CONTACTADO, CONVERTIDO}.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Marketing
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V18__create_marketing_lead.sql`
+  - clase: N/A
+--
+    - `@CreationTimestamp @Column(name = "fecha_solicitud", nullable = false, updatable = false)`
+- Estado:
+  - Explícita
+
+## REGLA-075
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En usuario: nombre, email y password no pueden estar vacíos; email debe ser válido; rol y activo no nulos.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/seguridad/UsuarioEntity.java`
+  - clase: `UsuarioEntity`
+  - método o sección: anotaciones `@NotBlank`, `@Email`, `@NotNull`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@NotBlank @Email @Column(name = "email", nullable = false)`
+    - `@NotNull @Enumerated(EnumType.STRING) @Column(name = "rol", nullable = false)`
+- Estado:
+  - Explícita
+
+## REGLA-076
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En ReporteProduccion: fecha_reporte, responsable_id y estado son obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Producción (RPC)
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/produccion/ReporteProduccionEntity.java`
+--
+    - `@NotNull @Column(name = "cantidad_reportada", nullable = false)`
+- Estado:
+  - Explícita
+
+## REGLA-078
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para login: email debe ser válido y no vacío; password es obligatoria.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/auth/dto/LoginRequest.java`
+  - clase: `LoginRequest`
+  - método o sección: anotaciones `@Email`, `@NotBlank`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@Email(message = "El email debe ser válido")`
+    - `@NotBlank(message = "La contraseña es obligatoria")`
+- Estado:
+  - Explícita
+
+## REGLA-079
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registro: nombreCompleto obligatorio; email válido y obligatorio; password obligatoria con tamaño 6-72.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/auth/dto/RegisterRequest.java`
+  - clase: `RegisterRequest`
+  - método o sección: anotaciones `@NotBlank`, `@Email`, `@Size`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@Size(min = 6, max = 72)`
+- Estado:
+  - Explícita
+
+## REGLA-080
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para crear lead público: nombreContacto obligatorio; email válido si se provee; límites de tamaño.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Marketing
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/publico/dto/CrearLeadRequest.java`
+  - clase: `CrearLeadRequest`
+--
+    - `CREATE UNIQUE INDEX idx_stock_actual_almacen_recurso ON stock_actual(almacen_id, recurso_id);`
+- Estado:
+  - Explícita
+
+## REGLA-138
+- Descripción exacta de la regla (lenguaje declarativo)
+  - JWT expira en 24 horas por defecto (jwt.expiration-hours: 24).
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/application.yml`
+  - método o sección: `jwt.expiration-hours`
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/security/jwt/JwtService.java`
+  - método o sección: constructor
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `jwt: expiration-hours: 24`
+    - `this.expiration = Duration.ofHours(expirationHours);`
+- Estado:
+  - Explícita
+
+## REGLA-139
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En RPC legacy request: fechaReporte obligatoria y al menos un item.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Producción (RPC)
+- Origen técnico EXACTO:

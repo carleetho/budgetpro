@@ -1,0 +1,263 @@
+    - `if (porcentaje.compareTo(new BigDecimal("100")) > 0) { throw new IllegalArgumentException("El porcentaje de %s no puede ser mayor a 100%%"); }`
+- Estado:
+  - Explícita
+
+## REGLA-024
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los días de aguinaldo, vacaciones y no trabajados no pueden ser negativos; los días laborables al año deben ser positivos; el porcentaje de seguridad social debe estar entre 0 y 100.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (diasAguinaldo != null && diasAguinaldo < 0) { throw new IllegalArgumentException("Los días de aguinaldo no pueden ser negativos"); }`
+    - `if (porcentajeSeguridadSocial.compareTo(new BigDecimal("100")) > 0) { throw new IllegalArgumentException("El porcentaje de seguridad social no puede ser mayor a 100%"); }`
+- Estado:
+  - Explícita
+
+## REGLA-025
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El salario base debe ser positivo para calcular salario real.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `calcularSalarioReal`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (salarioBase == null || salarioBase.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El salario base debe ser positivo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-026
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si un recurso EQUIPO tiene costo_horario = 0, se genera ALERTA CRÍTICA.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Alertas Paramétricas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java`
+  - clase: `AnalizadorParametricoService`
+--
+    - `UNIQUE (proyecto_id, codigo)`
+- Estado:
+  - Explícita
+
+## REGLA-069
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En configuracion_laboral: días no negativos; porcentaje_seguridad_social entre 0 y 100; dias_laborables_ano > 0.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V9__create_sobrecosto_laboral_schema.sql`
+  - método o sección: CHECK `configuracion_laboral`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (dias_aguinaldo >= 0)`
+    - `CHECK (porcentaje_seguridad_social >= 0 AND porcentaje_seguridad_social <= 100)`
+- Estado:
+  - Explícita
+
+## REGLA-070
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En analisis_sobrecosto: porcentajes entre 0 y 100.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V9__create_sobrecosto_laboral_schema.sql`
+  - método o sección: CHECK `analisis_sobrecosto`
+--
+    - `@NotNull(message = "La fecha de inicio es obligatoria")`
+- Estado:
+  - Explícita
+
+## REGLA-090
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En configuración laboral request: días no negativos; porcentaje seguridad social entre 0 y 100; días laborables obligatorios y positivos.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/sobrecosto/dto/ConfigurarLaboralRequest.java`
+  - clase: `ConfigurarLaboralRequest`
+  - método o sección: anotaciones `@Min`, `@DecimalMin`, `@DecimalMax`, `@NotNull`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@DecimalMax(value = "100.0", message = "El porcentaje de seguridad social no puede ser mayor a 100%")`
+- Estado:
+  - Explícita
+
+## REGLA-091
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registrar avance físico: fecha y metradoEjecutado obligatorios; metradoEjecutado positivo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/avance/dto/RegistrarAvanceRequest.java`
+  - clase: `RegistrarAvanceRequest`
+--
+
+## REGLA-102
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+  - método o sección: "Principio Supremo: El Presupuesto es Ley"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún proceso operativo puede existir fuera del presupuesto: ...`
+- Estado:
+  - Explícita
+
+## REGLA-103
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los datos históricos no se corrigen; se explican mediante eventos formales.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Auditoría
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+  - método o sección: "Principio de Verdad No Retroactiva"
+--
+    - `Diferencias entre inventario físico y sistema deben registrarse como Excepción.`
+- Estado:
+  - Explícita
+
+## REGLA-122
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Mano de obra es costo real; todo tiempo trabajado cuesta y deja rastro.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/RRHH_SPECS.md`
+  - método o sección: "2. Principio Rector"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Todo tiempo trabajado: cuesta, deja rastro, afecta utilidad, aunque no haya pago inmediato.`
+- Estado:
+  - Explícita
+
+## REGLA-123
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El costo de mano de obra nunca se registra como salario neto; se calcula costo empresa con prestaciones.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/RRHH_SPECS.md`
+  - método o sección: "4. Costo Empresa y Factor de Prestación"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `El costo de Mano de Obra NUNCA se registra como salario neto.`
+- Estado:
+  - Explícita
+
+## REGLA-124
+- Descripción exacta de la regla (lenguaje declarativo)
+  - No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - RRHH
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/RRHH_SPECS.md`
+  - método o sección: "5. Asignación de Personal a Proyectos"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `No puede estar asignado a dos Proyectos ACTIVO el mismo día en el mismo horario.`
+- Estado:
+  - Explícita
+
+## REGLA-125
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - RRHH
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/RRHH_SPECS.md`
+  - método o sección: "6.2 Validaciones"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `El sistema debe validar: Proyecto ACTIVO, trabajador asignado, coherencia de fechas, no duplicidad horaria.`
+- Estado:
+  - Explícita
+
+## REGLA-126
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El avance físico: partidaId obligatorio, fecha obligatoria, metradoEjecutado no negativo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java`
+  - clase: `AvanceFisico`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+--
+
+## REGLA-150
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.3 Compras, Inventarios y RRHH"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.`
+- Estado:
+  - Explícita
+
+## REGLA-151
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Todo cambio de estado del Proyecto debe registrar estado anterior, nuevo, usuario, fecha/hora y motivo.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Auditoría
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.4 Auditoría"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Todo cambio de estado del Proyecto debe quedar registrado: estado anterior, estado nuevo, usuario responsable, fecha y hora, motivo.`

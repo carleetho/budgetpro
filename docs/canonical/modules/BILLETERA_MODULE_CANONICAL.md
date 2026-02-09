@@ -22,6 +22,14 @@
 | B-04 | **Evidence Lock**: Max 3 pending movements awaiting evidence before blocking new ops.  | ✅ Implemented |
 | B-05 | **Crypto Integrity**: Budget hash validation before egress to prevent tampering.       | ✅ Implemented |
 
+
+### 2.2 Extended Rule Inventory (Phase 1 Alignment)
+
+| ID | Rule | Status |
+| --- | --- | --- |
+| REGLA-033 | **Para procesar una compra, las partidas deben existir; se descuenta de billetera, se aprueba la compra y se registra entrada a inventario.** | ✅ Implemented |
+| REGLA-042 | **En MovimientoCaja: monto > 0, referencia no vacía, billeteraId y tipo no nulos.** | ✅ Implemented |
+
 ## 3. Domain Events
 
 | Event Name               | Trigger      | Content (Payload)      | Status |

@@ -39,6 +39,23 @@
 | R-03 | **Double Booking**: Worker cannot be in two sites on same day.                                                                    | 🔴 Missing        |
 | R-04 | **Config Integrity**: Regime config values must be non-negative (days) and positive (factors).                                    | ✅ Implemented    |
 
+
+### 2.2 Extended Rule Inventory (Phase 1 Alignment)
+
+| ID | Rule | Status |
+| --- | --- | --- |
+| REGLA-024 | **Los días de aguinaldo, vacaciones y no trabajados no pueden ser negativos; los días laborables al año deben ser positivos; el porcentaje de seguridad social debe estar entre 0 y 100.** | ✅ Implemented |
+| REGLA-025 | **El salario base debe ser positivo para calcular salario real.** | ✅ Implemented |
+| REGLA-069 | **En configuracion_laboral: días no negativos; porcentaje_seguridad_social entre 0 y 100; dias_laborables_ano > 0.** | ✅ Implemented |
+| REGLA-070 | **En analisis_sobrecosto: porcentajes entre 0 y 100.** | ✅ Implemented |
+| REGLA-090 | **En configuración laboral request: días no negativos; porcentaje seguridad social entre 0 y 100; días laborables obligatorios y positivos.** | ✅ Implemented |
+| REGLA-102 | **Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).** | 🟡 Implemented |
+| REGLA-122 | **Mano de obra es costo real; todo tiempo trabajado cuesta y deja rastro.** | 🟡 Implemented |
+| REGLA-123 | **El costo de mano de obra nunca se registra como salario neto; se calcula costo empresa con prestaciones.** | 🟡 Implemented |
+| REGLA-124 | **No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.** | 🟡 Implemented |
+| REGLA-125 | **El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.** | 🟡 Implemented |
+| REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | 🟡 Implemented |
+
 ## 3. Domain Events
 
 | Event Name                | Trigger      | Content (Payload)  | Status |
