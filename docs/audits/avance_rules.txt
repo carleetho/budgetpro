@@ -1,0 +1,323 @@
+- Observaciones (solo si existen en el código)
+  - N/A
+
+## REGLA-003
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Solo se puede reportar avance en proyectos en estado EJECUCION.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Producción (RPC)
+  - Proyectos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/application/produccion/validation/ProduccionValidator.java`
+  - clase: `ProduccionValidator`
+  - método o sección: `validarProyectoEnEjecucion`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (proyecto.getEstado() != EstadoProyecto.EJECUCION) { throw new BusinessRuleException("No se puede reportar avance en un proyecto que no está en EJECUCION."); }`
+- Estado:
+  - Explícita
+- Observaciones (solo si existen en el código)
+  - N/A
+
+## REGLA-004
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La cantidad reportada es obligatoria y el reporte no puede exceder el metrado vigente de la partida.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Producción (RPC)
+  - Presupuesto/Partidas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/application/produccion/validation/ProduccionValidator.java`
+  - clase: `ProduccionValidator`
+  - método o sección: `validarNoExcesoMetrado`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (cantidadNueva == null) { throw new BusinessRuleException("La cantidad reportada es obligatoria."); }`
+    - `if (avanceTotal.compareTo(metradoVigente) > 0) { throw new BusinessRuleException("La cantidad reportada excede el saldo disponible de la partida. Requiere Orden de Cambio."); }`
+- Estado:
+  - Explícita
+- Observaciones (solo si existen en el código)
+  - N/A
+
+## REGLA-005
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un reporte de producción debe contener al menos un detalle.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Producción (RPC)
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/application/produccion/service/ProduccionServiceImpl.java`
+  - clase: `ProduccionServiceImpl`
+--
+- Estado:
+  - Explícita
+
+## REGLA-015
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La cantidad de avance y el precio unitario en un detalle de estimación no pueden ser negativos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacion.java`
+  - clase: `DetalleEstimacion`
+  - método o sección: `validarInvariantes`, `actualizarCantidadAvance`, `actualizarPrecioUnitario`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (cantidadAvance != null && cantidadAvance.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La cantidad de avance no puede ser negativa"); }`
+    - `if (precioUnitario != null && precioUnitario.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El precio unitario no puede ser negativo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-016
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El volumen estimado no puede exceder el volumen contratado.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+  - Partidas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java`
+  - clase: `GeneradorEstimacionService`
+--
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (periodo_fin >= periodo_inicio)`
+    - `CHECK (monto_bruto >= 0)`
+    - `CHECK (estado IN ('BORRADOR', 'APROBADA', 'PAGADA'))`
+    - `CHECK (cantidad_avance >= 0)`
+- Estado:
+  - Explícita
+
+## REGLA-067
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En cronograma: fecha_fin_estimada >= fecha_inicio; duracion_total_dias > 0 si existe; actividad con fecha_fin >= fecha_inicio y duracion_dias > 0 si existe; actividad_id != actividad_predecesora_id.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V10__create_cronograma_schema.sql`
+  - método o sección: CHECK de `programa_obra`, `actividad_programada`, `actividad_predecesora`
+- Evidencia:
+  - fragmento de código o referencia precisa
+--
+- Estado:
+  - Explícita
+
+## REGLA-068
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En avance_fisico: metrado_ejecutado >= 0; valuación con (proyecto_id, codigo) único.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Avance / Valuación
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V8__create_avance_valuacion_schema.sql`
+  - método o sección: CHECK y UNIQUE
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (metrado_ejecutado >= 0)`
+    - `UNIQUE (proyecto_id, codigo)`
+- Estado:
+  - Explícita
+
+## REGLA-069
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En configuracion_laboral: días no negativos; porcentaje_seguridad_social entre 0 y 100; dias_laborables_ano > 0.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+--
+- Estado:
+  - Explícita
+
+## REGLA-088
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En detalle de estimación request: partidaId, cantidadAvance y precioUnitario obligatorios; no negativos.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/estimacion/dto/GenerarEstimacionRequest.java`
+  - clase: `GenerarEstimacionRequest.DetalleEstimacionItem`
+  - método o sección: anotaciones `@NotNull`, `@DecimalMin`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@DecimalMin(value = "0.0", message = "La cantidad de avance no puede ser negativa")`
+- Estado:
+  - Explícita
+
+## REGLA-089
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para programar actividad: partidaId, fechaInicio y fechaFin son obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/cronograma/dto/ProgramarActividadRequest.java`
+  - clase: `ProgramarActividadRequest`
+  - método o sección: anotaciones `@NotNull`
+- Evidencia:
+--
+- Estado:
+  - Explícita
+
+## REGLA-091
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registrar avance físico: fecha y metradoEjecutado obligatorios; metradoEjecutado positivo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/avance/dto/RegistrarAvanceRequest.java`
+  - clase: `RegistrarAvanceRequest`
+  - método o sección: anotaciones `@NotNull`, `@Positive`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@Positive(message = "El metrado ejecutado debe ser positivo")`
+- Estado:
+  - Explícita
+
+## REGLA-092
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registrar compra: proyectoId, fecha, proveedor y detalles obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+--
+- Estado:
+  - Explícita
+
+## REGLA-102
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+  - método o sección: "Principio Supremo: El Presupuesto es Ley"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún proceso operativo puede existir fuera del presupuesto: ...`
+- Estado:
+--
+- Estado:
+  - Explícita
+
+## REGLA-105
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un Proyecto en BORRADOR no puede ejecutar compras, inventarios, mano de obra ni avances físicos.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.1 Creación"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Un Proyecto en BORRADOR no puede: ejecutar compras, registrar inventarios, registrar mano de obra, registrar avances físicos...`
+- Estado:
+  - Explícita
+
+## REGLA-106
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un Proyecto solo puede activarse si existe Presupuesto congelado y Snapshot inmutable.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Presupuesto
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.2 Activación Contractual"
+- Evidencia:
+--
+- Estado:
+  - Explícita
+
+## REGLA-126
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El avance físico: partidaId obligatorio, fecha obligatoria, metradoEjecutado no negativo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java`
+  - clase: `AvanceFisico`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (metradoEjecutado != null && metradoEjecutado.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El metrado ejecutado no puede ser negativo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-127
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La valuación requiere proyectoId, fechaCorte, código no vacío y estado no nulo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Valuación
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/Valuacion.java`
+  - clase: `Valuacion`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (codigo == null || codigo.isBlank()) { throw new IllegalArgumentException("El código no puede estar vacío"); }`
+- Estado:
+  - Explícita
+
+## REGLA-128
+- Descripción exacta de la regla (lenguaje declarativo)
+  - No se puede crear un recurso con el mismo nombre normalizado si ya existe.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Recursos
+--
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El acumulado no debería superar el metrado total de la partida (alertar, no bloquear).
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java`
+  - clase: `AvanceFisico`
+  - método o sección: comentario de invariantes
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `- (Opcional MVP) El acumulado no debería superar el metrado total de la partida (Alertar, no bloquear)`
+- Estado:
+  - Implícita
+
+## REGLA-143
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El presupuesto de línea base es único cuando es_linea_base = true.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+- Origen técnico EXACTO:
