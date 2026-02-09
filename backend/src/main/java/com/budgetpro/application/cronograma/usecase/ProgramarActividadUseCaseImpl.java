@@ -34,11 +34,9 @@ public class ProgramarActividadUseCaseImpl implements ProgramarActividadUseCase 
     private final ActividadProgramadaRepository actividadProgramadaRepository;
     private final CalculoCronogramaService calculoCronogramaService;
 
-    public ProgramarActividadUseCaseImpl(ProyectoRepository proyectoRepository,
-                                        PartidaRepository partidaRepository,
-                                        ProgramaObraRepository programaObraRepository,
-                                        ActividadProgramadaRepository actividadProgramadaRepository,
-                                        CalculoCronogramaService calculoCronogramaService) {
+    public ProgramarActividadUseCaseImpl(ProyectoRepository proyectoRepository, PartidaRepository partidaRepository,
+            ProgramaObraRepository programaObraRepository, ActividadProgramadaRepository actividadProgramadaRepository,
+            CalculoCronogramaService calculoCronogramaService) {
         this.proyectoRepository = proyectoRepository;
         this.partidaRepository = partidaRepository;
         this.programaObraRepository = programaObraRepository;
@@ -60,15 +58,15 @@ public class ProgramarActividadUseCaseImpl implements ProgramarActividadUseCase 
         }
 
         // 3. Buscar o crear el programa de obra del proyecto
-        ProgramaObra programaObra = programaObraRepository.findByProyectoId(command.proyectoId())
-                .orElseGet(() -> {
-                    ProgramaObraId id = ProgramaObraId.nuevo();
-                    return ProgramaObra.crear(id, command.proyectoId(), command.fechaInicio(), command.fechaFin());
-                });
+        ProgramaObra programaObra = programaObraRepository.findByProyectoId(command.proyectoId()).orElseGet(() -> {
+            ProgramaObraId id = ProgramaObraId.nuevo();
+            return ProgramaObra.crear(id, command.proyectoId(), command.fechaInicio(), command.fechaFin());
+        });
 
-        // Si el programa no tiene fecha de inicio, establecerla desde la primera actividad
+        // Si el programa no tiene fecha de inicio, establecerla desde la primera
+        // actividad
         if (programaObra.getFechaInicio() == null && command.fechaInicio() != null) {
-            programaObra.actualizarFechas(command.fechaInicio(), command.fechaFin());
+            programaObra = programaObra.actualizarFechas(command.fechaInicio(), command.fechaFin());
         }
 
         // 4. Buscar o crear la actividad programada
@@ -80,17 +78,17 @@ public class ProgramarActividadUseCaseImpl implements ProgramarActividadUseCase 
                 });
 
         // 5. Actualizar fechas de la actividad
-        actividad.actualizarFechas(command.fechaInicio(), command.fechaFin());
+        actividad = actividad.actualizarFechas(command.fechaInicio(), command.fechaFin());
 
         // 6. Actualizar predecesoras
         if (command.predecesoras() != null) {
             // Eliminar todas las predecesoras actuales y agregar las nuevas
             List<UUID> predecesorasActuales = actividad.getPredecesoras();
             for (UUID predecesoraId : predecesorasActuales) {
-                actividad.eliminarPredecesora(predecesoraId);
+                actividad = actividad.eliminarPredecesora(predecesoraId);
             }
             for (UUID predecesoraId : command.predecesoras()) {
-                actividad.agregarPredecesora(predecesoraId);
+                actividad = actividad.agregarPredecesora(predecesoraId);
             }
         }
 
@@ -98,25 +96,20 @@ public class ProgramarActividadUseCaseImpl implements ProgramarActividadUseCase 
         actividadProgramadaRepository.save(actividad);
 
         // 8. Recalcular fecha de fin del programa basándose en todas las actividades
-        List<ActividadProgramada> todasLasActividades = actividadProgramadaRepository.findByProgramaObraId(programaObra.getId().getValue());
-        java.time.LocalDate fechaFinMasTardia = calculoCronogramaService.encontrarFechaFinMasTardia(todasLasActividades);
+        List<ActividadProgramada> todasLasActividades = actividadProgramadaRepository
+                .findByProgramaObraId(programaObra.getId().getValue());
+        java.time.LocalDate fechaFinMasTardia = calculoCronogramaService
+                .encontrarFechaFinMasTardia(todasLasActividades);
         if (fechaFinMasTardia != null) {
-            programaObra.actualizarFechaFinDesdeActividades(fechaFinMasTardia);
+            programaObra = programaObra.actualizarFechaFinDesdeActividades(fechaFinMasTardia);
         }
 
         // 9. Persistir programa actualizado
         programaObraRepository.save(programaObra);
 
         // 10. Retornar respuesta
-        return new ActividadProgramadaResponse(
-            actividad.getId().getValue(),
-            actividad.getPartidaId(),
-            actividad.getProgramaObraId(),
-            actividad.getFechaInicio(),
-            actividad.getFechaFin(),
-            actividad.getDuracionDias(),
-            actividad.getPredecesoras(),
-            actividad.getVersion().intValue()
-        );
+        return new ActividadProgramadaResponse(actividad.getId().getValue(), actividad.getPartidaId(),
+                actividad.getProgramaObraId(), actividad.getFechaInicio(), actividad.getFechaFin(),
+                actividad.getDuracionDias(), actividad.getPredecesoras(), actividad.getVersion().intValue());
     }
 }

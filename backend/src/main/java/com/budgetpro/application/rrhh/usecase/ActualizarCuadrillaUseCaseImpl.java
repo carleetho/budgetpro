@@ -8,7 +8,6 @@ import com.budgetpro.application.rrhh.port.out.CuadrillaRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
 import com.budgetpro.domain.rrhh.model.Cuadrilla;
 import com.budgetpro.domain.rrhh.model.CuadrillaId;
-import com.budgetpro.domain.rrhh.model.CuadrillaMiembroId; // Assuming we need to find member by member ID or employee ID?
 import com.budgetpro.domain.rrhh.model.CuadrillaMiembro;
 import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
@@ -36,7 +35,7 @@ public class ActualizarCuadrillaUseCaseImpl implements ActualizarCuadrillaUseCas
                 .orElseThrow(() -> new CuadrillaInvalidaException("Crew not found: " + command.cuadrillaId()));
 
         if (Boolean.TRUE.equals(command.inactivar())) {
-            cuadrilla.inactivar();
+            cuadrilla = cuadrilla.inactivar();
         }
 
         if (command.nuevoLiderId() != null) {
@@ -47,7 +46,7 @@ public class ActualizarCuadrillaUseCaseImpl implements ActualizarCuadrillaUseCas
             if (nuevoLider.getEstado() != EstadoEmpleado.ACTIVO) {
                 throw new CuadrillaInvalidaException("New leader must be an active employee");
             }
-            cuadrilla.cambiarLider(nuevoLiderId);
+            cuadrilla = cuadrilla.cambiarLider(nuevoLiderId);
         }
 
         if (command.agregarMiembroId() != null) {
@@ -57,32 +56,16 @@ public class ActualizarCuadrillaUseCaseImpl implements ActualizarCuadrillaUseCas
             if (member.getEstado() != EstadoEmpleado.ACTIVO) {
                 throw new CuadrillaInvalidaException("Member to add must be an active employee");
             }
-            // Default role "MIEMBRO"
-            cuadrilla.agregarMiembro(empId, "MIEMBRO");
+            cuadrilla = cuadrilla.agregarMiembro(empId, "MIEMBRO");
         }
 
         if (command.removerMiembroId() != null) {
-            // Command provides UUID, assuming it's EmpleadoId or CuadrillaMiembroId?
-            // DTO says "removerMiembroId". Usually removal is by Member ID (binding), but
-            // caller might send Employee ID.
-            // Cuadrilla.removerMiembro takes CuadrillaMiembroId.
-            // If caller sends EmployeeId, we need to find the active member record for that
-            // employee.
-
-            // Strategy: assume command.removerMiembroId refers to the Employee's UUID, find
-            // the active membership, and remove it.
-            // OR assume it is the unique CuadrillaMiembroId.
-            // "ActualizarCuadrillaUseCase: Add/remove members".
-            // If I use EmpleadoId, it's safer for clients who know "remove John Doe".
-            // Let's assume it's EmpleadoId for simplicity unless DTO implies otherwise.
-            // Wait, Cuadrilla has `getMiembroActivo(EmpleadoId)`.
-
             EmpleadoId empIdToRemove = EmpleadoId.of(command.removerMiembroId());
             CuadrillaMiembro miembro = cuadrilla.getMiembroActivo(empIdToRemove)
                     .orElseThrow(() -> new CuadrillaInvalidaException(
                             "Active member not found in crew for employee: " + command.removerMiembroId()));
 
-            cuadrilla.removerMiembro(miembro.getId());
+            cuadrilla = cuadrilla.removerMiembro(miembro.getId());
         }
 
         cuadrillaRepository.save(cuadrilla);
