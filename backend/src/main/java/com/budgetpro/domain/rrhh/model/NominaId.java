@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class NominaId implements Serializable {
+public final class NominaId implements Serializable {
     private final UUID value;
 
     private NominaId(UUID value) {

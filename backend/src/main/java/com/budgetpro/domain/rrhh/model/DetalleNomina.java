@@ -4,7 +4,7 @@ import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class DetalleNomina {
+public final class DetalleNomina {
     private final EmpleadoId empleadoId;
     private final BigDecimal salarioBase;
     private final BigDecimal horasExtras;

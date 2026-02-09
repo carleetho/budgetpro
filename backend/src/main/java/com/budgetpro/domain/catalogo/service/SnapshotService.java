@@ -57,7 +57,7 @@ public class SnapshotService {
                 APUInsumoSnapshot insumoSnapshot = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(),
                         recursoSnapshot.externalId(), recursoSnapshot.nombre(), insumo.getCantidad(),
                         recursoSnapshot.precioReferencial());
-                snapshot.agregarInsumo(insumoSnapshot);
+                snapshot = snapshot.agregarInsumo(insumoSnapshot);
             }
 
             long durationMs = System.currentTimeMillis() - startTime;
@@ -76,21 +76,23 @@ public class SnapshotService {
         }
     }
 
-    public void actualizarRendimiento(APUSnapshot snapshot, BigDecimal nuevoRendimiento, UUID usuarioId) {
+    public APUSnapshot actualizarRendimiento(APUSnapshot snapshot, BigDecimal nuevoRendimiento, UUID usuarioId) {
         Objects.requireNonNull(snapshot, "El snapshot no puede ser nulo");
 
         BigDecimal rendimientoAnterior = snapshot.getRendimientoVigente();
         BigDecimal rendimientoOriginal = snapshot.getRendimientoOriginal();
 
-        snapshot.actualizarRendimiento(nuevoRendimiento, usuarioId);
+        APUSnapshot updatedSnapshot = snapshot.actualizarRendimiento(nuevoRendimiento, usuarioId);
 
         // Solo registrar si realmente cambió
         if (rendimientoAnterior.compareTo(nuevoRendimiento) != 0) {
-            observability.recordMetrics("catalog.rendimiento.override", 1.0, "source", snapshot.getCatalogSource());
+            observability.recordMetrics("catalog.rendimiento.override", 1.0, "source",
+                    updatedSnapshot.getCatalogSource());
             observability.logEvent("RENDIMIENTO_MODIFIED",
-                    String.format("Rendimiento on snapshot %s changed from %s to %s", snapshot.getId().getValue(),
-                            rendimientoAnterior, nuevoRendimiento));
+                    String.format("Rendimiento on snapshot %s changed from %s to %s",
+                            updatedSnapshot.getId().getValue(), rendimientoAnterior, nuevoRendimiento));
         }
+        return updatedSnapshot;
     }
 
     public boolean validateRecursoProxy(String externalId, String catalogSource) {

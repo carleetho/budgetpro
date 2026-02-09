@@ -27,49 +27,33 @@ public final class ProgramaObra {
 
     private final ProgramaObraId id;
     private final UUID proyectoId;
-    // Justificación: Ajustes de cronograma antes de congelamiento
-    // nosemgrep
-    private LocalDate fechaInicio;
-    // Justificación: Fecha fin estimada recalculable
-    // nosemgrep
-    private LocalDate fechaFinEstimada;
-    // Justificación: Campo calculado automáticamente
-    // nosemgrep
-    private Integer duracionTotalDias;
-    // Justificación: Optimistic locking JPA @Version
-    // nosemgrep
-    private Long version;
+    private final LocalDate fechaInicio;
+    private final LocalDate fechaFinEstimada;
+    private final Integer duracionTotalDias;
+    private final Long version;
 
     // Freeze state fields
     /**
      * Indica si el cronograma ha sido congelado (baseline establecido). Una vez
      * congelado, no se pueden modificar las fechas.
      */
-    // Justificación: Workflow state - transición de estado false → true en
-    // congelamiento de baseline
-    private Boolean congelado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
+    private final Boolean congelado;
 
     /**
      * Timestamp de cuando se congeló el cronograma.
      */
-    // Justificación: Workflow state - timestamp de auditoría, se establece al
-    // congelar
-    private LocalDateTime congeladoAt; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
+    private final LocalDateTime congeladoAt;
 
     /**
      * ID del usuario que congeló el cronograma.
      */
-    // Justificación: Workflow state - RBAC tracking
-    // nosemgrep
-    private UUID congeladoBy;
+    private final UUID congeladoBy;
 
     /**
      * Versión del algoritmo usado para generar el snapshot del cronograma. Permite
      * migración futura a algoritmos diferentes sin romper compatibilidad.
      */
-    // Justificación: Administrative metadata - snapshot algorithm
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.cronograma
-    private String snapshotAlgorithm;
+    private final String snapshotAlgorithm;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -83,7 +67,8 @@ public final class ProgramaObra {
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.fechaInicio = fechaInicio;
         this.fechaFinEstimada = fechaFinEstimada;
-        this.duracionTotalDias = calcularDuracion(fechaInicio, fechaFinEstimada);
+        this.duracionTotalDias = duracionTotalDias != null ? duracionTotalDias
+                : calcularDuracion(fechaInicio, fechaFinEstimada);
         this.version = version != null ? version : 0L;
 
         // Freeze state fields (nullable until freeze)
@@ -161,19 +146,19 @@ public final class ProgramaObra {
      * 
      * @param nuevaFechaInicio      Nueva fecha de inicio
      * @param nuevaFechaFinEstimada Nueva fecha de fin estimada
+     * @return Nuevo ProgramaObra con las fechas actualizadas
      * @throws IllegalArgumentException     si las fechas son inválidas
      * @throws CronogramaCongeladoException si el cronograma está congelado
      */
-    public void actualizarFechas(LocalDate nuevaFechaInicio, LocalDate nuevaFechaFinEstimada) {
+    public ProgramaObra actualizarFechas(LocalDate nuevaFechaInicio, LocalDate nuevaFechaFinEstimada) {
         // Freeze guard: no se puede modificar un cronograma congelado
         if (estaCongelado()) {
             throw new CronogramaCongeladoException(this.id, "actualizarFechas");
         }
 
-        validarInvariantes(this.proyectoId, nuevaFechaInicio, nuevaFechaFinEstimada);
-        this.fechaInicio = nuevaFechaInicio;
-        this.fechaFinEstimada = nuevaFechaFinEstimada;
-        this.duracionTotalDias = calcularDuracion(nuevaFechaInicio, nuevaFechaFinEstimada);
+        return new ProgramaObra(this.id, this.proyectoId, nuevaFechaInicio, nuevaFechaFinEstimada, null, // recalcula en
+                                                                                                         // constructor
+                this.version, this.congelado, this.congeladoAt, this.congeladoBy, this.snapshotAlgorithm);
     }
 
     /**
@@ -184,18 +169,19 @@ public final class ProgramaObra {
      * lanza CronogramaCongeladoException para proteger la integridad.
      * 
      * @param fechaFinMasTardia La fecha de fin más tardía de todas las actividades
+     * @return Nuevo ProgramaObra con la fecha de fin actualizada
      * @throws IllegalStateException        si no hay fecha de inicio
      * @throws IllegalArgumentException     si la fecha de fin es inválida
      * @throws CronogramaCongeladoException si el cronograma está congelado
      */
-    public void actualizarFechaFinDesdeActividades(LocalDate fechaFinMasTardia) {
+    public ProgramaObra actualizarFechaFinDesdeActividades(LocalDate fechaFinMasTardia) {
         // Freeze guard: no se puede modificar un cronograma congelado
         if (estaCongelado()) {
             throw new CronogramaCongeladoException(this.id, "actualizarFechaFinDesdeActividades");
         }
 
         if (fechaFinMasTardia == null) {
-            return;
+            return this;
         }
         if (this.fechaInicio == null) {
             throw new IllegalStateException("No se puede actualizar la fecha de fin sin fecha de inicio");
@@ -203,8 +189,10 @@ public final class ProgramaObra {
         if (fechaFinMasTardia.isBefore(this.fechaInicio)) {
             throw new IllegalArgumentException("La fecha de fin más tardía no puede ser menor a la fecha de inicio");
         }
-        this.fechaFinEstimada = fechaFinMasTardia;
-        this.duracionTotalDias = calcularDuracion(this.fechaInicio, this.fechaFinEstimada);
+
+        return new ProgramaObra(this.id, this.proyectoId, this.fechaInicio, fechaFinMasTardia, null, // recalcula en
+                                                                                                     // constructor
+                this.version, this.congelado, this.congeladoAt, this.congeladoBy, this.snapshotAlgorithm);
     }
 
     // Getters
@@ -246,11 +234,12 @@ public final class ProgramaObra {
      * **Una vez congelado, el cronograma no puede ser modificado.**
      * 
      * @param approvedBy ID del usuario que congela el cronograma
+     * @return Nuevo ProgramaObra congelado
      * @throws IllegalArgumentException si approvedBy es nulo
      * @throws IllegalStateException    si el cronograma no tiene fechaInicio o
      *                                  fechaFinEstimada
      */
-    public void congelar(UUID approvedBy) {
+    public ProgramaObra congelar(UUID approvedBy) {
         if (approvedBy == null) {
             throw new IllegalArgumentException("El ID del usuario que congela el cronograma no puede ser nulo");
         }
@@ -263,11 +252,8 @@ public final class ProgramaObra {
             throw new IllegalStateException("No se puede congelar el cronograma sin fecha de fin estimada");
         }
 
-        // Freeze the schedule
-        this.congelado = true;
-        this.congeladoAt = LocalDateTime.now();
-        this.congeladoBy = approvedBy;
-        this.snapshotAlgorithm = "v1"; // Versión inicial del algoritmo de snapshot
+        return new ProgramaObra(this.id, this.proyectoId, this.fechaInicio, this.fechaFinEstimada,
+                this.duracionTotalDias, this.version, true, LocalDateTime.now(), approvedBy, "v1");
     }
 
     /**
@@ -279,8 +265,6 @@ public final class ProgramaObra {
         return congelado != null && congelado;
     }
 
-    // Freeze metadata getters
-
     /**
      * Obtiene el timestamp de cuando se congeló el cronograma.
      * 
@@ -290,21 +274,10 @@ public final class ProgramaObra {
         return congeladoAt;
     }
 
-    /**
-     * Obtiene el ID del usuario que congeló el cronograma.
-     * 
-     * @return El ID del usuario que congeló o null si no está congelado
-     */
     public UUID getCongeladoBy() {
         return congeladoBy;
     }
 
-    /**
-     * Obtiene la versión del algoritmo usado para generar el snapshot del
-     * cronograma.
-     * 
-     * @return El algoritmo usado (ej: "v1") o null si no está congelado
-     */
     public String getSnapshotAlgorithm() {
         return snapshotAlgorithm;
     }

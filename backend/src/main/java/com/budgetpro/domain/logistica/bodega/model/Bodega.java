@@ -26,10 +26,10 @@ public final class Bodega {
     // - activa: estado del ciclo de vida (activar/desactivar bodega)
     // - version: optimistic locking para concurrencia
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private boolean activa;
+    private final boolean activa;
     private final LocalDateTime fechaCreacion;
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private Long version;
+    private final Long version;
 
     /**
      * Constructor privado. Usar factory methods crear() y reconstruir().
@@ -81,17 +81,23 @@ public final class Bodega {
     /**
      * Activa la bodega (disponible para operaciones).
      */
-    public void activar() {
-        this.activa = true;
-        this.version = this.version + 1;
+    public Bodega activar() {
+        if (this.activa) {
+            return this;
+        }
+        return new Bodega(this.id, this.proyectoId, this.codigo, this.nombre, this.ubicacionFisica, this.responsable,
+                true, this.fechaCreacion, this.version + 1);
     }
 
     /**
      * Desactiva la bodega (no disponible para nuevas operaciones).
      */
-    public void desactivar() {
-        this.activa = false;
-        this.version = this.version + 1;
+    public Bodega desactivar() {
+        if (!this.activa) {
+            return this;
+        }
+        return new Bodega(this.id, this.proyectoId, this.codigo, this.nombre, this.ubicacionFisica, this.responsable,
+                false, this.fechaCreacion, this.version + 1);
     }
 
     // Getters

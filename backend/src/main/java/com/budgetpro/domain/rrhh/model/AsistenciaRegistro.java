@@ -11,7 +11,7 @@ import java.util.Objects;
  * AsistenciaRegistro entity representing a daily attendance record. Handles
  * normal and overnight shifts, hours calculation, and overlap detection.
  */
-public class AsistenciaRegistro {
+public final class AsistenciaRegistro {
 
     private final AsistenciaId id;
     private final EmpleadoId empleadoId;

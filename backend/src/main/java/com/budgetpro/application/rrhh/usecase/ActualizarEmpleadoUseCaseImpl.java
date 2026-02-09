@@ -31,42 +31,27 @@ public class ActualizarEmpleadoUseCaseImpl implements ActualizarEmpleadoUseCase 
         Empleado empleado = empleadoRepository.findById(EmpleadoId.fromString(command.id()))
                 .orElseThrow(() -> new EmpleadoNoEncontradoException(command.id()));
 
-        // Update basic info if provided (Assuming setters or methods exist, wait,
-        // Empleado is immutable-ish?)
-        // The Empleado domain model shown in prompt does NOT have setters for basic
-        // info (nombre, apellido, contacto).
-        // I need to check if I can update them.
-        // Looking at Empleado.java view above:
-        // fields are private. No public setters.
-        // It seems the current domain model might be missing methods to update basic
-        // info.
-        // Creating logic to update via reflection or adding methods to domain?
-        // Since I cannot modify domain heavily without permission, but this is
-        // "Implement Employee Management", I should probably add the methods to
-        // Empleado if they are missing or assume they will be added.
-        // Wait, the prompt said "ActualizarEmpleadoUseCase: Handle salary/position
-        // changes via Empleado domain methods". It didn't explicitly mention personal
-        // info update, but the command has them.
-        // I will focus on salary/position as requested and maybe skipped personal info
-        // update in domain?
-        // Ah, "If personal info change: update directly" in implementation steps.
-        // I will assume I need to ADD these methods to the Domain Model as part of the
-        // task if they are missing.
-        // But wait, the task instructions said "Implement Empleado domain model" was
-        // Task 2 (completed).
-        // Let's re-read Empleado.java.
-        // It has NO setters.
-        // I must allow updating basic info. I will verify if I can edit Empleado.java.
-        // "Implement Employee Management use cases" implies making it work.
-        // I will Add `actualizarDatosPersonales` method to Empleado.java.
+        // Update personal data if provided
+        if (command.nombre() != null || command.apellido() != null
+                || (command.email() != null || command.telefono() != null || command.direccion() != null)) {
+            Contacto nuevoContacto = null;
+            if (command.email() != null || command.telefono() != null || command.direccion() != null) {
+                Contacto actual = empleado.getContacto();
+                nuevoContacto = Contacto.crear(
+                        command.email() != null ? command.email() : (actual != null ? actual.getEmail() : null),
+                        command.telefono() != null ? command.telefono()
+                                : (actual != null ? actual.getTelefono() : null),
+                        command.direccion() != null ? command.direccion()
+                                : (actual != null ? actual.getDireccion() : null));
+            }
+            empleado = empleado.actualizarDatosPersonales(command.nombre(), command.apellido(), nuevoContacto);
+        }
 
         // Handling Salary/Position updates
         if (command.nuevoSalario() != null || command.nuevoPuesto() != null) {
             LocalDate fecha = command.fechaEfectiva() != null ? command.fechaEfectiva() : LocalDate.now();
-            empleado.actualizarCondicionesLaborales(command.nuevoSalario(), command.nuevoPuesto(), fecha);
+            empleado = empleado.actualizarCondicionesLaborales(command.nuevoSalario(), command.nuevoPuesto(), fecha);
         }
-
-        // I will implement a private helper here to map response, or duplicate logic.
 
         empleadoRepository.save(empleado);
 

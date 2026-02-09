@@ -23,6 +23,12 @@ import java.util.Objects;
  * - desperdicio debe estar entre 0 y 1 (si es MATERIAL)
  * - porcentajeManoObra debe estar entre 0 y 1 (si es EQUIPO_HERRAMIENTA)
  */
+import com.budgetpro.domain.shared.model.Immutable;
+
+/**
+ * Value Object inmutable que representa un insumo dentro de un snapshot de APU.
+ */
+@Immutable
 public final class APUInsumoSnapshot {
 
     private final APUInsumoSnapshotId id;
@@ -31,68 +37,51 @@ public final class APUInsumoSnapshot {
     private final BigDecimal cantidad;
     private final BigDecimal precioUnitario;
     private final BigDecimal subtotal;
-    
+
     // Campos de clasificación
     private final TipoRecurso tipoRecurso;
     private final Integer ordenCalculo;
-    
+
     // Campos de unidades
     private final BigDecimal aporteUnitario;
     private final String unidadAporte;
     private final String unidadBase;
     private final BigDecimal factorConversionUnidadBase;
     private final String unidadCompra;
-    
+
     // Campos de precio/moneda
     private final String moneda;
     private final BigDecimal tipoCambioSnapshot;
     private final BigDecimal precioMercado;
     private final BigDecimal flete;
     private final BigDecimal precioPuestoEnObra;
-    
+
     // Campos específicos MATERIAL
     private final BigDecimal desperdicio;
-    
+
     // Campos específicos MANO_OBRA
     private final List<ComposicionCuadrillaSnapshot> composicionCuadrilla;
     private final BigDecimal costoDiaCuadrillaCalculado;
     private final Integer jornadaHoras;
-    
+
     // Campos específicos EQUIPO_MAQUINA
     private final BigDecimal costoHoraMaquina;
     private final BigDecimal horasUso;
-    
+
     // Campos específicos EQUIPO_HERRAMIENTA
     private final BigDecimal porcentajeManoObra;
     private final String dependeDe;
 
-    private APUInsumoSnapshot(APUInsumoSnapshotId id,
-                              String recursoExternalId,
-                              String recursoNombre,
-                              BigDecimal cantidad,
-                              BigDecimal precioUnitario,
-                              BigDecimal subtotal,
-                              TipoRecurso tipoRecurso,
-                              Integer ordenCalculo,
-                              BigDecimal aporteUnitario,
-                              String unidadAporte,
-                              String unidadBase,
-                              BigDecimal factorConversionUnidadBase,
-                              String unidadCompra,
-                              String moneda,
-                              BigDecimal tipoCambioSnapshot,
-                              BigDecimal precioMercado,
-                              BigDecimal flete,
-                              BigDecimal precioPuestoEnObra,
-                              BigDecimal desperdicio,
-                              List<ComposicionCuadrillaSnapshot> composicionCuadrilla,
-                              BigDecimal costoDiaCuadrillaCalculado,
-                              Integer jornadaHoras,
-                              BigDecimal costoHoraMaquina,
-                              BigDecimal horasUso,
-                              BigDecimal porcentajeManoObra,
-                              String dependeDe) {
-        validarInvariantes(recursoExternalId, recursoNombre, cantidad, precioUnitario, tipoRecurso, desperdicio, porcentajeManoObra);
+    private APUInsumoSnapshot(APUInsumoSnapshotId id, String recursoExternalId, String recursoNombre,
+            BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subtotal, TipoRecurso tipoRecurso,
+            Integer ordenCalculo, BigDecimal aporteUnitario, String unidadAporte, String unidadBase,
+            BigDecimal factorConversionUnidadBase, String unidadCompra, String moneda, BigDecimal tipoCambioSnapshot,
+            BigDecimal precioMercado, BigDecimal flete, BigDecimal precioPuestoEnObra, BigDecimal desperdicio,
+            List<ComposicionCuadrillaSnapshot> composicionCuadrilla, BigDecimal costoDiaCuadrillaCalculado,
+            Integer jornadaHoras, BigDecimal costoHoraMaquina, BigDecimal horasUso, BigDecimal porcentajeManoObra,
+            String dependeDe) {
+        validarInvariantes(recursoExternalId, recursoNombre, cantidad, precioUnitario, tipoRecurso, desperdicio,
+                porcentajeManoObra);
 
         this.id = Objects.requireNonNull(id, "El ID del insumo snapshot no puede ser nulo");
         this.recursoExternalId = recursoExternalId.trim();
@@ -100,136 +89,90 @@ public final class APUInsumoSnapshot {
         this.cantidad = cantidad != null ? cantidad : BigDecimal.ZERO;
         this.precioUnitario = precioUnitario != null ? precioUnitario : BigDecimal.ZERO;
         this.subtotal = subtotal != null ? subtotal : calcularSubtotal(this.cantidad, this.precioUnitario);
-        
+
         // Campos de clasificación
         this.tipoRecurso = tipoRecurso;
         this.ordenCalculo = ordenCalculo;
-        
+
         // Campos de unidades
         this.aporteUnitario = aporteUnitario;
         this.unidadAporte = unidadAporte != null ? unidadAporte.trim() : null;
         this.unidadBase = unidadBase != null ? unidadBase.trim() : null;
         this.factorConversionUnidadBase = factorConversionUnidadBase;
         this.unidadCompra = unidadCompra != null ? unidadCompra.trim() : null;
-        
+
         // Campos de precio/moneda
         this.moneda = moneda != null ? moneda.trim() : null;
         this.tipoCambioSnapshot = tipoCambioSnapshot;
         this.precioMercado = precioMercado;
         this.flete = flete;
         this.precioPuestoEnObra = precioPuestoEnObra;
-        
+
         // Campos específicos MATERIAL
         this.desperdicio = desperdicio;
-        
+
         // Campos específicos MANO_OBRA
-        this.composicionCuadrilla = composicionCuadrilla != null ? new ArrayList<>(composicionCuadrilla) : new ArrayList<>();
+        this.composicionCuadrilla = composicionCuadrilla != null ? new ArrayList<>(composicionCuadrilla)
+                : new ArrayList<>();
         this.costoDiaCuadrillaCalculado = costoDiaCuadrillaCalculado;
         this.jornadaHoras = jornadaHoras;
-        
+
         // Campos específicos EQUIPO_MAQUINA
         this.costoHoraMaquina = costoHoraMaquina;
         this.horasUso = horasUso;
-        
+
         // Campos específicos EQUIPO_HERRAMIENTA
         this.porcentajeManoObra = porcentajeManoObra;
         this.dependeDe = dependeDe != null ? dependeDe.trim() : null;
     }
 
     // Factory method simplificado para backward compatibility (legacy)
-    public static APUInsumoSnapshot crear(APUInsumoSnapshotId id,
-                                          String recursoExternalId,
-                                          String recursoNombre,
-                                          BigDecimal cantidad,
-                                          BigDecimal precioUnitario) {
-        return crear(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    public static APUInsumoSnapshot crear(APUInsumoSnapshotId id, String recursoExternalId, String recursoNombre,
+            BigDecimal cantidad, BigDecimal precioUnitario) {
+        return crear(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     // Factory method completo para nuevos insumos con cálculo dinámico
-    public static APUInsumoSnapshot crear(APUInsumoSnapshotId id,
-                                          String recursoExternalId,
-                                          String recursoNombre,
-                                          BigDecimal cantidad,
-                                          BigDecimal precioUnitario,
-                                          TipoRecurso tipoRecurso,
-                                          Integer ordenCalculo,
-                                          BigDecimal aporteUnitario,
-                                          String unidadAporte,
-                                          String unidadBase,
-                                          BigDecimal factorConversionUnidadBase,
-                                          String unidadCompra,
-                                          String moneda,
-                                          BigDecimal tipoCambioSnapshot,
-                                          BigDecimal precioMercado,
-                                          BigDecimal flete,
-                                          BigDecimal precioPuestoEnObra,
-                                          BigDecimal desperdicio,
-                                          List<ComposicionCuadrillaSnapshot> composicionCuadrilla,
-                                          BigDecimal costoDiaCuadrillaCalculado,
-                                          Integer jornadaHoras,
-                                          BigDecimal costoHoraMaquina,
-                                          BigDecimal horasUso,
-                                          BigDecimal porcentajeManoObra,
-                                          String dependeDe) {
-        return new APUInsumoSnapshot(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, null,
-                tipoRecurso, ordenCalculo, aporteUnitario, unidadAporte, unidadBase, factorConversionUnidadBase, unidadCompra,
-                moneda, tipoCambioSnapshot, precioMercado, flete, precioPuestoEnObra,
-                desperdicio, composicionCuadrilla, costoDiaCuadrillaCalculado, jornadaHoras,
-                costoHoraMaquina, horasUso, porcentajeManoObra, dependeDe);
+    public static APUInsumoSnapshot crear(APUInsumoSnapshotId id, String recursoExternalId, String recursoNombre,
+            BigDecimal cantidad, BigDecimal precioUnitario, TipoRecurso tipoRecurso, Integer ordenCalculo,
+            BigDecimal aporteUnitario, String unidadAporte, String unidadBase, BigDecimal factorConversionUnidadBase,
+            String unidadCompra, String moneda, BigDecimal tipoCambioSnapshot, BigDecimal precioMercado,
+            BigDecimal flete, BigDecimal precioPuestoEnObra, BigDecimal desperdicio,
+            List<ComposicionCuadrillaSnapshot> composicionCuadrilla, BigDecimal costoDiaCuadrillaCalculado,
+            Integer jornadaHoras, BigDecimal costoHoraMaquina, BigDecimal horasUso, BigDecimal porcentajeManoObra,
+            String dependeDe) {
+        return new APUInsumoSnapshot(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, null, tipoRecurso,
+                ordenCalculo, aporteUnitario, unidadAporte, unidadBase, factorConversionUnidadBase, unidadCompra,
+                moneda, tipoCambioSnapshot, precioMercado, flete, precioPuestoEnObra, desperdicio, composicionCuadrilla,
+                costoDiaCuadrillaCalculado, jornadaHoras, costoHoraMaquina, horasUso, porcentajeManoObra, dependeDe);
     }
 
     // Factory method simplificado para backward compatibility (legacy)
-    public static APUInsumoSnapshot reconstruir(APUInsumoSnapshotId id,
-                                               String recursoExternalId,
-                                               String recursoNombre,
-                                               BigDecimal cantidad,
-                                               BigDecimal precioUnitario,
-                                               BigDecimal subtotal) {
-        return reconstruir(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, subtotal,
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    public static APUInsumoSnapshot reconstruir(APUInsumoSnapshotId id, String recursoExternalId, String recursoNombre,
+            BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subtotal) {
+        return reconstruir(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, subtotal, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     // Factory method completo para reconstruir desde persistencia
-    public static APUInsumoSnapshot reconstruir(APUInsumoSnapshotId id,
-                                               String recursoExternalId,
-                                               String recursoNombre,
-                                               BigDecimal cantidad,
-                                               BigDecimal precioUnitario,
-                                               BigDecimal subtotal,
-                                               TipoRecurso tipoRecurso,
-                                               Integer ordenCalculo,
-                                               BigDecimal aporteUnitario,
-                                               String unidadAporte,
-                                               String unidadBase,
-                                               BigDecimal factorConversionUnidadBase,
-                                               String unidadCompra,
-                                               String moneda,
-                                               BigDecimal tipoCambioSnapshot,
-                                               BigDecimal precioMercado,
-                                               BigDecimal flete,
-                                               BigDecimal precioPuestoEnObra,
-                                               BigDecimal desperdicio,
-                                               List<ComposicionCuadrillaSnapshot> composicionCuadrilla,
-                                               BigDecimal costoDiaCuadrillaCalculado,
-                                               Integer jornadaHoras,
-                                               BigDecimal costoHoraMaquina,
-                                               BigDecimal horasUso,
-                                               BigDecimal porcentajeManoObra,
-                                               String dependeDe) {
+    public static APUInsumoSnapshot reconstruir(APUInsumoSnapshotId id, String recursoExternalId, String recursoNombre,
+            BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subtotal, TipoRecurso tipoRecurso,
+            Integer ordenCalculo, BigDecimal aporteUnitario, String unidadAporte, String unidadBase,
+            BigDecimal factorConversionUnidadBase, String unidadCompra, String moneda, BigDecimal tipoCambioSnapshot,
+            BigDecimal precioMercado, BigDecimal flete, BigDecimal precioPuestoEnObra, BigDecimal desperdicio,
+            List<ComposicionCuadrillaSnapshot> composicionCuadrilla, BigDecimal costoDiaCuadrillaCalculado,
+            Integer jornadaHoras, BigDecimal costoHoraMaquina, BigDecimal horasUso, BigDecimal porcentajeManoObra,
+            String dependeDe) {
         return new APUInsumoSnapshot(id, recursoExternalId, recursoNombre, cantidad, precioUnitario, subtotal,
-                tipoRecurso, ordenCalculo, aporteUnitario, unidadAporte, unidadBase, factorConversionUnidadBase, unidadCompra,
-                moneda, tipoCambioSnapshot, precioMercado, flete, precioPuestoEnObra,
-                desperdicio, composicionCuadrilla, costoDiaCuadrillaCalculado, jornadaHoras,
-                costoHoraMaquina, horasUso, porcentajeManoObra, dependeDe);
+                tipoRecurso, ordenCalculo, aporteUnitario, unidadAporte, unidadBase, factorConversionUnidadBase,
+                unidadCompra, moneda, tipoCambioSnapshot, precioMercado, flete, precioPuestoEnObra, desperdicio,
+                composicionCuadrilla, costoDiaCuadrillaCalculado, jornadaHoras, costoHoraMaquina, horasUso,
+                porcentajeManoObra, dependeDe);
     }
 
-    private void validarInvariantes(String recursoExternalId,
-                                    String recursoNombre,
-                                    BigDecimal cantidad,
-                                    BigDecimal precioUnitario,
-                                    TipoRecurso tipoRecurso,
-                                    BigDecimal desperdicio,
-                                    BigDecimal porcentajeManoObra) {
+    private void validarInvariantes(String recursoExternalId, String recursoNombre, BigDecimal cantidad,
+            BigDecimal precioUnitario, TipoRecurso tipoRecurso, BigDecimal desperdicio, BigDecimal porcentajeManoObra) {
         if (recursoExternalId == null || recursoExternalId.isBlank()) {
             throw new IllegalArgumentException("El recursoExternalId no puede estar vacío");
         }
@@ -242,7 +185,7 @@ public final class APUInsumoSnapshot {
         if (precioUnitario != null && precioUnitario.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El precioUnitario no puede ser negativo");
         }
-        
+
         // Validaciones específicas por tipo de recurso
         if (tipoRecurso != null) {
             if (tipoRecurso == TipoRecurso.MATERIAL && desperdicio != null) {
@@ -251,7 +194,8 @@ public final class APUInsumoSnapshot {
                 }
             }
             if (tipoRecurso == TipoRecurso.EQUIPO_HERRAMIENTA && porcentajeManoObra != null) {
-                if (porcentajeManoObra.compareTo(BigDecimal.ZERO) < 0 || porcentajeManoObra.compareTo(BigDecimal.ONE) > 0) {
+                if (porcentajeManoObra.compareTo(BigDecimal.ZERO) < 0
+                        || porcentajeManoObra.compareTo(BigDecimal.ONE) > 0) {
                     throw new IllegalArgumentException("El porcentajeManoObra debe estar entre 0 y 1 (0% a 100%)");
                 }
             }
@@ -375,8 +319,10 @@ public final class APUInsumoSnapshot {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         APUInsumoSnapshot that = (APUInsumoSnapshot) o;
         return Objects.equals(id, that.id);
     }
@@ -388,7 +334,8 @@ public final class APUInsumoSnapshot {
 
     @Override
     public String toString() {
-        return String.format("APUInsumoSnapshot{id=%s, recursoExternalId='%s', cantidad=%s, precioUnitario=%s, subtotal=%s}",
-                id, recursoExternalId, cantidad, precioUnitario, subtotal);
+        return String.format(
+                "APUInsumoSnapshot{id=%s, recursoExternalId='%s', cantidad=%s, precioUnitario=%s, subtotal=%s}", id,
+                recursoExternalId, cantidad, precioUnitario, subtotal);
     }
 }
