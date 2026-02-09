@@ -48,7 +48,7 @@ public final class InventarioItem {
     private final BigDecimal cantidadFisica; // Stock actual
     private final BigDecimal costoPromedio; // Costo promedio ponderado
 
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields
     @Deprecated
     private final String ubicacion; // DEPRECATED: Usar bodegaId en su lugar. Mantener para compatibilidad.
 
