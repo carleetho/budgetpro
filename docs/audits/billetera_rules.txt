@@ -1,0 +1,63 @@
+- Estado:
+  - Explícita
+
+## REGLA-033
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para procesar una compra, las partidas deben existir; se descuenta de billetera, se aprueba la compra y se registra entrada a inventario.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Compras
+  - Billetera
+  - Inventario
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java`
+  - clase: `ProcesarCompraService`
+  - método o sección: `procesar`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Partida partida = partidaRepository.findById(...).orElseThrow(...);`
+    - `billetera.egresar(...)`
+    - `compra.aprobar();`
+    - `gestionInventarioService.registrarEntradaPorCompra(compra);`
+- Estado:
+  - Explícita
+
+## REGLA-034
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El consumo de partida requiere partidaId, fecha y tipo; el monto no puede ser negativo.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+--
+    - `return new Recurso(..., EstadoRecurso.EN_REVISION);`
+- Estado:
+  - Explícita
+
+## REGLA-042
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En MovimientoCaja: monto > 0, referencia no vacía, billeteraId y tipo no nulos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Billetera
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/model/MovimientoCaja.java`
+  - clase: `MovimientoCaja`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (monto.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El monto debe ser positivo (mayor que cero)"); }`
+    - `if (referencia == null || referencia.isBlank()) { throw new IllegalArgumentException("La referencia no puede ser nula ni vacía"); }`
+- Estado:
+  - Explícita
+
+## REGLA-043
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El nombre del proyecto no puede estar vacío; el estado del proyecto no puede ser nulo.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Proyectos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/proyecto/model/Proyecto.java`

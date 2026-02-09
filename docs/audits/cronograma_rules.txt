@@ -1,0 +1,359 @@
+    - `return amortizacionTeorica.min(saldoAnticipoPendiente);`
+- Estado:
+  - Explícita
+
+## REGLA-018
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La fecha de fin de una actividad no puede ser menor que la fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java`
+  - clase: `ActividadProgramada`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaFin.isBefore(fechaInicio)) { throw new IllegalArgumentException("La fecha de fin no puede ser menor a la fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-019
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Una actividad no puede ser predecesora de sí misma.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java`
+  - clase: `ActividadProgramada`
+  - método o sección: `agregarPredecesora`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (actividadPredecesoraId.equals(this.id.getValue())) { throw new IllegalArgumentException("Una actividad no puede ser predecesora de sí misma"); }`
+- Estado:
+  - Explícita
+
+## REGLA-020
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En una dependencia Fin-Inicio, la fecha de inicio de B debe ser >= la fecha de fin de A.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CalculoCronogramaService.java`
+  - clase: `CalculoCronogramaService`
+  - método o sección: `validarDependencias`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaInicioActividad.isBefore(fechaFinPredecesora)) { return false; }`
+- Estado:
+  - Explícita
+
+## REGLA-021
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La fecha de fin estimada del programa no puede ser menor a la fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java`
+  - clase: `ProgramaObra`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaFinEstimada.isBefore(fechaInicio)) { throw new IllegalArgumentException("La fecha de fin estimada no puede ser menor a la fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-022
+- Descripción exacta de la regla (lenguaje declarativo)
+  - No se puede actualizar la fecha de fin desde actividades si no hay fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java`
+  - clase: `ProgramaObra`
+  - método o sección: `actualizarFechaFinDesdeActividades`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (this.fechaInicio == null) { throw new IllegalStateException("No se puede actualizar la fecha de fin sin fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-023
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los porcentajes de indirectos, financiamiento, utilidad, fianzas e impuestos reflejables no pueden ser negativos ni mayores a 100%.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecosto.java`
+  - clase: `AnalisisSobrecosto`
+--
+    - `CHECK (cantidad_avance >= 0)`
+- Estado:
+  - Explícita
+
+## REGLA-067
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En cronograma: fecha_fin_estimada >= fecha_inicio; duracion_total_dias > 0 si existe; actividad con fecha_fin >= fecha_inicio y duracion_dias > 0 si existe; actividad_id != actividad_predecesora_id.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V10__create_cronograma_schema.sql`
+  - método o sección: CHECK de `programa_obra`, `actividad_programada`, `actividad_predecesora`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (fecha_fin_estimada IS NULL OR fecha_inicio IS NULL OR fecha_fin_estimada >= fecha_inicio)`
+    - `CHECK (actividad_id != actividad_predecesora_id)`
+- Estado:
+  - Explícita
+
+## REGLA-068
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En avance_fisico: metrado_ejecutado >= 0; valuación con (proyecto_id, codigo) único.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Avance / Valuación
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V8__create_avance_valuacion_schema.sql`
+  - método o sección: CHECK y UNIQUE
+--
+    - `@DecimalMin(value = "0.0", message = "La cantidad de avance no puede ser negativa")`
+- Estado:
+  - Explícita
+
+## REGLA-089
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para programar actividad: partidaId, fechaInicio y fechaFin son obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/cronograma/dto/ProgramarActividadRequest.java`
+  - clase: `ProgramarActividadRequest`
+  - método o sección: anotaciones `@NotNull`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@NotNull(message = "La fecha de inicio es obligatoria")`
+- Estado:
+  - Explícita
+
+## REGLA-090
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En configuración laboral request: días no negativos; porcentaje seguridad social entre 0 y 100; días laborables obligatorios y positivos.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/sobrecosto/dto/ConfigurarLaboralRequest.java`
+  - clase: `ConfigurarLaboralRequest`
+--
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.2 Activación Contractual"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Un Proyecto solo puede pasar a estado ACTIVO si: existe al menos un Presupuesto asociado, dicho Presupuesto se encuentra en estado CONGELADO, existe un Snapshot inmutable de la Línea Base.`
+- Estado:
+  - Explícita
+
+## REGLA-107
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La Línea Base requiere Presupuesto CONGELADO y Cronograma CONGELADO; la ausencia invalida ejecución.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Presupuesto
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.3 Línea Base Contractual"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `La Línea Base del Proyecto está compuesta obligatoriamente por: Presupuesto CONGELADO, Cronograma CONGELADO.`
+- Estado:
+  - Explícita
+
+## REGLA-108
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Estados del Proyecto: BORRADOR, ACTIVO, SUSPENDIDO, CERRADO con semántica definida.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "3. Estados del Proyecto"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `### BORRADOR ... ### ACTIVO ... ### SUSPENDIDO ... ### CERRADO ...`
+- Estado:
+  - Explícita
+
+## REGLA-109
+--
+    - `UNIQUE (estimacion_id, partida_id)`
+- Estado:
+  - Explícita
+
+## REGLA-132
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un programa de obra es único por proyecto (proyecto_id UNIQUE).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V10__create_cronograma_schema.sql`
+  - método o sección: `programa_obra` con `proyecto_id UNIQUE`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `proyecto_id UUID NOT NULL UNIQUE`
+- Estado:
+  - Explícita
+
+## REGLA-133
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Una actividad programada es única por partida (partida_id UNIQUE).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V10__create_cronograma_schema.sql`
+  - método o sección: `actividad_programada` con `partida_id UNIQUE`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `partida_id UUID NOT NULL UNIQUE`
+- Estado:
+  - Explícita
+
+## REGLA-134
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En movimiento_almacen, el tipo y tipo_movimiento deben estar en {ENTRADA, SALIDA, DEVOLUCION}.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V16__core_immutable_schema.sql`
+  - método o sección: CHECK `tipo`, CHECK `tipo_movimiento`
+- Evidencia:
+--
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.2 Activación Contractual"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Mensaje obligatorio al usuario: "Este proyecto no puede activarse sin un presupuesto congelado."`
+- Estado:
+  - Explícita
+
+## REGLA-147
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un Proyecto solo puede activarse si existe Cronograma congelado del mismo Proyecto; si no, se bloquea con el mensaje "Este proyecto no puede activarse sin un cronograma congelado."
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.4 Condición Temporal de Activación"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Mensaje obligatorio al usuario: "Este proyecto no puede activarse sin un cronograma congelado."`
+- Estado:
+  - Explícita
+
+## REGLA-148
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un Snapshot de Presupuesto sin Cronograma no constituye una Línea Base válida.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Presupuesto
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "2.3 Línea Base Contractual"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Un Snapshot de Presupuesto sin Cronograma NO constituye una Línea Base válida.`
+- Estado:
+  - Explícita
+
+## REGLA-149
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si el Presupuesto principal se invalida, el Proyecto debe pasar a SUSPENDIDO automáticamente.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Presupuesto
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.1 Presupuesto"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Si el Presupuesto principal se invalida, el Proyecto debe pasar a SUSPENDIDO automáticamente.`
+- Estado:
+  - Explícita
+
+--
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "7. Relación con Órdenes de Cambio"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ajustan el BAC y las métricas de control. El Presupuesto original siempre permanece visible para auditoría.`
+- Estado:
+  - Explícita
+
+## REGLA-156
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Toda Orden de Cambio que afecte plazo debe generar ajuste formal del Cronograma contractual.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Cambios
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "9. Órdenes de Cambio y Plazo Contractual"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Toda Orden de Cambio que afecte plazo DEBE generar un ajuste formal del Cronograma contractual.`
+- Estado:
+  - Explícita
+
+## REGLA-157
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El exceso de consumo debe registrarse como Excepción de consumo o Insumo asociado a Orden de Cambio.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "10. Excesos de Consumo y Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `El exceso de consumo NO se oculta... Debe registrarse como: Excepción de consumo, o Insumo asociado a Orden de Cambio.`
+- Estado:
+  - Explícita
+

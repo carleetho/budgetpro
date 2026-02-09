@@ -22,6 +22,25 @@
 | C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🔴 Missing            |
 | C-05 | **Temporal Consistency**: Activity end date must be ≥ start date (zero duration allowed).    | ✅ Implemented        |
 
+
+### 2.2 Extended Rule Inventory (Phase 1 Alignment)
+
+| ID | Rule | Status |
+| --- | --- | --- |
+| REGLA-018 | **La fecha de fin de una actividad no puede ser menor que la fecha de inicio.** | ✅ Implemented |
+| REGLA-019 | **Una actividad no puede ser predecesora de sí misma.** | ✅ Implemented |
+| REGLA-020 | **En una dependencia Fin-Inicio, la fecha de inicio de B debe ser >= la fecha de fin de A.** | ✅ Implemented |
+| REGLA-021 | **La fecha de fin estimada del programa no puede ser menor a la fecha de inicio.** | ✅ Implemented |
+| REGLA-022 | **No se puede actualizar la fecha de fin desde actividades si no hay fecha de inicio.** | ✅ Implemented |
+| REGLA-067 | **En cronograma: fecha_fin_estimada >= fecha_inicio; duracion_total_dias > 0 si existe; actividad con fecha_fin >= fecha_inicio y duracion_dias > 0 si existe; actividad_id != actividad_predecesora_id.** | ✅ Implemented |
+| REGLA-089 | **Para programar actividad: partidaId, fechaInicio y fechaFin son obligatorios.** | ✅ Implemented |
+| REGLA-107 | **La Línea Base requiere Presupuesto CONGELADO y Cronograma CONGELADO; la ausencia invalida ejecución.** | 🟡 Implemented |
+| REGLA-132 | **Un programa de obra es único por proyecto (proyecto_id UNIQUE).** | ✅ Implemented |
+| REGLA-133 | **Una actividad programada es única por partida (partida_id UNIQUE).** | ✅ Implemented |
+| REGLA-147 | **Un Proyecto solo puede activarse si existe Cronograma congelado del mismo Proyecto; si no, se bloquea con el mensaje "Este proyecto no puede activarse sin un cronograma congelado."** | 🟡 Implemented |
+| REGLA-148 | **Un Snapshot de Presupuesto sin Cronograma no constituye una Línea Base válida.** | 🟡 Implemented |
+| REGLA-156 | **Toda Orden de Cambio que afecte plazo debe generar ajuste formal del Cronograma contractual.** | 🟡 Implemented |
+
 ## 3. Domain Events
 
 | Event Name                   | Trigger         | Content (Payload)                   | Status |

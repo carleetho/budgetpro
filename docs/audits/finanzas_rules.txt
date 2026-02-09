@@ -1,0 +1,588 @@
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java`
+  - clase: `Estimacion`
+  - método o sección: `aprobar`, `marcarComoPagada`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (this.estado != EstadoEstimacion.BORRADOR) { throw new IllegalStateException("Solo se pueden aprobar estimaciones en estado BORRADOR"); }`
+    - `if (this.estado != EstadoEstimacion.APROBADA) { throw new IllegalStateException("Solo se pueden marcar como pagadas estimaciones en estado APROBADA"); }`
+- Estado:
+  - Explícita
+
+## REGLA-011
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El monto neto a pagar de una estimación es: montoBruto - amortizacionAnticipo - retencionFondoGarantia.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java`
+  - clase: `Estimacion`
+  - método o sección: `calcularMontoNeto`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `return this.montoBruto.subtract(this.amortizacionAnticipo).subtract(this.retencionFondoGarantia)`
+- Estado:
+  - Explícita
+
+## REGLA-012
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El número de estimación debe ser positivo cuando se define.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java`
+  - clase: `Estimacion`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (numeroEstimacion != null && numeroEstimacion <= 0) { throw new IllegalArgumentException("El número de estimación debe ser positivo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-013
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El periodo de fin no puede ser menor al periodo de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java`
+  - clase: `Estimacion`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (periodoFin.isBefore(periodoInicio)) { throw new IllegalArgumentException("El periodo de fin no puede ser menor al periodo de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-014
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La amortización de anticipo y la retención de fondo de garantía no pueden ser negativas.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/Estimacion.java`
+  - clase: `Estimacion`
+  - método o sección: `actualizarAmortizacionAnticipo`, `actualizarRetencionFondoGarantia`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (nuevaAmortizacion.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La amortización de anticipo no puede ser negativa"); }`
+    - `if (nuevaRetencion.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La retención de fondo de garantía no puede ser negativa"); }`
+- Estado:
+  - Explícita
+
+## REGLA-015
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La cantidad de avance y el precio unitario en un detalle de estimación no pueden ser negativos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/model/DetalleEstimacion.java`
+  - clase: `DetalleEstimacion`
+  - método o sección: `validarInvariantes`, `actualizarCantidadAvance`, `actualizarPrecioUnitario`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (cantidadAvance != null && cantidadAvance.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La cantidad de avance no puede ser negativa"); }`
+    - `if (precioUnitario != null && precioUnitario.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El precio unitario no puede ser negativo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-016
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El volumen estimado no puede exceder el volumen contratado.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+  - Partidas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java`
+  - clase: `GeneradorEstimacionService`
+  - método o sección: `validarVolumenEstimado`
+  - archivo: `backend/src/main/java/com/budgetpro/application/estimacion/usecase/GenerarEstimacionUseCaseImpl.java`
+  - clase: `GenerarEstimacionUseCaseImpl`
+  - método o sección: `generar`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `return acumuladoTotal.compareTo(volumenContratado) <= 0;`
+    - `if (!generadorEstimacionService.validarVolumenEstimado(...)) { throw new IllegalArgumentException("La cantidad estimada excede el volumen contratado..."); }`
+- Estado:
+  - Explícita
+
+## REGLA-017
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La amortización de anticipo calculada no puede exceder el saldo pendiente.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/estimacion/service/GeneradorEstimacionService.java`
+  - clase: `GeneradorEstimacionService`
+  - método o sección: `calcularAmortizacionAnticipo`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `return amortizacionTeorica.min(saldoAnticipoPendiente);`
+- Estado:
+  - Explícita
+
+## REGLA-018
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La fecha de fin de una actividad no puede ser menor que la fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java`
+  - clase: `ActividadProgramada`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaFin.isBefore(fechaInicio)) { throw new IllegalArgumentException("La fecha de fin no puede ser menor a la fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-019
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Una actividad no puede ser predecesora de sí misma.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ActividadProgramada.java`
+  - clase: `ActividadProgramada`
+  - método o sección: `agregarPredecesora`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (actividadPredecesoraId.equals(this.id.getValue())) { throw new IllegalArgumentException("Una actividad no puede ser predecesora de sí misma"); }`
+- Estado:
+  - Explícita
+
+## REGLA-020
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En una dependencia Fin-Inicio, la fecha de inicio de B debe ser >= la fecha de fin de A.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/service/CalculoCronogramaService.java`
+  - clase: `CalculoCronogramaService`
+  - método o sección: `validarDependencias`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaInicioActividad.isBefore(fechaFinPredecesora)) { return false; }`
+- Estado:
+  - Explícita
+
+## REGLA-021
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La fecha de fin estimada del programa no puede ser menor a la fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java`
+  - clase: `ProgramaObra`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (fechaFinEstimada.isBefore(fechaInicio)) { throw new IllegalArgumentException("La fecha de fin estimada no puede ser menor a la fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-022
+- Descripción exacta de la regla (lenguaje declarativo)
+  - No se puede actualizar la fecha de fin desde actividades si no hay fecha de inicio.
+- Tipo:
+  - Temporal
+- Módulo(s) afectado(s)
+  - Cronograma
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/cronograma/model/ProgramaObra.java`
+  - clase: `ProgramaObra`
+  - método o sección: `actualizarFechaFinDesdeActividades`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (this.fechaInicio == null) { throw new IllegalStateException("No se puede actualizar la fecha de fin sin fecha de inicio"); }`
+- Estado:
+  - Explícita
+
+## REGLA-023
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los porcentajes de indirectos, financiamiento, utilidad, fianzas e impuestos reflejables no pueden ser negativos ni mayores a 100%.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/AnalisisSobrecosto.java`
+  - clase: `AnalisisSobrecosto`
+  - método o sección: `validarPorcentaje`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (porcentaje.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El porcentaje de %s no puede ser negativo"); }`
+    - `if (porcentaje.compareTo(new BigDecimal("100")) > 0) { throw new IllegalArgumentException("El porcentaje de %s no puede ser mayor a 100%%"); }`
+- Estado:
+  - Explícita
+
+## REGLA-024
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los días de aguinaldo, vacaciones y no trabajados no pueden ser negativos; los días laborables al año deben ser positivos; el porcentaje de seguridad social debe estar entre 0 y 100.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (diasAguinaldo != null && diasAguinaldo < 0) { throw new IllegalArgumentException("Los días de aguinaldo no pueden ser negativos"); }`
+    - `if (porcentajeSeguridadSocial.compareTo(new BigDecimal("100")) > 0) { throw new IllegalArgumentException("El porcentaje de seguridad social no puede ser mayor a 100%"); }`
+- Estado:
+  - Explícita
+
+## REGLA-025
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El salario base debe ser positivo para calcular salario real.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH / Sobrecostos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/model/ConfiguracionLaboral.java`
+  - clase: `ConfiguracionLaboral`
+  - método o sección: `calcularSalarioReal`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (salarioBase == null || salarioBase.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El salario base debe ser positivo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-026
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si un recurso EQUIPO tiene costo_horario = 0, se genera ALERTA CRÍTICA.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Alertas Paramétricas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java`
+  - clase: `AnalizadorParametricoService`
+  - método o sección: `analizarMaquinaria`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (costoHorario == null || costoHorario.compareTo(BigDecimal.ZERO) == 0) { AlertaParametrica.crear(... NivelAlerta.CRITICA, ...) }`
+- Estado:
+  - Explícita
+
+## REGLA-027
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El ratio Kg Acero / m3 Concreto debe estar entre 80 y 150; fuera de rango genera WARNING.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Alertas Paramétricas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java`
+  - clase: `AnalizadorParametricoService`
+  - método o sección: `analizarAceroConcreto`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (ratio.compareTo(RATIO_ACERO_MIN) < 0 || ratio.compareTo(RATIO_ACERO_MAX) > 0) { ... NivelAlerta.WARNING ... }`
+- Estado:
+  - Explícita
+
+## REGLA-028
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El tamaño del agregado no debe exceder 1/5 del ancho del elemento; si excede, genera ALERTA TÉCNICA.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Alertas Paramétricas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/alertas/service/AnalizadorParametricoService.java`
+  - clase: `AnalizadorParametricoService`
+  - método o sección: `analizarTamanoAgregado`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (factor.compareTo(FACTOR_AGREGADO_MAX) > 0) { ... NivelAlerta.WARNING ... }`
+- Estado:
+  - Explícita
+
+## REGLA-029
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si un insumo tiene precio unitario 0, se genera alerta de descapitalización de maquinaria.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Inteligencia Maquinaria
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/InteligenciaMaquinariaService.java`
+  - clase: `InteligenciaMaquinariaService`
+  - método o sección: `analizarAPU`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (insumo.getPrecioUnitario().compareTo(BigDecimal.ZERO) == 0) { alertas.add(new AlertaInteligencia(...)) }`
+- Estado:
+  - Explícita
+
+## REGLA-030
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Valor inicial, vida útil y horas anuales de uso deben ser positivos para calcular costo horario.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Inteligencia Maquinaria
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/sobrecosto/service/InteligenciaMaquinariaService.java`
+  - clase: `InteligenciaMaquinariaService`
+  - método o sección: `calcularCostoHorarioPosesion`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (valorInicial == null || valorInicial.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El valor inicial debe ser positivo"); }`
+    - `if (vidaUtilAnos == null || vidaUtilAnos <= 0) { throw new IllegalArgumentException("La vida útil debe ser positiva"); }`
+    - `if (horasAnualesUso == null || horasAnualesUso <= 0) { throw new IllegalArgumentException("Las horas anuales de uso deben ser positivas"); }`
+- Estado:
+  - Explícita
+
+## REGLA-031
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El proyectoId, la fecha, el proveedor y los detalles son obligatorios en una compra.
+- Tipo:
+  - Dominio
+--
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Consumos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartida.java`
+  - clase: `ConsumoPartida`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (monto != null && monto.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El monto no puede ser negativo"); }`
+    - `if (fecha == null) { throw new IllegalArgumentException("La fecha no puede ser nula"); }`
+- Estado:
+  - Explícita
+
+## REGLA-035
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En APU, el partidaId es obligatorio y la lista de insumos no puede ser nula.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - APU
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/APU.java`
+  - clase: `APU`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (partidaId == null) { throw new IllegalArgumentException("El partidaId no puede ser nulo"); }`
+    - `if (insumos == null) { throw new IllegalArgumentException("La lista de insumos no puede ser nula"); }`
+- Estado:
+  - Explícita
+
+## REGLA-036
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En APU, el subtotal de insumo es cantidad * precio unitario; cantidad y precio unitario no pueden ser negativos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - APU
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/apu/model/ApuInsumo.java`
+  - clase: `ApuInsumo`
+  - método o sección: `validarInvariantes`, `calcularSubtotal`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (cantidad != null && cantidad.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La cantidad no puede ser negativa"); }`
+    - `private BigDecimal calcularSubtotal() { return this.cantidad.multiply(this.precioUnitario); }`
+- Estado:
+  - Explícita
+
+## REGLA-037
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En Partida: presupuestoId obligatorio, item no vacío, descripción no vacía, metrado no negativo y nivel >= 1.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Partidas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/Partida.java`
+  - clase: `Partida`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (item == null || item.isBlank()) { throw new IllegalArgumentException("El item (código WBS) no puede estar vacío"); }`
+    - `if (nivel == null || nivel < 1) { throw new IllegalArgumentException("El nivel debe ser >= 1"); }`
+- Estado:
+  - Explícita
+
+## REGLA-038
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si una partida tiene padreId, debe pertenecer al mismo presupuestoId (validado a nivel de aplicación).
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Partidas
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/partida/model/Partida.java`
+  - clase: `Partida`
+  - método o sección: comentario de invariantes
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `// Si tiene padreId, debe pertenecer al mismo presupuestoId (validado a nivel de aplicación)`
+- Estado:
+  - Explícita
+- Observaciones (solo si existen en el código)
+  - Regla documentada como validación a nivel de aplicación.
+
+## REGLA-039
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En Recurso: nombre no vacío, tipo no nulo y unidadBase no vacía.
+- Tipo:
+  - Dominio
+--
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Billetera
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/model/MovimientoCaja.java`
+  - clase: `MovimientoCaja`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (monto.compareTo(BigDecimal.ZERO) <= 0) { throw new IllegalArgumentException("El monto debe ser positivo (mayor que cero)"); }`
+    - `if (referencia == null || referencia.isBlank()) { throw new IllegalArgumentException("La referencia no puede ser nula ni vacía"); }`
+- Estado:
+  - Explícita
+
+## REGLA-043
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El nombre del proyecto no puede estar vacío; el estado del proyecto no puede ser nulo.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+--
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Presupuesto
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/Presupuesto.java`
+  - clase: `Presupuesto`
+  - método o sección: `validarInvariantes`, `normalizarNombre`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (proyectoId == null) { throw new IllegalArgumentException("El proyectoId no puede ser nulo"); }`
+    - `if (nombre == null || nombre.isBlank()) { throw new IllegalArgumentException("El nombre del presupuesto no puede estar vacío"); }`
+- Estado:
+  - Explícita
+
+## REGLA-045
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Al aprobar presupuesto, el estado cambia a APROBADO y esContractual se marca true.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/presupuesto/model/Presupuesto.java`
+  - clase: `Presupuesto`
+  - método o sección: `aprobar`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `this.estado = EstadoPresupuesto.APROBADO;`
+    - `this.esContractual = true;`
+- Estado:
+  - Explícita
+
+## REGLA-046
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El presupuesto APROBADO es de solo lectura.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+--
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java`
+  - clase: `AvanceFisico`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (metradoEjecutado != null && metradoEjecutado.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El metrado ejecutado no puede ser negativo"); }`
+- Estado:
+  - Explícita
+
+## REGLA-127
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La valuación requiere proyectoId, fechaCorte, código no vacío y estado no nulo.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Valuación
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/Valuacion.java`
+  - clase: `Valuacion`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (codigo == null || codigo.isBlank()) { throw new IllegalArgumentException("El código no puede estar vacío"); }`
+- Estado:
+  - Explícita
+
+## REGLA-128
+- Descripción exacta de la regla (lenguaje declarativo)
+  - No se puede crear un recurso con el mismo nombre normalizado si ya existe.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Recursos
+--
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Avance
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/avance/model/AvanceFisico.java`
+  - clase: `AvanceFisico`
+  - método o sección: comentario de invariantes
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `- (Opcional MVP) El acumulado no debería superar el metrado total de la partida (Alertar, no bloquear)`
+- Estado:
+  - Implícita
+
+## REGLA-143
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El presupuesto de línea base es único cuando es_linea_base = true.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto

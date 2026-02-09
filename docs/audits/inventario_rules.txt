@@ -1,0 +1,463 @@
+  - Explícita
+
+## REGLA-033
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para procesar una compra, las partidas deben existir; se descuenta de billetera, se aprueba la compra y se registra entrada a inventario.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Compras
+  - Billetera
+  - Inventario
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java`
+  - clase: `ProcesarCompraService`
+  - método o sección: `procesar`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Partida partida = partidaRepository.findById(...).orElseThrow(...);`
+    - `billetera.egresar(...)`
+    - `compra.aprobar();`
+    - `gestionInventarioService.registrarEntradaPorCompra(compra);`
+- Estado:
+  - Explícita
+
+## REGLA-034
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El consumo de partida requiere partidaId, fecha y tipo; el monto no puede ser negativo.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Consumos
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/finanzas/consumo/model/ConsumoPartida.java`
+  - clase: `ConsumoPartida`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (monto != null && monto.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("El monto no puede ser negativo"); }`
+    - `if (fecha == null) { throw new IllegalArgumentException("La fecha no puede ser nula"); }`
+- Estado:
+  - Explícita
+--
+    - `if (metradoVigente == null) { metradoVigente = metradoOriginal; }`
+- Estado:
+  - Explícita
+
+## REGLA-049
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El movimiento de almacén de tipo SALIDA requiere partidaId.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/almacen/MovimientoAlmacenEntity.java`
+  - clase: `MovimientoAlmacenEntity`
+  - método o sección: `isPartidaValidaParaSalida`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (tipo == TipoMovimientoAlmacen.SALIDA) { return partidaId != null; }`
+- Estado:
+  - Explícita
+
+## REGLA-050
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Si tipo es nulo en movimiento de almacén, se asigna tipoMovimiento.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/persistence/entity/almacen/MovimientoAlmacenEntity.java`
+  - clase: `MovimientoAlmacenEntity`
+  - método o sección: `prePersist`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (tipo == null) { tipo = tipoMovimiento; }`
+- Estado:
+  - Explícita
+
+## REGLA-051
+- Descripción exacta de la regla (lenguaje declarativo)
+  - JWT_SECRET es obligatorio y debe tener al menos 32 caracteres.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/security/jwt/JwtService.java`
+  - clase: `JwtService`
+--
+    - `CHECK (costo_referencia >= 0);`
+- Estado:
+  - Explícita
+
+## REGLA-064
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En movimiento_almacen: cantidad > 0, precio_unitario >= 0, importe_total >= 0.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V14__create_almacen_inventarios_schema.sql`
+  - método o sección: CHECK en `movimiento_almacen`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (cantidad > 0)`
+    - `CHECK (precio_unitario >= 0)`
+    - `CHECK (importe_total >= 0)`
+- Estado:
+  - Explícita
+
+## REGLA-065
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En stock_movimiento: cantidad_entrada, cantidad_salida, saldo_cantidad, saldo_valor y costo_promedio_ponderado no pueden ser negativos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V14__create_almacen_inventarios_schema.sql`
+  - método o sección: CHECK en `stock_movimiento`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (cantidad_entrada >= 0)`
+    - `CHECK (cantidad_salida >= 0)`
+    - `CHECK (saldo_cantidad >= 0)`
+    - `CHECK (saldo_valor >= 0)`
+    - `CHECK (costo_promedio_ponderado >= 0)`
+- Estado:
+  - Explícita
+
+## REGLA-066
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En estimación: periodo_fin >= periodo_inicio; montos y acumulados no negativos; estado en {BORRADOR, APROBADA, PAGADA}.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Estimaciones
+--
+    - `@NotBlank(message = "El motivo de rechazo es obligatorio")`
+- Estado:
+  - Explícita
+
+## REGLA-085
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registrar movimiento de almacén: almacenId, recursoId, tipoMovimiento, fechaMovimiento, cantidad y precioUnitario son obligatorios; cantidad > 0; precioUnitario >= 0.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/almacen/dto/RegistrarMovimientoAlmacenRequest.java`
+  - clase: `RegistrarMovimientoAlmacenRequest`
+  - método o sección: anotaciones `@NotNull`, `@DecimalMin`, `@NotBlank`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@DecimalMin(value = "0.000001", message = "La cantidad debe ser mayor a cero")`
+    - `@DecimalMin(value = "0.0", message = "El precio unitario debe ser mayor o igual a cero")`
+- Estado:
+  - Explícita
+
+## REGLA-086
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para calcular reajuste: proyectoId, presupuestoId, fechaCorte, códigos y fechas de índice base/actual son obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Reajuste
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/reajuste/dto/CalcularReajusteRequest.java`
+--
+  - Explícita
+
+## REGLA-102
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+  - método o sección: "Principio Supremo: El Presupuesto es Ley"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún proceso operativo puede existir fuera del presupuesto: ...`
+- Estado:
+  - Explícita
+
+## REGLA-103
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los datos históricos no se corrigen; se explican mediante eventos formales.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Auditoría
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+--
+- Estado:
+  - Explícita
+
+## REGLA-117
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Compras
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/COMPRAS_SPECS.md`
+  - método o sección: "9. Relación con Inventarios"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Toda compra de bienes físicos genera entrada a inventario.`
+    - `Inventario sin compra es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-118
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un movimiento de inventario solo puede existir si proyecto ACTIVO, presupuesto CONGELADO, compra válida y salida imputada a Partida.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "2. Condiciones de Existencia"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Un movimiento de inventario solo puede existir si: el Proyecto está en estado ACTIVO, existe un Presupuesto CONGELADO vigente, el material proviene de una Compra válida, la salida se imputa a una Partida específica.`
+- Estado:
+  - Explícita
+
+## REGLA-119
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Salida sin Partida es ilegal; entrada sin compra es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "3.2 Salida de Inventario" y "7. Relación con Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Salida sin Partida es ilegal.`
+    - `Inventario sin compra es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-120
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La salida de inventario reduce saldo disponible del APU; exceso debe registrarse como Excepción formal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+  - APU
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "4. Relación con Partidas y APU"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `El sistema debe validar que la cantidad solicitada no exceda los límites contractuales, salvo Excepción formal registrada.`
+- Estado:
+  - Explícita
+
+## REGLA-121
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Diferencias entre inventario físico y sistema deben registrarse como Excepción.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "8. Control de Pérdidas"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Diferencias entre inventario físico y sistema deben registrarse como Excepción.`
+- Estado:
+  - Explícita
+
+## REGLA-122
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Mano de obra es costo real; todo tiempo trabajado cuesta y deja rastro.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - RRHH
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/RRHH_SPECS.md`
+  - método o sección: "2. Principio Rector"
+--
+    - `partida_id UUID NOT NULL UNIQUE`
+- Estado:
+  - Explícita
+
+## REGLA-134
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En movimiento_almacen, el tipo y tipo_movimiento deben estar en {ENTRADA, SALIDA, DEVOLUCION}.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V16__core_immutable_schema.sql`
+  - método o sección: CHECK `tipo`, CHECK `tipo_movimiento`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CHECK (tipo IN ('ENTRADA', 'SALIDA', 'DEVOLUCION'));`
+    - `CHECK (tipo_movimiento IN ('ENTRADA', 'SALIDA', 'DEVOLUCION'));`
+- Estado:
+  - Explícita
+
+## REGLA-135
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En orden_cambio, tipo debe estar en {ADICIONAL, DEDUCTIVO, PRECIO, PLAZO} y estado en {SOLICITADO, APROBADO, RECHAZADO}.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V16__core_immutable_schema.sql`
+  - método o sección: CHECK `tipo`, CHECK `estado`
+--
+    - `CHECK (estado IN ('SOLICITADO', 'APROBADO', 'RECHAZADO'))`
+- Estado:
+  - Explícita
+
+## REGLA-136
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En almacén, el código es único por proyecto.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V14__create_almacen_inventarios_schema.sql`
+  - método o sección: UNIQUE `(proyecto_id, codigo)`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CONSTRAINT uq_almacen_codigo_proyecto UNIQUE (proyecto_id, codigo)`
+- Estado:
+  - Explícita
+
+## REGLA-137
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En stock_actual, la combinación (almacen_id, recurso_id) es única.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/db/migration/V14__create_almacen_inventarios_schema.sql`
+  - método o sección: índice único `idx_stock_actual_almacen_recurso`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `CREATE UNIQUE INDEX idx_stock_actual_almacen_recurso ON stock_actual(almacen_id, recurso_id);`
+- Estado:
+  - Explícita
+
+## REGLA-138
+- Descripción exacta de la regla (lenguaje declarativo)
+  - JWT expira en 24 horas por defecto (jwt.expiration-hours: 24).
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Seguridad
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/resources/application.yml`
+  - método o sección: `jwt.expiration-hours`
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/security/jwt/JwtService.java`
+--
+  - Explícita
+
+## REGLA-150
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.3 Compras, Inventarios y RRHH"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.`
+- Estado:
+  - Explícita
+
+## REGLA-151
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Todo cambio de estado del Proyecto debe registrar estado anterior, nuevo, usuario, fecha/hora y motivo.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Auditoría
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.4 Auditoría"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Todo cambio de estado del Proyecto debe quedar registrado: estado anterior, estado nuevo, usuario responsable, fecha y hora, motivo.`
+--
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "6.1 Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Toda compra debe vincularse a una Partida válida del Presupuesto CONGELADO.`
+- Estado:
+  - Explícita
+
+## REGLA-154
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Inventario sin Partida es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "6.2 Inventario"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Inventario sin Partida es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-155
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Las Órdenes de Cambio ajustan el BAC y las métricas de control; el Presupuesto original permanece visible.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "7. Relación con Órdenes de Cambio"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ajustan el BAC y las métricas de control. El Presupuesto original siempre permanece visible para auditoría.`
+- Estado:
+  - Explícita
+
