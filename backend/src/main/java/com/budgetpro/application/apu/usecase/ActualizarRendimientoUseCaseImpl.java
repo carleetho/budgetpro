@@ -86,7 +86,7 @@ public class ActualizarRendimientoUseCaseImpl implements ActualizarRendimientoUs
                         presupuesto.validarIntegridad(integrityHashService);
 
                         // Actualizar hash de ejecución con el nuevo costo
-                        presupuesto = presupuesto.actualizarHashEjecucion(integrityHashService);
+                        presupuesto.actualizarHashEjecucion(integrityHashService);
 
                         presupuestoRepository.save(presupuesto);
 

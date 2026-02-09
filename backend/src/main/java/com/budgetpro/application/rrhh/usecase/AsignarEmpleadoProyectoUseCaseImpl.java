@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +65,6 @@ public class AsignarEmpleadoProyectoUseCaseImpl implements AsignarEmpleadoProyec
                 String cargo = currentHistory.getCargo();
 
                 // 5. Query Recurso catalog for matching position (TipoRecurso.MANO_OBRA)
-                // Note: The catalog resource name is expected to match the employee's cargo
-                // title (normalized)
                 Recurso catalogRecurso = recursoCatalogRepository.findByNombre(cargo.toUpperCase().trim())
                                 .orElseThrow(() -> new IllegalStateException(
                                                 "No se encontró el recurso en el catálogo para el cargo: " + cargo));
@@ -80,10 +77,7 @@ public class AsignarEmpleadoProyectoUseCaseImpl implements AsignarEmpleadoProyec
                 RecursoProxy proxy = RecursoProxy.crear(RecursoProxyId.generate(), catalogRecurso.getId().toString(),
                                 "CATALOGO_GLOBAL", catalogRecurso.getNombre(), catalogRecurso.getTipo(),
                                 catalogRecurso.getUnidadBase(),
-                                command.tarifaHora() != null ? command.tarifaHora() : currentHistory.getSalarioBase(), // Use
-                                                                                                                       // override
-                                                                                                                       // or
-                                                                                                                       // base
+                                command.tarifaHora() != null ? command.tarifaHora() : currentHistory.getSalarioBase(),
                                 LocalDateTime.now());
 
                 // Save RecursoProxy

@@ -7,6 +7,8 @@ import java.util.UUID;
 
 /**
  * Agregado que representa un movimiento de entrada o salida de almacén.
+ * 
+ * Refactorizado a inmutable para cumplir con AXIOM.
  */
 public final class MovimientoAlmacen {
 
@@ -18,21 +20,10 @@ public final class MovimientoAlmacen {
     private final BigDecimal cantidad;
     private final BigDecimal precioUnitario;
     private final BigDecimal importeTotal;
-    // JUSTIFICACIÓN ARQUITECTÓNICA: Campos opcionales de metadatos/trazabilidad.
-    // Estos campos pueden establecerse después de la creación para enriquecer el
-    // movimiento:
-    // - numeroDocumento: referencia documental (puede asignarse posteriormente)
-    // - partidaId: imputación presupuestal (puede actualizarse)
-    // - centroCostoId: centro de costo (puede reasignarse)
-    // - observaciones: notas adicionales (pueden agregarse/editarse)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private String numeroDocumento;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private UUID partidaId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private UUID centroCostoId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private String observaciones;
+    private final String numeroDocumento;
+    private final UUID partidaId;
+    private final UUID centroCostoId;
+    private final String observaciones;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -162,5 +153,11 @@ public final class MovimientoAlmacen {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("MovimientoAlmacen{id=%s, almacenId=%s, recursoId=%s, tipo=%s, cantidad=%s}", id,
+                almacenId, recursoId, tipoMovimiento, cantidad);
     }
 }
