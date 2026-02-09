@@ -23,21 +23,11 @@ public final class ActividadProgramada {
     private final ActividadProgramadaId id;
     private final UUID partidaId;
     private final UUID programaObraId;
-    // Justificación: Fecha inicio ajustable
-    // nosemgrep
-    private LocalDate fechaInicio;
-    // Justificación: Fecha fin ajustable
-    // nosemgrep
-    private LocalDate fechaFin;
-    // Justificación: Campo calculado automáticamente
-    // nosemgrep
-    private Integer duracionDias;
-    // Justificación: Gestión de dependencias
-    // nosemgrep
-    private List<UUID> predecesoras;
-    // Justificación: Optimistic locking JPA @Version
-    // nosemgrep
-    private Long version;
+    private final LocalDate fechaInicio;
+    private final LocalDate fechaFin;
+    private final Integer duracionDias;
+    private final List<UUID> predecesoras;
+    private final Long version;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -51,8 +41,8 @@ public final class ActividadProgramada {
         this.programaObraId = Objects.requireNonNull(programaObraId, "El programaObraId no puede ser nulo");
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
-        this.duracionDias = calcularDuracion(fechaInicio, fechaFin);
-        this.predecesoras = predecesoras != null ? new ArrayList<>(predecesoras) : new ArrayList<>();
+        this.duracionDias = duracionDias != null ? duracionDias : calcularDuracion(fechaInicio, fechaFin);
+        this.predecesoras = predecesoras != null ? List.copyOf(predecesoras) : List.of();
         this.version = version != null ? version : 0L;
     }
 
@@ -103,34 +93,58 @@ public final class ActividadProgramada {
 
     /**
      * Actualiza las fechas de la actividad y recalcula la duración.
+     * 
+     * @param nuevaFechaInicio Nueva fecha de inicio
+     * @param nuevaFechaFin    Nueva fecha de fin
+     * @return Nueva ActividadProgramada con las fechas actualizadas
      */
-    public void actualizarFechas(LocalDate nuevaFechaInicio, LocalDate nuevaFechaFin) {
-        validarInvariantes(this.partidaId, this.programaObraId, nuevaFechaInicio, nuevaFechaFin);
-        this.fechaInicio = nuevaFechaInicio;
-        this.fechaFin = nuevaFechaFin;
-        this.duracionDias = calcularDuracion(nuevaFechaInicio, nuevaFechaFin);
+    public ActividadProgramada actualizarFechas(LocalDate nuevaFechaInicio, LocalDate nuevaFechaFin) {
+        return new ActividadProgramada(this.id, this.partidaId, this.programaObraId, nuevaFechaInicio, nuevaFechaFin,
+                null, // recalcular duración
+                this.predecesoras, this.version);
     }
 
     /**
      * Agrega una actividad predecesora (dependencia Fin-Inicio).
+     * 
+     * @param actividadPredecesoraId ID de la actividad predecesora
+     * @return Nueva ActividadProgramada con la predecesora agregada
      */
-    public void agregarPredecesora(UUID actividadPredecesoraId) {
+    public ActividadProgramada agregarPredecesora(UUID actividadPredecesoraId) {
         if (actividadPredecesoraId == null) {
             throw new IllegalArgumentException("El ID de la actividad predecesora no puede ser nulo");
         }
         if (actividadPredecesoraId.equals(this.id.getValue())) {
             throw new IllegalArgumentException("Una actividad no puede ser predecesora de sí misma");
         }
-        if (!this.predecesoras.contains(actividadPredecesoraId)) {
-            this.predecesoras.add(actividadPredecesoraId);
+
+        if (this.predecesoras.contains(actividadPredecesoraId)) {
+            return this;
         }
+
+        List<UUID> nuevasPredecesoras = new ArrayList<>(this.predecesoras);
+        nuevasPredecesoras.add(actividadPredecesoraId);
+
+        return new ActividadProgramada(this.id, this.partidaId, this.programaObraId, this.fechaInicio, this.fechaFin,
+                this.duracionDias, nuevasPredecesoras, this.version);
     }
 
     /**
      * Elimina una actividad predecesora.
+     * 
+     * @param actividadPredecesoraId ID de la actividad predecesora a eliminar
+     * @return Nueva ActividadProgramada sin la predecesora
      */
-    public void eliminarPredecesora(UUID actividadPredecesoraId) {
-        this.predecesoras.remove(actividadPredecesoraId);
+    public ActividadProgramada eliminarPredecesora(UUID actividadPredecesoraId) {
+        if (!this.predecesoras.contains(actividadPredecesoraId)) {
+            return this;
+        }
+
+        List<UUID> nuevasPredecesoras = new ArrayList<>(this.predecesoras);
+        nuevasPredecesoras.remove(actividadPredecesoraId);
+
+        return new ActividadProgramada(this.id, this.partidaId, this.programaObraId, this.fechaInicio, this.fechaFin,
+                this.duracionDias, nuevasPredecesoras, this.version);
     }
 
     // Getters
@@ -184,7 +198,8 @@ public final class ActividadProgramada {
 
     @Override
     public String toString() {
-        return String.format("ActividadProgramada{id=%s, partidaId=%s, fechaInicio=%s, fechaFin=%s, duracionDias=%d}",
-                id, partidaId, fechaInicio, fechaFin, duracionDias);
+        return String.format(
+                "ActividadProgramada{id=%s, partidaId=%s, programaObraId=%s, fechas=[%s - %s], duracion=%d}", id,
+                partidaId, programaObraId, fechaInicio, fechaFin, duracionDias);
     }
 }
