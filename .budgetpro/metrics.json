@@ -742,10 +742,24 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-02-09T20:06:58.275941+00:00Z",
+      "execution_time_ms": 2967.451810836792,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 52,
+    "total_runs": 53,
     "avg_violations_per_run": 1.04,
     "pass_rate": 98.1,
     "most_common_validator": "security_validator",
