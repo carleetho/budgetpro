@@ -18,10 +18,9 @@ import java.util.UUID;
 /**
  * Servicio de Dominio para gestionar transferencias de inventario.
  * 
- * Responsabilidad:
- * - Coordinar la transferencia de items entre bodegas de un mismo proyecto.
- * - Asegurar la atomicidad lógica (salida + entrada).
- * - Garantizar la trazabilidad mediante TransferenciaId.
+ * Responsabilidad: - Coordinar la transferencia de items entre bodegas de un
+ * mismo proyecto. - Asegurar la atomicidad lógica (salida + entrada). -
+ * Garantizar la trazabilidad mediante TransferenciaId.
  */
 public class TransferenciaService {
 
@@ -29,8 +28,7 @@ public class TransferenciaService {
     private final ExcepcionValidator excepcionValidator;
     private final TransferenciaEventPublisher eventPublisher;
 
-    public TransferenciaService(InventarioRepository inventarioRepository,
-            ExcepcionValidator excepcionValidator,
+    public TransferenciaService(InventarioRepository inventarioRepository, ExcepcionValidator excepcionValidator,
             TransferenciaEventPublisher eventPublisher) {
         this.inventarioRepository = inventarioRepository;
         this.excepcionValidator = excepcionValidator;
@@ -40,13 +38,12 @@ public class TransferenciaService {
     /**
      * Realiza una transferencia de material entre dos bodegas del mismo proyecto.
      * 
-     * 1. Valida existencia de origen y stock suficiente.
-     * 2. Busca o crea el item de inventario en la bodega destino (mismo
-     * recurso/unidad).
-     * 3. Genera un TransferenciaId único para vincular los movimientos.
-     * 4. Registra SALIDA_TRANSFERENCIA en origen (al PMP actual de origen).
-     * 5. Registra ENTRADA_TRANSFERENCIA en destino (recalcula PMP de destino).
-     * 6. Guarda ambos items (actualizando saldos y registrando movimientos).
+     * 1. Valida existencia de origen y stock suficiente. 2. Busca o crea el item de
+     * inventario en la bodega destino (mismo recurso/unidad). 3. Genera un
+     * TransferenciaId único para vincular los movimientos. 4. Registra
+     * SALIDA_TRANSFERENCIA en origen (al PMP actual de origen). 5. Registra
+     * ENTRADA_TRANSFERENCIA en destino (recalcula PMP de destino). 6. Guarda ambos
+     * items (actualizando saldos y registrando movimientos).
      * 
      * @param origenId        ID del item de inventario origen
      * @param bodegaDestinoId ID de la bodega destino
@@ -89,42 +86,40 @@ public class TransferenciaService {
         }
 
         // 2. Obtener o Crear item Destino
-        InventarioItem destino = inventarioRepository.findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(
-                origen.getProyectoId(),
-                origen.getRecursoExternalId(),
-                origen.getUnidadBase(),
-                bodegaDestinoId).orElseGet(
-                        () -> InventarioItem.crearConSnapshot(
-                                InventarioId.generate(),
-                                origen.getProyectoId(),
-                                origen.getRecursoExternalId(),
-                                bodegaDestinoId,
-                                origen.getNombre(),
-                                origen.getClasificacion(),
-                                origen.getUnidadBase()));
+        InventarioItem destino = inventarioRepository
+                .findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(origen.getProyectoId(),
+                        origen.getRecursoExternalId(), origen.getUnidadBase(), bodegaDestinoId)
+                .orElseGet(() -> InventarioItem.crearConSnapshot(InventarioId.generate(), origen.getProyectoId(),
+                        origen.getRecursoExternalId(), bodegaDestinoId, origen.getNombre(), origen.getClasificacion(),
+                        origen.getUnidadBase()));
 
         // 3. Generar ID de Transferencia
         TransferenciaId transferenciaId = TransferenciaId.generate();
 
         // 4. Registrar Salida en Origen
-        MovimientoInventario movimientoSalida = origen.transferirSalida(cantidad, transferenciaId, referencia);
+        // 4. Registrar Salida en Origen
+        var txSalida = origen.transferirSalida(cantidad, transferenciaId, referencia);
+        InventarioItem origenActualizado = txSalida.inventario();
+        MovimientoInventario movimientoSalida = txSalida.movimiento();
 
         // 5. Registrar Entrada en Destino
         // Usamos el costo unitario de la salida (que es el PMP del origen al momento de
         // la transferencia)
-        destino.transferirEntrada(cantidad, movimientoSalida.getCostoUnitario(), transferenciaId, referencia);
+        var txEntrada = destino.transferirEntrada(cantidad, movimientoSalida.getCostoUnitario(), transferenciaId,
+                referencia);
+        InventarioItem destinoActualizado = txEntrada.inventario();
 
         // 6. Guardar cambios (debe ser transaccional desde la capa de aplicación o
         // implícito)
-        inventarioRepository.save(origen);
-        inventarioRepository.save(destino);
+        inventarioRepository.save(origenActualizado);
+        inventarioRepository.save(destinoActualizado);
     }
 
     /**
      * Realiza una transferencia (préstamo) de material entre proyectos distintos.
      * 
-     * Requiere una Excepción aprobada.
-     * Genera eventos de dominio para que Finanzas registre la deuda.
+     * Requiere una Excepción aprobada. Genera eventos de dominio para que Finanzas
+     * registre la deuda.
      * 
      * @param origenId          Item de inventario origen
      * @param bodegaDestinoId   Bodega en el proyecto destino
@@ -134,9 +129,8 @@ public class TransferenciaService {
      * @param referencia        Referencia
      * @throws ExcepcionNoEncontradaException si la excepción no es válida
      */
-    public void transferirEntreProyectos(InventarioId origenId, BodegaId bodegaDestinoId,
-            UUID proyectoDestinoId, BigDecimal cantidad,
-            UUID excepcionId, String referencia) {
+    public void transferirEntreProyectos(InventarioId origenId, BodegaId bodegaDestinoId, UUID proyectoDestinoId,
+            BigDecimal cantidad, UUID excepcionId, String referencia) {
         if (origenId == null)
             throw new IllegalArgumentException("El ID de inventario origen no puede ser nulo");
         if (bodegaDestinoId == null)
@@ -163,41 +157,37 @@ public class TransferenciaService {
         }
 
         // 3. Obtener o Crear Destino (en bodega destino y proyecto destino)
-        InventarioItem destino = inventarioRepository.findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(
-                proyectoDestinoId, // Proyecto Destino
-                origen.getRecursoExternalId(),
-                origen.getUnidadBase(),
-                bodegaDestinoId).orElseGet(
-                        () -> InventarioItem.crearConSnapshot(
-                                InventarioId.generate(),
-                                proyectoDestinoId, // Nuevo proyecto
-                                origen.getRecursoExternalId(),
-                                bodegaDestinoId,
-                                origen.getNombre(),
-                                origen.getClasificacion(),
-                                origen.getUnidadBase()));
+        InventarioItem destino = inventarioRepository
+                .findByProyectoIdAndRecursoExternalIdAndUnidadBaseAndBodegaId(proyectoDestinoId, // Proyecto Destino
+                        origen.getRecursoExternalId(), origen.getUnidadBase(), bodegaDestinoId)
+                .orElseGet(() -> InventarioItem.crearConSnapshot(InventarioId.generate(), proyectoDestinoId, // Nuevo
+                                                                                                             // proyecto
+                        origen.getRecursoExternalId(), bodegaDestinoId, origen.getNombre(), origen.getClasificacion(),
+                        origen.getUnidadBase()));
 
         // 4. Generar ID Transferencia
         TransferenciaId transferenciaId = TransferenciaId.generate();
 
         // 5. Registrar Movimientos (Salida Prestamo + Entrada Prestamo)
-        MovimientoInventario movSalida = origen.transferirSalidaPrestamo(cantidad, transferenciaId, referencia);
+        // 5. Registrar Movimientos (Salida Prestamo + Entrada Prestamo)
+        var txSalida = origen.transferirSalidaPrestamo(cantidad, transferenciaId, referencia);
+        InventarioItem origenActualizado = txSalida.inventario();
+        MovimientoInventario movSalida = txSalida.movimiento();
+
         // La entrada en destino toma el costo unitario de salida (origen PMP)
-        destino.transferirEntradaPrestamo(cantidad, movSalida.getCostoUnitario(), transferenciaId, referencia);
+        var txEntrada = destino.transferirEntradaPrestamo(cantidad, movSalida.getCostoUnitario(), transferenciaId,
+                referencia);
+        InventarioItem destinoActualizado = txEntrada.inventario();
 
         // 6. Publicar Evento de Dominio
-        MaterialTransferredBetweenProjects event = new MaterialTransferredBetweenProjects(
-                transferenciaId,
-                origen.getProyectoId(),
-                proyectoDestinoId,
-                origen.getRecursoExternalId(),
-                cantidad,
+        MaterialTransferredBetweenProjects event = new MaterialTransferredBetweenProjects(transferenciaId,
+                origen.getProyectoId(), proyectoDestinoId, origen.getRecursoExternalId(), cantidad,
                 movSalida.getCostoTotal(), // Total Valorizado
                 LocalDateTime.now());
         eventPublisher.publicar(event);
 
         // 7. Guardar
-        inventarioRepository.save(origen);
-        inventarioRepository.save(destino);
+        inventarioRepository.save(origenActualizado);
+        inventarioRepository.save(destinoActualizado);
     }
 }

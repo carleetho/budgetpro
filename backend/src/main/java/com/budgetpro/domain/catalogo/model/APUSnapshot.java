@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.budgetpro.domain.shared.model.Immutable;
+
 /**
  * Aggregate Root del agregado APUSnapshot.
  *
@@ -20,6 +22,7 @@ import java.util.UUID;
  * positivos - unidadSnapshot no puede estar vacía - snapshotDate no puede ser
  * nula
  */
+@Immutable
 public final class APUSnapshot {
 
     private final APUSnapshotId id;
@@ -28,13 +31,10 @@ public final class APUSnapshot {
     private final String catalogSource;
     private final BigDecimal rendimientoOriginal;
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private BigDecimal rendimientoVigente; // Mutable by design (Opción C: rendimiento editable)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private boolean rendimientoModificado; // Audit trail field
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private UUID rendimientoModificadoPor; // Audit trail field
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private LocalDateTime rendimientoModificadoEn; // Audit trail field
+    private final BigDecimal rendimientoVigente; // Immutable
+    private final boolean rendimientoModificado; // Audit trail field
+    private final UUID rendimientoModificadoPor; // Audit trail field
+    private final LocalDateTime rendimientoModificadoEn; // Audit trail field
     private final String unidadSnapshot;
     private final LocalDateTime snapshotDate;
     private final List<APUInsumoSnapshot> insumos;
@@ -105,24 +105,31 @@ public final class APUSnapshot {
 
     /**
      * Actualiza el rendimiento vigente (Opción C) y registra auditoría.
+     * 
+     * @return Una nueva instancia con el rendimiento actualizado
      */
-    public void actualizarRendimiento(BigDecimal nuevoRendimiento, UUID usuarioId) {
+    public APUSnapshot actualizarRendimiento(BigDecimal nuevoRendimiento, UUID usuarioId) {
         if (nuevoRendimiento == null || nuevoRendimiento.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El rendimiento debe ser positivo");
         }
         if (nuevoRendimiento.compareTo(this.rendimientoVigente) != 0) {
-            this.rendimientoVigente = nuevoRendimiento;
-            this.rendimientoModificado = true;
-            this.rendimientoModificadoPor = usuarioId;
-            this.rendimientoModificadoEn = LocalDateTime.now();
+            return new APUSnapshot(this.id, this.partidaId, this.externalApuId, this.catalogSource,
+                    this.rendimientoOriginal, nuevoRendimiento, true, usuarioId, LocalDateTime.now(),
+                    this.unidadSnapshot, this.snapshotDate, this.insumos, this.version);
         }
+        return this;
     }
 
-    public void agregarInsumo(APUInsumoSnapshot insumo) {
+    public APUSnapshot agregarInsumo(APUInsumoSnapshot insumo) {
         if (insumo == null) {
             throw new IllegalArgumentException("El insumo no puede ser nulo");
         }
-        this.insumos.add(insumo);
+        List<APUInsumoSnapshot> nuevosInsumos = new ArrayList<>(this.insumos);
+        nuevosInsumos.add(insumo);
+        return new APUSnapshot(this.id, this.partidaId, this.externalApuId, this.catalogSource,
+                this.rendimientoOriginal, this.rendimientoVigente, this.rendimientoModificado,
+                this.rendimientoModificadoPor, this.rendimientoModificadoEn, this.unidadSnapshot, this.snapshotDate,
+                nuevosInsumos, this.version);
     }
 
     /**

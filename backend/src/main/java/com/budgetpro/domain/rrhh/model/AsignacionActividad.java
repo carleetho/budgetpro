@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AsignacionActividad {
+public final class AsignacionActividad {
     private final UUID id;
     private final CuadrillaId cuadrillaId;
     private final ProyectoId proyectoId;

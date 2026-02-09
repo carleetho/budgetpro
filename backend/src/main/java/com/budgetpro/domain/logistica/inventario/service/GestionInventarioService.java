@@ -87,9 +87,10 @@ public class GestionInventarioService {
 
             InventarioItem inventarioItem = inventarioSnapshotService.crearDesdeCompra(compra, detalle);
 
-            inventarioItem.ingresar(cantidadRecibida, detalle.getPrecioUnitario(), detalleId,
+            var tx = inventarioItem.ingresar(cantidadRecibida, detalle.getPrecioUnitario(), detalleId,
                     String.format("Entrada por compra #%s - %s", compra.getId().getValue(), compra.getProveedor()));
 
+            inventarioItem = tx.inventario();
             inventarioRepository.save(inventarioItem);
 
             // Resolver backlog para este recurso cuando llega stock
@@ -134,7 +135,9 @@ public class GestionInventarioService {
         // requisicionId.
         // Usaremos egresar() normal y publicaremos el evento AC manualmente.
 
-        MovimientoInventario movimiento = inventarioItem.egresar(cantidad, referencia);
+        var tx = inventarioItem.egresar(cantidad, referencia);
+        inventarioItem = tx.inventario();
+        MovimientoInventario movimiento = tx.movimiento();
 
         // Persistir (optimistic locking)
         inventarioRepository.save(inventarioItem);
@@ -204,7 +207,8 @@ public class GestionInventarioService {
         // InventarioItem first?
         // No, I'm already editing the service.
         // I will implement the service call: item.ajustar(...)
-        item.ajustar(cantidad, justificacion, referencia);
+        var tx = item.ajustar(cantidad, justificacion, referencia);
+        item = tx.inventario();
 
         inventarioRepository.save(item);
     }

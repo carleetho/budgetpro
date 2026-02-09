@@ -98,7 +98,7 @@ class ExplotarInsumosPresupuestoUseCaseImplTest {
                                 null // dependeDe
                 );
 
-                apu1.agregarInsumo(insumoCemento1);
+                apu1 = apu1.agregarInsumo(insumoCemento1);
 
                 // APU 2 con Cemento en kg
                 apu2 = APUSnapshot.crear(APUSnapshotId.of(UUID.randomUUID()), partidaId2, "APU-002", "CATALOG-001",
@@ -121,7 +121,7 @@ class ExplotarInsumosPresupuestoUseCaseImplTest {
                                 null // dependeDe
                 );
 
-                apu2.agregarInsumo(insumoCemento2);
+                apu2 = apu2.agregarInsumo(insumoCemento2);
         }
 
         @Test
@@ -180,7 +180,7 @@ class ExplotarInsumosPresupuestoUseCaseImplTest {
 
                 APUSnapshot apuIncompatible = APUSnapshot.crear(APUSnapshotId.of(UUID.randomUUID()), partidaId2,
                                 "APU-003", "CATALOG-001", new BigDecimal("10.00"), "m²", LocalDateTime.now());
-                apuIncompatible.agregarInsumo(insumoIncompatible);
+                apuIncompatible = apuIncompatible.agregarInsumo(insumoIncompatible);
 
                 when(presupuestoRepository.findById(any(PresupuestoId.class))).thenReturn(Optional.of(presupuesto));
                 when(partidaRepository.findByPresupuestoId(presupuestoId)).thenReturn(List.of(partida1, partida2));

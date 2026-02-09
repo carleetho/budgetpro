@@ -28,10 +28,8 @@ public final class RecursoProxy {
     private final String unidadSnapshot;
     private final BigDecimal precioSnapshot;
     private final LocalDateTime snapshotDate;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private EstadoProxy estado; // Mutable: can transition to OBSOLETO
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
-    private BigDecimal costoReal; // Mutable: updated when actual cost is known
+    private final EstadoProxy estado; // Immutable
+    private final BigDecimal costoReal; // Immutable
     private final Long version;
 
     private RecursoProxy(RecursoProxyId id, String externalId, String catalogSource, String nombreSnapshot,
@@ -94,16 +92,21 @@ public final class RecursoProxy {
     /**
      * Marca el proxy como OBSOLETO cuando el recurso ya no existe en el catálogo
      * externo.
+     * 
+     * @return Una nueva instancia con estado OBSOLETO
      */
-    public void marcarObsoleto() {
-        this.estado = EstadoProxy.OBSOLETO;
+    public RecursoProxy marcarObsoleto() {
+        return new RecursoProxy(this.id, this.externalId, this.catalogSource, this.nombreSnapshot, this.tipoSnapshot,
+                this.unidadSnapshot, this.precioSnapshot, this.snapshotDate, EstadoProxy.OBSOLETO, this.costoReal,
+                this.version);
     }
 
-    public void actualizarCostoReal(BigDecimal nuevoCostoReal) {
+    public RecursoProxy actualizarCostoReal(BigDecimal nuevoCostoReal) {
         if (nuevoCostoReal != null && nuevoCostoReal.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El costo real no puede ser negativo");
         }
-        this.costoReal = nuevoCostoReal;
+        return new RecursoProxy(this.id, this.externalId, this.catalogSource, this.nombreSnapshot, this.tipoSnapshot,
+                this.unidadSnapshot, this.precioSnapshot, this.snapshotDate, this.estado, nuevoCostoReal, this.version);
     }
 
     // Getters
