@@ -173,9 +173,12 @@ public final class Requisicion {
                     + "Debe estar en APROBADA, DESPACHADA_PARCIAL o PENDIENTE_COMPRA", this.estado));
         }
 
-        List<RequisicionItem> nuevosItems = items.stream()
-                .map(item -> item.getId().equals(itemId) ? item.registrarDespacho(cantidad) : item)
-                .collect(Collectors.toList());
+        List<RequisicionItem> nuevosItems = new ArrayList<>(items);
+        for (RequisicionItem item : nuevosItems) {
+            if (item.getId().equals(itemId)) {
+                item.registrarDespacho(cantidad);
+            }
+        }
 
         // Calcular nuevo estado según despacho
         EstadoRequisicion nuevoEstado = calcularEstadoSegunDespacho(nuevosItems);

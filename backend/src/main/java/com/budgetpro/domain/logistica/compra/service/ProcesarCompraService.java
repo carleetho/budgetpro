@@ -114,8 +114,8 @@ public class ProcesarCompraService {
         for (Map.Entry<PartidaId, PartidaData> entry : partidasData.entrySet()) {
             Partida partida = entry.getValue().partida;
             BigDecimal totalPartida = entry.getValue().total;
-            partida.reservarSaldo(totalPartida);
-            partidaRepository.save(partida);
+            Partida partidaReservada = partida.reservarSaldo(totalPartida);
+            partidaRepository.save(partidaReservada);
         }
 
         // Crear consumos por detalle
@@ -133,7 +133,8 @@ public class ProcesarCompraService {
                 presupuesto.getId(), true); // true because we validated it above
 
         // Aprobar la compra
-        Compra compraAprobada = compra.aprobar();
+        compra.aprobar();
+        Compra compraAprobada = compra;
 
         // CRÍTICO: Registrar entrada en Inventario (Kardex físico)
         Map<UUID, BigDecimal> cantidadesRecibidas = new HashMap<>();
@@ -144,7 +145,7 @@ public class ProcesarCompraService {
 
         // Actualizar hash de ejecución del presupuesto después de cambios financieros
         if (presupuesto.isAprobado()) {
-            presupuesto = presupuesto.actualizarHashEjecucion(integrityHashService);
+            presupuesto.actualizarHashEjecucion(integrityHashService);
             presupuestoRepository.save(presupuesto);
         }
 

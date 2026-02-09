@@ -37,20 +37,20 @@ public class ActualizarEmpleadoUseCaseImpl implements ActualizarEmpleadoUseCase 
             Contacto nuevoContacto = null;
             if (command.email() != null || command.telefono() != null || command.direccion() != null) {
                 Contacto actual = empleado.getContacto();
-                nuevoContacto = Contacto.crear(
+                nuevoContacto = Contacto.of(
                         command.email() != null ? command.email() : (actual != null ? actual.getEmail() : null),
                         command.telefono() != null ? command.telefono()
                                 : (actual != null ? actual.getTelefono() : null),
                         command.direccion() != null ? command.direccion()
                                 : (actual != null ? actual.getDireccion() : null));
             }
-            empleado = empleado.actualizarDatosPersonales(command.nombre(), command.apellido(), nuevoContacto);
+            empleado.actualizarDatosPersonales(command.nombre(), command.apellido(), nuevoContacto);
         }
 
         // Handling Salary/Position updates
         if (command.nuevoSalario() != null || command.nuevoPuesto() != null) {
             LocalDate fecha = command.fechaEfectiva() != null ? command.fechaEfectiva() : LocalDate.now();
-            empleado = empleado.actualizarCondicionesLaborales(command.nuevoSalario(), command.nuevoPuesto(), fecha);
+            empleado.actualizarCondicionesLaborales(command.nuevoSalario(), command.nuevoPuesto(), fecha);
         }
 
         empleadoRepository.save(empleado);

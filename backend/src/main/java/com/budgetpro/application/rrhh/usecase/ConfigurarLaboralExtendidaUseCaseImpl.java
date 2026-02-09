@@ -45,8 +45,8 @@ public class ConfigurarLaboralExtendidaUseCaseImpl implements ConfigurarLaboralE
             }
             // Close the day before the new one starts
             LocalDate fechaCierre = command.fechaInicio().minusDays(1);
-            ConfiguracionLaboralExtendida closed = current.cerrar(fechaCierre);
-            repository.save(closed);
+            current.cerrar(fechaCierre);
+            repository.save(current);
         }
 
         // 3. Create new configuration

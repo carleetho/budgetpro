@@ -697,14 +697,45 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-02-09T18:26:46.402738+00:00Z",
+      "execution_time_ms": 7285.9392166137695,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-09T20:00:10.391519+00:00Z",
+      "execution_time_ms": 3338.5672569274902,
+      "total_violations": 3,
+      "by_severity": {
+        "blocking": 2,
+        "warning": 1
+      },
+      "by_validator": {
+        "lazy_code": 2,
+        "security_validator": 1
+      },
+      "by_module": {
+        "backend": 2,
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 49,
-    "avg_violations_per_run": 1.0,
-    "pass_rate": 100.0,
+    "total_runs": 51,
+    "avg_violations_per_run": 1.04,
+    "pass_rate": 98.0,
     "most_common_validator": "security_validator",
     "most_problematic_module": "home",
-    "trend": "stable"
+    "trend": "degrading"
   }
 }

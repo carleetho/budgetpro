@@ -96,7 +96,9 @@ public final class Cuadrilla {
 
         List<CuadrillaMiembro> nuevosMiembros = new ArrayList<>(this.miembros);
         nuevosMiembros.remove(miembro);
-        nuevosMiembros.add(miembro.remover(LocalDate.now()));
+        nuevosMiembros.remove(miembro);
+        miembro.remover(LocalDate.now());
+        nuevosMiembros.add(miembro);
 
         return new Cuadrilla(this.id, this.proyectoId, this.nombre, this.tipo, this.liderId, this.estado,
                 nuevosMiembros);
@@ -140,7 +142,8 @@ public final class Cuadrilla {
 
         for (CuadrillaMiembro m : miembros) {
             if (m.esActivo()) {
-                nuevosMiembros.add(m.remover(now));
+                m.remover(now);
+                nuevosMiembros.add(m);
             } else {
                 nuevosMiembros.add(m);
             }

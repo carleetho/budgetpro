@@ -23,7 +23,7 @@ public class PartidaMapper {
      */
     public PartidaEntity toEntity(Partida partida, PresupuestoEntity presupuestoEntity, PartidaEntity padreEntity) {
         if (partida == null) {
-            return null;
+            throw new IllegalArgumentException("Partida domain object cannot be null");
         }
 
         PartidaEntity entity = new PartidaEntity(
@@ -47,11 +47,15 @@ public class PartidaMapper {
      */
     public Partida toDomain(PartidaEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("PartidaEntity cannot be null");
         }
 
         UUID padreId = entity.getPadre() != null ? entity.getPadre().getId() : null;
         UUID presupuestoId = entity.getPresupuesto() != null ? entity.getPresupuesto().getId() : null;
+
+        BigDecimal presupuestoAsignado = entity.getPrecioUnitario() != null && entity.getMetrado() != null
+                ? entity.getPrecioUnitario().multiply(entity.getMetrado())
+                : BigDecimal.ZERO;
 
         Partida partida = Partida.reconstruir(
             PartidaId.from(entity.getId()),
@@ -61,14 +65,12 @@ public class PartidaMapper {
             entity.getDescripcion(),
             entity.getUnidad(),
             entity.getMetrado(),
+            presupuestoAsignado,
+            entity.getGastosReales(),
+            entity.getCompromisosPendientes(),
             entity.getNivel(),
             entity.getVersion() != null ? entity.getVersion().longValue() : 0L
         );
-        BigDecimal presupuestoAsignado = entity.getPrecioUnitario()
-                .multiply(entity.getMetrado() != null ? entity.getMetrado() : BigDecimal.ZERO);
-        partida.actualizarPresupuestoAsignado(presupuestoAsignado);
-        partida.actualizarGastosReales(entity.getGastosReales());
-        partida.actualizarCompromisosPendientes(entity.getCompromisosPendientes());
         return partida;
     }
 

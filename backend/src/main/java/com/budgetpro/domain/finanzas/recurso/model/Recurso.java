@@ -1,5 +1,6 @@
 package com.budgetpro.domain.finanzas.recurso.model;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -11,24 +12,18 @@ import com.budgetpro.domain.shared.model.TipoRecurso;
  * 
  * Invariantes: - El nombre debe estar normalizado y no puede estar vacío - El
  * tipo no puede ser nulo - La unidadBase no puede estar vacía
- * 
- * Este es el núcleo del "Shared Kernel — Catálogo de Recursos".
  */
 public final class Recurso {
 
     private final RecursoId id;
-    // nosemgrep
-    private String nombre;
+    private final String nombre;
     private final TipoRecurso tipo;
-    // nosemgrep
-    private String unidadBase;
-    // nosemgrep
-    private Map<String, Object> atributos;
-    // nosemgrep
-    private EstadoRecurso estado;
+    private final String unidadBase;
+    private final Map<String, Object> atributos;
+    private final EstadoRecurso estado;
 
     /**
-     * Constructor privado. Usar factory methods o builder.
+     * Constructor privado. Usar factory methods.
      */
     private Recurso(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase, Map<String, Object> atributos,
             EstadoRecurso estado) {
@@ -38,52 +33,40 @@ public final class Recurso {
         this.nombre = normalizarNombre(nombre);
         this.tipo = tipo;
         this.unidadBase = unidadBase;
-        this.atributos = atributos != null ? new HashMap<>(atributos) : new HashMap<>();
+        this.atributos = atributos != null ? Collections.unmodifiableMap(new HashMap<>(atributos))
+                : Collections.emptyMap();
         this.estado = estado != null ? estado : EstadoRecurso.ACTIVO;
     }
 
     /**
-     * Factory method para crear un nuevo Recurso con estado ACTIVO por defecto.
+     * Factory method para crear un nuevo Recurso.
      */
     public static Recurso crear(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase) {
         return new Recurso(id, nombre, tipo, unidadBase, null, EstadoRecurso.ACTIVO);
     }
 
-    /**
-     * Factory method para crear un Recurso con atributos adicionales y estado
-     * ACTIVO por defecto.
-     */
     public static Recurso crear(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase,
             Map<String, Object> atributos) {
         return new Recurso(id, nombre, tipo, unidadBase, atributos, EstadoRecurso.ACTIVO);
     }
 
-    /**
-     * Factory method para crear un Recurso provisional con estado EN_REVISION.
-     * Usado en el Wireflow 1 cuando se requiere crear un recurso durante una compra
-     * directa.
-     */
     public static Recurso crearProvisional(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase) {
         return new Recurso(id, nombre, tipo, unidadBase, null, EstadoRecurso.EN_REVISION);
     }
 
-    /**
-     * Factory method para crear un Recurso provisional con atributos y estado
-     * EN_REVISION.
-     */
     public static Recurso crearProvisional(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase,
             Map<String, Object> atributos) {
         return new Recurso(id, nombre, tipo, unidadBase, atributos, EstadoRecurso.EN_REVISION);
     }
 
     /**
-     * Normaliza el nombre del recurso según la regla de negocio: Trim + UpperCase +
-     * reemplazar espacios múltiples por uno solo. Ejemplo: " cemento gris " ->
-     * "CEMENTO GRIS"
-     * 
-     * @param nombre El nombre a normalizar
-     * @return El nombre normalizado
+     * Factory method para reconstrucción desde persistencia.
      */
+    public static Recurso reconstruir(RecursoId id, String nombre, TipoRecurso tipo, String unidadBase,
+            Map<String, Object> atributos, EstadoRecurso estado) {
+        return new Recurso(id, nombre, tipo, unidadBase, atributos, estado);
+    }
+
     private static String normalizarNombre(String nombre) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del recurso no puede estar vacío");
@@ -91,9 +74,6 @@ public final class Recurso {
         return nombre.trim().toUpperCase().replaceAll("\\s+", " ");
     }
 
-    /**
-     * Valida las invariantes del agregado antes de crear o modificar.
-     */
     private void validarInvariantes(String nombre, TipoRecurso tipo, String unidadBase) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del recurso no puede estar vacío");
@@ -107,72 +87,67 @@ public final class Recurso {
     }
 
     /**
-     * Actualiza el nombre del recurso aplicando normalización automática. El nombre
-     * se normaliza según: Trim + UpperCase + reemplazar espacios múltiples por uno
-     * solo.
+     * Actualiza el nombre del recurso.
+     * 
+     * @return Nuevo Recurso con el nombre actualizado.
      */
-    public void actualizarNombre(String nuevoNombre) {
-        this.nombre = normalizarNombre(nuevoNombre);
+    public Recurso actualizarNombre(String nuevoNombre) {
+        return new Recurso(this.id, nuevoNombre, this.tipo, this.unidadBase, this.atributos, this.estado);
     }
 
     /**
-     * Actualiza la unidad base del recurso.
+     * Actualiza la unidad base.
+     * 
+     * @return Nuevo Recurso con la unidad base actualizada.
      */
-    public void actualizarUnidadBase(String nuevaUnidadBase) {
-        if (nuevaUnidadBase == null || nuevaUnidadBase.isBlank()) {
-            throw new IllegalArgumentException("La unidad base del recurso no puede estar vacía");
-        }
-        this.unidadBase = nuevaUnidadBase;
+    public Recurso actualizarUnidadBase(String nuevaUnidadBase) {
+        return new Recurso(this.id, this.nombre, this.tipo, nuevaUnidadBase, this.atributos, this.estado);
     }
 
     /**
-     * Agrega o actualiza un atributo adicional del recurso.
+     * Agrega o actualiza un atributo.
+     * 
+     * @return Nuevo Recurso con el atributo agregado.
      */
-    public void agregarAtributo(String clave, Object valor) {
+    public Recurso agregarAtributo(String clave, Object valor) {
         if (clave == null || clave.isBlank()) {
             throw new IllegalArgumentException("La clave del atributo no puede estar vacía");
         }
-        if (atributos == null) {
-            atributos = new HashMap<>();
-        }
-        atributos.put(clave, valor);
+        Map<String, Object> nuevosAtributos = new HashMap<>(this.atributos);
+        nuevosAtributos.put(clave, valor);
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, nuevosAtributos, this.estado);
     }
 
     /**
-     * Elimina un atributo del recurso.
+     * Elimina un atributo.
+     * 
+     * @return Nuevo Recurso sin el atributo.
      */
-    public void eliminarAtributo(String clave) {
-        if (atributos != null) {
-            atributos.remove(clave);
-        }
+    public Recurso eliminarAtributo(String clave) {
+        Map<String, Object> nuevosAtributos = new HashMap<>(this.atributos);
+        nuevosAtributos.remove(clave);
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, nuevosAtributos, this.estado);
     }
 
     /**
-     * Actualiza todos los atributos del recurso.
+     * Actualiza todos los atributos.
+     * 
+     * @return Nuevo Recurso con los nuevos atributos.
      */
-    public void actualizarAtributos(Map<String, Object> nuevosAtributos) {
-        this.atributos = nuevosAtributos != null ? new HashMap<>(nuevosAtributos) : new HashMap<>();
+    public Recurso actualizarAtributos(Map<String, Object> nuevosAtributos) {
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, nuevosAtributos, this.estado);
     }
 
-    /**
-     * Activa el recurso (cambia el estado a ACTIVO).
-     */
-    public void activar() {
-        this.estado = EstadoRecurso.ACTIVO;
+    public Recurso activar() {
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, this.atributos, EstadoRecurso.ACTIVO);
     }
 
-    /**
-     * Desactiva el recurso (cambia el estado a DEPRECADO).
-     */
-    public void desactivar() {
-        this.estado = EstadoRecurso.DEPRECADO;
+    public Recurso desactivar() {
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, this.atributos, EstadoRecurso.DEPRECADO);
     }
 
-    /**
-     * Marca el recurso como en revisión.
-     */
-    public void marcarEnRevision() {
-        this.estado = EstadoRecurso.EN_REVISION;
+    public Recurso marcarEnRevision() {
+        return new Recurso(this.id, this.nombre, this.tipo, this.unidadBase, this.atributos, EstadoRecurso.EN_REVISION);
     }
 
     // Getters
@@ -194,7 +169,7 @@ public final class Recurso {
     }
 
     public Map<String, Object> getAtributos() {
-        return atributos != null ? Map.copyOf(atributos) : Map.of();
+        return atributos;
     }
 
     public EstadoRecurso getEstado() {
@@ -222,7 +197,7 @@ public final class Recurso {
 
     @Override
     public String toString() {
-        return "Recurso{" + "id=" + id + ", nombre='" + nombre + '\'' + ", tipo=" + tipo + ", unidadBase='" + unidadBase
-                + '\'' + ", estado=" + estado + '}';
+        return String.format("Recurso{id=%s, nombre='%s', tipo=%s, unidadBase='%s', estado=%s}", id, nombre, tipo,
+                unidadBase, estado);
     }
 }
