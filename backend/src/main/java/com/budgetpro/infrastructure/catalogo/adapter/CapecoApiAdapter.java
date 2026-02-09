@@ -228,7 +228,7 @@ public class CapecoApiAdapter implements CatalogPort {
                     APUInsumoSnapshot insumoSnapshot = APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(),
                             insumo.getRecursoExternalId(), insumo.getRecursoNombre(), insumo.getCantidad(),
                             insumo.getPrecioUnitario());
-                    snapshot.agregarInsumo(insumoSnapshot);
+                    snapshot = snapshot.agregarInsumo(insumoSnapshot);
                 }
             }
 

@@ -49,15 +49,15 @@ public final class RecursoSearchCriteria {
     }
 
     public static final class Builder {
-        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields
         private String query; // Builder pattern: intentionally mutable
-        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields
         private TipoRecurso tipo; // Builder pattern: intentionally mutable
-        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields
         private String unidad; // Builder pattern: intentionally mutable
-        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields
         private Integer limit; // Builder pattern: intentionally mutable
-        // nosemgrep: budgetpro.domain.immutability.entity-final-fields.catalogo
+        // nosemgrep: budgetpro.domain.immutability.entity-final-fields
         private Integer offset; // Builder pattern: intentionally mutable
 
         private Builder() {

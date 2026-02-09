@@ -30,8 +30,8 @@ _logs/
 Thumbs.db
 .gemini/
 .braingrid/
-node_modules/
-target/
+# node_modules/ -> Removed duplicate
+# target/ -> Removed duplicate
 
 # --- Carpetas de IA/Cache ---
 .cache/

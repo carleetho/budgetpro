@@ -41,8 +41,8 @@ class SnapshotServiceTest {
 
                 APUSnapshot apuData = APUSnapshot.crear(APUSnapshotId.generate(), partidaId, "APU-EXT", "CAPECO",
                                 new BigDecimal("1.5"), "UND", LocalDateTime.now());
-                apuData.agregarInsumo(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-001", "CEMENTO",
-                                new BigDecimal("2.0"), new BigDecimal("10.00")));
+                apuData = apuData.agregarInsumo(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-001",
+                                "CEMENTO", new BigDecimal("2.0"), new BigDecimal("10.00")));
 
                 when(catalogPort.fetchAPU("APU-EXT", "CAPECO")).thenReturn(apuData);
                 when(catalogPort.isRecursoActive("MAT-001", "CAPECO")).thenReturn(true);
@@ -66,10 +66,11 @@ class SnapshotServiceTest {
 
                 APUSnapshot apuData = APUSnapshot.crear(APUSnapshotId.generate(), partidaId, "APU-EXT", "CAPECO",
                                 new BigDecimal("1.0"), "UND", LocalDateTime.now());
-                apuData.agregarInsumo(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-404", "NO EXISTE",
-                                new BigDecimal("1.0"), new BigDecimal("1.0")));
+                apuData = apuData.agregarInsumo(APUInsumoSnapshot.crear(APUInsumoSnapshotId.generate(), "MAT-404",
+                                "NO EXISTE", new BigDecimal("1.0"), new BigDecimal("1.0")));
 
-                when(catalogPort.fetchAPU("APU-EXT", "CAPECO")).thenReturn(apuData);
+                APUSnapshot finalApuData = apuData; // Need final/effectively final for lambda
+                when(catalogPort.fetchAPU("APU-EXT", "CAPECO")).thenReturn(finalApuData);
                 when(catalogPort.isRecursoActive("MAT-404", "CAPECO")).thenReturn(false);
 
                 assertThrows(CatalogNotFoundException.class, () -> service.createAPUSnapshot("APU-EXT", "CAPECO"));
@@ -82,11 +83,11 @@ class SnapshotServiceTest {
                                 "CAPECO", new BigDecimal("1.0"), "UND", LocalDateTime.now());
 
                 UUID usuarioId = UUID.randomUUID();
-                service.actualizarRendimiento(snapshot, new BigDecimal("2.0"), usuarioId);
+                APUSnapshot updatedSnapshot = service.actualizarRendimiento(snapshot, new BigDecimal("2.0"), usuarioId);
 
-                assertTrue(snapshot.isRendimientoModificado());
-                assertEquals(usuarioId, snapshot.getRendimientoModificadoPor());
-                assertNotNull(snapshot.getRendimientoModificadoEn());
+                assertTrue(updatedSnapshot.isRendimientoModificado());
+                assertEquals(usuarioId, updatedSnapshot.getRendimientoModificadoPor());
+                assertNotNull(updatedSnapshot.getRendimientoModificadoEn());
         }
 
         @Test
