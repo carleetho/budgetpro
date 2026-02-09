@@ -5,28 +5,18 @@ import java.util.UUID;
 
 /**
  * Agregado que representa un almacén físico.
+ * 
+ * Refactorizado a inmutable para cumplir con AXIOM.
  */
 public final class Almacen {
 
     private final AlmacenId id;
     private final UUID proyectoId;
     private final String codigo;
-    // JUSTIFICACIÓN ARQUITECTÓNICA: Aggregate Root con estado administrativo
-    // mutable.
-    // Estos campos representan configuración operativa del almacén que DEBE poder
-    // modificarse:
-    // - nombre: puede renombrarse para reflejar reorganizaciones
-    // - ubicacion: puede reubicarse físicamente
-    // - responsableId: el responsable puede cambiar
-    // - activo: lifecycle state (activar/desactivar)
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private String nombre;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private String ubicacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private UUID responsableId;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private boolean activo;
+    private final String nombre;
+    private final String ubicacion;
+    private final UUID responsableId;
+    private final boolean activo;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -59,17 +49,28 @@ public final class Almacen {
     }
 
     /**
+     * Actualiza la información básica del almacén.
+     */
+    public Almacen actualizarInformacion(String nuevoNombre, String nuevaUbicacion, UUID nuevoResponsableId) {
+        return new Almacen(this.id, this.proyectoId, this.codigo, nuevoNombre != null ? nuevoNombre : this.nombre,
+                nuevaUbicacion != null ? nuevaUbicacion : this.ubicacion,
+                nuevoResponsableId != null ? nuevoResponsableId : this.responsableId, this.activo);
+    }
+
+    /**
      * Desactiva el almacén.
      */
-    public void desactivar() {
-        this.activo = false;
+    public Almacen desactivar() {
+        return new Almacen(this.id, this.proyectoId, this.codigo, this.nombre, this.ubicacion, this.responsableId,
+                false);
     }
 
     /**
      * Activa el almacén.
      */
-    public void activar() {
-        this.activo = true;
+    public Almacen activar() {
+        return new Almacen(this.id, this.proyectoId, this.codigo, this.nombre, this.ubicacion, this.responsableId,
+                true);
     }
 
     // Getters
@@ -90,24 +91,12 @@ public final class Almacen {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
     public String getUbicacion() {
         return ubicacion;
     }
 
-    public void setUbicacion(String ubicacion) {
-        this.ubicacion = ubicacion;
-    }
-
     public UUID getResponsableId() {
         return responsableId;
-    }
-
-    public void setResponsableId(UUID responsableId) {
-        this.responsableId = responsableId;
     }
 
     public boolean isActivo() {
@@ -127,5 +116,10 @@ public final class Almacen {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Almacen{id=%s, codigo='%s', nombre='%s', activo=%b}", id, codigo, nombre, activo);
     }
 }
