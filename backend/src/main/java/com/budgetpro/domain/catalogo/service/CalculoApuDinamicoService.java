@@ -7,7 +7,7 @@ import com.budgetpro.domain.shared.model.TipoRecurso;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 /**
@@ -22,7 +22,7 @@ import java.util.List;
  * Respetando el orden de dependencias: MATERIAL, MANO_OBRA, EQUIPO_MAQUINA →
  * EQUIPO_HERRAMIENTA
  */
-@Service
+
 public class CalculoApuDinamicoService {
 
     private static final int PRECISION_INTERMEDIA = 10;
