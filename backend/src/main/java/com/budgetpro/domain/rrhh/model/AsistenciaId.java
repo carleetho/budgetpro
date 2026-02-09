@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AsistenciaId implements Serializable {
+public final class AsistenciaId implements Serializable {
     private final UUID value;
 
     public AsistenciaId(UUID value) {
