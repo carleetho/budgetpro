@@ -11,36 +11,21 @@ import java.util.UUID;
  * Entidad que representa un requerimiento de compra generado automáticamente
  * cuando una requisición no puede ser despachada por falta de stock.
  * 
- * Esta entidad pertenece al contexto de Compras y se usa para inyectar demanda
- * en el módulo de Compras cuando hay backlog de inventario.
- * 
- * Invariantes: - El proyectoId es obligatorio - El requisicionId (origen) es
- * obligatorio - El recursoExternalId no puede ser nulo o vacío - La
- * cantidadNecesaria debe ser positiva - La prioridad no puede ser nula - El
- * estado no puede ser nulo
+ * Refactorizado a inmutable para cumplir con AXIOM.
  */
 public final class RequerimientoCompra {
 
     private final RequerimientoCompraId id;
     private final UUID proyectoId;
-    private final RequisicionId requisicionId; // Requisición que originó este requerimiento
-    private final String recursoExternalId; // ID externo del recurso (ej. "MAT-001")
-    private final BigDecimal cantidadNecesaria; // Cantidad que se necesita comprar
-    private final String unidadMedida; // Unidad de medida (debe coincidir con RequisicionItem)
-    private final PrioridadCompra prioridad; // Prioridad del requerimiento
-    // JUSTIFICACIÓN ARQUITECTÓNICA: Aggregate Root con estado de workflow mutable.
-    // Campos de lifecycle y auditoría que DEBEN ser mutables:
-    // - estado: transiciones de workflow (PENDIENTE → RECIBIDA/CANCELADA)
-    // - fechaCreacion/fechaActualizacion: timestamps de auditoría
-    // - version: optimistic locking
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private EstadoRequerimiento estado; // Estado en el workflow de compras
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private LocalDateTime fechaCreacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private LocalDateTime fechaActualizacion;
-    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
-    private Long version;
+    private final RequisicionId requisicionId;
+    private final String recursoExternalId;
+    private final BigDecimal cantidadNecesaria;
+    private final String unidadMedida;
+    private final PrioridadCompra prioridad;
+    private final EstadoRequerimiento estado;
+    private final LocalDateTime fechaCreacion;
+    private final LocalDateTime fechaActualizacion;
+    private final Long version;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -90,8 +75,7 @@ public final class RequerimientoCompra {
     }
 
     /**
-     * Factory method para crear un nuevo RequerimientoCompra. Estado inicial:
-     * PENDIENTE.
+     * Factory method para crear un nuevo RequerimientoCompra.
      */
     public static RequerimientoCompra crear(RequerimientoCompraId id, UUID proyectoId, RequisicionId requisicionId,
             String recursoExternalId, BigDecimal cantidadNecesaria, String unidadMedida, PrioridadCompra prioridad) {
@@ -111,34 +95,33 @@ public final class RequerimientoCompra {
     }
 
     /**
-     * Marca el requerimiento como recibido (cuando la compra llega y se registra en
-     * inventario).
+     * Marca el requerimiento como recibido y retorna una nueva instancia.
      */
-    public void marcarRecibido() {
+    public RequerimientoCompra marcarRecibido() {
         if (this.estado == EstadoRequerimiento.RECIBIDA) {
-            return; // Ya está recibido
+            return this;
         }
         if (this.estado == EstadoRequerimiento.CANCELADA) {
             throw new IllegalStateException("No se puede marcar como recibido un requerimiento cancelado");
         }
-        this.estado = EstadoRequerimiento.RECIBIDA;
-        this.fechaActualizacion = LocalDateTime.now();
-        this.version = this.version + 1;
+        return new RequerimientoCompra(this.id, this.proyectoId, this.requisicionId, this.recursoExternalId,
+                this.cantidadNecesaria, this.unidadMedida, this.prioridad, EstadoRequerimiento.RECIBIDA,
+                this.fechaCreacion, LocalDateTime.now(), this.version + 1);
     }
 
     /**
-     * Cancela el requerimiento.
+     * Cancela el requerimiento y retorna una nueva instancia.
      */
-    public void cancelar() {
+    public RequerimientoCompra cancelar() {
         if (this.estado == EstadoRequerimiento.CANCELADA) {
-            return; // Ya está cancelado
+            return this;
         }
         if (this.estado == EstadoRequerimiento.RECIBIDA) {
             throw new IllegalStateException("No se puede cancelar un requerimiento ya recibido");
         }
-        this.estado = EstadoRequerimiento.CANCELADA;
-        this.fechaActualizacion = LocalDateTime.now();
-        this.version = this.version + 1;
+        return new RequerimientoCompra(this.id, this.proyectoId, this.requisicionId, this.recursoExternalId,
+                this.cantidadNecesaria, this.unidadMedida, this.prioridad, EstadoRequerimiento.CANCELADA,
+                this.fechaCreacion, LocalDateTime.now(), this.version + 1);
     }
 
     // Getters
