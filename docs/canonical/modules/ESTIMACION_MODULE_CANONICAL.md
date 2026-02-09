@@ -21,6 +21,25 @@
 | ES-03 | **Non-Negative Payment**: Net payment amount cannot be negative after deductions.                                                                                      | ✅ Implemented    |
 | ES-04 | **Advance Amortization**: Must amortize proportional% of the Advance Payment until fully repaid.                                                                       | 🟡 Partial        |
 
+
+### 2.2 Extended Rule Inventory (Phase 1 Alignment)
+
+| ID | Rule | Status |
+| --- | --- | --- |
+| REGLA-010 | **La estimación solo puede pasar de BORRADOR a APROBADA y de APROBADA a PAGADA.** | ✅ Implemented |
+| REGLA-011 | **El monto neto a pagar de una estimación es: montoBruto - amortizacionAnticipo - retencionFondoGarantia.** | ✅ Implemented |
+| REGLA-012 | **El número de estimación debe ser positivo cuando se define.** | ✅ Implemented |
+| REGLA-013 | **El periodo de fin no puede ser menor al periodo de inicio.** | ✅ Implemented |
+| REGLA-014 | **La amortización de anticipo y la retención de fondo de garantía no pueden ser negativas.** | ✅ Implemented |
+| REGLA-015 | **La cantidad de avance y el precio unitario en un detalle de estimación no pueden ser negativos.** | ✅ Implemented |
+| REGLA-016 | **El volumen estimado no puede exceder el volumen contratado.** | ✅ Implemented |
+| REGLA-017 | **La amortización de anticipo calculada no puede exceder el saldo pendiente.** | ✅ Implemented |
+| REGLA-066 | **En estimación: periodo_fin >= periodo_inicio; montos y acumulados no negativos; estado en {BORRADOR, APROBADA, PAGADA}.** | ✅ Implemented |
+| REGLA-087 | **Para generar estimación: fechas de corte/inicio/fin y detalles son obligatorios; porcentajes no negativos.** | ✅ Implemented |
+| REGLA-088 | **En detalle de estimación request: partidaId, cantidadAvance y precioUnitario obligatorios; no negativos.** | ✅ Implemented |
+| REGLA-130 | **La estimación es única por proyecto y número de estimación.** | ✅ Implemented |
+| REGLA-131 | **El detalle de estimación es único por (estimacion_id, partida_id).** | ✅ Implemented |
+
 ## 3. Domain Events
 
 | Event Name                | Trigger              | Content (Payload)               | Status |

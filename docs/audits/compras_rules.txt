@@ -1,0 +1,349 @@
+    - `if (horasAnualesUso == null || horasAnualesUso <= 0) { throw new IllegalArgumentException("Las horas anuales de uso deben ser positivas"); }`
+- Estado:
+  - Explícita
+
+## REGLA-031
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El proyectoId, la fecha, el proveedor y los detalles son obligatorios en una compra.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/logistica/compra/model/Compra.java`
+  - clase: `Compra`
+  - método o sección: `validarInvariantes`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (proyectoId == null) { throw new IllegalArgumentException("El proyectoId no puede ser nulo"); }`
+    - `if (detalles == null || detalles.isEmpty()) { throw new IllegalArgumentException("La compra debe tener al menos un detalle"); }`
+- Estado:
+  - Explícita
+
+## REGLA-032
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El subtotal de un detalle de compra es cantidad * precio unitario; cantidad y precio unitario no pueden ser negativos.
+- Tipo:
+  - Financiera
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/logistica/compra/model/CompraDetalle.java`
+  - clase: `CompraDetalle`
+  - método o sección: `validarInvariantes`, `calcularSubtotal`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `if (cantidad != null && cantidad.compareTo(BigDecimal.ZERO) < 0) { throw new IllegalArgumentException("La cantidad no puede ser negativa"); }`
+    - `private BigDecimal calcularSubtotal() { return this.cantidad.multiply(this.precioUnitario); }`
+- Estado:
+  - Explícita
+
+## REGLA-033
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para procesar una compra, las partidas deben existir; se descuenta de billetera, se aprueba la compra y se registra entrada a inventario.
+- Tipo:
+  - Dominio
+- Módulo(s) afectado(s)
+  - Compras
+  - Billetera
+  - Inventario
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/domain/logistica/compra/service/ProcesarCompraService.java`
+  - clase: `ProcesarCompraService`
+  - método o sección: `procesar`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Partida partida = partidaRepository.findById(...).orElseThrow(...);`
+    - `billetera.egresar(...)`
+    - `compra.aprobar();`
+    - `gestionInventarioService.registrarEntradaPorCompra(compra);`
+- Estado:
+  - Explícita
+
+## REGLA-034
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El consumo de partida requiere partidaId, fecha y tipo; el monto no puede ser negativo.
+- Tipo:
+  - Financiera
+--
+    - `@Positive(message = "El metrado ejecutado debe ser positivo")`
+- Estado:
+  - Explícita
+
+## REGLA-092
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para registrar compra: proyectoId, fecha, proveedor y detalles obligatorios.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/compra/dto/RegistrarCompraRequest.java`
+  - clase: `RegistrarCompraRequest`
+  - método o sección: anotaciones `@NotNull`, `@NotBlank`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@NotBlank(message = "El proveedor es obligatorio")`
+- Estado:
+  - Explícita
+
+## REGLA-093
+- Descripción exacta de la regla (lenguaje declarativo)
+  - En detalle de compra request: recursoId, partidaId, cantidad y precioUnitario obligatorios; cantidad y precioUnitario no negativos.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/compra/dto/CompraDetalleRequest.java`
+  - clase: `CompraDetalleRequest`
+  - método o sección: anotaciones `@NotNull`, `@DecimalMin`
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `@DecimalMin(value = "0.0", message = "La cantidad no puede ser negativa")`
+- Estado:
+  - Explícita
+
+## REGLA-094
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Para crear APU: lista de insumos obligatoria.
+- Tipo:
+  - Técnica
+- Módulo(s) afectado(s)
+  - APU
+- Origen técnico EXACTO:
+  - archivo: `backend/src/main/java/com/budgetpro/infrastructure/rest/apu/dto/CrearApuRequest.java`
+  - clase: `CrearApuRequest`
+--
+- Estado:
+  - Explícita
+
+## REGLA-102
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/context/BUSINESS_MANIFESTO.md`
+  - método o sección: "Principio Supremo: El Presupuesto es Ley"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún proceso operativo puede existir fuera del presupuesto: ...`
+- Estado:
+  - Explícita
+
+## REGLA-103
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Los datos históricos no se corrigen; se explican mediante eventos formales.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Auditoría
+- Origen técnico EXACTO:
+--
+    - `no puede exceder ±20 % del monto contractual original congelado.`
+- Estado:
+  - Explícita
+
+## REGLA-115
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Compra sin clasificación es ilegal; compra sin Partida es válida.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/COMPRAS_SPECS.md`
+  - método o sección: "3. Clasificación Obligatoria de Compras" y "4.2 Compras NO Asociadas a Partida"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Compra sin Partida es válida. Compra sin clasificación es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-116
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Superar el tope del APU no bloquea la compra; se emite alerta y se exige motivo clasificado.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/COMPRAS_SPECS.md`
+  - método o sección: "5. Purchasing Caps"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Superar el tope: NO bloquea la compra... el sistema DEBE emitir alerta técnica... exigir motivo clasificado.`
+- Estado:
+  - Explícita
+
+## REGLA-117
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Compras
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/COMPRAS_SPECS.md`
+  - método o sección: "9. Relación con Inventarios"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Toda compra de bienes físicos genera entrada a inventario.`
+    - `Inventario sin compra es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-118
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Un movimiento de inventario solo puede existir si proyecto ACTIVO, presupuesto CONGELADO, compra válida y salida imputada a Partida.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+--
+
+## REGLA-119
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Salida sin Partida es ilegal; entrada sin compra es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "3.2 Salida de Inventario" y "7. Relación con Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Salida sin Partida es ilegal.`
+    - `Inventario sin compra es ilegal.`
+- Estado:
+  - Explícita
+
+## REGLA-120
+- Descripción exacta de la regla (lenguaje declarativo)
+  - La salida de inventario reduce saldo disponible del APU; exceso debe registrarse como Excepción formal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Inventarios
+  - APU
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/INVENTARIOS_SPECS.md`
+  - método o sección: "4. Relación con Partidas y APU"
+- Evidencia:
+  - fragmento de código o referencia precisa
+--
+- Estado:
+  - Explícita
+
+## REGLA-150
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Compras
+  - Inventarios
+  - RRHH
+  - Producción
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.3 Compras, Inventarios y RRHH"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.`
+- Estado:
+  - Explícita
+
+## REGLA-151
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Todo cambio de estado del Proyecto debe registrar estado anterior, nuevo, usuario, fecha/hora y motivo.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Proyectos
+  - Auditoría
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PROYECTO_SPECS.md`
+  - método o sección: "5.4 Auditoría"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Todo cambio de estado del Proyecto debe quedar registrado: estado anterior, estado nuevo, usuario responsable, fecha y hora, motivo.`
+--
+- Estado:
+  - Explícita
+
+## REGLA-153
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Toda compra debe vincularse a una Partida válida del Presupuesto CONGELADO.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Compras
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "6.1 Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Toda compra debe vincularse a una Partida válida del Presupuesto CONGELADO.`
+- Estado:
+  - Explícita
+
+## REGLA-154
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Inventario sin Partida es ilegal.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Inventarios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "6.2 Inventario"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Inventario sin Partida es ilegal.`
+--
+## REGLA-157
+- Descripción exacta de la regla (lenguaje declarativo)
+  - El exceso de consumo debe registrarse como Excepción de consumo o Insumo asociado a Orden de Cambio.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Presupuesto
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/PRESUPUESTO_SPECS.md`
+  - método o sección: "10. Excesos de Consumo y Compras"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `El exceso de consumo NO se oculta... Debe registrarse como: Excepción de consumo, o Insumo asociado a Orden de Cambio.`
+- Estado:
+  - Explícita
+
+## REGLA-158
+- Descripción exacta de la regla (lenguaje declarativo)
+  - Una Orden de Cambio o Excepción debe registrar tipo, partida afectada, monto, motivo, usuario, fecha y autorización; si falta, se rechaza.
+- Tipo:
+  - Gobierno
+- Módulo(s) afectado(s)
+  - Cambios
+- Origen técnico EXACTO:
+  - archivo: `docs/modules/CAMBIOS_SPECS.md`
+  - método o sección: "4.1 Requisitos Mínimos"
+- Evidencia:
+  - fragmento de código o referencia precisa
+    - `Si alguno de estos datos falta, el sistema DEBE rechazar el registro.`
+- Estado:
