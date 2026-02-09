@@ -90,7 +90,45 @@ public class ProcesarCompraService {
      *                                                                            el
      *                                                                            presupuesto
      */
-    public List<ConsumoPartida> procesar(Compra compra, Billetera billetera) {
+import java.util.Objects;
+
+// ... imports ...
+
+public record CompraProcesada(Compra compra, List<ConsumoPartida> consumos) {
+    public CompraProcesada{Objects.requireNonNull(compra,"La compra no puede ser nula");Objects.requireNonNull(consumos,"La lista de consumos no puede ser nula");}
+    }
+
+    /**
+     * Procesa una compra y genera los consumos presupuestales correspondientes.
+     * 
+     * **CRÍTICO: Validación de Integridad Criptográfica** Antes de procesar la
+     * compra, se valida la integridad del presupuesto para prevenir transacciones
+     * sobre presupuestos modificados no autorizadamente.
+     * 
+     * @param compra    La compra a procesar
+     * @param billetera La billetera del proyecto
+     * @return Resultado del procesamiento (compra aprobada + consumos)
+     * @throws IllegalArgumentException                                           si
+     *                                                                            alguna
+     *                                                                            partida
+     *                                                                            no
+     *                                                                            existe
+     * @throws com.budgetpro.domain.finanzas.exception.SaldoInsuficienteException si
+     *                                                                            la
+     *                                                                            billetera
+     *                                                                            no
+     *                                                                            tiene
+     *                                                                            saldo
+     *                                                                            suficiente
+     * @throws BudgetIntegrityViolationException                                  si
+     *                                                                            se
+     *                                                                            detecta
+     *                                                                            tampering
+     *                                                                            en
+     *                                                                            el
+     *                                                                            presupuesto
+     */
+    public CompraProcesada procesar(Compra compra, Billetera billetera) {
         // CRÍTICO: Validar integridad criptográfica del presupuesto ANTES de procesar
         Presupuesto presupuesto = presupuestoRepository.findByProyectoId(compra.getProyectoId())
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -162,25 +200,25 @@ public class ProcesarCompraService {
                 presupuesto.getId(), true); // true because we validated it above
 
         // Aprobar la compra
-        compra.aprobar();
+        Compra compraAprobada = compra.aprobar();
 
         // CRÍTICO: Registrar entrada en Inventario (Kardex físico)
         // Esto actualiza el stock físico y crea movimientos de inventario
         // Asumimos recepción total al procesar la compra (flujo simplificado)
         Map<java.util.UUID, BigDecimal> cantidadesRecibidas = new HashMap<>();
-        for (CompraDetalle detalle : compra.getDetalles()) {
+        for (CompraDetalle detalle : compraAprobada.getDetalles()) {
             cantidadesRecibidas.put(detalle.getId().getValue(), detalle.getCantidad());
         }
-        gestionInventarioService.registrarEntradaPorCompra(compra, cantidadesRecibidas);
+        gestionInventarioService.registrarEntradaPorCompra(compraAprobada, cantidadesRecibidas);
 
         // Actualizar hash de ejecución del presupuesto después de cambios financieros
         // Solo si el presupuesto fue aprobado y tiene hash de aprobación
         if (presupuesto.isAprobado()) {
-            presupuesto.actualizarHashEjecucion(integrityHashService);
+            presupuesto = presupuesto.actualizarHashEjecucion(integrityHashService);
             presupuestoRepository.save(presupuesto);
         }
 
-        return consumos;
+        return new CompraProcesada(compraAprobada, consumos);
     }
 
     /**
