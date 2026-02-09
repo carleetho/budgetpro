@@ -15,12 +15,9 @@ import java.util.Objects;
 public final class Proyecto {
 
     private final ProyectoId id;
-    private String nombre; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
-                           // Project name editable via actualizarNombre()
-    private String ubicacion; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
-                              // Project location editable via actualizarUbicacion()
-    private EstadoProyecto estado; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.proyecto -
-                                   // Project state machine (BORRADOR -> ACTIVO -> CERRADO)
+    private final String nombre;
+    private final String ubicacion;
+    private final EstadoProyecto estado;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -72,40 +69,47 @@ public final class Proyecto {
 
     /**
      * Actualiza el nombre del proyecto.
+     * 
+     * @return Nueva instancia de Proyecto con el nombre actualizado.
      */
-    public void actualizarNombre(String nuevoNombre) {
-        if (nuevoNombre == null || nuevoNombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre del proyecto no puede estar vacío");
-        }
-        this.nombre = nuevoNombre.trim();
+    public Proyecto actualizarNombre(String nuevoNombre) {
+        return new Proyecto(this.id, nuevoNombre, this.ubicacion, this.estado);
     }
 
     /**
      * Actualiza la ubicación del proyecto.
+     * 
+     * @return Nueva instancia de Proyecto con la ubicación actualizada.
      */
-    public void actualizarUbicacion(String nuevaUbicacion) {
-        this.ubicacion = nuevaUbicacion != null ? nuevaUbicacion.trim() : null;
+    public Proyecto actualizarUbicacion(String nuevaUbicacion) {
+        return new Proyecto(this.id, this.nombre, nuevaUbicacion, this.estado);
     }
 
     /**
      * Inicia el proyecto (cambia el estado a ACTIVO).
+     * 
+     * @return Nueva instancia de Proyecto en estado ACTIVO.
      */
-    public void activar() {
-        this.estado = EstadoProyecto.ACTIVO;
+    public Proyecto activar() {
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.ACTIVO);
     }
 
     /**
      * Suspende el proyecto (cambia el estado a SUSPENDIDO).
+     * 
+     * @return Nueva instancia de Proyecto en estado SUSPENDIDO.
      */
-    public void suspender() {
-        this.estado = EstadoProyecto.SUSPENDIDO;
+    public Proyecto suspender() {
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.SUSPENDIDO);
     }
 
     /**
      * Finaliza el proyecto (cambia el estado a CERRADO).
+     * 
+     * @return Nueva instancia de Proyecto en estado CERRADO.
      */
-    public void cerrar() {
-        this.estado = EstadoProyecto.CERRADO;
+    public Proyecto cerrar() {
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.CERRADO);
     }
 
     // Getters
