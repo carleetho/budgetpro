@@ -39,7 +39,7 @@ public class InactivarEmpleadoUseCaseImpl implements InactivarEmpleadoUseCase {
             throw new EmpleadoConAsignacionesActivasException(id);
         }
 
-        empleado = empleado.inactivar(LocalDate.now());
+        empleado.inactivar(LocalDate.now());
         empleadoRepository.save(empleado);
 
         return mapToResponse(empleado);

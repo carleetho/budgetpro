@@ -33,9 +33,8 @@ public class CrearApuUseCaseImpl implements CrearApuUseCase {
     private final PartidaRepository partidaRepository;
     private final RecursoRepository recursoRepository;
 
-    public CrearApuUseCaseImpl(ApuRepository apuRepository,
-                               PartidaRepository partidaRepository,
-                               RecursoRepository recursoRepository) {
+    public CrearApuUseCaseImpl(ApuRepository apuRepository, PartidaRepository partidaRepository,
+            RecursoRepository recursoRepository) {
         this.apuRepository = apuRepository;
         this.partidaRepository = partidaRepository;
         this.recursoRepository = recursoRepository;
@@ -66,7 +65,7 @@ public class CrearApuUseCaseImpl implements CrearApuUseCase {
         // Crear el APU
         ApuId id = ApuId.nuevo();
         APU apu;
-        
+
         if (command.rendimiento() != null) {
             apu = APU.crear(id, command.partidaId(), command.rendimiento(), command.unidad());
         } else {
@@ -75,11 +74,8 @@ public class CrearApuUseCaseImpl implements CrearApuUseCase {
 
         // Agregar insumos al APU
         for (ApuInsumoCommand insumoCommand : command.insumos()) {
-            apu.agregarInsumo(
-                insumoCommand.recursoId(),
-                insumoCommand.cantidad(),
-                insumoCommand.precioUnitario()
-            );
+            apu = apu.agregarInsumo(insumoCommand.recursoId(), insumoCommand.cantidad(),
+                    insumoCommand.precioUnitario());
         }
 
         // Persistir
@@ -87,26 +83,16 @@ public class CrearApuUseCaseImpl implements CrearApuUseCase {
 
         // Mapear insumos a respuesta
         List<ApuInsumoResponse> insumosResponse = apu.getInsumos().stream()
-                .map(insumo -> new ApuInsumoResponse(
-                    insumo.getId().getValue(),
-                    insumo.getRecursoId(),
-                    insumo.getCantidad(),
-                    insumo.getPrecioUnitario(),
-                    insumo.getSubtotal()
-                ))
+                .map(insumo -> new ApuInsumoResponse(insumo.getId().getValue(), insumo.getRecursoId(),
+                        insumo.getCantidad(), insumo.getPrecioUnitario(), insumo.getSubtotal()))
                 .collect(Collectors.toList());
 
         // Retornar respuesta
-        return new ApuResponse(
-                apu.getId().getValue(),
-                apu.getPartidaId(),
-                apu.getRendimiento(),
-                apu.getUnidad(),
-                apu.calcularCostoTotal(),
-                apu.getVersion().intValue(),
-                insumosResponse,
-                null, // createdAt se obtiene de la entidad después de persistir
-                null  // updatedAt se obtiene de la entidad después de persistir
+        return new ApuResponse(apu.getId().getValue(), apu.getPartidaId(), apu.getRendimiento(), apu.getUnidad(),
+                apu.calcularCostoTotal(), apu.getVersion().intValue(), insumosResponse, null, // createdAt se obtiene de
+                                                                                              // la entidad después de
+                                                                                              // persistir
+                null // updatedAt se obtiene de la entidad después de persistir
         );
     }
 }

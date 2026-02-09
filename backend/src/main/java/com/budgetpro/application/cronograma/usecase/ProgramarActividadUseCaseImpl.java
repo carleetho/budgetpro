@@ -70,10 +70,11 @@ public class ProgramarActividadUseCaseImpl implements ProgramarActividadUseCase 
         }
 
         // 4. Buscar o crear la actividad programada
+        final ProgramaObra programaObraFinal = programaObra;
         ActividadProgramada actividad = actividadProgramadaRepository.findByPartidaId(command.partidaId())
                 .orElseGet(() -> {
                     ActividadProgramadaId id = ActividadProgramadaId.nuevo();
-                    return ActividadProgramada.crear(id, command.partidaId(), programaObra.getId().getValue(),
+                    return ActividadProgramada.crear(id, command.partidaId(), programaObraFinal.getId().getValue(),
                             command.fechaInicio(), command.fechaFin());
                 });
 

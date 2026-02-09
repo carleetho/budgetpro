@@ -5,71 +5,58 @@ import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Entidad que define los parámetros laborales para el cálculo del Salario Real.
+ */
 public final class ConfiguracionLaboral {
     private final ConfiguracionLaboralId id;
-    // nosemgrep
-    private UUID proyectoId;
-    // nosemgrep
-    private Integer diasAguinaldo;
-    // nosemgrep
-    private Integer diasVacaciones;
-    // nosemgrep
-    private BigDecimal porcentajeSeguridadSocial;
-    // nosemgrep
-    private Integer diasNoTrabajados;
-    // nosemgrep
-    private Integer diasLaborablesAno;
-    // Justificación: Optimistic locking JPA @Version
-    // nosemgrep
-    private Long version;
+    private final UUID proyectoId;
+    private final Integer diasAguinaldo;
+    private final Integer diasVacaciones;
+    private final BigDecimal porcentajeSeguridadSocial;
+    private final Integer diasNoTrabajados;
+    private final Integer diasLaborablesAno;
+    private final Long version;
 
-    private ConfiguracionLaboral(ConfiguracionLaboralId id, UUID proyectoId,
-                                Integer diasAguinaldo, Integer diasVacaciones,
-                                BigDecimal porcentajeSeguridadSocial, Integer diasNoTrabajados,
-                                Integer diasLaborablesAno, Long version) {
-        validarInvariantes(diasAguinaldo, diasVacaciones, porcentajeSeguridadSocial,
-                          diasNoTrabajados, diasLaborablesAno);
+    private ConfiguracionLaboral(ConfiguracionLaboralId id, UUID proyectoId, Integer diasAguinaldo,
+            Integer diasVacaciones, BigDecimal porcentajeSeguridadSocial, Integer diasNoTrabajados,
+            Integer diasLaborablesAno, Long version) {
+        validarInvariantes(diasAguinaldo, diasVacaciones, porcentajeSeguridadSocial, diasNoTrabajados,
+                diasLaborablesAno);
         this.id = Objects.requireNonNull(id);
         this.proyectoId = proyectoId;
         this.diasAguinaldo = diasAguinaldo != null ? diasAguinaldo : 0;
         this.diasVacaciones = diasVacaciones != null ? diasVacaciones : 0;
-        this.porcentajeSeguridadSocial = porcentajeSeguridadSocial != null ? porcentajeSeguridadSocial : BigDecimal.ZERO;
+        this.porcentajeSeguridadSocial = porcentajeSeguridadSocial != null ? porcentajeSeguridadSocial
+                : BigDecimal.ZERO;
         this.diasNoTrabajados = diasNoTrabajados != null ? diasNoTrabajados : 0;
         this.diasLaborablesAno = diasLaborablesAno != null ? diasLaborablesAno : 251;
         this.version = version != null ? version : 0L;
     }
 
-    public static ConfiguracionLaboral crearGlobal(ConfiguracionLaboralId id,
-                                                   Integer diasAguinaldo, Integer diasVacaciones,
-                                                   BigDecimal porcentajeSeguridadSocial,
-                                                   Integer diasNoTrabajados, Integer diasLaborablesAno) {
-        return new ConfiguracionLaboral(id, null, diasAguinaldo, diasVacaciones,
-                                       porcentajeSeguridadSocial, diasNoTrabajados,
-                                       diasLaborablesAno, 0L);
+    public static ConfiguracionLaboral crearGlobal(ConfiguracionLaboralId id, Integer diasAguinaldo,
+            Integer diasVacaciones, BigDecimal porcentajeSeguridadSocial, Integer diasNoTrabajados,
+            Integer diasLaborablesAno) {
+        return new ConfiguracionLaboral(id, null, diasAguinaldo, diasVacaciones, porcentajeSeguridadSocial,
+                diasNoTrabajados, diasLaborablesAno, 0L);
     }
 
     public static ConfiguracionLaboral crearPorProyecto(ConfiguracionLaboralId id, UUID proyectoId,
-                                                       Integer diasAguinaldo, Integer diasVacaciones,
-                                                       BigDecimal porcentajeSeguridadSocial,
-                                                       Integer diasNoTrabajados, Integer diasLaborablesAno) {
-        return new ConfiguracionLaboral(id, proyectoId, diasAguinaldo, diasVacaciones,
-                                       porcentajeSeguridadSocial, diasNoTrabajados,
-                                       diasLaborablesAno, 0L);
+            Integer diasAguinaldo, Integer diasVacaciones, BigDecimal porcentajeSeguridadSocial,
+            Integer diasNoTrabajados, Integer diasLaborablesAno) {
+        return new ConfiguracionLaboral(id, proyectoId, diasAguinaldo, diasVacaciones, porcentajeSeguridadSocial,
+                diasNoTrabajados, diasLaborablesAno, 0L);
     }
 
-    public static ConfiguracionLaboral reconstruir(ConfiguracionLaboralId id, UUID proyectoId,
-                                                   Integer diasAguinaldo, Integer diasVacaciones,
-                                                   BigDecimal porcentajeSeguridadSocial,
-                                                   Integer diasNoTrabajados, Integer diasLaborablesAno,
-                                                   Long version) {
-        return new ConfiguracionLaboral(id, proyectoId, diasAguinaldo, diasVacaciones,
-                                       porcentajeSeguridadSocial, diasNoTrabajados,
-                                       diasLaborablesAno, version);
+    public static ConfiguracionLaboral reconstruir(ConfiguracionLaboralId id, UUID proyectoId, Integer diasAguinaldo,
+            Integer diasVacaciones, BigDecimal porcentajeSeguridadSocial, Integer diasNoTrabajados,
+            Integer diasLaborablesAno, Long version) {
+        return new ConfiguracionLaboral(id, proyectoId, diasAguinaldo, diasVacaciones, porcentajeSeguridadSocial,
+                diasNoTrabajados, diasLaborablesAno, version);
     }
 
-    private void validarInvariantes(Integer diasAguinaldo, Integer diasVacaciones,
-                                   BigDecimal porcentajeSeguridadSocial,
-                                   Integer diasNoTrabajados, Integer diasLaborablesAno) {
+    private void validarInvariantes(Integer diasAguinaldo, Integer diasVacaciones, BigDecimal porcentajeSeguridadSocial,
+            Integer diasNoTrabajados, Integer diasLaborablesAno) {
         if (diasAguinaldo != null && diasAguinaldo < 0) {
             throw new IllegalArgumentException("Los días de aguinaldo no pueden ser negativos");
         }
@@ -94,10 +81,8 @@ public final class ConfiguracionLaboral {
 
     public BigDecimal calcularFSR() {
         BigDecimal totalTrabajado = new BigDecimal(this.diasLaborablesAno);
-        BigDecimal totalPagado = new BigDecimal(this.diasLaborablesAno)
-                .add(new BigDecimal(this.diasVacaciones))
-                .add(new BigDecimal(this.diasAguinaldo))
-                .add(new BigDecimal(this.diasNoTrabajados));
+        BigDecimal totalPagado = new BigDecimal(this.diasLaborablesAno).add(new BigDecimal(this.diasVacaciones))
+                .add(new BigDecimal(this.diasAguinaldo)).add(new BigDecimal(this.diasNoTrabajados));
         if (totalPagado.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ONE;
         }
@@ -112,20 +97,48 @@ public final class ConfiguracionLaboral {
         return salarioBase.multiply(fsr).setScale(4, RoundingMode.HALF_UP);
     }
 
-    public ConfiguracionLaboralId getId() { return id; }
-    public UUID getProyectoId() { return proyectoId; }
-    public Integer getDiasAguinaldo() { return diasAguinaldo; }
-    public Integer getDiasVacaciones() { return diasVacaciones; }
-    public BigDecimal getPorcentajeSeguridadSocial() { return porcentajeSeguridadSocial; }
-    public Integer getDiasNoTrabajados() { return diasNoTrabajados; }
-    public Integer getDiasLaborablesAno() { return diasLaborablesAno; }
-    public Long getVersion() { return version; }
-    public boolean isGlobal() { return proyectoId == null; }
+    public ConfiguracionLaboralId getId() {
+        return id;
+    }
+
+    public UUID getProyectoId() {
+        return proyectoId;
+    }
+
+    public Integer getDiasAguinaldo() {
+        return diasAguinaldo;
+    }
+
+    public Integer getDiasVacaciones() {
+        return diasVacaciones;
+    }
+
+    public BigDecimal getPorcentajeSeguridadSocial() {
+        return porcentajeSeguridadSocial;
+    }
+
+    public Integer getDiasNoTrabajados() {
+        return diasNoTrabajados;
+    }
+
+    public Integer getDiasLaborablesAno() {
+        return diasLaborablesAno;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public boolean isGlobal() {
+        return proyectoId == null;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ConfiguracionLaboral that = (ConfiguracionLaboral) o;
         return Objects.equals(id, that.id);
     }
@@ -137,7 +150,6 @@ public final class ConfiguracionLaboral {
 
     @Override
     public String toString() {
-        return String.format("ConfiguracionLaboral{id=%s, proyectoId=%s, fsr=%s}", 
-                           id, proyectoId, calcularFSR());
+        return String.format("ConfiguracionLaboral{id=%s, proyectoId=%s, fsr=%s}", id, proyectoId, calcularFSR());
     }
 }

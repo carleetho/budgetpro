@@ -7,36 +7,32 @@ import java.util.UUID;
 /**
  * Entidad interna del agregado APU.
  * 
- * Representa un insumo (recurso) que forma parte del análisis de precios unitarios.
+ * Representa un insumo (recurso) que forma parte del análisis de precios
+ * unitarios.
  * 
- * Invariantes:
- * - El recursoId no puede ser nulo
- * - La cantidad no puede ser negativa
- * - El precioUnitario no puede ser negativo
- * - El subtotal = cantidad * precioUnitario
+ * Invariantes: - El recursoId no puede ser nulo - La cantidad no puede ser
+ * negativa - El precioUnitario no puede ser negativo - El subtotal = cantidad *
+ * precioUnitario
  */
 public final class ApuInsumo {
 
     private final ApuInsumoId id;
     private final UUID recursoId;
-    // nosemgrep
-    private BigDecimal cantidad; // Cantidad técnica por unidad de partida
-    // nosemgrep
-    private BigDecimal precioUnitario; // Snapshot del precio del recurso al momento de agregar
-    // nosemgrep
-    private BigDecimal subtotal; // Calculado: cantidad * precioUnitario
+    private final BigDecimal cantidad; // Cantidad técnica por unidad de partida
+    private final BigDecimal precioUnitario; // Snapshot del precio del recurso al momento de agregar
+    private final BigDecimal subtotal; // Calculado: cantidad * precioUnitario
 
     /**
      * Constructor privado. Usar factory methods.
      */
     private ApuInsumo(ApuInsumoId id, UUID recursoId, BigDecimal cantidad, BigDecimal precioUnitario) {
         validarInvariantes(recursoId, cantidad, precioUnitario);
-        
+
         this.id = Objects.requireNonNull(id, "El ID del ApuInsumo no puede ser nulo");
         this.recursoId = Objects.requireNonNull(recursoId, "El recursoId no puede ser nulo");
         this.cantidad = cantidad != null ? cantidad : BigDecimal.ZERO;
         this.precioUnitario = precioUnitario != null ? precioUnitario : BigDecimal.ZERO;
-        this.subtotal = calcularSubtotal();
+        this.subtotal = calcularSubtotal(this.cantidad, this.precioUnitario);
     }
 
     /**
@@ -49,11 +45,9 @@ public final class ApuInsumo {
     /**
      * Factory method para reconstruir un ApuInsumo desde persistencia.
      */
-    public static ApuInsumo reconstruir(ApuInsumoId id, UUID recursoId, BigDecimal cantidad, 
-                                       BigDecimal precioUnitario, BigDecimal subtotal) {
-        ApuInsumo insumo = new ApuInsumo(id, recursoId, cantidad, precioUnitario);
-        insumo.subtotal = subtotal != null ? subtotal : insumo.calcularSubtotal();
-        return insumo;
+    public static ApuInsumo reconstruir(ApuInsumoId id, UUID recursoId, BigDecimal cantidad, BigDecimal precioUnitario,
+            BigDecimal subtotal) {
+        return new ApuInsumo(id, recursoId, cantidad, precioUnitario);
     }
 
     /**
@@ -74,36 +68,34 @@ public final class ApuInsumo {
     /**
      * Calcula el subtotal: cantidad * precioUnitario.
      */
-    private BigDecimal calcularSubtotal() {
-        return this.cantidad.multiply(this.precioUnitario);
+    private BigDecimal calcularSubtotal(BigDecimal cant, BigDecimal pu) {
+        return cant.multiply(pu);
     }
 
     /**
      * Actualiza la cantidad y recalcula el subtotal.
+     * 
+     * @return Nueva instancia de ApuInsumo con la cantidad actualizada.
      */
-    public void actualizarCantidad(BigDecimal nuevaCantidad) {
-        if (nuevaCantidad == null) {
-            this.cantidad = BigDecimal.ZERO;
-        } else if (nuevaCantidad.compareTo(BigDecimal.ZERO) < 0) {
+    public ApuInsumo actualizarCantidad(BigDecimal nuevaCantidad) {
+        BigDecimal cant = nuevaCantidad != null ? nuevaCantidad : BigDecimal.ZERO;
+        if (cant.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("La cantidad no puede ser negativa");
-        } else {
-            this.cantidad = nuevaCantidad;
         }
-        this.subtotal = calcularSubtotal();
+        return new ApuInsumo(this.id, this.recursoId, cant, this.precioUnitario);
     }
 
     /**
      * Actualiza el precio unitario y recalcula el subtotal.
+     * 
+     * @return Nueva instancia de ApuInsumo con el precio unitario actualizado.
      */
-    public void actualizarPrecioUnitario(BigDecimal nuevoPrecioUnitario) {
-        if (nuevoPrecioUnitario == null) {
-            this.precioUnitario = BigDecimal.ZERO;
-        } else if (nuevoPrecioUnitario.compareTo(BigDecimal.ZERO) < 0) {
+    public ApuInsumo actualizarPrecioUnitario(BigDecimal nuevoPrecioUnitario) {
+        BigDecimal pu = nuevoPrecioUnitario != null ? nuevoPrecioUnitario : BigDecimal.ZERO;
+        if (pu.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El precio unitario no puede ser negativo");
-        } else {
-            this.precioUnitario = nuevoPrecioUnitario;
         }
-        this.subtotal = calcularSubtotal();
+        return new ApuInsumo(this.id, this.recursoId, this.cantidad, pu);
     }
 
     // Getters
@@ -130,8 +122,10 @@ public final class ApuInsumo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ApuInsumo that = (ApuInsumo) o;
         return Objects.equals(id, that.id);
     }
@@ -143,7 +137,7 @@ public final class ApuInsumo {
 
     @Override
     public String toString() {
-        return String.format("ApuInsumo{id=%s, recursoId=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}", 
-                           id, recursoId, cantidad, precioUnitario, subtotal);
+        return String.format("ApuInsumo{id=%s, recursoId=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}", id,
+                recursoId, cantidad, precioUnitario, subtotal);
     }
 }

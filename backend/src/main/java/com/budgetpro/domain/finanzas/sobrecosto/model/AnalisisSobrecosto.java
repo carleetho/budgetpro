@@ -4,84 +4,61 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Aggregate Root que define los porcentajes de sobrecosto para un presupuesto.
+ */
 public final class AnalisisSobrecosto {
     private final AnalisisSobrecostoId id;
     private final UUID presupuestoId;
-    // nosemgrep
-    private BigDecimal porcentajeIndirectosOficinaCentral;
-    // nosemgrep
-    private BigDecimal porcentajeIndirectosOficinaCampo;
-    // nosemgrep
-    private BigDecimal porcentajeFinanciamiento;
-    // nosemgrep
-    private Boolean financiamientoCalculado;
-    // nosemgrep
-    private BigDecimal porcentajeUtilidad;
-    // nosemgrep
-    private BigDecimal porcentajeFianzas;
-    // nosemgrep
-    private BigDecimal porcentajeImpuestosReflejables;
-    // Justificación: Optimistic locking JPA @Version
-    // nosemgrep
-    private Long version;
+    private final BigDecimal porcentajeIndirectosOficinaCentral;
+    private final BigDecimal porcentajeIndirectosOficinaCampo;
+    private final BigDecimal porcentajeFinanciamiento;
+    private final Boolean financiamientoCalculado;
+    private final BigDecimal porcentajeUtilidad;
+    private final BigDecimal porcentajeFianzas;
+    private final BigDecimal porcentajeImpuestosReflejables;
+    private final Long version;
 
     private AnalisisSobrecosto(AnalisisSobrecostoId id, UUID presupuestoId,
-                              BigDecimal porcentajeIndirectosOficinaCentral,
-                              BigDecimal porcentajeIndirectosOficinaCampo,
-                              BigDecimal porcentajeFinanciamiento,
-                              Boolean financiamientoCalculado,
-                              BigDecimal porcentajeUtilidad,
-                              BigDecimal porcentajeFianzas,
-                              BigDecimal porcentajeImpuestosReflejables,
-                              Long version) {
-        validarInvariantes(presupuestoId, porcentajeIndirectosOficinaCentral,
-                          porcentajeIndirectosOficinaCampo, porcentajeFinanciamiento,
-                          porcentajeUtilidad, porcentajeFianzas, porcentajeImpuestosReflejables);
+            BigDecimal porcentajeIndirectosOficinaCentral, BigDecimal porcentajeIndirectosOficinaCampo,
+            BigDecimal porcentajeFinanciamiento, Boolean financiamientoCalculado, BigDecimal porcentajeUtilidad,
+            BigDecimal porcentajeFianzas, BigDecimal porcentajeImpuestosReflejables, Long version) {
+        validarInvariantes(presupuestoId, porcentajeIndirectosOficinaCentral, porcentajeIndirectosOficinaCampo,
+                porcentajeFinanciamiento, porcentajeUtilidad, porcentajeFianzas, porcentajeImpuestosReflejables);
         this.id = Objects.requireNonNull(id);
         this.presupuestoId = Objects.requireNonNull(presupuestoId);
-        this.porcentajeIndirectosOficinaCentral = porcentajeIndirectosOficinaCentral != null ? porcentajeIndirectosOficinaCentral : BigDecimal.ZERO;
-        this.porcentajeIndirectosOficinaCampo = porcentajeIndirectosOficinaCampo != null ? porcentajeIndirectosOficinaCampo : BigDecimal.ZERO;
+        this.porcentajeIndirectosOficinaCentral = porcentajeIndirectosOficinaCentral != null
+                ? porcentajeIndirectosOficinaCentral
+                : BigDecimal.ZERO;
+        this.porcentajeIndirectosOficinaCampo = porcentajeIndirectosOficinaCampo != null
+                ? porcentajeIndirectosOficinaCampo
+                : BigDecimal.ZERO;
         this.porcentajeFinanciamiento = porcentajeFinanciamiento != null ? porcentajeFinanciamiento : BigDecimal.ZERO;
         this.financiamientoCalculado = financiamientoCalculado != null ? financiamientoCalculado : false;
         this.porcentajeUtilidad = porcentajeUtilidad != null ? porcentajeUtilidad : BigDecimal.ZERO;
         this.porcentajeFianzas = porcentajeFianzas != null ? porcentajeFianzas : BigDecimal.ZERO;
-        this.porcentajeImpuestosReflejables = porcentajeImpuestosReflejables != null ? porcentajeImpuestosReflejables : BigDecimal.ZERO;
+        this.porcentajeImpuestosReflejables = porcentajeImpuestosReflejables != null ? porcentajeImpuestosReflejables
+                : BigDecimal.ZERO;
         this.version = version != null ? version : 0L;
     }
 
     public static AnalisisSobrecosto crear(AnalisisSobrecostoId id, UUID presupuestoId) {
-        return new AnalisisSobrecosto(id, presupuestoId,
-                                     BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                                     false, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0L);
+        return new AnalisisSobrecosto(id, presupuestoId, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, false,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0L);
     }
 
     public static AnalisisSobrecosto reconstruir(AnalisisSobrecostoId id, UUID presupuestoId,
-                                                 BigDecimal porcentajeIndirectosOficinaCentral,
-                                                 BigDecimal porcentajeIndirectosOficinaCampo,
-                                                 BigDecimal porcentajeFinanciamiento,
-                                                 Boolean financiamientoCalculado,
-                                                 BigDecimal porcentajeUtilidad,
-                                                 BigDecimal porcentajeFianzas,
-                                                 BigDecimal porcentajeImpuestosReflejables,
-                                                 Long version) {
-        return new AnalisisSobrecosto(id, presupuestoId,
-                                     porcentajeIndirectosOficinaCentral,
-                                     porcentajeIndirectosOficinaCampo,
-                                     porcentajeFinanciamiento,
-                                     financiamientoCalculado,
-                                     porcentajeUtilidad,
-                                     porcentajeFianzas,
-                                     porcentajeImpuestosReflejables,
-                                     version);
+            BigDecimal porcentajeIndirectosOficinaCentral, BigDecimal porcentajeIndirectosOficinaCampo,
+            BigDecimal porcentajeFinanciamiento, Boolean financiamientoCalculado, BigDecimal porcentajeUtilidad,
+            BigDecimal porcentajeFianzas, BigDecimal porcentajeImpuestosReflejables, Long version) {
+        return new AnalisisSobrecosto(id, presupuestoId, porcentajeIndirectosOficinaCentral,
+                porcentajeIndirectosOficinaCampo, porcentajeFinanciamiento, financiamientoCalculado, porcentajeUtilidad,
+                porcentajeFianzas, porcentajeImpuestosReflejables, version);
     }
 
-    private void validarInvariantes(UUID presupuestoId,
-                                   BigDecimal porcentajeIndirectosOficinaCentral,
-                                   BigDecimal porcentajeIndirectosOficinaCampo,
-                                   BigDecimal porcentajeFinanciamiento,
-                                   BigDecimal porcentajeUtilidad,
-                                   BigDecimal porcentajeFianzas,
-                                   BigDecimal porcentajeImpuestosReflejables) {
+    private void validarInvariantes(UUID presupuestoId, BigDecimal porcentajeIndirectosOficinaCentral,
+            BigDecimal porcentajeIndirectosOficinaCampo, BigDecimal porcentajeFinanciamiento,
+            BigDecimal porcentajeUtilidad, BigDecimal porcentajeFianzas, BigDecimal porcentajeImpuestosReflejables) {
         if (presupuestoId == null) {
             throw new IllegalArgumentException("El presupuestoId no puede ser nulo");
         }
@@ -99,34 +76,62 @@ public final class AnalisisSobrecosto {
                 throw new IllegalArgumentException(String.format("El porcentaje de %s no puede ser negativo", nombre));
             }
             if (porcentaje.compareTo(new BigDecimal("100")) > 0) {
-                throw new IllegalArgumentException(String.format("El porcentaje de %s no puede ser mayor a 100%%", nombre));
+                throw new IllegalArgumentException(
+                        String.format("El porcentaje de %s no puede ser mayor a 100%%", nombre));
             }
         }
     }
 
-    public void actualizarIndirectos(BigDecimal porcentajeOficinaCentral, BigDecimal porcentajeOficinaCampo) {
+    /**
+     * Actualiza los porcentajes de indirectos.
+     * 
+     * @return Nuevo AnalisisSobrecosto actualizado.
+     */
+    public AnalisisSobrecosto actualizarIndirectos(BigDecimal porcentajeOficinaCentral,
+            BigDecimal porcentajeOficinaCampo) {
         validarPorcentaje(porcentajeOficinaCentral, "Indirectos Oficina Central");
         validarPorcentaje(porcentajeOficinaCampo, "Indirectos Oficina Campo");
-        this.porcentajeIndirectosOficinaCentral = porcentajeOficinaCentral;
-        this.porcentajeIndirectosOficinaCampo = porcentajeOficinaCampo;
+        return new AnalisisSobrecosto(this.id, this.presupuestoId, porcentajeOficinaCentral, porcentajeOficinaCampo,
+                this.porcentajeFinanciamiento, this.financiamientoCalculado, this.porcentajeUtilidad,
+                this.porcentajeFianzas, this.porcentajeImpuestosReflejables, this.version);
     }
 
-    public void actualizarFinanciamiento(BigDecimal porcentaje, Boolean calculado) {
+    /**
+     * Actualiza el porcentaje de financiamiento.
+     * 
+     * @return Nuevo AnalisisSobrecosto actualizado.
+     */
+    public AnalisisSobrecosto actualizarFinanciamiento(BigDecimal porcentaje, Boolean calculado) {
         validarPorcentaje(porcentaje, "Financiamiento");
-        this.porcentajeFinanciamiento = porcentaje;
-        this.financiamientoCalculado = calculado != null ? calculado : false;
+        return new AnalisisSobrecosto(this.id, this.presupuestoId, this.porcentajeIndirectosOficinaCentral,
+                this.porcentajeIndirectosOficinaCampo, porcentaje, calculado != null ? calculado : false,
+                this.porcentajeUtilidad, this.porcentajeFianzas, this.porcentajeImpuestosReflejables, this.version);
     }
 
-    public void actualizarUtilidad(BigDecimal porcentaje) {
+    /**
+     * Actualiza el porcentaje de utilidad.
+     * 
+     * @return Nuevo AnalisisSobrecosto actualizado.
+     */
+    public AnalisisSobrecosto actualizarUtilidad(BigDecimal porcentaje) {
         validarPorcentaje(porcentaje, "Utilidad");
-        this.porcentajeUtilidad = porcentaje;
+        return new AnalisisSobrecosto(this.id, this.presupuestoId, this.porcentajeIndirectosOficinaCentral,
+                this.porcentajeIndirectosOficinaCampo, this.porcentajeFinanciamiento, this.financiamientoCalculado,
+                porcentaje, this.porcentajeFianzas, this.porcentajeImpuestosReflejables, this.version);
     }
 
-    public void actualizarCargosAdicionales(BigDecimal porcentajeFianzas, BigDecimal porcentajeImpuestos) {
+    /**
+     * Actualiza los porcentajes de cargos adicionales (fianzas e impuestos).
+     * 
+     * @return Nuevo AnalisisSobrecosto actualizado.
+     */
+    public AnalisisSobrecosto actualizarCargosAdicionales(BigDecimal porcentajeFianzas,
+            BigDecimal porcentajeImpuestos) {
         validarPorcentaje(porcentajeFianzas, "Fianzas");
         validarPorcentaje(porcentajeImpuestos, "Impuestos Reflejables");
-        this.porcentajeFianzas = porcentajeFianzas;
-        this.porcentajeImpuestosReflejables = porcentajeImpuestos;
+        return new AnalisisSobrecosto(this.id, this.presupuestoId, this.porcentajeIndirectosOficinaCentral,
+                this.porcentajeIndirectosOficinaCampo, this.porcentajeFinanciamiento, this.financiamientoCalculado,
+                this.porcentajeUtilidad, porcentajeFianzas, porcentajeImpuestos, this.version);
     }
 
     public BigDecimal getPorcentajeIndirectosTotal() {
@@ -137,21 +142,52 @@ public final class AnalisisSobrecosto {
         return porcentajeFianzas.add(porcentajeImpuestosReflejables);
     }
 
-    public AnalisisSobrecostoId getId() { return id; }
-    public UUID getPresupuestoId() { return presupuestoId; }
-    public BigDecimal getPorcentajeIndirectosOficinaCentral() { return porcentajeIndirectosOficinaCentral; }
-    public BigDecimal getPorcentajeIndirectosOficinaCampo() { return porcentajeIndirectosOficinaCampo; }
-    public BigDecimal getPorcentajeFinanciamiento() { return porcentajeFinanciamiento; }
-    public Boolean getFinanciamientoCalculado() { return financiamientoCalculado; }
-    public BigDecimal getPorcentajeUtilidad() { return porcentajeUtilidad; }
-    public BigDecimal getPorcentajeFianzas() { return porcentajeFianzas; }
-    public BigDecimal getPorcentajeImpuestosReflejables() { return porcentajeImpuestosReflejables; }
-    public Long getVersion() { return version; }
+    public AnalisisSobrecostoId getId() {
+        return id;
+    }
+
+    public UUID getPresupuestoId() {
+        return presupuestoId;
+    }
+
+    public BigDecimal getPorcentajeIndirectosOficinaCentral() {
+        return porcentajeIndirectosOficinaCentral;
+    }
+
+    public BigDecimal getPorcentajeIndirectosOficinaCampo() {
+        return porcentajeIndirectosOficinaCampo;
+    }
+
+    public BigDecimal getPorcentajeFinanciamiento() {
+        return porcentajeFinanciamiento;
+    }
+
+    public Boolean getFinanciamientoCalculado() {
+        return financiamientoCalculado;
+    }
+
+    public BigDecimal getPorcentajeUtilidad() {
+        return porcentajeUtilidad;
+    }
+
+    public BigDecimal getPorcentajeFianzas() {
+        return porcentajeFianzas;
+    }
+
+    public BigDecimal getPorcentajeImpuestosReflejables() {
+        return porcentajeImpuestosReflejables;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         AnalisisSobrecosto that = (AnalisisSobrecosto) o;
         return Objects.equals(id, that.id);
     }
@@ -163,7 +199,7 @@ public final class AnalisisSobrecosto {
 
     @Override
     public String toString() {
-        return String.format("AnalisisSobrecosto{id=%s, presupuestoId=%s, indirectosTotal=%s%%, utilidad=%s%%}", 
-                           id, presupuestoId, getPorcentajeIndirectosTotal(), porcentajeUtilidad);
+        return String.format("AnalisisSobrecosto{id=%s, presupuestoId=%s, indirectosTotal=%s%%, utilidad=%s%%}", id,
+                presupuestoId, getPorcentajeIndirectosTotal(), porcentajeUtilidad);
     }
 }
