@@ -37,6 +37,7 @@ public class ProcesarCompraService {
     private final PresupuestoRepository presupuestoRepository;
     private final IntegrityHashService integrityHashService;
     private final IntegrityAuditLog auditLog;
+    // REGLA-033
     private final GestionInventarioService gestionInventarioService;
     private final ObservabilityPort observability;
 

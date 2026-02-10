@@ -75,6 +75,7 @@ public final class ActividadProgramada {
         }
         if (fechaInicio != null && fechaFin != null) {
             if (fechaFin.isBefore(fechaInicio)) {
+                // REGLA-018
                 throw new IllegalArgumentException("La fecha de fin no puede ser menor a la fecha de inicio");
             }
         }
@@ -115,6 +116,7 @@ public final class ActividadProgramada {
             throw new IllegalArgumentException("El ID de la actividad predecesora no puede ser nulo");
         }
         if (actividadPredecesoraId.equals(this.id.getValue())) {
+            // REGLA-019
             throw new IllegalArgumentException("Una actividad no puede ser predecesora de sí misma");
         }
 

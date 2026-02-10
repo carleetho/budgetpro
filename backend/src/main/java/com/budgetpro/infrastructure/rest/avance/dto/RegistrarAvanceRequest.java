@@ -14,6 +14,7 @@ public record RegistrarAvanceRequest(
         LocalDate fecha,
         
         @NotNull(message = "El metrado ejecutado es obligatorio")
+        // REGLA-091
         @Positive(message = "El metrado ejecutado debe ser positivo")
         BigDecimal metradoEjecutado,
         

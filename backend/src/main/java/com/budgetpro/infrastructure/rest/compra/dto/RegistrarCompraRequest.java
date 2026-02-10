@@ -18,6 +18,7 @@ public record RegistrarCompraRequest(
         @NotNull(message = "La fecha es obligatoria")
         LocalDate fecha,
         
+        // REGLA-092
         @NotBlank(message = "El proveedor es obligatorio")
         String proveedor,
         

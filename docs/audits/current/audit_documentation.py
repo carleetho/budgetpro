@@ -1,148 +1,163 @@
 import re
 import os
+import glob
 from collections import defaultdict
 
-inventory_path = 'docs/audits/INVENTARIO_REGLAS_EXISTENTES_FASE1.md'
-output_path = 'docs/audits/current/DOCUMENTATION_COVERAGE_REPORT.md'
+# Configuration
+DOCS_DIR = 'docs/canonical/modules'
+CODE_DIR = 'backend/src'
+OUTPUT_PATH = 'docs/audits/current/SYNCHRONIZATION_AUDIT_REPORT.md'
+INVENTORY_PATH = 'docs/audits/INVENTARIO_REGLAS_EXISTENTES_FASE1.md'
 
-def parse_inventory(file_path):
-    rules = {}
-    current_rule = None
-    current_section = None
+def get_documented_rules():
+    """Scans canonical notebooks for REGLA-XXX tags."""
+    documented_rules = defaultdict(list)
     
-    with open(file_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-
-    for line in lines:
-        line = line.strip()
-        
-        # Detect Rule ID
-        match = re.search(r'^## (REGLA-\d{3})', line)
-        if match:
-            current_rule = match.group(1)
-            rules[current_rule] = {
-                'id': current_rule,
-                'modules': [],
-                'origins': [],
-                'description': ''
-            }
-            current_section = None
-            continue
-            
-        if not current_rule:
-            continue
-            
-        # Detect Sections
-        if line.startswith('- Módulo(s) afectado(s)'):
-            current_section = 'modules'
-            continue
-        elif line.startswith('- Origen técnico EXACTO:'):
-            current_section = 'origin'
-            continue
-        elif line.startswith('- Descripción exacta de la regla'):
-            current_section = 'description'
-            continue
-        elif line.startswith('- Evidencia:') or line.startswith('- Tipo:') or line.startswith('- Estado:'):
-            current_section = None
-            continue
-            
-        # Capture Content
-        if current_section == 'modules':
-            if line.startswith('- '):
-                rules[current_rule]['modules'].append(line[2:].strip())
-        elif current_section == 'origin':
-            if line.startswith('- archivo:'):
-                path = line.split('`')[1] if '`' in line else line.replace('- archivo:', '').strip()
-                rules[current_rule]['origins'].append(path)
-        elif current_section == 'description':
-             if line.startswith('- '):
-                rules[current_rule]['description'] = line[2:].strip()
-
-    return rules
-
-def analyze_coverage(rules):
-    covered_count = 0
-    missing_rules = []
-    module_stats = defaultdict(lambda: {'total': 0, 'covered': 0})
+    # Get all markdown files in docs dir
+    files = glob.glob(os.path.join(DOCS_DIR, '*.md'))
     
-    for rule_id, data in rules.items():
-        is_covered = any('docs/' in origin or '.md' in origin for origin in data['origins'])
-        
-        if is_covered:
-            covered_count += 1
-        else:
-            missing_rules.append(data)
-            
-        # Add to module stats
-        # Normalize module names broadly
-        for mod in data['modules']:
-            mod_key = mod.split('/')[0].strip() # specialized handling if needed
-            module_stats[mod_key]['total'] += 1
-            if is_covered:
-                module_stats[mod_key]['covered'] += 1
+    print(f"Scanning {len(files)} document files...")
+    
+    for file_path in files:
+        filename = os.path.basename(file_path)
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # Find all REGLA-XXX
+            matches = re.findall(r'(REGLA-\d{3})', content)
+            for rule_id in matches:
+                documented_rules[rule_id].append(filename)
                 
-    return covered_count, missing_rules, module_stats
+    return documented_rules
 
-def generate_report(rules, covered_count, missing_rules, module_stats):
-    total_rating = (covered_count / len(rules)) * 100 if rules else 0
+def get_implemented_rules():
+    """Scans source code for REGLA-XXX tags."""
+    implemented_rules = defaultdict(list)
     
-    content = f"""# Documentation Coverage Audit Report
+    print(f"Scanning code files in {CODE_DIR}...")
+    
+    for root, dirs, files in os.walk(CODE_DIR):
+        for file in files:
+            if file.endswith(('.java', '.sql', '.xml', '.yml', '.yaml')):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        matches = re.findall(r'(REGLA-\d{3})', content)
+                        for rule_id in matches:
+                            implemented_rules[rule_id].append(os.path.relpath(file_path, CODE_DIR))
+                except Exception as e:
+                    # Ignore binary or undecodable files
+                    pass
+                    
+    return implemented_rules
+
+def get_inventory_rules():
+    """Reads the verifiable list of 161 rules to audit."""
+    rules = set()
+    if os.path.exists(INVENTORY_PATH):
+        with open(INVENTORY_PATH, 'r', encoding='utf-8') as f:
+            content = f.read()
+            matches = re.findall(r'^## (REGLA-\d{3})', content, re.MULTILINE)
+            rules.update(matches)
+    return sorted(list(rules))
+
+def generate_report(documented, implemented, inventory):
+    inventory_set = set(inventory)
+    documented_set = set(documented.keys())
+    implemented_set = set(implemented.keys())
+    
+    # Analysis
+    synchronized = inventory_set.intersection(documented_set).intersection(implemented_set)
+    doc_drift = inventory_set - documented_set # Scheduled but not in docs
+    code_drift = inventory_set - implemented_set # Scheduled but not in code (tagged)
+    extra_documented = documented_set - inventory_set
+    extra_implemented = implemented_set - inventory_set
+    
+    sync_percentage = (len(synchronized) / len(inventory)) * 100 if inventory else 0
+    
+    report = f"""# Documentation Synchronization Audit Report
+
+**Date:** {os.popen('date').read().strip()}
+**Audit Tool:** audit_documentation.py
+**Rules Audited:** {len(inventory)}
 
 ## Executive Summary
+- **Synchronized Rules:** {len(synchronized)}/{len(inventory)} ({sync_percentage:.1f}%)
+- **Rules with Drift (Code):** {len(code_drift)}
+- **Rules with Drift (Docs):** {len(doc_drift)}
+- **Undocumented Code Rules:** {len(extra_implemented)} (Rules in code but not in Inventory)
+- **Documented but Not Implemented:** {len(code_drift)}
 
-- **Audit Date**: 2026-02-08
-- **Total Existing Rules**: {len(rules)}
-- **Documented Rules (Canonical)**: {covered_count}
-- **Undocumented Rules (Code-Only)**: {len(missing_rules)}
-- **Documentation Coverage**: {total_rating:.1f}%
+## Synchronization Status
 
-## Coverage Gap Analysis
+| Metric | Count | Details |
+|--------|-------|---------|
+| Total Rules in Inventory | {len(inventory)} | Baseline |
+| Fully Synchronized | {len(synchronized)} | Verified in Docs & Code |
+| Missing in Code (Drift) | {len(code_drift)} | Documented but tag missing in code |
+| Missing in Docs (Drift) | {len(doc_drift)} | In inventory but not in canonical notebooks |
 
-The following rules exist in the codebase (as enforced by validators or logic) but are NOT explicitly referenced in the canonical documentation (`docs/modules/*.md`).
+## Rules with Drift (Documentation ≠ Code)
 
-| Rule ID | Module | Description |
-|---------|--------|-------------|
+### Code Drift (Documented but missing REGLA specific tag in code)
+These rules are in the inventory/docs but the 'REGLA-XXX' tag wasn't found in the codebase.
+This implies the code might implement it, but trace is missing.
+
+| ID | Documentation Ref | Suggested Remediation |
+|---|---|---|
 """
     
-    for rule in missing_rules:
-        modules = ", ".join(rule['modules'])
-        desc = rule['description'][:100] + "..." if len(rule['description']) > 100 else rule['description']
-        content += f"| {rule['id']} | {modules} | {desc} |\n"
-
-    content += """
-## Coverage by Module
-
-| Module | Total Rules | Documented | Coverage % |
-|--------|-------------|------------|------------|
-"""
-    
-    for mod, stats in sorted(module_stats.items()):
-        total = stats['total']
-        covered = stats['covered']
-        pct = (covered / total) * 100 if total > 0 else 0
-        content += f"| {mod} | {total} | {covered} | {pct:.1f}% |\n"
+    for rule in sorted(code_drift):
+        doc_refs = ", ".join(documented.get(rule, ["N/A"]))
+        report += f"| {rule} | {doc_refs} | Add `{rule}` comment to implementation |\n"
         
-    content += """
-## Recommendations
+    report += """
+### Documentation Drift (In Inventory but NOT in Canonical Docs)
+Should be 0 if Task 21 was successful.
 
-1.  **Backfill Canonical Specs**: The {len(missing_rules)} missing rules should be explicitly added to their respective `_SPECS.md` files.
-2.  **Enforce Traceability**: Use the `REGLA-XXX` tags in the documentation to allow automated auditing in the future.
-3.  **Sync Code and Docs**: Ensure that any change in validators is reflected in the canonical documents.
+| ID | Remediation |
+|---|---|
+"""
+    for rule in sorted(doc_drift):
+        report += f"| {rule} | Add to appropriate canonical notebook |\n"
+        
+    report += """
+## Undocumented Code Rules (Should be 0)
+Rules found in code but not present in the master inventory.
+
+| ID | File Location |
+|---|---|
+"""
+    for rule in sorted(extra_implemented):
+         locs = ", ".join(implemented[rule][:2]) # Limit to 2 files
+         report += f"| {rule} | {locs} |\n"
+
+    report += """
+## Remediation Plan
+1.  **Tagging Campaign**: For the {len(code_drift)} rules missing code tags, add `// REGLA-XXX` comments to the implementation source.
+2.  **Documentation Update**: For any rules missing from docs, add them immediately.
 """
 
-    return content
+    return report
 
 if __name__ == "__main__":
-    if not os.path.exists(inventory_path):
-        print(f"Error: Inventory file not found at {inventory_path}")
-        exit(1)
-        
-    rules = parse_inventory(inventory_path)
-    covered, missing, stats = analyze_coverage(rules)
-    report = generate_report(rules, covered, missing, stats)
+    print("Starting Audit...")
     
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(report)
+    # 1. Get Baseline
+    inventory = get_inventory_rules()
+    print(f"Inventory contains {len(inventory)} rules.")
+    
+    # 2. Key Scans
+    documented = get_documented_rules()
+    print(f"Found {len(documented)} documented rules.")
+    
+    implemented = get_implemented_rules()
+    print(f"Found {len(implemented)} implemented rules (with tags).")
+    
+    # 3. Report
+    report_content = generate_report(documented, implemented, inventory)
+    
+    with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
+        f.write(report_content)
         
-    print(f"Report generated at {output_path}")
-    print(f"Coverage: {covered}/{len(rules)} ({covered/len(rules)*100:.1f}%)")
+    print(f"Audit Complete. Report generated at {OUTPUT_PATH}")

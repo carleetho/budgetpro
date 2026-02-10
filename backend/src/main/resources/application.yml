@@ -48,6 +48,7 @@ app:
     email: ${ADMIN_EMAIL}
     sender: ${NOTIFICATION_SENDER:onboarding@resend.dev}
 
+# REGLA-054
 jwt:
   secret: ${JWT_SECRET}
   expiration-hours: ${JWT_EXPIRATION_HOURS}

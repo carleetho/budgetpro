@@ -9,6 +9,7 @@ import java.util.UUID;
  * DTO de request REST para crear un presupuesto.
  */
 public record CrearPresupuestoRequest(
+        // REGLA-098
         @NotNull(message = "El ID del proyecto es obligatorio")
         UUID proyectoId,
         

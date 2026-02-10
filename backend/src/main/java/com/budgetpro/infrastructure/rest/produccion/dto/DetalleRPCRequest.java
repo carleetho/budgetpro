@@ -14,6 +14,7 @@ public record DetalleRPCRequest(
         UUID partidaId,
 
         @NotNull(message = "La cantidad reportada es obligatoria")
+        // REGLA-082
         @Positive(message = "La cantidad reportada debe ser positiva")
         BigDecimal cantidadReportada
 ) {

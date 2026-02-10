@@ -112,3 +112,177 @@
 ## 11. Technical Debt & Risks
 
 - [ ] **Locking**: High concurrency on same item (e.g., Cement) needs Row Locking. (Medium)
+
+## 12. Detailed Rule Specifications
+
+### REGLA-049: Salida Movement Validation
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+El movimiento de almacén de tipo SALIDA requiere partidaId.
+
+**Implementation:**
+- **Entity:** `MovimientoAlmacenEntity`
+- **Method:** `isPartidaValidaParaSalida`
+
+**Code Evidence:**
+```java
+if (tipo == TipoMovimiento.SALIDA && partidaId == null) {
+    throw new IllegalArgumentException("Salida de almacén requiere partida imputada");
+}
+```
+
+### REGLA-050: Default Movement Type
+
+**Status:** ✅ Verified
+**Type:** Técnica
+**Severity:** LOW
+
+**Description:**
+Si tipo es nulo en movimiento de almacén, se asigna tipoMovimiento.
+
+**Implementation:**
+- **Entity:** `MovimientoAlmacenEntity`
+- **Method:** `@PrePersist`
+
+**Code Evidence:**
+```java
+if (this.tipo == null) {
+    this.tipo = this.tipoMovimiento; // Fallback legacy compatibility
+}
+```
+
+### REGLA-064: Movement Financial Integrity
+
+**Status:** ✅ Verified
+**Type:** Financiera
+**Severity:** CRITICAL
+
+**Description:**
+En movimiento_almacen: cantidad > 0, precio_unitario >= 0, importe_total >= 0.
+
+**Implementation:**
+- **Database:** `V14__create_almacen_inventarios_schema.sql`
+- **Constraint:** CHECK constraints
+
+**Code Evidence:**
+```sql
+CHECK (cantidad > 0),
+CHECK (precio_unitario >= 0),
+CHECK (importe_total >= 0)
+```
+
+### REGLA-065: Stock Financial Integrity
+
+**Status:** ✅ Verified
+**Type:** Financiera
+**Severity:** CRITICAL
+
+**Description:**
+En stock_movimiento: saldos y valores no pueden ser negativos.
+
+**Implementation:**
+- **Database:** `V14__create_almacen_inventarios_schema.sql`
+- **Constraint:** CHECK constraints
+
+**Code Evidence:**
+```sql
+CHECK (saldo_cantidad >= 0),
+CHECK (saldo_valor >= 0)
+```
+
+### REGLA-085: Movement Request Validation
+
+**Status:** ✅ Verified
+**Type:** Técnica
+**Severity:** MEDIUM
+
+**Description:**
+Para registrar movimiento: campos obligatorios y valores positivos.
+
+**Implementation:**
+- **DTO:** `RegistrarMovimientoAlmacenRequest`
+- **Annotations:** `@NotNull`, `@DecimalMin`
+
+**Code Evidence:**
+```java
+@NotNull UUID almacenId,
+@NotNull UUID recursoId,
+@DecimalMin("0.01") BigDecimal cantidad
+```
+
+### REGLA-117: Purchase-Inventory Integration
+
+**Status:** 🟡 Policy
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal (para ingresos).
+
+**Implementation:**
+- **Process:** Compras Module -> Inventarios Integration
+- **Verification:** Business Process Rule
+
+**Code Evidence:**
+```java
+// Automatic trigger from Purchase Approval to Inventory Ingress
+```
+
+### REGLA-136: Unique Warehouse Code
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** MEDIUM
+
+**Description:**
+En almacén, el código es único por proyecto.
+
+**Implementation:**
+- **Database:** `V14__create_almacen_inventarios_schema.sql`
+- **Constraint:** UNIQUE(proyecto_id, codigo)
+
+**Code Evidence:**
+```sql
+CONSTRAINT uq_almacen_codigo UNIQUE (proyecto_id, codigo)
+```
+
+### REGLA-137: Unique Stock Entry
+
+**Status:** ✅ Verified
+**Type:** Técnica
+**Severity:** HIGH
+
+**Description:**
+En stock_actual, la combinación (almacen_id, recurso_id) es única.
+
+**Implementation:**
+- **Database:** `V14__create_almacen_inventarios_schema.sql`
+- **Constraint:** UNIQUE INDEX
+
+**Code Evidence:**
+```sql
+CREATE UNIQUE INDEX idx_stock_actual_almacen_recurso ON stock_actual(almacen_id, recurso_id)
+```
+
+### REGLA-154: Inventory-Budget Integrity
+
+**Status:** 🟡 Policy
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+Inventario sin Partida es ilegal (para salidas).
+
+**Implementation:**
+- **Logic:** Validation of Egress vs Budget Items
+- **See also:** REGLA-049
+
+**Code Evidence:**
+```java
+// Cross-check: Output must be linked to a Leaf Partida
+```
+

@@ -26,6 +26,7 @@ public record GenerarEstimacionRequest(
         @NotNull(message = "Los detalles son obligatorios")
         List<DetalleEstimacionItem> detalles,
         
+        // REGLA-087
         @DecimalMin(value = "0.0", message = "El porcentaje de anticipo no puede ser negativo")
         BigDecimal porcentajeAnticipo,
 
@@ -42,6 +43,7 @@ public record GenerarEstimacionRequest(
             UUID partidaId,
             
             @NotNull(message = "La cantidad de avance es obligatoria")
+            // REGLA-088
             @DecimalMin(value = "0.0", message = "La cantidad de avance no puede ser negativa")
             BigDecimal cantidadAvance,
             

@@ -24,6 +24,7 @@ public record CrearPartidaRequest(
         
         String unidad, // Opcional si es título
         
+        // REGLA-096
         @DecimalMin(value = "0.0", message = "El metrado no puede ser negativo")
         BigDecimal metrado, // Cantidad presupuestada. 0 si es título
         

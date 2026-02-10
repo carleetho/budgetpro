@@ -102,6 +102,7 @@ public final class Presupuesto {
         this.proyectoId = Objects.requireNonNull(proyectoId, "El proyectoId no puede ser nulo");
         this.nombre = normalizarNombre(nombre);
         this.estado = Objects.requireNonNull(estado, "El estado del presupuesto no puede ser nulo");
+        // REGLA-045
         this.esContractual = esContractual != null ? esContractual : false;
         this.version = version != null ? version : 0L;
 
@@ -155,6 +156,7 @@ public final class Presupuesto {
             throw new IllegalArgumentException("El proyectoId no puede ser nulo");
         }
         if (nombre == null || nombre.isBlank()) {
+            // REGLA-044
             throw new IllegalArgumentException("El nombre del presupuesto no puede estar vacío");
         }
         if (estado == null) {

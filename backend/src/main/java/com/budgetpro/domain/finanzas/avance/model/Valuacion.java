@@ -71,6 +71,7 @@ public final class Valuacion {
             throw new IllegalArgumentException("La fecha de corte no puede ser nula");
         }
         if (codigo == null || codigo.isBlank()) {
+            // REGLA-127
             throw new IllegalArgumentException("El código no puede estar vacío");
         }
         if (estado == null) {

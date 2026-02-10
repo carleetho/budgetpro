@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nombre_completo VARCHAR(150) NOT NULL,
     email VARCHAR(200) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    -- REGLA-056
     rol VARCHAR(30) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 
 -- Add unique constraint on email
+-- REGLA-055
 CREATE UNIQUE INDEX IF NOT EXISTS uq_usuarios_email ON usuarios(email);
 
 -- Add index on email for faster lookups

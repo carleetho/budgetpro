@@ -35,6 +35,7 @@ public final class Partida {
 
         this.id = Objects.requireNonNull(id, "El ID de la partida no puede ser nulo");
         this.presupuestoId = Objects.requireNonNull(presupuestoId, "El presupuestoId no puede ser nulo");
+        // REGLA-038
         this.padreId = padreId;
         this.item = normalizarItem(item);
         this.descripcion = normalizarDescripcion(descripcion);
@@ -90,6 +91,7 @@ public final class Partida {
             throw new IllegalArgumentException("El metrado no puede ser negativo");
         }
         if (nivel == null || nivel < 1) {
+            // REGLA-037
             throw new IllegalArgumentException("El nivel debe ser >= 1");
         }
     }
