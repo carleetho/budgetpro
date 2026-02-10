@@ -73,6 +73,7 @@ public final class DetalleEstimacion {
             throw new IllegalArgumentException("La cantidad de avance no puede ser negativa");
         }
         if (precioUnitario != null && precioUnitario.compareTo(BigDecimal.ZERO) < 0) {
+            // REGLA-015
             throw new IllegalArgumentException("El precio unitario no puede ser negativo");
         }
     }

@@ -14,6 +14,7 @@ public record DetalleItemRequest(
         UUID partidaId,
 
         @NotNull(message = "La cantidad es obligatoria")
+        // REGLA-140
         @Positive(message = "La cantidad debe ser positiva")
         BigDecimal cantidad
 ) {

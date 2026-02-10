@@ -26,8 +26,12 @@ import java.util.UUID;
        },
        indexes = {
            @Index(name = "idx_orden_cambio_proyecto", columnList = "proyecto_id"),
+           // REGLA-160
+           // REGLA-161
            @Index(name = "idx_orden_cambio_estado", columnList = "estado")
        })
+// REGLA-158
+// REGLA-114
 @Getter
 @Setter
 @NoArgsConstructor
@@ -61,6 +65,7 @@ public class OrdenCambioEntity extends AuditEntity {
 
     @NotNull
     @Digits(integer = 15, fraction = 4)
+    // REGLA-159
     @Column(name = "impacto_presupuesto", nullable = false, precision = 19, scale = 4)
     private BigDecimal impactoPresupuesto;
 

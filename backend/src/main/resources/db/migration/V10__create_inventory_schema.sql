@@ -20,6 +20,7 @@ CREATE TABLE inventario_item (
     
     -- Restricciones
     CONSTRAINT uk_inventario_unico UNIQUE (proyecto_id, recurso_external_id, unidad_base, bodega_id),
+    -- REGLA-064
     CONSTRAINT ck_cantidad_positiva CHECK (cantidad_fisica >= 0)
 );
 

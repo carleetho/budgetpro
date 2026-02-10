@@ -22,6 +22,7 @@ import java.util.UUID;
            @Index(name = "idx_avance_partida", columnList = "partida_id"),
            @Index(name = "idx_avance_fecha", columnList = "fecha")
        })
+// REGLA-068
 public class AvanceFisicoEntity {
 
     @Id

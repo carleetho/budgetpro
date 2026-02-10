@@ -31,6 +31,7 @@ public final class ConsumoPartida {
         this.partidaId = Objects.requireNonNull(partidaId, "La partidaId no puede ser nula");
         this.compraDetalleId = compraDetalleId; // Opcional
         this.monto = monto != null ? monto : BigDecimal.ZERO;
+        // REGLA-034
         this.fecha = Objects.requireNonNull(fecha, "La fecha no puede ser nula");
         this.tipo = Objects.requireNonNull(tipo, "El tipo no puede ser nulo");
         this.version = version != null ? version : 0L;

@@ -24,6 +24,7 @@ import java.util.UUID;
  * sin movimiento - Los campos snapshot (nombre, clasificacion, unidadBase) son
  * inmutables después de creación
  */
+// REGLA-065
 public final class InventarioItem {
 
     // A record to hold the result of an inventory operation

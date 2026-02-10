@@ -33,10 +33,12 @@ public class ProduccionServiceImpl implements ProduccionService {
     @Transactional
     public ReporteProduccionEntity crearReporte(ReporteProduccionEntity reporte) {
         if (reporte == null) {
+            // REGLA-009
             throw new BusinessRuleException("El reporte no puede ser nulo.");
         }
 
         produccionValidator.validarFechaNoFutura(reporte.getFechaReporte());
+        // REGLA-008
         if (reporte.getEstado() == null) {
             reporte.setEstado(EstadoReporteProduccion.PENDIENTE);
         }
@@ -90,6 +92,7 @@ public class ProduccionServiceImpl implements ProduccionService {
                 .orElseThrow(() -> new EntityNotFoundException("Reporte no encontrado."));
 
         if (reporte.getEstado() != EstadoReporteProduccion.PENDIENTE) {
+            // REGLA-006
             throw new BusinessRuleException("Solo se puede aprobar un reporte en estado PENDIENTE.");
         }
 
@@ -108,6 +111,7 @@ public class ProduccionServiceImpl implements ProduccionService {
             throw new BusinessRuleException("Solo se puede rechazar un reporte en estado PENDIENTE.");
         }
         if (motivo == null || motivo.isBlank()) {
+            // REGLA-007
             throw new BusinessRuleException("El motivo de rechazo es obligatorio.");
         }
 
@@ -119,6 +123,7 @@ public class ProduccionServiceImpl implements ProduccionService {
 
     private void validarDetalles(List<DetalleRPCEntity> detalles, UUID reporteIdExcluir) {
         if (detalles == null || detalles.isEmpty()) {
+            // REGLA-005
             throw new BusinessRuleException("El reporte debe contener al menos un detalle.");
         }
         for (DetalleRPCEntity detalle : detalles) {

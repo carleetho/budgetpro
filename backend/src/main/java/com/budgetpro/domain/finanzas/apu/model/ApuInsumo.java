@@ -68,6 +68,7 @@ public final class ApuInsumo {
     /**
      * Calcula el subtotal: cantidad * precioUnitario.
      */
+    // REGLA-036
     private BigDecimal calcularSubtotal(BigDecimal cant, BigDecimal pu) {
         return cant.multiply(pu);
     }

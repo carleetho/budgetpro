@@ -106,10 +106,12 @@ public final class Estimacion {
             throw new IllegalArgumentException("El proyectoId no puede ser nulo");
         }
         if (numeroEstimacion != null && numeroEstimacion <= 0) {
+            // REGLA-012
             throw new IllegalArgumentException("El número de estimación debe ser positivo");
         }
         if (periodoInicio != null && periodoFin != null) {
             if (periodoFin.isBefore(periodoInicio)) {
+                // REGLA-013
                 throw new IllegalArgumentException("El periodo de fin no puede ser menor al periodo de inicio");
             }
         }
@@ -120,6 +122,7 @@ public final class Estimacion {
      * retencionFondoGarantia.
      */
     private BigDecimal calcularMontoNeto() {
+        // REGLA-011
         return this.montoBruto.subtract(this.amortizacionAnticipo).subtract(this.retencionFondoGarantia).setScale(4,
                 java.math.RoundingMode.HALF_UP);
     }
@@ -165,6 +168,7 @@ public final class Estimacion {
         if (nuevaRetencion == null) {
             this.retencionFondoGarantia = BigDecimal.ZERO;
         } else if (nuevaRetencion.compareTo(BigDecimal.ZERO) < 0) {
+            // REGLA-014
             throw new IllegalArgumentException("La retención de fondo de garantía no puede ser negativa");
         } else {
             this.retencionFondoGarantia = nuevaRetencion;
@@ -194,6 +198,7 @@ public final class Estimacion {
      */
     public void marcarComoPagada() {
         if (this.estado != EstadoEstimacion.APROBADA) {
+            // REGLA-010
             throw new IllegalStateException("Solo se pueden marcar como pagadas estimaciones en estado APROBADA");
         }
         this.estado = EstadoEstimacion.PAGADA;

@@ -22,6 +22,7 @@ public record CrearRecursoRequest(
         @JsonProperty("tipo")
         String tipo,
 
+        // REGLA-099
         @NotBlank(message = "La unidad base del recurso es obligatoria")
         @JsonProperty("unidadBase")
         String unidadBase,
@@ -34,6 +35,7 @@ public record CrearRecursoRequest(
 ) {
     public CrearRecursoRequest {
         // Inicializar atributos si es nulo
+        // REGLA-144
         if (atributos == null) {
             atributos = new HashMap<>();
         }

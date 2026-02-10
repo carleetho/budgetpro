@@ -25,6 +25,7 @@ import java.util.UUID;
        uniqueConstraints = {
            @UniqueConstraint(name = "uq_actividad_programada_partida", columnNames = "partida_id")
        })
+// REGLA-067
 public class ActividadProgramadaEntity {
 
     @Id

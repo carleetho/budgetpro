@@ -17,11 +17,13 @@ import java.util.UUID;
 @Entity
 @Table(name = "programa_obra",
        indexes = {
+           // REGLA-132
            @Index(name = "idx_programa_obra_proyecto", columnList = "proyecto_id", unique = true)
        },
        uniqueConstraints = {
            @UniqueConstraint(name = "uq_programa_obra_proyecto", columnNames = "proyecto_id")
        })
+// REGLA-133
 public class ProgramaObraEntity {
 
     @Id

@@ -95,6 +95,7 @@ public final class Compra {
             throw new IllegalArgumentException("El proveedor no puede estar vacío");
         }
         if (detalles == null || detalles.isEmpty()) {
+            // REGLA-031
             throw new IllegalArgumentException("La compra debe tener al menos un detalle");
         }
     }

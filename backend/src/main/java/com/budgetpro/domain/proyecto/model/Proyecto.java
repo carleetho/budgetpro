@@ -28,6 +28,7 @@ public final class Proyecto {
         this.id = Objects.requireNonNull(id, "El ID del proyecto no puede ser nulo");
         this.nombre = normalizarNombre(nombre);
         this.ubicacion = ubicacion != null ? ubicacion.trim() : null;
+        // REGLA-043
         this.estado = Objects.requireNonNull(estado, "El estado del proyecto no puede ser nulo");
     }
 

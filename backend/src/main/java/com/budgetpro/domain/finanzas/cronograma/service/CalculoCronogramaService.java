@@ -143,6 +143,7 @@ public class CalculoCronogramaService {
         // Validar cada dependencia
         for (ActividadProgramada actividad : actividades) {
             LocalDate fechaInicioActividad = actividad.getFechaInicio();
+            // REGLA-020
             if (fechaInicioActividad == null) {
                 continue; // Si no tiene fecha, no se puede validar
             }

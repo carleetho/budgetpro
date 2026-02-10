@@ -12,6 +12,7 @@ import java.util.UUID;
  * específica.
  * 
  * Invariantes: - El partidaId es obligatorio - La fecha es obligatoria - El
+ // REGLA-142
  * metradoEjecutado no puede ser negativo - (Opcional MVP) El acumulado no
  * debería superar el metrado total de la partida (Alertar, no bloquear)
  * 
@@ -72,6 +73,7 @@ public final class AvanceFisico {
             throw new IllegalArgumentException("La fecha no puede ser nula");
         }
         if (metradoEjecutado != null && metradoEjecutado.compareTo(BigDecimal.ZERO) < 0) {
+            // REGLA-126
             throw new IllegalArgumentException("El metrado ejecutado no puede ser negativo");
         }
     }

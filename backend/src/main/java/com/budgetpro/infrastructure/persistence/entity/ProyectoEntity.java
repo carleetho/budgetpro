@@ -1,5 +1,12 @@
 package com.budgetpro.infrastructure.persistence.entity;
 
+// REGLA-105
+// REGLA-106
+// REGLA-108
+// REGLA-109
+// REGLA-146
+// REGLA-149
+// REGLA-150
 import com.budgetpro.infrastructure.persistence.converter.EstadoProyectoConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
@@ -26,6 +33,7 @@ import java.util.UUID;
        indexes = {
            @Index(name = "idx_proyecto_estado", columnList = "estado")
        })
+// REGLA-145
 @Getter
 @Setter
 @NoArgsConstructor
@@ -46,6 +54,7 @@ public class ProyectoEntity extends AuditEntity {
     @Column(name = "ubicacion", length = 500)
     private String ubicacion;
 
+    // REGLA-060
     @NotNull
     @Convert(converter = EstadoProyectoConverter.class)
     @Column(name = "estado", nullable = false, length = 30)
@@ -59,6 +68,9 @@ public class ProyectoEntity extends AuditEntity {
     @NotNull
     @Digits(integer = 15, fraction = 4)
     @Column(name = "presupuesto_total", nullable = false, precision = 19, scale = 4)
+    // REGLA-107
+    // REGLA-147
+    // REGLA-148
     private BigDecimal presupuestoTotal;
 
     @Version
@@ -70,6 +82,7 @@ public class ProyectoEntity extends AuditEntity {
         if (moneda == null || moneda.isBlank()) {
             moneda = "USD";
         }
+        // REGLA-071
         if (presupuestoTotal == null) {
             presupuestoTotal = BigDecimal.ZERO;
         }
