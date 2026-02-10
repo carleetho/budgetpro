@@ -18,6 +18,7 @@ public record RegisterRequest(
         String email,
 
         @NotBlank(message = "La contraseña es obligatoria")
+        // REGLA-079
         @Size(min = 6, max = 72)
         String password
 ) {

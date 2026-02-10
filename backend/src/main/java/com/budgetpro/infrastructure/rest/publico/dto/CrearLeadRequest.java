@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
  * DTO para registrar una solicitud de demo pública.
  */
 public record CrearLeadRequest(
+        // REGLA-080
         @NotBlank(message = "El nombre de contacto es obligatorio")
         @Size(max = 150)
         String nombreContacto,

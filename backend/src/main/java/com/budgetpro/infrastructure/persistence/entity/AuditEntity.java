@@ -23,6 +23,9 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
+// REGLA-103
+// REGLA-104
+// REGLA-151
 public abstract class AuditEntity {
 
     @CreationTimestamp

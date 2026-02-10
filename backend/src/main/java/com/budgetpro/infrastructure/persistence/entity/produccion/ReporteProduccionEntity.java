@@ -22,6 +22,7 @@ import java.util.UUID;
 @Table(name = "reporte_produccion",
        indexes = {
            @Index(name = "idx_rpc_fecha", columnList = "fecha_reporte"),
+           // REGLA-076
            @Index(name = "idx_rpc_responsable", columnList = "responsable_id"),
            @Index(name = "idx_rpc_estado", columnList = "estado")
        })
@@ -47,6 +48,7 @@ public class ReporteProduccionEntity extends AuditEntity {
     @Column(name = "aprobador_id")
     private UUID aprobadorId;
 
+    // REGLA-058
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)

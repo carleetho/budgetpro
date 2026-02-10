@@ -13,6 +13,7 @@ import java.util.UUID;
 /**
  * Entidad JPA para la tabla requisicion.
  * 
+ // REGLA-135
  * Representa una requisición de materiales con workflow de estados.
  * 
  * CRÍTICO: El constructor acepta version = null. NUNCA se fuerza version = 0.

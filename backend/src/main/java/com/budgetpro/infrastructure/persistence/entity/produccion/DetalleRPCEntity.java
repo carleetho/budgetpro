@@ -28,6 +28,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+// REGLA-059
 public class DetalleRPCEntity extends AuditEntity {
 
     @Id
@@ -46,6 +47,7 @@ public class DetalleRPCEntity extends AuditEntity {
 
     @NotNull
     @Digits(integer = 15, fraction = 4)
+    // REGLA-077
     @Column(name = "cantidad_reportada", nullable = false, precision = 19, scale = 4)
     private BigDecimal cantidadReportada;
 }

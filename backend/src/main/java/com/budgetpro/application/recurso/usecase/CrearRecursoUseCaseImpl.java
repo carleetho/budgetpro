@@ -38,6 +38,7 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
         String nombreNormalizado = normalizarNombre(command.nombre());
 
         // 2. Verificar si ya existe un recurso con el mismo nombre normalizado
+        // REGLA-128
         if (recursoRepository.existsByNombre(nombreNormalizado)) {
             throw new RecursoDuplicadoException(nombreNormalizado);
         }
@@ -84,6 +85,7 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del recurso no puede estar vacío");
         }
+        // REGLA-040
         return nombre.trim().toUpperCase().replaceAll("\\s+", " ");
     }
 
@@ -99,6 +101,7 @@ public class CrearRecursoUseCaseImpl implements CrearRecursoUseCase {
             throw new IllegalArgumentException("El tipo del recurso no puede estar vacío");
         }
         try {
+            // REGLA-129
             return TipoRecurso.valueOf(tipoStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Tipo de recurso inválido: " + tipoStr + ". Valores válidos: "

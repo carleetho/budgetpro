@@ -18,6 +18,7 @@ public record ApuInsumoRequest(
         BigDecimal cantidad,
         
         @NotNull(message = "El precio unitario es obligatorio")
+        // REGLA-095
         @DecimalMin(value = "0.0", message = "El precio unitario no puede ser negativo")
         BigDecimal precioUnitario
 ) {

@@ -11,6 +11,7 @@ public record LoginRequest(
         @NotBlank(message = "El email es obligatorio")
         String email,
 
+        // REGLA-078
         @NotBlank(message = "La contraseña es obligatoria")
         String password
 ) {

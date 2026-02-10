@@ -1,5 +1,9 @@
 package com.budgetpro.infrastructure.persistence.entity;
 
+// REGLA-110
+// REGLA-111
+// REGLA-112
+// REGLA-152
 import com.budgetpro.infrastructure.persistence.converter.EstadoPresupuestoConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -22,14 +26,24 @@ import java.util.UUID;
 @Entity
 @Table(name = "presupuesto",
        indexes = {
+           // REGLA-153
            @Index(name = "idx_presupuesto_proyecto", columnList = "proyecto_id"),
            @Index(name = "idx_presupuesto_estado", columnList = "estado")
        })
+// REGLA-157
+// REGLA-156
+// REGLA-155
+// REGLA-154
+// REGLA-143
+// REGLA-113
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+// REGLA-061
+// REGLA-062
+// REGLA-063
 public class PresupuestoEntity extends AuditEntity {
 
     @Id
@@ -59,6 +73,7 @@ public class PresupuestoEntity extends AuditEntity {
     private Boolean esLineaBase = Boolean.FALSE;
 
     @Column(name = "es_contractual", nullable = false)
+    // REGLA-101
     private Boolean esContractual = Boolean.FALSE;
 
     @Version
@@ -101,6 +116,7 @@ public class PresupuestoEntity extends AuditEntity {
 
     @PreUpdate
     private void preUpdate() {
+        // REGLA-046
         if (estadoOriginal == com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.CONGELADO) {
             throw new IllegalStateException("Presupuesto CONGELADO es de solo lectura.");
         }

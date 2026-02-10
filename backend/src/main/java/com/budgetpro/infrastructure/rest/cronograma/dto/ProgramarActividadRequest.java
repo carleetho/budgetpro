@@ -13,6 +13,7 @@ public record ProgramarActividadRequest(
         @NotNull(message = "El partidaId es obligatorio")
         UUID partidaId,
         
+        // REGLA-089
         @NotNull(message = "La fecha de inicio es obligatoria")
         LocalDate fechaInicio,
         

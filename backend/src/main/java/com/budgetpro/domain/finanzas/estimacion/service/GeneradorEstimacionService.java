@@ -51,6 +51,7 @@ public class GeneradorEstimacionService {
                 .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
 
         // No puede exceder el saldo pendiente
+        // REGLA-017
         return amortizacionTeorica.min(saldoAnticipoPendiente);
     }
 

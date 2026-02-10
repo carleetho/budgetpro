@@ -12,6 +12,7 @@ public record RechazarReporteRequest(
         @NotNull(message = "El aprobadorId es obligatorio")
         UUID aprobadorId,
 
+        // REGLA-084
         @NotBlank(message = "El motivo de rechazo es obligatorio")
         String motivo
 ) {

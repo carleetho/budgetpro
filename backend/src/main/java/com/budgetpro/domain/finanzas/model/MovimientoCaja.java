@@ -101,6 +101,7 @@ public final class MovimientoCaja {
         }
 
         if (referencia == null || referencia.isBlank()) {
+            // REGLA-042
             throw new IllegalArgumentException("La referencia no puede ser nula ni vacía");
         }
 

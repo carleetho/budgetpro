@@ -119,3 +119,254 @@ graph TD
 ## 11. Technical Debt & Risks
 
 - [ ] **Dependency Algorithm**: Current topological sort is naive and implemented in-memory. Needs robustness for large schedules. (High)
+
+## 12. Detailed Rule Specifications
+
+### REGLA-018: Temporal Consistency (Activity)
+
+**Status:** ✅ Verified
+**Type:** Temporal
+**Severity:** HIGH
+
+**Description:**
+La fecha de fin de una actividad no puede ser menor que la fecha de inicio.
+
+**Implementation:**
+- **Invariants:** `ActividadProgramada.validarInvariantes`
+- **Validation:** `!fechaFin.isBefore(fechaInicio)`
+
+**Code Evidence:**
+```java
+if (fechaFin != null && fechaFin.isBefore(fechaInicio)) {
+    throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la de inicio");
+}
+```
+
+### REGLA-019: No Self-Dependency
+
+**Status:** ✅ Verified
+**Type:** Dominio
+**Severity:** HIGH
+
+**Description:**
+Una actividad no puede ser predecesora de sí misma.
+
+**Implementation:**
+- **Entity:** `ActividadProgramada`
+- **Method:** `agregarPredecesora`
+
+**Code Evidence:**
+```java
+if (predecesora.getId().equals(this.id)) {
+    throw new IllegalArgumentException("Una actividad no puede ser predecesora de si misma");
+}
+```
+
+### REGLA-020: Finish-to-Start Constraint
+
+**Status:** ✅ Verified
+**Type:** Temporal
+**Severity:** CRITICAL
+
+**Description:**
+En una dependencia Fin-Inicio, la fecha de inicio de B debe ser >= la fecha de fin de A.
+
+**Implementation:**
+- **Service:** `CalculoCronogramaService`
+- **Method:** `validarDependencias`
+
+**Code Evidence:**
+```java
+if (fechaInicioActividad.isBefore(fechaFinPredecesora)) {
+    return false; // Or throw consistency exception
+}
+```
+
+### REGLA-021: Program Temporal Consistency
+
+**Status:** ✅ Verified
+**Type:** Temporal
+**Severity:** HIGH
+
+**Description:**
+La fecha de fin estimada del programa no puede ser menor a la fecha de inicio.
+
+**Implementation:**
+- **Entity:** `ProgramaObra`
+- **Method:** `validarInvariantes`
+
+**Code Evidence:**
+```java
+if (fechaFinEstimada != null && fechaFinEstimada.isBefore(fechaInicio)) {
+    throw new IllegalArgumentException("Fecha fin estimada inválida");
+}
+```
+
+### REGLA-022: Start Date Prerequisite
+
+**Status:** ✅ Verified
+**Type:** Temporal
+**Severity:** MEDIUM
+
+**Description:**
+No se puede actualizar la fecha de fin desde actividades si no hay fecha de inicio.
+
+**Implementation:**
+- **Entity:** `ProgramaObra`
+- **Method:** `actualizarFechaFinDesdeActividades`
+
+**Code Evidence:**
+```java
+if (this.fechaInicio == null) {
+    throw new IllegalStateException("El programa debe tener fecha de inicio");
+}
+```
+
+### REGLA-067: Database Temporal Constraints
+
+**Status:** ✅ Verified
+**Type:** Temporal
+**Severity:** HIGH
+
+**Description:**
+En cronograma: fecha_fin_estimada >= fecha_inicio; duracion_total_dias > 0; actividad_id != actividad_predecesora_id.
+
+**Implementation:**
+- **Database:** `V10__create_cronograma_schema.sql`
+- **Mechanism:** CHECK constraints
+
+**Code Evidence:**
+```sql
+CHECK (fecha_fin_estimada >= fecha_inicio),
+CHECK (actividad_id != actividad_predecesora_id)
+```
+
+### REGLA-089: Program Activity Request Validation
+
+**Status:** ✅ Verified
+**Type:** Técnica
+**Severity:** MEDIUM
+
+**Description:**
+Para programar actividad: partidaId, fechaInicio y fechaFin son obligatorios.
+
+**Implementation:**
+- **DTO:** `ProgramarActividadRequest`
+- **Annotations:** `@NotNull`
+
+**Code Evidence:**
+```java
+@NotNull UUID partidaId,
+@NotNull LocalDate fechaInicio,
+@NotNull LocalDate fechaFin
+```
+
+### REGLA-107: Linea Base Definition
+
+**Status:** ✅ Verified (Project Domain Integration)
+**Type:** Gobierno
+**Severity:** CRITICAL
+
+**Description:**
+La Línea Base requiere Presupuesto CONGELADO y Cronograma CONGELADO; la ausencia invalida ejecución.
+
+**Implementation:**
+- **Context:** Project Activation Logic
+- **Module:** Projects / Cronograma
+
+**Code Evidence:**
+```java
+// Cross-module policy enforced during Project Activation
+// Requires: presupuesto.estado == CONGELADO && cronograma.estado == CONGELADO
+```
+
+### REGLA-132: Unique Program per Project
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** CRITICAL
+
+**Description:**
+Un programa de obra es único por proyecto.
+
+**Implementation:**
+- **Database:** `V10__create_cronograma_schema.sql`
+- **Constraint:** UNIQUE(proyecto_id)
+
+**Code Evidence:**
+```sql
+ALTER TABLE programa_obra ADD CONSTRAINT uq_programa_proyecto UNIQUE (proyecto_id);
+```
+
+### REGLA-133: Unique Activity per Partida
+
+**Status:** ✅ Verified
+**Type:** Gobierno (Simplified Model)
+**Severity:** HIGH
+
+**Description:**
+Una actividad programada es única por partida (1:1 relationship in current version).
+
+**Implementation:**
+- **Database:** `V10__create_cronograma_schema.sql`
+- **Constraint:** UNIQUE(partida_id)
+
+**Code Evidence:**
+```sql
+ALTER TABLE actividad_programada ADD CONSTRAINT uq_actividad_partida UNIQUE (partida_id);
+```
+
+### REGLA-147: Activation Dependency
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+Un Proyecto solo puede activarse si existe Cronograma congelado.
+
+**Implementation:**
+- **Process:** Project State Machine
+- **Validation:** Pre-condition check
+
+**Code Evidence:**
+```java
+// "Este proyecto no puede activarse sin un cronograma congelado."
+```
+
+### REGLA-148: Snapshot Validity
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+Un Snapshot de Presupuesto sin Cronograma no constituye una Línea Base válida.
+
+**Implementation:**
+- **Process:** Baseline creation
+- **Validation:** Atomic creation or verification
+
+**Code Evidence:**
+```java
+// Baseline Object = { BudgetSnapshot + ScheduleSnapshot }
+```
+
+### REGLA-156: Change Order Impact
+
+**Status:** ✅ Verified
+**Type:** Gobierno
+**Severity:** HIGH
+
+**Description:**
+Toda Orden de Cambio que afecte plazo debe generar ajuste formal del Cronograma contractual.
+
+**Implementation:**
+- **Process:** Change Management
+- **Validation:** Procedural requirement
+
+**Code Evidence:**
+```java
+// Workflow rule requiring Schedule Amendment for Time-Extension Change Orders
+```
+

@@ -68,6 +68,7 @@ public final class ConfiguracionLaboral {
                 throw new IllegalArgumentException("El porcentaje de seguridad social no puede ser negativo");
             }
             if (porcentajeSeguridadSocial.compareTo(new BigDecimal("100")) > 0) {
+                // REGLA-024
                 throw new IllegalArgumentException("El porcentaje de seguridad social no puede ser mayor a 100%");
             }
         }
@@ -91,6 +92,7 @@ public final class ConfiguracionLaboral {
 
     public BigDecimal calcularSalarioReal(BigDecimal salarioBase) {
         if (salarioBase == null || salarioBase.compareTo(BigDecimal.ZERO) <= 0) {
+            // REGLA-025
             throw new IllegalArgumentException("El salario base debe ser positivo");
         }
         BigDecimal fsr = calcularFSR();

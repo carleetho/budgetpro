@@ -19,6 +19,7 @@ CREATE TABLE empleados (
     created_by UUID NOT NULL,
     
     CONSTRAINT uk_empleado_identificacion UNIQUE (numero_identificacion),
+    -- REGLA-069
     CONSTRAINT ck_empleado_estado CHECK (estado IN ('ACTIVO', 'INACTIVO', 'SUSPENDIDO'))
 );
 
@@ -42,6 +43,7 @@ CREATE TABLE historial_laboral (
     created_by UUID NOT NULL,
     
     CONSTRAINT fk_historial_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(id),
+    -- REGLA-070
     CONSTRAINT ck_salario_positivo CHECK (salario_base >= 0),
     CONSTRAINT ck_fechas_validas CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
 );
@@ -88,6 +90,7 @@ CREATE TABLE cuadrillas (
     CONSTRAINT fk_cuadrilla_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
     CONSTRAINT fk_cuadrilla_capataz FOREIGN KEY (capataz_id) REFERENCES empleados(id),
     CONSTRAINT uk_cuadrilla_codigo_proyecto UNIQUE (proyecto_id, codigo),
+    -- REGLA-122
     CONSTRAINT ck_cuadrilla_estado CHECK (estado IN ('ACTIVA', 'DISUELTA'))
 );
 
@@ -133,6 +136,7 @@ CREATE TABLE asistencia_registros (
     
     CONSTRAINT fk_asistencia_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(id),
     CONSTRAINT fk_asistencia_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    -- REGLA-123
     CONSTRAINT ck_asistencia_horas CHECK (hora_salida IS NULL OR hora_salida > hora_entrada),
     -- Prevent overlapping attendance records for same employee on same day/start time
     CONSTRAINT uk_asistencia_overlap UNIQUE (empleado_id, fecha, hora_entrada) 
@@ -180,6 +184,7 @@ CREATE TABLE nominas (
     
     CONSTRAINT fk_nomina_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
     CONSTRAINT ck_nomina_periodo CHECK (periodo_fin >= periodo_inicio),
+    -- REGLA-124
     CONSTRAINT ck_nomina_estado CHECK (estado IN ('BORRADOR', 'CALCULADA', 'APROBADA', 'PAGADA'))
 );
 

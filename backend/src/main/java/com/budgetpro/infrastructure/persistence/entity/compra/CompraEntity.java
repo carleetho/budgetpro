@@ -26,6 +26,9 @@ import java.util.UUID;
            @Index(name = "idx_compra_fecha", columnList = "fecha"),
            @Index(name = "idx_compra_estado", columnList = "estado")
        })
+// REGLA-117
+// REGLA-116
+// REGLA-115
 public class CompraEntity {
 
     @Id

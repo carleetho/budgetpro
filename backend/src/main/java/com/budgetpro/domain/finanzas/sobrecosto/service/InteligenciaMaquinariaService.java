@@ -36,6 +36,7 @@ public class InteligenciaMaquinariaService {
         // Analizar cada insumo del APU
         for (ApuInsumo insumo : apu.getInsumos()) {
             // Alerta de Equipo Propio (costo $0)
+            // REGLA-029
             if (insumo.getPrecioUnitario().compareTo(BigDecimal.ZERO) == 0) {
                 // Nota: Necesitaríamos el Recurso para verificar el tipo, pero por ahora
                 // asumimos que si el precio es $0, podría ser maquinaria propia
@@ -78,6 +79,7 @@ public class InteligenciaMaquinariaService {
             throw new IllegalArgumentException("La vida útil debe ser positiva");
         }
         if (horasAnualesUso == null || horasAnualesUso <= 0) {
+            // REGLA-030
             throw new IllegalArgumentException("Las horas anuales de uso deben ser positivas");
         }
 

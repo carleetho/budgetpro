@@ -31,6 +31,7 @@ public record CompraDetalleRequest(
         com.budgetpro.domain.logistica.compra.model.RubroInsumo rubroInsumo,
         
         @NotNull(message = "La cantidad es obligatoria")
+        // REGLA-093
         @DecimalMin(value = "0.0", message = "La cantidad no puede ser negativa")
         BigDecimal cantidad,
         
