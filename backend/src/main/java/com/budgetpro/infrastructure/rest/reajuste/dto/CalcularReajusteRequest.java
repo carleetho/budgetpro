@@ -19,6 +19,7 @@ public record CalcularReajusteRequest(
     @NotNull(message = "La fecha de corte es obligatoria")
     LocalDate fechaCorte,
     
+    // REGLA-086
     @NotBlank(message = "El código del índice base es obligatorio")
     String indiceBaseCodigo,
     

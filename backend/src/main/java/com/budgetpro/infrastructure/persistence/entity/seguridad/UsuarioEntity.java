@@ -60,6 +60,7 @@ public class UsuarioEntity extends AuditEntity implements UserDetails {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    // REGLA-075
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false, length = 30)

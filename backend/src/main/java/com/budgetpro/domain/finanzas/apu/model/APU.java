@@ -70,6 +70,7 @@ public final class APU {
             throw new IllegalArgumentException("El partidaId no puede ser nulo");
         }
         if (insumos == null) {
+            // REGLA-035
             throw new IllegalArgumentException("La lista de insumos no puede ser nula");
         }
     }

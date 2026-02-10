@@ -13,6 +13,8 @@ import com.budgetpro.domain.shared.model.TipoRecurso;
  * Invariantes: - El nombre debe estar normalizado y no puede estar vacío - El
  * tipo no puede ser nulo - La unidadBase no puede estar vacía
  */
+// REGLA-039
+// REGLA-041
 public final class Recurso {
 
     private final RecursoId id;

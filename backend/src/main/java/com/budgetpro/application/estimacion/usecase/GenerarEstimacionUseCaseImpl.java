@@ -89,6 +89,7 @@ public class GenerarEstimacionUseCaseImpl implements GenerarEstimacionUseCase {
                     item.partidaId(), estimacionesPrevias);
 
             // 6.3 Validar volumen (no permitir estimar más del 100%)
+            // REGLA-016
             if (!generadorEstimacionService.validarVolumenEstimado(
                     item.cantidadAvance(), acumuladoAnterior, partida.getMetrado())) {
                 throw new IllegalArgumentException(

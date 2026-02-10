@@ -122,6 +122,7 @@ public final class ProgramaObra {
         }
         if (fechaInicio != null && fechaFinEstimada != null) {
             if (fechaFinEstimada.isBefore(fechaInicio)) {
+                // REGLA-021
                 throw new IllegalArgumentException("La fecha de fin estimada no puede ser menor a la fecha de inicio");
             }
         }
@@ -184,6 +185,7 @@ public final class ProgramaObra {
             return this;
         }
         if (this.fechaInicio == null) {
+            // REGLA-022
             throw new IllegalStateException("No se puede actualizar la fecha de fin sin fecha de inicio");
         }
         if (fechaFinMasTardia.isBefore(this.fechaInicio)) {

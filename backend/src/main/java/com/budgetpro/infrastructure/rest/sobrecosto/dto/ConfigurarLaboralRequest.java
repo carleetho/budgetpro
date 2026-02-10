@@ -18,6 +18,7 @@ public record ConfigurarLaboralRequest(
         Integer diasVacaciones,
         
         @DecimalMin(value = "0.0", message = "El porcentaje de seguridad social no puede ser negativo")
+        // REGLA-090
         @DecimalMax(value = "100.0", message = "El porcentaje de seguridad social no puede ser mayor a 100%")
         BigDecimal porcentajeSeguridadSocial,
         

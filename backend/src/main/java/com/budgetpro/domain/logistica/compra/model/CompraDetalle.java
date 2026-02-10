@@ -31,6 +31,7 @@ public final class CompraDetalle {
     // - precioUnitario: puede negociarse (actualizarPrecioUnitario)
     // - subtotal: calculado dinámicamente = cantidad * precioUnitario
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
+    // REGLA-032
     private BigDecimal cantidad;
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal precioUnitario;

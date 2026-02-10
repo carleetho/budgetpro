@@ -25,6 +25,7 @@ import java.util.UUID;
 public class ProduccionValidator {
 
     private static final String MENSAJE_EXCESO =
+            // REGLA-004
             "La cantidad reportada excede el saldo disponible de la partida. Requiere Orden de Cambio.";
 
     private final PartidaJpaRepository partidaJpaRepository;
@@ -43,6 +44,7 @@ public class ProduccionValidator {
         if (reporte.getEstado() == EstadoReporteProduccion.APROBADO
                 || reporte.getEstado() == EstadoReporteProduccion.RECHAZADO) {
             throw new BusinessRuleException(
+                    // REGLA-001
                     "Un reporte aprobado es inmutable. Debe crear una Nota de Crédito o un Reporte Deductivo para corregir."
             );
         }
@@ -53,6 +55,7 @@ public class ProduccionValidator {
             throw new BusinessRuleException("La fecha del reporte es obligatoria.");
         }
         if (fechaReporte.isAfter(LocalDate.now())) {
+            // REGLA-002
             throw new BusinessRuleException("La fecha del reporte no puede ser futura.");
         }
     }
@@ -72,6 +75,7 @@ public class ProduccionValidator {
         ProyectoEntity proyecto = proyectoJpaRepository.findById(proyectoId)
                 .orElseThrow(() -> new BusinessRuleException("Proyecto no encontrado."));
 
+        // REGLA-003
         if (proyecto.getEstado() != EstadoProyecto.ACTIVO) {
             throw new BusinessRuleException("No se puede reportar avance en un proyecto que no está en ACTIVO.");
         }

@@ -30,6 +30,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+// REGLA-057
 public class LeadEntity extends AuditEntity {
 
     @Id
@@ -63,6 +64,7 @@ public class LeadEntity extends AuditEntity {
     private LeadEstado estado;
 
     @CreationTimestamp
+    // REGLA-074
     @Column(name = "fecha_solicitud", nullable = false, updatable = false)
     private LocalDateTime fechaSolicitud;
 }

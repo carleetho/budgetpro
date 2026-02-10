@@ -77,6 +77,7 @@ public final class AnalisisSobrecosto {
             }
             if (porcentaje.compareTo(new BigDecimal("100")) > 0) {
                 throw new IllegalArgumentException(
+                        // REGLA-023
                         String.format("El porcentaje de %s no puede ser mayor a 100%%", nombre));
             }
         }

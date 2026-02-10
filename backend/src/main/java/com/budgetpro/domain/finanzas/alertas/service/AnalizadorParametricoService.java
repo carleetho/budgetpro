@@ -65,6 +65,7 @@ public class AnalizadorParametricoService {
                 // Obtener costo_horario de los atributos
                 BigDecimal costoHorario = obtenerCostoHorario(recurso.getAtributos());
                 
+                // REGLA-026
                 if (costoHorario == null || costoHorario.compareTo(BigDecimal.ZERO) == 0) {
                     AlertaParametrica alerta = AlertaParametrica.crear(
                         TipoAlertaParametrica.MAQUINARIA_COSTO_HORARIO,
@@ -102,6 +103,7 @@ public class AnalizadorParametricoService {
                 // Asumiendo que cantidadAcero está en kg y cantidadConcreto en m3
                 BigDecimal ratio = cantidadAcero.divide(cantidadConcreto, 4, RoundingMode.HALF_UP);
                 
+                // REGLA-027
                 if (ratio.compareTo(RATIO_ACERO_MIN) < 0 || ratio.compareTo(RATIO_ACERO_MAX) > 0) {
                     AlertaParametrica alerta = AlertaParametrica.crear(
                         TipoAlertaParametrica.ACERO_RATIO_CONCRETO,
@@ -142,6 +144,7 @@ public class AnalizadorParametricoService {
                 
                 BigDecimal factor = tamanoAgregado.divide(anchoElemento, 4, RoundingMode.HALF_UP);
                 
+                // REGLA-028
                 if (factor.compareTo(FACTOR_AGREGADO_MAX) > 0) {
                     AlertaParametrica alerta = AlertaParametrica.crear(
                         TipoAlertaParametrica.CONCRETO_TAMANO_AGREGADO,

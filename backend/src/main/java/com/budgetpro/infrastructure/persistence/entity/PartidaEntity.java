@@ -104,6 +104,7 @@ public class PartidaEntity extends AuditEntity {
 
     @PrePersist
     private void prePersist() {
+        // REGLA-048
         if (metradoVigente == null) {
             metradoVigente = metradoOriginal;
         }
@@ -122,6 +123,7 @@ public class PartidaEntity extends AuditEntity {
             && metradoOriginalSnapshot != null
             && metradoOriginal != null
             && metradoOriginal.compareTo(metradoOriginalSnapshot) != 0) {
+            // REGLA-047
             throw new IllegalStateException("metradoOriginal es inmutable tras la aprobación del presupuesto.");
         }
     }

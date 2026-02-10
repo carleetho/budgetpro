@@ -15,6 +15,7 @@ public record CrearApuRequest(
         
         String unidad, // Opcional
         
+        // REGLA-094
         @NotNull(message = "La lista de insumos es obligatoria")
         @Valid
         List<ApuInsumoRequest> insumos

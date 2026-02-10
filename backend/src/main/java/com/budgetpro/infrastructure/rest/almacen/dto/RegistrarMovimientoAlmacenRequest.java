@@ -29,6 +29,7 @@ public record RegistrarMovimientoAlmacenRequest(
     BigDecimal cantidad,
     
     @NotNull(message = "El precio unitario es obligatorio")
+    // REGLA-085
     @DecimalMin(value = "0.0", message = "El precio unitario debe ser mayor o igual a cero")
     BigDecimal precioUnitario,
     

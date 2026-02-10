@@ -31,6 +31,7 @@ import java.util.UUID;
            @Index(name = "idx_inventario_bodega", columnList = "bodega_id"),
            @Index(name = "idx_inventario_recurso_external", columnList = "recurso_external_id")
        })
+// REGLA-136
 public class InventarioItemEntity {
 
     @Id
@@ -63,6 +64,7 @@ public class InventarioItemEntity {
     private String unidadBase; // Unidad base del recurso (snapshot)
 
     @Column(name = "cantidad_fisica", nullable = false, precision = 19, scale = 6)
+    // REGLA-137
     private BigDecimal cantidadFisica;
 
     @Column(name = "costo_promedio", nullable = false, precision = 19, scale = 4)

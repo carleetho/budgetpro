@@ -21,6 +21,7 @@ public record ActualizarReporteProduccionRequest(
         String comentario,
         String ubicacionGps,
 
+        // REGLA-081
         @NotEmpty(message = "Debe incluir al menos un detalle")
         List<@Valid DetalleRPCRequest> detalles
 ) {

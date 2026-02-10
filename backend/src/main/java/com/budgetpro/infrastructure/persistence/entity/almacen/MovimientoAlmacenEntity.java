@@ -24,10 +24,14 @@ import java.util.UUID;
        indexes = {
            @Index(name = "idx_movimiento_almacen", columnList = "almacen_id"),
            @Index(name = "idx_movimiento_recurso", columnList = "recurso_id"),
+           // REGLA-118
+           // REGLA-134
            @Index(name = "idx_movimiento_tipo", columnList = "tipo_movimiento"),
            @Index(name = "idx_movimiento_fecha", columnList = "fecha_movimiento"),
            @Index(name = "idx_movimiento_partida", columnList = "partida_id")
        })
+// REGLA-121
+// REGLA-119
 @Getter
 @Setter
 @NoArgsConstructor
@@ -63,6 +67,7 @@ public class MovimientoAlmacenEntity extends AuditEntity {
 
     @NotNull
     @Digits(integer = 15, fraction = 4)
+    // REGLA-120
     @Column(name = "cantidad", nullable = false, precision = 19, scale = 4)
     private BigDecimal cantidad;
 
@@ -97,6 +102,7 @@ public class MovimientoAlmacenEntity extends AuditEntity {
 
     @PrePersist
     private void prePersist() {
+        // REGLA-050
         if (tipo == null) {
             tipo = tipoMovimiento;
         }
@@ -110,6 +116,7 @@ public class MovimientoAlmacenEntity extends AuditEntity {
 
     @AssertTrue(message = "partidaId es obligatorio cuando el tipo es SALIDA")
     private boolean isPartidaValidaParaSalida() {
+        // REGLA-049
         if (tipo == com.budgetpro.domain.logistica.almacen.model.TipoMovimientoAlmacen.SALIDA) {
             return partidaId != null;
         }

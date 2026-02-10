@@ -32,9 +32,11 @@ public class JwtService {
             throw new IllegalStateException("JWT_SECRET es obligatorio.");
         }
         if (secret.length() < 32) {
+            // REGLA-051
             throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres.");
         }
         this.secret = secret;
+        // REGLA-138
         this.expiration = Duration.ofHours(expirationHours);
     }
 

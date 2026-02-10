@@ -36,6 +36,7 @@ public class EstimacionEntity {
     private UUID proyectoId;
 
     @Column(name = "numero_estimacion", nullable = false)
+    // REGLA-130
     private Integer numeroEstimacion;
 
     @Column(name = "fecha_corte", nullable = false)
@@ -62,6 +63,7 @@ public class EstimacionEntity {
     @Column(name = "evidencia_url", length = 1000)
     private String evidenciaUrl;
 
+    // REGLA-066
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private com.budgetpro.domain.finanzas.estimacion.model.EstadoEstimacion estado;
@@ -79,6 +81,7 @@ public class EstimacionEntity {
     private LocalDateTime updatedAt;
 
     /**
+     // REGLA-131
      * Relación con detalles (tabla detalle_estimacion).
      * Una estimación tiene múltiples detalles.
      */

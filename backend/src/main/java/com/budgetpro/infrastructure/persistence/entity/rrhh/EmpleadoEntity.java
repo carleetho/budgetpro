@@ -1,5 +1,6 @@
 package com.budgetpro.infrastructure.persistence.entity.rrhh;
 
+// REGLA-125
 import com.budgetpro.domain.rrhh.model.EstadoEmpleado;
 import com.budgetpro.infrastructure.persistence.converter.EstadoEmpleadoConverter;
 import com.budgetpro.infrastructure.persistence.entity.AuditEntity;

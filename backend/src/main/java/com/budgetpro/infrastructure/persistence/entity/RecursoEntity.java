@@ -33,6 +33,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+// REGLA-072
+// REGLA-073
 public class RecursoEntity extends AuditEntity {
 
     @Id
