@@ -18,7 +18,7 @@ import java.util.Optional;
  * Optimistic Locking automáticamente con @Version.
  */
 @Component
-public class ProyectoRepositoryAdapter implements ProyectoRepository {
+public class ProyectoRepositoryAdapter implements ProyectoRepository, com.budgetpro.application.rrhh.port.out.ProyectoRepositoryPort {
 
     private final ProyectoJpaRepository jpaRepository;
     private final ProyectoMapper mapper;

@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.NominaResponse;
 import com.budgetpro.application.rrhh.port.in.ConsultarNominaUseCase;
@@ -7,6 +8,7 @@ import com.budgetpro.domain.rrhh.model.Nomina;
 import com.budgetpro.domain.rrhh.model.NominaId;
 import java.util.Optional;
 
+@Service
 public class ConsultarNominaUseCaseImpl implements ConsultarNominaUseCase {
 
     private final NominaRepositoryPort nominaRepositoryPort;

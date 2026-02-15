@@ -11,6 +11,8 @@ import com.budgetpro.infrastructure.persistence.repository.PresupuestoJpaReposit
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +25,8 @@ import java.util.stream.Collectors;
  * Hibernate maneja el Optimistic Locking automáticamente con @Version.
  */
 @Component
-public class PartidaRepositoryAdapter implements PartidaRepository {
+public class PartidaRepositoryAdapter implements PartidaRepository, 
+        com.budgetpro.domain.logistica.inventario.port.out.PartidaRepository {
 
     private final PartidaJpaRepository jpaRepository;
     private final PresupuestoJpaRepository presupuestoJpaRepository;
@@ -89,5 +92,13 @@ public class PartidaRepositoryAdapter implements PartidaRepository {
     @Transactional(readOnly = true)
     public boolean existsById(UUID partidaId) {
         return jpaRepository.existsById(partidaId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isPresupuestoCongelado(UUID partidaId) {
+        return jpaRepository.findById(partidaId)
+                .map(partida -> partida.getPresupuesto().getEstado() == EstadoPresupuesto.CONGELADO)
+                .orElse(false);
     }
 }

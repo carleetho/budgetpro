@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.ConfiguracionLaboralExtendidaResponse;
 import com.budgetpro.application.rrhh.dto.HistorialFSRResponse;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Service
 public class ConsultarHistorialFSRUseCaseImpl implements ConsultarHistorialFSRUseCase {
 
     private final ConfiguracionLaboralRepositoryPort repository;

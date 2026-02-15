@@ -13,6 +13,10 @@ import com.budgetpro.infrastructure.persistence.repository.consumo.ConsumoPartid
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.budgetpro.domain.finanzas.consumo.model.TipoConsumo;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +29,8 @@ import java.util.stream.Collectors;
  * Hibernate maneja el Optimistic Locking automáticamente con @Version.
  */
 @Component
-public class ConsumoPartidaRepositoryAdapter implements ConsumoPartidaRepository {
+public class ConsumoPartidaRepositoryAdapter implements ConsumoPartidaRepository,
+        com.budgetpro.domain.logistica.inventario.port.out.ConsumoPartidaRepository {
 
     private final ConsumoPartidaJpaRepository jpaRepository;
     private final PartidaJpaRepository partidaJpaRepository;
@@ -93,5 +98,25 @@ public class ConsumoPartidaRepositoryAdapter implements ConsumoPartidaRepository
         return jpaRepository.findByCompraDetalleId(compraDetalleId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void registrarConsumo(UUID partidaId, BigDecimal montoAC, LocalDateTime fecha, String referencia) {
+        // Cargar la partida relacionada
+        PartidaEntity partidaEntity = partidaJpaRepository.findById(partidaId)
+                .orElseThrow(() -> new IllegalStateException("Partida no encontrada: " + partidaId));
+
+        ConsumoPartidaEntity entity = new ConsumoPartidaEntity(
+                UUID.randomUUID(),
+                partidaEntity,
+                null, // compraDetalleId
+                montoAC,
+                fecha.toLocalDate(), // Conversión de LocalDateTime a LocalDate
+                TipoConsumo.COMPRA,
+                null // version
+        );
+        
+        jpaRepository.save(entity);
     }
 }

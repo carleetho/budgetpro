@@ -14,4 +14,6 @@ public interface CuadrillaRepositoryPort {
     Optional<Cuadrilla> findById(CuadrillaId id);
 
     List<Cuadrilla> findByProyectoAndEstado(ProyectoId proyectoId, EstadoCuadrilla estado);
+
+    List<Cuadrilla> findAll();
 }

@@ -33,7 +33,7 @@ CREATE TABLE evm_snapshot (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by UUID NOT NULL,
     
-    CONSTRAINT fk_evm_snapshot_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_evm_snapshot_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id),
     CONSTRAINT uk_evm_snapshot_proyecto_fecha UNIQUE (proyecto_id, fecha_corte)
 );
 
