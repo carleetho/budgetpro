@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.ConsultarCostosLaboralesQuery;
 import com.budgetpro.application.rrhh.dto.CostosLaboralesResponse;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
+@Service
 public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLaboralesUseCase {
 
     private final AsistenciaRepositoryPort asistenciaRepository;

@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.ConfiguracionLaboralExtendidaResponse;
 import com.budgetpro.application.rrhh.dto.ConfigurarLaboralExtendidaCommand;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Component
+@Service
 public class ConfigurarLaboralExtendidaUseCaseImpl implements ConfigurarLaboralExtendidaUseCase {
 
     private final ConfiguracionLaboralRepositoryPort repository;

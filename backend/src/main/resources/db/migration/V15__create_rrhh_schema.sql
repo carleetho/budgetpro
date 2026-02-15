@@ -57,7 +57,7 @@ CREATE UNIQUE INDEX idx_historial_laboral_activo
 CREATE TABLE asignaciones_proyecto (
     id UUID PRIMARY KEY,
     empleado_id UUID NOT NULL,
-    proyecto_id UUID NOT NULL, -- References existing PROYECTOS table
+    proyecto_id UUID NOT NULL, -- References existing PROYECTO table
     
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE,
@@ -68,7 +68,7 @@ CREATE TABLE asignaciones_proyecto (
     created_by UUID NOT NULL,
     
     CONSTRAINT fk_asignacion_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(id),
-    CONSTRAINT fk_asignacion_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_asignacion_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id), -- FIXED: proyecto singular
     CONSTRAINT ck_asignacion_fechas CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
 );
 
@@ -87,7 +87,7 @@ CREATE TABLE cuadrillas (
     version BIGINT NOT NULL DEFAULT 0, -- Optimistic Locking
     created_by UUID NOT NULL,
     
-    CONSTRAINT fk_cuadrilla_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_cuadrilla_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id), -- FIXED: proyecto singular
     CONSTRAINT fk_cuadrilla_capataz FOREIGN KEY (capataz_id) REFERENCES empleados(id),
     CONSTRAINT uk_cuadrilla_codigo_proyecto UNIQUE (proyecto_id, codigo),
     -- REGLA-122
@@ -135,7 +135,7 @@ CREATE TABLE asistencia_registros (
     created_by UUID NOT NULL,
     
     CONSTRAINT fk_asistencia_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(id),
-    CONSTRAINT fk_asistencia_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_asistencia_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id), -- FIXED: proyecto singular
     -- REGLA-123
     CONSTRAINT ck_asistencia_horas CHECK (hora_salida IS NULL OR hora_salida > hora_entrada),
     -- Prevent overlapping attendance records for same employee on same day/start time
@@ -158,7 +158,7 @@ CREATE TABLE configuracion_laboral_extendida (
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by UUID NOT NULL,
     
-    CONSTRAINT fk_config_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_config_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id), -- FIXED: proyecto singular
     CONSTRAINT ck_config_fechas CHECK (fecha_vigencia_fin IS NULL OR fecha_vigencia_fin >= fecha_vigencia_inicio)
 );
 
@@ -182,7 +182,7 @@ CREATE TABLE nominas (
     version BIGINT NOT NULL DEFAULT 0,
     created_by UUID NOT NULL,
     
-    CONSTRAINT fk_nomina_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id),
+    CONSTRAINT fk_nomina_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyecto(id), -- FIXED: proyecto singular
     CONSTRAINT ck_nomina_periodo CHECK (periodo_fin >= periodo_inicio),
     -- REGLA-124
     CONSTRAINT ck_nomina_estado CHECK (estado IN ('BORRADOR', 'CALCULADA', 'APROBADA', 'PAGADA'))
@@ -219,7 +219,7 @@ CREATE TABLE nomina_detalles (
 CREATE TABLE asignaciones_actividad (
     id UUID PRIMARY KEY,
     cuadrilla_id UUID NOT NULL,
-    partida_id UUID NOT NULL, -- References existing PARTIDAS table
+    partida_id UUID NOT NULL, -- References existing PARTIDA table
     
     fecha DATE NOT NULL,
     horas_asignadas DECIMAL(5, 2) NOT NULL,
@@ -231,7 +231,7 @@ CREATE TABLE asignaciones_actividad (
     created_by UUID NOT NULL,
     
     CONSTRAINT fk_actividad_cuadrilla FOREIGN KEY (cuadrilla_id) REFERENCES cuadrillas(id),
-    CONSTRAINT fk_actividad_partida FOREIGN KEY (partida_id) REFERENCES partidas(id),
+    CONSTRAINT fk_actividad_partida FOREIGN KEY (partida_id) REFERENCES partida(id), -- FIXED: partida singular
     CONSTRAINT ck_horas_asignadas_validas CHECK (horas_asignadas > 0 AND horas_asignadas <= 24)
 );
 

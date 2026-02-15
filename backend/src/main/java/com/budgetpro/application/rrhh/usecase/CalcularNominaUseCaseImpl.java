@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.CalcularNominaCommand;
 import com.budgetpro.application.rrhh.dto.NominaResponse;
@@ -18,6 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Service
 public class CalcularNominaUseCaseImpl implements CalcularNominaUseCase {
 
     private final NominaRepositoryPort nominaRepositoryPort;
