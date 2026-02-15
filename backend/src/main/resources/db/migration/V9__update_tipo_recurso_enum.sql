@@ -4,7 +4,15 @@
 -- 1. Actualiza registros existentes con EQUIPO a EQUIPO_MAQUINA
 -- 2. Permite usar los nuevos valores EQUIPO_MAQUINA y EQUIPO_HERRAMIENTA
 
--- Migrar registros existentes: EQUIPO -> EQUIPO_MAQUINA
+-- 0. Poblar datos iniciales en apu_insumo_snapshot (Recién creada en V8_1 con NULL)
+-- Se toma el valor actual de recurso_proxy (que puede ser 'EQUIPO' o ya migrado)
+UPDATE apu_insumo_snapshot ais
+SET tipo_recurso = rp.tipo_snapshot
+FROM recurso_proxy rp
+WHERE ais.recurso_external_id = rp.external_id
+  AND ais.tipo_recurso IS NULL;
+
+-- 1. Migrar registros existentes: EQUIPO -> EQUIPO_MAQUINA
 -- (aplicar a todas las tablas que usan tipo_recurso)
 
 -- Tabla recurso_proxy
@@ -23,7 +31,8 @@ BEGIN
     END IF;
 END $$;
 
--- Tabla apu_insumo_snapshot (nueva columna agregada en V7)
+-- Tabla apu_insumo_snapshot
+-- (Ahora que está poblada, migramos cualquier 'EQUIPO' que hayamos traído)
 UPDATE apu_insumo_snapshot
 SET tipo_recurso = 'EQUIPO_MAQUINA'
 WHERE tipo_recurso = 'EQUIPO';
