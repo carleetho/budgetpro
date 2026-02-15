@@ -1156,12 +1156,40 @@
       "by_module": {
         "home": 1
       }
+    },
+    {
+      "timestamp": "2026-02-15T22:45:51.819053+00:00Z",
+      "execution_time_ms": 34.71493721008301,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-15T22:45:52.006290+00:00Z",
+      "execution_time_ms": 29.151439666748047,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
     }
   ],
   "statistics": {
-    "total_runs": 79,
-    "avg_violations_per_run": 1.33,
-    "pass_rate": 83.5,
+    "total_runs": 81,
+    "avg_violations_per_run": 1.32,
+    "pass_rate": 84.0,
     "most_common_validator": "security_validator",
     "most_problematic_module": "home",
     "trend": "improving"
