@@ -42,4 +42,9 @@ public class CuadrillaRepositoryAdapter implements CuadrillaRepositoryPort {
         return repository.findByProyectoIdAndEstado(proyectoId.getValue(), estado.name()).stream().map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Cuadrilla> findAll() {
+        return repository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
+    }
 }
