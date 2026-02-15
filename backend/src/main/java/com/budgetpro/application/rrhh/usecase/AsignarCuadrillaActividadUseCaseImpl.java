@@ -1,4 +1,5 @@
 package com.budgetpro.application.rrhh.usecase;
+import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.AsignarCuadrillaCommand;
 import com.budgetpro.application.rrhh.exception.CuadrillaInvalidaException;
@@ -12,6 +13,7 @@ import com.budgetpro.domain.rrhh.model.Cuadrilla;
 import com.budgetpro.domain.rrhh.model.CuadrillaId;
 import com.budgetpro.domain.rrhh.model.EstadoCuadrilla;
 
+@Service
 public class AsignarCuadrillaActividadUseCaseImpl implements AsignarCuadrillaActividadUseCase {
 
     private final CuadrillaRepositoryPort cuadrillaRepository;
