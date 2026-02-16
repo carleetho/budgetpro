@@ -55,12 +55,14 @@ public final class Proveedor {
     private Proveedor(ProveedorId id, String razonSocial, String ruc, ProveedorEstado estado,
                      String contacto, String direccion, Long version,
                      UUID createdBy, LocalDateTime createdAt, UUID updatedBy, LocalDateTime updatedAt) {
-        validarInvariantes(razonSocial, ruc, estado, createdBy, createdAt);
+        // Normalizar estado: si es null, usar ACTIVO por defecto (solo para creación)
+        ProveedorEstado estadoFinal = estado != null ? estado : ProveedorEstado.ACTIVO;
+        validarInvariantes(razonSocial, ruc, estadoFinal, createdBy, createdAt);
 
         this.id = Objects.requireNonNull(id, "El ID del proveedor no puede ser nulo");
         this.razonSocial = normalizarRazonSocial(razonSocial);
         this.ruc = normalizarRuc(ruc);
-        this.estado = estado != null ? estado : ProveedorEstado.ACTIVO;
+        this.estado = estadoFinal;
         this.contacto = contacto != null && !contacto.isBlank() ? contacto.trim() : null;
         this.direccion = direccion != null && !direccion.isBlank() ? direccion.trim() : null;
         this.version = version != null ? version : 0L;
