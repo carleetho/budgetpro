@@ -1,15 +1,50 @@
-# Explicit Approvals for Canonical Notebooks Modifications
+# Explicit Approvals for Protected Files Modifications
 
-> **Purpose**: Document explicit user approvals for modifications to protected canonical notebooks files.
+> **Purpose**: Document explicit user approvals for modifications to protected files (`.cursorrules.md` and canonical notebooks).
 
-## Governance Rule
+## Governance Rules
 
+### `.cursorrules.md` Protection
+According to `.cursorrules.md` (line 41):
+- **PROHIBIDO modificar `.cursorrules.md` sin autorización explícita**
+- Listed in `protected_files` section (line 148)
+- Updates require **explicit user approval** and documentation
+
+### Canonical Notebooks Protection
 According to `.cursorrules.md` (Section "📚 PROTOCOLO DE NOTEBOOKS CANÓNICOS", Subsection 5):
 - `docs/canonical/**/*.md` are **READ-ONLY** by default
 - Updates require **explicit user approval**
 - Never modify to "match code" without explicit approval
 
 ## Approved Modifications
+
+### 2026-02-15: `.cursorrules.md` Governance Enhancements
+
+**Commit**: `b925337` - chore(governance): aplicar recomendaciones críticas de auditoría .cursorrules
+
+**Reason**: 
+- User explicitly requested to apply critical recommendations from compliance audit (`AUDITORIA_CURSORRULES_COMPLIANCE.md`)
+- Compliance score improvement: 72% → 95%
+- Critical gaps identified in audit required immediate governance fixes:
+  - Missing ambiguity detection protocol
+  - Missing canonical notebooks protection
+  - Missing notebook authority over code
+  - Missing context loading priority
+
+**Changes Made**:
+- Added "📚 PROTOCOLO DE NOTEBOOKS CANÓNICOS (MANDATORIO)" section
+- Enhanced `supreme_rule` with explicit framework prohibitions in Domain
+- Expanded `ai_assistant` with mandatory ambiguity detection
+- Expanded `protected_files` to include canonical notebooks
+- Added pre-implementation checklist
+
+**Approval**: 
+- ✅ **EXPLICIT USER REQUEST**: User requested to "aplicar las recomendaciones" from audit report
+- ✅ **GOVERNANCE COMPLIANCE**: Changes align with `AUDITORIA_CURSORRULES_COMPLIANCE.md` recommendations
+- ✅ **CRITICAL GAPS RESOLUTION**: Addresses blocking governance violations identified in audit
+
+**Compliance Note**: 
+This modification was explicitly requested by the user to resolve critical governance gaps identified in the compliance audit. The changes enhance AI agent behavior and architectural enforcement, directly addressing the audit findings.
 
 ### 2026-02-15: NOTEBOOKLM_MASTER_PROMPT.md Syntax Corrections
 
