@@ -9,7 +9,7 @@
 | Module               | Core Responsibility                    | Current Maturity     | Status                                                       |
 | -------------------- | -------------------------------------- | -------------------- | ------------------------------------------------------------ |
 | **1. Presupuesto**   | Financial Planning, WBS, Cost Analysis | **Completed (80%)**  | Core features stable. Snapshot integration active.           |
-| **2. EVM**           | Physical progress tracking, Valuations | **Functional (50%)** | Basic progress tracking. Missing advanced EVM metrics.       |
+| **2. EVM**           | Physical progress tracking, Valuations | **Functional (65%)** | CPI/SPI implemented ✅. EAC/ETC/VAC implemented ✅. Missing S-Curve and forecast completion date. |
 | **3. Cronograma**    | Time planning, Dependency management   | **Functional (60%)** | Critical Path and Gantt visualization implemented.           |
 | **4. Estimacion**    | Billing, Sequential approvals          | **Functional (60%)** | Core flow (Gen->Approve->Pay) working.                       |
 | **5. Compras**       | Procurement, Stock ingress             | **Functional (40%)** | Basic purchase registration. Missing complex flows (Orders). |
