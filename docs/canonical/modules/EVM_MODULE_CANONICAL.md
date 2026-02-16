@@ -1,16 +1,16 @@
 # EVM Module - Canonical Specification
 
-> **Status**: Functional (50%)
+> **Status**: Functional (65%)
 > **Owner**: Control Team
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-02-15
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State         | Deliverables                              |
 | ----------- | --------- | -------------------- | ----------------------------------------- |
-| **Current** | Now       | 50% (Basic Tracking) | Physical progress, Basic Valuations       |
-| **Next**    | +1 Month  | 75%                  | SPI/CPI Calculation, S-Curve Generation   |
-| **Target**  | +3 Months | 90%                  | Forecasting (EAC, ETC), Dashboard Metrics |
+| **Current** | Now       | 65% (Core Metrics)   | Physical progress, CPI/SPI ✅, EAC/ETC ✅  |
+| **Next**    | +1 Month  | 75%                  | S-Curve Generation, Advanced Forecasting  |
+| **Target**  | +3 Months | 90%                  | Forecast Completion Date, Dashboard Metrics |
 
 ## 2. Invariants (Business Rules)
 
@@ -72,8 +72,13 @@ graph TD
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "EVM Metrics",
   "properties": {
-    "cpi": { "type": "number", "description": "Status: 🔴 Missing" },
-    "spi": { "type": "number", "description": "Status: 🔴 Missing" }
+    "cpi": { "type": "number", "description": "Status: ✅ Implemented (Cost Performance Index)" },
+    "spi": { "type": "number", "description": "Status: ✅ Implemented (Schedule Performance Index)" },
+    "eac": { "type": "number", "description": "Status: ✅ Implemented (Estimate At Completion)" },
+    "etc": { "type": "number", "description": "Status: ✅ Implemented (Estimate To Complete)" },
+    "vac": { "type": "number", "description": "Status: ✅ Implemented (Variance At Completion)" },
+    "cv": { "type": "number", "description": "Status: ✅ Implemented (Cost Variance)" },
+    "sv": { "type": "number", "description": "Status: ✅ Implemented (Schedule Variance)" }
   }
 }
 ```
@@ -84,7 +89,9 @@ graph TD
 | ------ | --------------------------- | -------- | ---------- |
 | UC-E01 | Register Daily Progress     | P0       | ✅         |
 | UC-E02 | View Progress by Partida    | P0       | ✅         |
-| UC-E03 | Calculate Earned Value (EV) | P1       | 🟡 (Basic) |
+| UC-E03 | Calculate Earned Value (EV) | P1       | ✅         |
+| UC-E03a| Calculate CPI/SPI Metrics   | P1       | ✅         |
+| UC-E03b| Calculate EAC/ETC/VAC       | P1       | ✅         |
 | UC-E04 | Generate S-Curve Report     | P1       | 🔴         |
 | UC-E05 | Forecast Completion Date    | P2       | 🔴         |
 
@@ -100,7 +107,8 @@ graph TD
 | Method | Path                            | Description              | Status |
 | ------ | ------------------------------- | ------------------------ | ------ |
 | POST   | `/api/v1/partidas/{id}/avances` | Register progress        | ✅     |
-| GET    | `/api/v1/proyectos/{id}/evm`    | Get standard EVM metrics | 🔴     |
+| GET    | `/api/v1/evm/{proyectoId}`      | Get EVM snapshot (CPI/SPI/EAC/ETC) | ✅     |
+| GET    | `/api/v1/evm/{proyectoId}/s-curve` | Generate S-Curve report | 🔴     |
 
 ## 9. Observability
 
