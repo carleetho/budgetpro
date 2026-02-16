@@ -1,34 +1,6 @@
 {
   "history": [
     {
-      "timestamp": "2026-02-08T03:31:37.456860+00:00Z",
-      "execution_time_ms": 7946.325063705444,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
-      "timestamp": "2026-02-08T03:31:44.631435+00:00Z",
-      "execution_time_ms": 11407.1683883667,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
       "timestamp": "2026-02-08T03:32:11.917084+00:00Z",
       "execution_time_ms": 14212.895154953003,
       "total_violations": 1,
@@ -1479,6 +1451,34 @@
     {
       "timestamp": "2026-02-16T03:56:15.582217+00:00Z",
       "execution_time_ms": 144.6664333343506,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-16T03:56:39.637242+00:00Z",
+      "execution_time_ms": 83.99057388305664,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-16T03:56:40.088100+00:00Z",
+      "execution_time_ms": 81.38108253479004,
       "total_violations": 1,
       "by_severity": {
         "warning": 1

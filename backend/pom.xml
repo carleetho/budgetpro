@@ -28,9 +28,9 @@
         <lombok.version>1.18.30</lombok.version>
         <flyway.version>10.0.1</flyway.version>
         <testcontainers.version>1.20.4</testcontainers.version>
-        <!-- Docker Java API version compatible with Docker 29.1.4 (requires API 1.44+) -->
-        <!-- Actualizar a versión más reciente que soporte API 1.52 -->
-        <docker-java.version>3.4.0</docker-java.version>
+        <!-- Docker Java API version bundled with Testcontainers 1.20.4 -->
+        <!-- Testcontainers 1.20.4 includes docker-java 3.7.0 -->
+        <docker-java.version>3.7.0</docker-java.version>
         <docker.api.version>1.44</docker.api.version>
     </properties>
 
@@ -193,24 +193,24 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Docker Java API - versión más reciente compatible con Docker 29.1.4 (API 1.44+) -->
-        <!-- Usar versión más reciente que soporte API 1.44+ -->
+        <!-- Docker Java API - versión 3.7.0 (bundled with Testcontainers 1.20.4) -->
+        <!-- Compatible con Docker 29.1.4 (API 1.44+) -->
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-api</artifactId>
-            <version>3.4.0</version>
+            <version>${docker-java.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-core</artifactId>
-            <version>3.4.0</version>
+            <version>${docker-java.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-transport-zerodep</artifactId>
-            <version>3.4.0</version>
+            <version>${docker-java.version}</version>
             <scope>test</scope>
         </dependency>
 
