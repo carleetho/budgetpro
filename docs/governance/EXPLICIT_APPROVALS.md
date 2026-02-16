@@ -16,7 +16,21 @@ According to `.cursorrules.md` (Section "📚 PROTOCOLO DE NOTEBOOKS CANÓNICOS"
 - Updates require **explicit user approval**
 - Never modify to "match code" without explicit approval
 
-## Approved Modifications
+## Important Note on Protection Timeline
+
+**Protection Established**: Commit `b925337` (2026-02-15 19:56:43) established protection for `docs/canonical/**/*.md`
+
+**Pre-Protection Modifications**: 
+- Commit `27c9a3e` (2026-02-15 19:28:14) modified canonical notebooks **BEFORE** protection was established
+- These modifications are **VALID** as they occurred before the protection rule existed
+- No explicit approval documentation required for pre-protection modifications
+
+**Post-Protection Modifications**: 
+- All modifications to protected files **AFTER** commit `b925337** require explicit user approval
+- This document records **POST-PROTECTION** explicit approvals only
+- Pre-approval is impossible by definition; approvals are documented after the protection rule exists
+
+## Approved Modifications (Post-Protection)
 
 ### 2026-02-15: `.cursorrules.md` Governance Enhancements
 
