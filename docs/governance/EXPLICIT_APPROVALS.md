@@ -77,14 +77,33 @@ This modification was explicitly requested by the user to resolve critical gover
 - ✅ **RESTORATION OF FUNCTIONALITY**: File was broken and needed to be restored to working state
 
 **Compliance Note**: 
-These modifications occurred AFTER commit `b925337` established the protection rule. However, they comply with the exception for "explicit user approval" as the user explicitly requested these fixes to resolve critical syntax errors.
+These modifications occurred AFTER commit `b925337` established the protection rule. They comply with the exception for "explicit user approval" as the user explicitly requested these fixes to resolve critical syntax errors. This is a **POST-PROTECTION** explicit approval, not a pre-approval (which would be logically impossible).
+
+---
+
+## Pre-Protection Modifications (No Approval Required)
+
+### 2026-02-15: EVM Module Documentation Update
+
+**Commit**: `27c9a3e` - docs(canonical): corregir documentación EVM - CPI/SPI ya implementados
+
+**Status**: ✅ **VALID - Pre-Protection Modification**
+- Occurred at 19:28:14, **BEFORE** protection rule was established (19:56:43)
+- No explicit approval required as protection did not exist at time of modification
+- Modified files:
+  - `docs/canonical/modules/EVM_MODULE_CANONICAL.md`
+  - `docs/canonical/radiography/MODULE_SPECS_CURRENT.md`
+  - `docs/canonical/NOTEBOOKLM_MASTER_PROMPT.md`
+
+**Note**: This modification is documented here for completeness but does not require explicit approval as it occurred before the protection rule was established.
 
 ---
 
 ## Future Modifications
 
-Any future modifications to `docs/canonical/**/*.md` must:
+Any future modifications to protected files (`docs/canonical/**/*.md` or `.cursorrules.md`) **AFTER** commit `b925337` must:
 1. Be documented in this file with explicit approval reason
 2. Include the commit hash and date
 3. Explain why the modification was necessary
 4. Confirm that it was explicitly requested by the user
+5. Note that this is a **POST-PROTECTION** approval, not a pre-approval
