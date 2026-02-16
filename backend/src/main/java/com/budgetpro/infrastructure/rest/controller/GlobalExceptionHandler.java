@@ -38,9 +38,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
-        body.put("error", "ILLEGAL_STATE");
-        body.put("status", HttpStatus.CONFLICT.value());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        
+        // Determinar si es un error de regla de negocio (422) o conflicto de estado (409)
+        String message = ex.getMessage() != null ? ex.getMessage() : "";
+        HttpStatus status;
+        String errorCode;
+        
+        if (message.contains("L-01") || message.contains("L-04") || message.contains("REGLA-153") 
+            || message.contains("presupuesto") || message.contains("proveedor") || message.contains("partida")) {
+            // Error de regla de negocio: 422 Unprocessable Entity
+            status = HttpStatus.UNPROCESSABLE_ENTITY;
+            errorCode = "BUSINESS_RULE_VIOLATION";
+        } else {
+            // Conflicto de estado: 409 Conflict
+            status = HttpStatus.CONFLICT;
+            errorCode = "ILLEGAL_STATE";
+        }
+        
+        body.put("error", errorCode);
+        body.put("status", status.value());
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
