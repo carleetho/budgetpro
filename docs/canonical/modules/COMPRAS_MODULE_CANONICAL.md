@@ -1,16 +1,16 @@
 # COMPRAS Module - Canonical Specification
 
-> **Status**: Functional (40%)
+> **Status**: Functional (60%)
 > **Owner**: Logistica Team
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-02-15
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State          | Deliverables                                     |
 | ----------- | --------- | --------------------- | ------------------------------------------------ |
-| **Current** | Now       | 40% (Direct Purchase) | Direct Purchase, Stock Ingress                   |
-| **Next**    | +1 Month  | 60%                   | Purchase Orders (Orden de Compra), Provider Mgmt |
-| **Target**  | +3 Months | 80%                   | Comparativo de Precios, Approval Workflow        |
+| **Current** | Now       | 60% (Purchase Orders) | Direct Purchase, Stock Ingress, Purchase Orders, Provider Mgmt |
+| **Next**    | +1 Month  | 80%                   | Comparativo de Precios, Approval Workflow        |
+| **Target**  | +3 Months | 100%                  | Integración completa, Reportes avanzados         |
 
 ## 2. Invariants (Business Rules)
 
@@ -18,8 +18,8 @@
 | ---- | ----------------------------------------------------------------------------------------------------------------- | -------------- |
 | L-01 | **Budget Check**: A purchase cannot be authorized if it exceeds the available budget balance (Saldo por Ejercer). | ✅ Implemented |
 | L-02 | **Independent Prices**: Purchase prices are independent of APU Snapshot reference prices.                         | ✅ Implemented |
-| L-03 | **Stock Update**: Every purchase of "Material" must increase physical inventory.                                  | 🟡 Partial     |
-| L-04 | **Provider Valid**: Must purchase from active providers only.                                                     | 🔴 Missing     |
+| L-03 | **Stock Update**: Every purchase of "Material" must increase physical inventory.                                  | ✅ Implemented |
+| L-04 | **Provider Valid**: Must purchase from active providers only.                                                     | ✅ Implemented |
 
 
 ### 2.2 Extended Rule Inventory (Phase 1 Alignment)
@@ -46,7 +46,8 @@
 | Event Name                | Trigger             | Content (Payload)   | Status |
 | ------------------------- | ------------------- | ------------------- | ------ |
 | `CompraRegistradaEvent`   | Purchase saved      | `compraId`, `items` | ✅     |
-| `OrdenCompraEnviadaEvent` | PO sent to provider | `ordenId`           | 🔴     |
+| `OrdenCompraEnviadaEvent` | PO sent to provider | `ordenId`, `proyectoId`, `montoTotal`, `detalles` | ✅     |
+| `OrdenCompraRecibidaEvent` | PO received | `ordenId`, `proyectoId`, `montoTotal`, `detalles` | ✅     |
 
 ## 4. State Constraints
 
@@ -54,10 +55,14 @@
 graph TD
     BORRADOR --> SOLICITADA
     SOLICITADA --> APROBADA
-    APROBADA --> RECIBIDA
+    APROBADA --> ENVIADA
+    ENVIADA --> RECIBIDA
+    SOLICITADA --> BORRADOR
 ```
 
 - **Constraint**: Inventory only increases on `RECIBIDA`.
+- **State Machine**: BORRADOR → SOLICITADA → APROBADA → ENVIADA → RECIBIDA
+- **Rejection**: SOLICITADA → BORRADOR (rechazo de aprobación)
 
 ## 5. Data Contracts
 
@@ -88,8 +93,8 @@ graph TD
 | ------ | ------------------------- | -------- | ------ |
 | UC-L01 | Register Direct Purchase  | P0       | ✅     |
 | UC-L02 | Check Budget Availability | P0       | ✅     |
-| UC-L03 | Generate Purchase Order   | P1       | 🔴     |
-| UC-L04 | Receive Goods (Partial)   | P1       | 🔴     |
+| UC-L03 | Generate Purchase Order   | P1       | ✅     |
+| UC-L04 | Receive Goods (Partial)   | P1       | ✅     |
 
 ## 7. Domain Services
 
@@ -98,10 +103,18 @@ graph TD
 
 ## 8. REST Endpoints
 
-| Method | Path                     | Description              | Status |
-| ------ | ------------------------ | ------------------------ | ------ |
-| POST   | `/api/v1/compras`        | Register direct purchase | ✅     |
-| GET    | `/api/v1/ordenes-compra` | List POs                 | 🔴     |
+| Method | Path                                | Description                          | Status |
+| ------ | ----------------------------------- | ------------------------------------ | ------ |
+| POST   | `/api/v1/compras`                   | Register direct purchase             | ✅     |
+| POST   | `/api/v1/ordenes-compra`            | Create purchase order                | ✅     |
+| GET    | `/api/v1/ordenes-compra`            | List purchase orders (with filters)  | ✅     |
+| GET    | `/api/v1/ordenes-compra/{id}`      | Get purchase order by ID             | ✅     |
+| PUT    | `/api/v1/ordenes-compra/{id}`       | Update purchase order (BORRADOR)     | ✅     |
+| DELETE | `/api/v1/ordenes-compra/{id}`      | Delete purchase order (BORRADOR)     | ✅     |
+| POST   | `/api/v1/ordenes-compra/{id}/solicitar` | Request approval (BORRADOR → SOLICITADA) | ✅     |
+| POST   | `/api/v1/ordenes-compra/{id}/aprobar`   | Approve order (SOLICITADA → APROBADA) | ✅     |
+| POST   | `/api/v1/ordenes-compra/{id}/enviar`    | Send to provider (APROBADA → ENVIADA) | ✅     |
+| POST   | `/api/v1/ordenes-compra/{id}/confirmar-recepcion` | Confirm receipt (ENVIADA → RECIBIDA) | ✅     |
 
 ## 9. Observability
 
@@ -115,4 +128,37 @@ graph TD
 
 ## 11. Technical Debt & Risks
 
-- [ ] **Free Text Providers**: Currently providers are just strings. Need `Proveedor` entity. (High)
+- [x] **Free Text Providers**: ✅ Resolved - `Proveedor` entity implemented. Migration guide available at `docs/migration/PROVIDER_MIGRATION_GUIDE.md`
+- [ ] **Pagination**: List endpoints don't support pagination yet (Medium)
+- [ ] **Provider API**: REST endpoints for Provider CRUD not yet implemented (Medium)
+
+## 12. API Documentation
+
+- **OpenAPI Specification**: `backend/src/main/resources/api-docs/orden-compra-api.yaml`
+- **Swagger UI**: Available at `http://localhost:8080/swagger-ui.html`
+- **Migration Guide**: `docs/migration/PROVIDER_MIGRATION_GUIDE.md`
+
+## 13. Implementation Details
+
+### 13.1. Purchase Order State Machine
+
+**States**: BORRADOR → SOLICITADA → APROBADA → ENVIADA → RECIBIDA
+
+**Transitions**:
+- `solicitar()`: BORRADOR → SOLICITADA (validates L-01, L-04, REGLA-153)
+- `aprobar()`: SOLICITADA → APROBADA
+- `rechazar()`: SOLICITADA → BORRADOR
+- `enviar()`: APROBADA → ENVIADA (publishes `OrdenCompraEnviadaEvent`)
+- `confirmarRecepcion()`: ENVIADA → RECIBIDA (updates inventory, publishes `OrdenCompraRecibidaEvent`)
+
+### 13.2. Provider Entity
+
+**Status**: ✅ Implemented
+
+**Features**:
+- RUC uniqueness validation
+- State management (ACTIVO, INACTIVO, BLOQUEADO)
+- Audit trail (createdBy, updatedBy, createdAt, updatedAt)
+- Referential integrity with `orden_compra`
+
+**Migration**: See `docs/migration/PROVIDER_MIGRATION_GUIDE.md` for migration from free-text providers.

@@ -1,0 +1,637 @@
+openapi: 3.0.3
+info:
+  title: BudgetPro API - Órdenes de Compra
+  version: 1.0.0
+  description: |
+    API REST para gestión de órdenes de compra (Purchase Orders) en proyectos de construcción.
+    
+    ## Autenticación
+    Todas las operaciones requieren autenticación mediante Bearer Token (JWT).
+    Obtén el token mediante el endpoint de autenticación y úsalo en el header:
+    ```
+    Authorization: Bearer <token>
+    ```
+    
+    ## Flujo de Estados
+    Las órdenes de compra siguen un flujo de estados secuencial:
+    ```
+    BORRADOR → SOLICITADA → APROBADA → ENVIADA → RECIBIDA
+    ```
+    
+    ## Reglas de Negocio
+    - **L-01**: El monto total no puede exceder el presupuesto disponible
+    - **L-04**: Solo se puede comprar a proveedores ACTIVOS
+    - **REGLA-153**: Todas las partidas deben ser válidas (leaf nodes del presupuesto)
+  contact:
+    name: BudgetPro Team
+    email: support@budgetpro.com
+  license:
+    name: Proprietary
+    url: https://budgetpro.com/license
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor de desarrollo
+  - url: https://api.budgetpro.com
+    description: Servidor de producción
+
+tags:
+  - name: Órdenes de Compra
+    description: Operaciones CRUD para órdenes de compra
+  - name: Transiciones de Estado
+    description: Operaciones para cambiar el estado de las órdenes de compra
+
+security:
+  - bearer-jwt: []
+
+components:
+  securitySchemes:
+    bearer-jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Autenticación mediante JWT (JSON Web Token).
+        
+        1. Obtén el token mediante POST /api/v1/auth/login
+        2. Incluye el token en el header: Authorization: Bearer <token>
+        3. El token expira después del tiempo configurado (por defecto 24 horas)
+  
+  schemas:
+    OrdenCompraRequest:
+      type: object
+      required:
+        - proyectoId
+        - proveedorId
+        - fecha
+        - detalles
+      properties:
+        proyectoId:
+          type: string
+          format: uuid
+          description: ID único del proyecto
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        proveedorId:
+          type: string
+          format: uuid
+          description: ID único del proveedor (debe estar ACTIVO)
+          example: "660e8400-e29b-41d4-a716-446655440000"
+        fecha:
+          type: string
+          format: date
+          description: Fecha de la orden de compra
+          example: "2024-02-15"
+        condicionesPago:
+          type: string
+          description: Condiciones de pago (opcional)
+          example: "30 días crédito"
+        observaciones:
+          type: string
+          description: Observaciones adicionales (opcional)
+          example: "Entrega urgente requerida"
+        detalles:
+          type: array
+          minItems: 1
+          description: Lista de detalles de la orden de compra
+          items:
+            $ref: '#/components/schemas/DetalleOrdenCompraRequest'
+    
+    DetalleOrdenCompraRequest:
+      type: object
+      required:
+        - partidaId
+        - descripcion
+        - cantidad
+        - precioUnitario
+      properties:
+        partidaId:
+          type: string
+          format: uuid
+          description: ID de la partida presupuestaria (debe ser leaf node)
+          example: "770e8400-e29b-41d4-a716-446655440000"
+        descripcion:
+          type: string
+          description: Descripción del detalle
+          example: "Cemento Portland Tipo I"
+        cantidad:
+          type: number
+          format: decimal
+          minimum: 0.000001
+          description: Cantidad del item
+          example: 100.00
+        unidad:
+          type: string
+          description: Unidad de medida
+          example: "KG"
+        precioUnitario:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Precio unitario del item
+          example: 0.50
+    
+    OrdenCompraResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID único de la orden de compra
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        numero:
+          type: string
+          description: Número secuencial de la orden
+          example: "PO-2024-001"
+        proyectoId:
+          type: string
+          format: uuid
+          description: ID del proyecto
+          example: "660e8400-e29b-41d4-a716-446655440000"
+        proveedor:
+          $ref: '#/components/schemas/ProveedorResponse'
+        fecha:
+          type: string
+          format: date
+          description: Fecha de la orden
+          example: "2024-02-15"
+        estado:
+          type: string
+          enum: [BORRADOR, SOLICITADA, APROBADA, ENVIADA, RECIBIDA]
+          description: Estado actual de la orden
+          example: "BORRADOR"
+        montoTotal:
+          type: number
+          format: decimal
+          description: Monto total calculado automáticamente
+          example: 1250.00
+        condicionesPago:
+          type: string
+          description: Condiciones de pago
+          example: "30 días crédito"
+        observaciones:
+          type: string
+          description: Observaciones adicionales
+          example: "Entrega urgente"
+        version:
+          type: integer
+          description: Versión para control de concurrencia optimista
+          example: 1
+        detalles:
+          type: array
+          description: Lista de detalles de la orden
+          items:
+            $ref: '#/components/schemas/DetalleOrdenCompraResponse'
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de última actualización
+        createdBy:
+          type: string
+          format: uuid
+          description: ID del usuario que creó la orden
+        updatedBy:
+          type: string
+          format: uuid
+          description: ID del usuario que actualizó la orden por última vez
+    
+    DetalleOrdenCompraResponse:
+      type: object
+      properties:
+        partidaId:
+          type: string
+          format: uuid
+          description: ID de la partida presupuestaria
+        descripcion:
+          type: string
+          description: Descripción del detalle
+        cantidad:
+          type: number
+          format: decimal
+          description: Cantidad del item
+        unidad:
+          type: string
+          description: Unidad de medida
+        precioUnitario:
+          type: number
+          format: decimal
+          description: Precio unitario del item
+        subtotal:
+          type: number
+          format: decimal
+          description: Subtotal calculado (cantidad * precioUnitario)
+    
+    ProveedorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID único del proveedor
+        razonSocial:
+          type: string
+          description: Razón social del proveedor
+        ruc:
+          type: string
+          description: RUC (número de identificación tributaria)
+        estado:
+          type: string
+          enum: [ACTIVO, INACTIVO, BLOQUEADO]
+          description: Estado del proveedor
+    
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensaje de error descriptivo
+        error:
+          type: string
+          description: Código de error
+          example: "BUSINESS_RULE_VIOLATION"
+        status:
+          type: integer
+          description: Código HTTP de estado
+          example: 422
+
+paths:
+  /api/v1/ordenes-compra:
+    post:
+      tags:
+        - Órdenes de Compra
+      summary: Crear orden de compra
+      description: |
+        Crea una nueva orden de compra en estado BORRADOR.
+        
+        La orden se crea con:
+        - Número secuencial automático (formato: PO-YYYY-NNN)
+        - Estado inicial: BORRADOR
+        - Monto total calculado automáticamente desde los detalles
+        - Metadata de auditoría (createdBy, createdAt)
+        
+        **Validaciones aplicadas:**
+        - El proveedor debe existir y estar ACTIVO (L-04)
+        - Todos los detalles deben tener partidas válidas (REGLA-153)
+        - El monto total no puede exceder el presupuesto disponible (L-01)
+      operationId: crearOrdenCompra
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenCompraRequest'
+            example:
+              proyectoId: "550e8400-e29b-41d4-a716-446655440000"
+              proveedorId: "660e8400-e29b-41d4-a716-446655440000"
+              fecha: "2024-02-15"
+              condicionesPago: "30 días crédito"
+              observaciones: "Entrega urgente requerida"
+              detalles:
+                - partidaId: "770e8400-e29b-41d4-a716-446655440000"
+                  descripcion: "Cemento Portland Tipo I"
+                  cantidad: 100.00
+                  unidad: "KG"
+                  precioUnitario: 0.50
+                - partidaId: "880e8400-e29b-41d4-a716-446655440000"
+                  descripcion: "Arena fina"
+                  cantidad: 50.00
+                  unidad: "M3"
+                  precioUnitario: 25.00
+      responses:
+        '201':
+          description: Orden de compra creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenCompraResponse'
+        '400':
+          description: Datos de entrada inválidos (validación de Bean Validation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: No autenticado - Token JWT faltante o inválido
+        '403':
+          description: No autorizado - Permisos insuficientes
+        '422':
+          description: Violación de regla de negocio (L-01, L-04, REGLA-153)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+    
+    get:
+      tags:
+        - Órdenes de Compra
+      summary: Listar órdenes de compra
+      description: |
+        Lista órdenes de compra con filtros opcionales.
+        
+        **Filtros disponibles:**
+        - `proyectoId`: Filtrar por proyecto específico
+        - `estado`: Filtrar por estado (BORRADOR, SOLICITADA, APROBADA, ENVIADA, RECIBIDA)
+        
+        **Nota:** Si no se proporcionan filtros, retorna lista vacía.
+        En producción se recomienda implementar paginación.
+      operationId: listarOrdenesCompra
+      parameters:
+        - name: proyectoId
+          in: query
+          description: ID del proyecto para filtrar
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: estado
+          in: query
+          description: Estado de la orden para filtrar
+          required: false
+          schema:
+            type: string
+            enum: [BORRADOR, SOLICITADA, APROBADA, ENVIADA, RECIBIDA]
+      responses:
+        '200':
+          description: Lista de órdenes de compra obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrdenCompraResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/ordenes-compra/{id}:
+    get:
+      tags:
+        - Órdenes de Compra
+      summary: Obtener orden de compra por ID
+      description: Obtiene los detalles completos de una orden de compra por su identificador único.
+      operationId: obtenerOrdenCompra
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Orden de compra encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenCompraResponse'
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado
+        '404':
+          description: Orden de compra no encontrada
+        '500':
+          description: Error interno del servidor
+    
+    put:
+      tags:
+        - Órdenes de Compra
+      summary: Actualizar orden de compra
+      description: |
+        Actualiza una orden de compra en estado BORRADOR.
+        
+        **Campos actualizables:**
+        - `condicionesPago`: Condiciones de pago
+        - `observaciones`: Observaciones adicionales
+        - `detalles`: Se pueden agregar nuevos detalles (no modificar existentes)
+        
+        **Restricciones:**
+        - Solo se pueden actualizar órdenes en estado BORRADOR
+        - Para modificar detalles existentes, eliminar y recrear la orden
+      operationId: actualizarOrdenCompra
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenCompraRequest'
+      responses:
+        '200':
+          description: Orden de compra actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenCompraResponse'
+        '400':
+          description: Datos de entrada inválidos
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado BORRADOR
+        '500':
+          description: Error interno del servidor
+    
+    delete:
+      tags:
+        - Órdenes de Compra
+      summary: Eliminar orden de compra
+      description: |
+        Elimina una orden de compra en estado BORRADOR.
+        
+        **Restricciones:**
+        - Solo se pueden eliminar órdenes en estado BORRADOR
+        - Las órdenes en otros estados no pueden ser eliminadas
+      operationId: eliminarOrdenCompra
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Orden eliminada exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado BORRADOR
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/ordenes-compra/{id}/solicitar:
+    post:
+      tags:
+        - Transiciones de Estado
+      summary: Solicitar aprobación de orden de compra
+      description: |
+        Transiciona una orden de compra de BORRADOR a SOLICITADA.
+        
+        **Validaciones aplicadas:**
+        - L-04: El proveedor debe estar ACTIVO
+        - REGLA-153: Todas las partidas deben ser válidas (leaf nodes)
+        - L-01: El monto total no puede exceder el presupuesto disponible
+        
+        **Transición de estado:** BORRADOR → SOLICITADA
+      operationId: solicitarAprobacion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Aprobación solicitada exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado - Se requiere permiso CREATE_PO
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado BORRADOR
+        '422':
+          description: Violación de regla de negocio (L-01, L-04, REGLA-153)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/ordenes-compra/{id}/aprobar:
+    post:
+      tags:
+        - Transiciones de Estado
+      summary: Aprobar orden de compra
+      description: |
+        Aprueba una orden de compra, transicionándola de SOLICITADA a APROBADA.
+        
+        **Transición de estado:** SOLICITADA → APROBADA
+        
+        **Permisos requeridos:** APPROVE_PO
+      operationId: aprobarOrdenCompra
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Orden aprobada exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado - Se requiere permiso APPROVE_PO
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado SOLICITADA
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/ordenes-compra/{id}/enviar:
+    post:
+      tags:
+        - Transiciones de Estado
+      summary: Enviar orden de compra al proveedor
+      description: |
+        Envía una orden de compra al proveedor, transicionándola de APROBADA a ENVIADA.
+        
+        **Transición de estado:** APROBADA → ENVIADA
+        
+        **Evento publicado:** `OrdenCompraEnviadaEvent`
+        
+        **Permisos requeridos:** SEND_PO
+      operationId: enviarOrdenCompra
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Orden enviada exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado - Se requiere permiso SEND_PO
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado APROBADA
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/ordenes-compra/{id}/confirmar-recepcion:
+    post:
+      tags:
+        - Transiciones de Estado
+      summary: Confirmar recepción de orden de compra
+      description: |
+        Confirma la recepción de una orden de compra, transicionándola de ENVIADA a RECIBIDA.
+        
+        **Transición de estado:** ENVIADA → RECIBIDA
+        
+        **Acciones automáticas:**
+        - Actualiza el inventario para partidas de tipo Material (L-03)
+        - Publica el evento `OrdenCompraRecibidaEvent`
+        
+        **Permisos requeridos:** RECEIVE_PO
+      operationId: confirmarRecepcion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID único de la orden de compra
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Recepción confirmada exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: No autorizado - Se requiere permiso RECEIVE_PO
+        '404':
+          description: Orden de compra no encontrada
+        '409':
+          description: Orden no está en estado ENVIADA
+        '500':
+          description: Error interno del servidor - Error al actualizar inventario

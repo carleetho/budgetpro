@@ -28,8 +28,23 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers(disabledWithoutDocker = true)
 public abstract class AbstractIntegrationTest {
     static {
-        // Forzar versión de API compatible con el daemon actual.
-        System.setProperty("docker.api.version", "1.44");
+        // NOTA: Docker 29.1.4 soporta API 1.52, pero Testcontainers 1.20.4 usa docker-java 3.4.0
+        // que tiene API 1.32 embebida. Esto causa incompatibilidad.
+        // 
+        // SOLUCIONES (ver SOLUCION_DOCKER_TESTS.md):
+        // 1. Configurar Docker daemon para aceptar API 1.32 (temporal)
+        // 2. Actualizar Testcontainers cuando haya versión compatible
+        // 3. Usar Docker Compose en lugar de Testcontainers
+        //
+        // Por ahora, intentamos configurar para usar la versión más compatible posible
+        System.setProperty("docker.api.version", "1.44"); // Mínimo requerido por Docker 29.1.4
+        System.setProperty("docker.client.strategy", "org.testcontainers.dockerclient.UnixSocketClientProviderStrategy");
+        // Configurar socket de Docker
+        if (System.getenv("DOCKER_HOST") == null) {
+            System.setProperty("DOCKER_HOST", "unix:///var/run/docker.sock");
+        }
+        // Forzar actualización del cliente Docker en Testcontainers
+        System.setProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock");
     }
 
     /**
