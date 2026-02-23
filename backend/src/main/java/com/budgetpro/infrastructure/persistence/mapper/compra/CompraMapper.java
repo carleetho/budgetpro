@@ -28,7 +28,7 @@ public class CompraMapper {
      */
     public CompraEntity toEntity(Compra compra) {
         if (compra == null) {
-            return null;
+            throw new IllegalArgumentException("Compra no puede ser null");
         }
 
         CompraEntity entity = new CompraEntity(
@@ -55,7 +55,7 @@ public class CompraMapper {
      */
     public CompraDetalleEntity toDetalleEntity(CompraDetalle detalle, CompraEntity compraEntity) {
         if (detalle == null) {
-            return null;
+            throw new IllegalArgumentException("CompraDetalle no puede ser null");
         }
 
         return new CompraDetalleEntity(
@@ -71,6 +71,7 @@ public class CompraMapper {
             detalle.getCantidad(),
             detalle.getPrecioUnitario(),
             detalle.getSubtotal(),
+            detalle.getCantidadRecibida(),
             null // CRÍTICO: null para nuevas entidades, Hibernate lo manejará
         );
     }
@@ -80,7 +81,7 @@ public class CompraMapper {
      */
     public Compra toDomain(CompraEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("CompraEntity no puede ser null");
         }
 
         // Mapear detalles
@@ -105,7 +106,7 @@ public class CompraMapper {
      */
     public CompraDetalle toDetalleDomain(CompraDetalleEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("CompraDetalleEntity no puede ser null");
         }
 
         return CompraDetalle.reconstruir(
@@ -119,7 +120,8 @@ public class CompraMapper {
             entity.getRubroInsumo(),
             entity.getCantidad(),
             entity.getPrecioUnitario(),
-            entity.getSubtotal()
+            entity.getSubtotal(),
+            entity.getCantidadRecibida()
         );
     }
 
@@ -138,16 +140,5 @@ public class CompraMapper {
         // Los detalles se manejan con cascade y orphanRemoval
     }
 
-    /**
-     * Método obsoleto: Ya no se necesita asignar recursos ya que usamos referencias externas.
-     * Se mantiene por compatibilidad pero no hace nada.
-     * 
-     * @deprecated Los recursos ahora se manejan mediante external_id, no se necesita cargar entidades.
-     */
-    @Deprecated
-    public void asignarRecursosADetalles(CompraEntity entity, Compra compra) {
-        // Ya no es necesario cargar RecursoEntity, los detalles ya tienen recursoExternalId y recursoNombre
-        // Este método se mantiene por compatibilidad pero no hace nada
-    }
 
 }

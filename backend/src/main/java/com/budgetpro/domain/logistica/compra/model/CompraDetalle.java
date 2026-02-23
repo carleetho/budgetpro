@@ -30,6 +30,7 @@ public final class CompraDetalle {
     // - cantidad: puede ajustarse (actualizarCantidad)
     // - precioUnitario: puede negociarse (actualizarPrecioUnitario)
     // - subtotal: calculado dinámicamente = cantidad * precioUnitario
+    // - cantidadRecibida: acumulador de cantidad recibida (registrarRecepcion)
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     // REGLA-032
     private BigDecimal cantidad;
@@ -37,6 +38,8 @@ public final class CompraDetalle {
     private BigDecimal precioUnitario;
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
     private BigDecimal subtotal; // Calculado: cantidad * precioUnitario
+    // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
+    private BigDecimal cantidadRecibida; // Acumulador de cantidad recibida
 
     /**
      * Constructor privado. Usar factory methods.
@@ -60,6 +63,7 @@ public final class CompraDetalle {
         this.rubroInsumo = Objects.requireNonNull(rubroInsumo, "El rubro es obligatorio");
         this.cantidad = cantidad != null ? cantidad : BigDecimal.ZERO;
         this.precioUnitario = precioUnitario != null ? precioUnitario : BigDecimal.ZERO;
+        this.cantidadRecibida = BigDecimal.ZERO;
         this.subtotal = calcularSubtotal();
     }
 
@@ -85,6 +89,20 @@ public final class CompraDetalle {
         CompraDetalle detalle = new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId,
                 naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
         detalle.subtotal = subtotal != null ? subtotal : detalle.calcularSubtotal();
+        return detalle;
+    }
+
+    /**
+     * Factory method para reconstruir un CompraDetalle desde persistencia con cantidadRecibida.
+     */
+    public static CompraDetalle reconstruir(CompraDetalleId id, String recursoExternalId, String recursoNombre,
+            String unidad, UUID partidaId, NaturalezaGasto naturalezaGasto, RelacionContractual relacionContractual,
+            RubroInsumo rubroInsumo, BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subtotal,
+            BigDecimal cantidadRecibida) {
+        CompraDetalle detalle = new CompraDetalle(id, recursoExternalId, recursoNombre, unidad, partidaId,
+                naturalezaGasto, relacionContractual, rubroInsumo, cantidad, precioUnitario);
+        detalle.subtotal = subtotal != null ? subtotal : detalle.calcularSubtotal();
+        detalle.cantidadRecibida = cantidadRecibida != null ? cantidadRecibida : BigDecimal.ZERO;
         return detalle;
     }
 
@@ -146,6 +164,39 @@ public final class CompraDetalle {
         this.subtotal = calcularSubtotal();
     }
 
+    /**
+     * Registra la recepción de una cantidad de productos.
+     * Valida que no se exceda la cantidad pendiente (previene sobre-entrega).
+     * 
+     * @param cantidadARecibir la cantidad a registrar como recibida
+     * @throws IllegalArgumentException si la cantidad a recibir excede la cantidad pendiente
+     */
+    public void registrarRecepcion(BigDecimal cantidadARecibir) {
+        if (cantidadARecibir == null) {
+            throw new IllegalArgumentException("La cantidad a recibir no puede ser nula");
+        }
+        if (cantidadARecibir.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("La cantidad a recibir no puede ser negativa");
+        }
+        
+        BigDecimal pendiente = getCantidadPendiente();
+        if (cantidadARecibir.compareTo(pendiente) > 0) {
+            throw new IllegalArgumentException(
+                    String.format("No se puede recibir %s. Pendiente: %s", cantidadARecibir, pendiente));
+        }
+        
+        this.cantidadRecibida = this.cantidadRecibida.add(cantidadARecibir);
+    }
+
+    /**
+     * Obtiene la cantidad pendiente de recibir.
+     * 
+     * @return la cantidad pendiente (cantidad - cantidadRecibida)
+     */
+    public BigDecimal getCantidadPendiente() {
+        return cantidad.subtract(cantidadRecibida);
+    }
+
     // Getters
 
     public CompraDetalleId getId() {
@@ -196,6 +247,10 @@ public final class CompraDetalle {
         return subtotal;
     }
 
+    public BigDecimal getCantidadRecibida() {
+        return cantidadRecibida;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -214,8 +269,8 @@ public final class CompraDetalle {
     @Override
     public String toString() {
         return String.format(
-                "CompraDetalle{id=%s, recursoExternalId='%s', recursoNombre='%s', unidad=%s, partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s}",
+                "CompraDetalle{id=%s, recursoExternalId='%s', recursoNombre='%s', unidad=%s, partidaId=%s, naturaleza=%s, relacion=%s, rubro=%s, cantidad=%s, precioUnitario=%s, subtotal=%s, cantidadRecibida=%s}",
                 id, recursoExternalId, recursoNombre, unidad, partidaId, naturalezaGasto, relacionContractual,
-                rubroInsumo, cantidad, precioUnitario, subtotal);
+                rubroInsumo, cantidad, precioUnitario, subtotal, cantidadRecibida);
     }
 }
