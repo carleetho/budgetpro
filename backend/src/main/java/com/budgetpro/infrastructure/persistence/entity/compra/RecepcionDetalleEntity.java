@@ -38,6 +38,9 @@ public class RecepcionDetalleEntity {
     @Column(name = "precio_unitario", nullable = false, precision = 19, scale = 4)
     private BigDecimal precioUnitario;
 
+    @Column(name = "movimiento_almacen_id")
+    private UUID movimientoAlmacenId;
+
     /**
      * Constructor protegido para JPA.
      */
@@ -54,10 +57,11 @@ public class RecepcionDetalleEntity {
      * @param almacenId ID del almacén
      * @param cantidadRecibida Cantidad recibida
      * @param precioUnitario Precio unitario
+     * @param movimientoAlmacenId ID del movimiento de almacén creado
      */
     public RecepcionDetalleEntity(UUID id, RecepcionEntity recepcion, UUID compraDetalleId,
                                   UUID recursoId, UUID almacenId, BigDecimal cantidadRecibida,
-                                  BigDecimal precioUnitario) {
+                                  BigDecimal precioUnitario, UUID movimientoAlmacenId) {
         this.id = id;
         this.recepcion = recepcion;
         this.compraDetalleId = compraDetalleId;
@@ -65,6 +69,7 @@ public class RecepcionDetalleEntity {
         this.almacenId = almacenId;
         this.cantidadRecibida = cantidadRecibida;
         this.precioUnitario = precioUnitario;
+        this.movimientoAlmacenId = movimientoAlmacenId;
     }
 
     // Getters y Setters
@@ -123,5 +128,13 @@ public class RecepcionDetalleEntity {
 
     public void setPrecioUnitario(BigDecimal precioUnitario) {
         this.precioUnitario = precioUnitario;
+    }
+
+    public UUID getMovimientoAlmacenId() {
+        return movimientoAlmacenId;
+    }
+
+    public void setMovimientoAlmacenId(UUID movimientoAlmacenId) {
+        this.movimientoAlmacenId = movimientoAlmacenId;
     }
 }

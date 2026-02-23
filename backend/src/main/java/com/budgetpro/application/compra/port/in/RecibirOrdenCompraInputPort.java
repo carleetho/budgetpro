@@ -1,7 +1,7 @@
 package com.budgetpro.application.compra.port.in;
 
 import com.budgetpro.application.compra.command.RecibirOrdenCompraCommand;
-import com.budgetpro.domain.logistica.compra.model.RecepcionId;
+import com.budgetpro.domain.logistica.compra.model.Recepcion;
 
 /**
  * Puerto de entrada (Inbound Port) para recibir una orden de compra.
@@ -21,10 +21,10 @@ public interface RecibirOrdenCompraInputPort {
      * - Persistencia de la recepción
      * 
      * @param command Comando con los datos de la recepción, incluyendo guía de remisión y detalles
-     * @return RecepcionId Identificador de la recepción creada
+     * @return Recepcion El agregado Recepcion completo creado
      * @throws com.budgetpro.application.compra.exception.BusinessRuleException si la guía de remisión ya existe para esta compra (idempotencia)
      * @throws IllegalArgumentException si el comando es inválido o la compra no existe
      * @throws IllegalStateException si la compra no está en un estado válido para recepción (debe estar ENVIADA o PARCIAL)
      */
-    RecepcionId ejecutar(RecibirOrdenCompraCommand command);
+    Recepcion ejecutar(RecibirOrdenCompraCommand command);
 }

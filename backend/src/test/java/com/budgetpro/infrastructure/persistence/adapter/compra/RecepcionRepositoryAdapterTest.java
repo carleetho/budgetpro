@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.persistence.adapter.compra;
 
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
+import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacenId;
 import com.budgetpro.domain.logistica.compra.model.CompraId;
 import com.budgetpro.domain.logistica.compra.model.Recepcion;
 import com.budgetpro.domain.logistica.compra.model.RecepcionDetalle;
@@ -83,7 +84,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("100.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion = Recepcion.crear(
@@ -135,7 +137,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("50.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion1 = Recepcion.crear(
@@ -171,7 +174,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("50.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion1 = Recepcion.crear(
@@ -204,7 +208,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("50.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion1 = Recepcion.crear(
@@ -228,7 +233,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("30.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion2 = Recepcion.crear(
@@ -271,7 +277,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("75.50"),
-            new BigDecimal("12.75")
+            new BigDecimal("12.75"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcionOriginal = Recepcion.crear(
@@ -324,7 +331,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId,
             almacenDomainId,
             new BigDecimal("100.00"),
-            new BigDecimal("10.50")
+            new BigDecimal("10.50"),
+            MovimientoAlmacenId.generate()
         );
 
         RecepcionDetalle detalle2 = RecepcionDetalle.crear(
@@ -333,7 +341,8 @@ class RecepcionRepositoryAdapterTest extends AbstractIntegrationTest {
             recursoId2,
             AlmacenId.of(almacenId2),
             new BigDecimal("200.00"),
-            new BigDecimal("15.75")
+            new BigDecimal("15.75"),
+            MovimientoAlmacenId.generate()
         );
 
         Recepcion recepcion = Recepcion.crear(

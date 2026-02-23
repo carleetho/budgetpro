@@ -2,14 +2,13 @@ package com.budgetpro.infrastructure.rest.compra.controller;
 
 import com.budgetpro.application.compra.command.RecibirOrdenCompraCommand;
 import com.budgetpro.application.compra.dto.RecepcionResponse;
+import com.budgetpro.application.compra.exception.AuthenticationRequiredException;
 import com.budgetpro.application.compra.port.in.RecibirOrdenCompraInputPort;
 import com.budgetpro.domain.logistica.compra.model.Compra;
 import com.budgetpro.domain.logistica.compra.model.CompraDetalle;
 import com.budgetpro.domain.logistica.compra.model.CompraId;
-import com.budgetpro.domain.logistica.compra.model.RecepcionId;
+import com.budgetpro.domain.logistica.compra.model.Recepcion;
 import com.budgetpro.domain.logistica.compra.port.out.CompraRepository;
-import com.budgetpro.infrastructure.persistence.entity.compra.RecepcionEntity;
-import com.budgetpro.infrastructure.persistence.repository.compra.RecepcionJpaRepository;
 import com.budgetpro.infrastructure.rest.compra.dto.RecibirOrdenCompraRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,34 +30,31 @@ import java.util.stream.Collectors;
  * de guía de remisión y registro de movimientos de almacén.
  */
 @RestController
-@RequestMapping("/api/v1/ordenes-compra")
+@RequestMapping("/api/v1/compras")
 public class RecepcionController {
 
     private final RecibirOrdenCompraInputPort recibirOrdenCompraInputPort;
     private final CompraRepository compraRepository;
-    private final RecepcionJpaRepository recepcionJpaRepository;
 
     public RecepcionController(
             RecibirOrdenCompraInputPort recibirOrdenCompraInputPort,
-            CompraRepository compraRepository,
-            RecepcionJpaRepository recepcionJpaRepository) {
+            CompraRepository compraRepository) {
         this.recibirOrdenCompraInputPort = recibirOrdenCompraInputPort;
         this.compraRepository = compraRepository;
-        this.recepcionJpaRepository = recepcionJpaRepository;
     }
 
     /**
      * Recibe una orden de compra (registra la recepción de productos).
      * 
-     * @param id ID de la compra a recibir
+     * @param compraId ID de la compra a recibir
      * @param request Request con los datos de la recepción
      * @param auth Objeto de autenticación de Spring Security
      * @return ResponseEntity con la recepción creada y código HTTP 201 CREATED
      */
-    @PostMapping("/{id}/recepciones")
+    @PostMapping("/{compraId}/recepciones")
     @PreAuthorize("hasRole('RESIDENTE')")
     public ResponseEntity<RecepcionResponse> recibirOrdenCompra(
-            @PathVariable UUID id,
+            @PathVariable UUID compraId,
             @RequestBody @Valid RecibirOrdenCompraRequest request,
             Authentication auth) {
         
@@ -76,7 +72,7 @@ public class RecepcionController {
         
         // Construir comando
         RecibirOrdenCompraCommand command = new RecibirOrdenCompraCommand(
-                id,
+                compraId,
                 request.fechaRecepcion(),
                 request.guiaRemision(),
                 detallesCommand,
@@ -84,24 +80,18 @@ public class RecepcionController {
         );
         
         // Ejecutar caso de uso
-        RecepcionId recepcionId = recibirOrdenCompraInputPort.ejecutar(command);
-        
-        // Cargar la recepción creada desde la base de datos
-        RecepcionEntity recepcionEntity = recepcionJpaRepository.findById(recepcionId.getValue())
-                .orElseThrow(() -> new IllegalStateException(
-                    String.format("Recepción no encontrada después de creación: %s", recepcionId.getValue())
-                ));
+        Recepcion recepcion = recibirOrdenCompraInputPort.ejecutar(command);
         
         // Cargar la compra para obtener el estado
-        Compra compra = compraRepository.findById(CompraId.from(id))
+        Compra compra = compraRepository.findById(CompraId.from(compraId))
                 .orElseThrow(() -> new IllegalStateException(
-                    String.format("Compra no encontrada: %s", id)
+                    String.format("Compra no encontrada: %s", compraId)
                 ));
         
-        // Construir respuesta
-        RecepcionResponse response = toResponse(recepcionEntity, compra);
+        // Construir respuesta desde dominio
+        RecepcionResponse response = toResponse(recepcion, compra);
         
-        URI location = URI.create("/api/v1/ordenes-compra/" + id + "/recepciones/" + recepcionId.getValue());
+        URI location = URI.create("/api/v1/compras/" + compraId + "/recepciones/" + recepcion.getId().getValue());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .location(location)
@@ -109,51 +99,49 @@ public class RecepcionController {
     }
     
     /**
-     * Convierte una RecepcionEntity a RecepcionResponse.
+     * Convierte una Recepcion (dominio) a RecepcionResponse.
      * 
-     * @param recepcionEntity La entidad de recepción
+     * @param recepcion El agregado de dominio Recepcion
      * @param compra La compra asociada para obtener el estado
      * @return RecepcionResponse con todos los datos mapeados
      */
-    private RecepcionResponse toResponse(RecepcionEntity recepcionEntity, Compra compra) {
-        // Mapear detalles
-        List<RecepcionResponse.DetalleResponse> detallesResponse = recepcionEntity.getDetalles().stream()
-                .map(detalleEntity -> {
+    private RecepcionResponse toResponse(Recepcion recepcion, Compra compra) {
+        // Mapear detalles desde dominio
+        List<RecepcionResponse.DetalleResponse> detallesResponse = recepcion.getDetalles().stream()
+                .map(detalle -> {
                     // Buscar el detalle de compra correspondiente para calcular cantidadPendiente
                     CompraDetalle compraDetalle = compra.getDetalles().stream()
-                            .filter(d -> d.getId().getValue().equals(detalleEntity.getCompraDetalleId()))
+                            .filter(d -> d.getId().getValue().equals(detalle.getCompraDetalleId()))
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException(
-                                String.format("Detalle de compra no encontrado: %s", detalleEntity.getCompraDetalleId())
+                                String.format("Detalle de compra no encontrado: %s", detalle.getCompraDetalleId())
                             ));
                     
                     // Calcular cantidad pendiente
                     java.math.BigDecimal cantidadPendiente = compraDetalle.getCantidadPendiente();
                     
-                    // TODO: movimientoAlmacenId debería obtenerse del MovimientoAlmacen creado en el caso de uso
-                    // Por ahora se deja como null, pero debería buscarse desde el repositorio de movimientos
-                    // usando el recursoId, almacenId y fecha de la recepción
-                    UUID movimientoAlmacenId = null; // Se debe obtener del MovimientoAlmacen creado
+                    // Obtener movimientoAlmacenId del dominio
+                    UUID movimientoAlmacenId = detalle.getMovimientoAlmacenId().getValue();
                     
                     return new RecepcionResponse.DetalleResponse(
-                            detalleEntity.getRecursoId(),
-                            detalleEntity.getCantidadRecibida(),
+                            detalle.getRecursoId(),
+                            detalle.getCantidadRecibida(),
                             cantidadPendiente,
-                            detalleEntity.getAlmacenId(),
+                            detalle.getAlmacenId().getValue(),
                             movimientoAlmacenId
                     );
                 })
                 .collect(Collectors.toList());
         
         return new RecepcionResponse(
-                recepcionEntity.getId(),
-                recepcionEntity.getCompraId(),
+                recepcion.getId().getValue(),
+                recepcion.getCompraId().getValue(),
                 compra.getEstado(),
-                recepcionEntity.getFechaRecepcion(),
-                recepcionEntity.getGuiaRemision(),
+                recepcion.getFechaRecepcion(),
+                recepcion.getGuiaRemision(),
                 detallesResponse,
-                recepcionEntity.getCreadoPorUsuarioId(),
-                recepcionEntity.getFechaCreacion()
+                recepcion.getCreadoPorUsuarioId(),
+                recepcion.getFechaCreacion()
         );
     }
     
@@ -162,16 +150,16 @@ public class RecepcionController {
      * 
      * @param auth Objeto de autenticación (puede ser null)
      * @return El UUID del usuario actual
-     * @throws IllegalStateException si no se puede obtener el usuario del contexto
+     * @throws AuthenticationRequiredException si no se puede obtener el usuario del contexto
      */
     private UUID getCurrentUserId(Authentication auth) {
         Authentication authentication = auth != null ? auth : SecurityContextHolder.getContext().getAuthentication();
         
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
-            // Para desarrollo, usar un UUID por defecto
-            // En producción, esto debería lanzar una excepción de autenticación
-            return UUID.fromString("00000000-0000-0000-0000-000000000000");
+            throw new AuthenticationRequiredException(
+                "Se requiere autenticación para realizar esta operación"
+            );
         }
         
         // Intentar obtener el userId del principal
@@ -180,12 +168,22 @@ public class RecepcionController {
             try {
                 return UUID.fromString((String) principal);
             } catch (IllegalArgumentException e) {
-                // Si no es un UUID válido, usar UUID por defecto para desarrollo
-                return UUID.fromString("00000000-0000-0000-0000-000000000000");
+                throw new AuthenticationRequiredException(
+                    "No se pudo extraer el ID de usuario del token de autenticación"
+                );
             }
         }
         
-        // Fallback: usar UUID por defecto para desarrollo
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+        // Si el principal no es String, intentar extraer de UserDetails
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            // Por ahora, no soportamos este formato
+            throw new AuthenticationRequiredException(
+                "Formato de autenticación no soportado"
+            );
+        }
+        
+        throw new AuthenticationRequiredException(
+            "No se pudo determinar el usuario autenticado"
+        );
     }
 }
