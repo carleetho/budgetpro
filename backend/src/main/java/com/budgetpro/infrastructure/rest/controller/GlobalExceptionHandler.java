@@ -145,4 +145,14 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.PRECONDITION_FAILED.value());
         return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(body);
     }
+
+    @ExceptionHandler(com.budgetpro.application.compra.exception.AuthenticationRequiredException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthenticationRequired(
+            com.budgetpro.application.compra.exception.AuthenticationRequiredException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("error", "AUTHENTICATION_REQUIRED");
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
 }

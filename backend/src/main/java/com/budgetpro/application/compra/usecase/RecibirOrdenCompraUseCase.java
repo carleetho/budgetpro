@@ -2,6 +2,9 @@ package com.budgetpro.application.compra.usecase;
 
 import com.budgetpro.application.compra.command.RecibirOrdenCompraCommand;
 import com.budgetpro.application.compra.exception.BusinessRuleException;
+import com.budgetpro.application.compra.exception.DuplicateReceptionException;
+import com.budgetpro.application.compra.exception.InvalidStateException;
+import com.budgetpro.application.compra.exception.ProjectNotActiveException;
 import com.budgetpro.application.compra.port.in.RecibirOrdenCompraInputPort;
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
 import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacen;
@@ -72,7 +75,7 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public RecepcionId ejecutar(RecibirOrdenCompraCommand command) {
+    public Recepcion ejecutar(RecibirOrdenCompraCommand command) {
         // Step 1: Validar rol de usuario (RESIDENTE)
         // NOTA: La validación de roles se hace típicamente en el controlador o mediante Spring Security
         // Por ahora, asumimos que el usuario tiene los permisos necesarios
@@ -91,7 +94,7 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
                 ));
         
         if (proyecto.getEstado() != EstadoProyecto.ACTIVO) {
-            throw new BusinessRuleException(
+            throw new ProjectNotActiveException(
                 String.format("El proyecto %s no está ACTIVO. Estado actual: %s", 
                     proyecto.getNombre(), proyecto.getEstado())
             );
@@ -99,7 +102,7 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
         
         // Step 3: Verificar idempotencia (guía de remisión única por compra)
         if (recepcionRepository.existsByCompraIdAndGuiaRemision(compraId, command.getGuiaRemision())) {
-            throw new BusinessRuleException(
+            throw new DuplicateReceptionException(
                 String.format("Ya existe una recepción con la guía de remisión '%s' para la compra %s",
                     command.getGuiaRemision(), compraId.getValue())
             );
@@ -110,7 +113,7 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
         
         // Step 5: Validar estado de compra (debe estar ENVIADA o PARCIAL)
         if (compra.getEstado() != EstadoCompra.ENVIADA && compra.getEstado() != EstadoCompra.PARCIAL) {
-            throw new IllegalStateException(
+            throw new InvalidStateException(
                 String.format("La compra debe estar en estado ENVIADA o PARCIAL para recibir. Estado actual: %s",
                     compra.getEstado())
             );
@@ -141,33 +144,10 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
         }
         
         // Step 7: Crear agregado Recepcion con sus detalles
+        // NOTA: Los detalles se crearán en el Step 10 después de crear los MovimientoAlmacen
+        // para poder incluir el movimientoAlmacenId en cada detalle
         RecepcionId recepcionId = RecepcionId.generate();
         List<RecepcionDetalle> detallesRecepcion = new ArrayList<>();
-        
-        // NOTA: RecepcionDetalle requiere recursoId (UUID), pero CompraDetalle solo tiene recursoExternalId.
-        // Por ahora, asumimos que el recursoId se puede obtener del catálogo o está disponible.
-        // TODO: Implementar servicio para obtener recursoId desde recursoExternalId
-        for (var detalleCommand : command.getDetalles()) {
-            CompraDetalle detalleCompra = detallesPorId.get(detalleCommand.getDetalleOrdenId());
-            
-            // Obtener precio unitario del detalle de compra
-            BigDecimal precioUnitario = detalleCompra.getPrecioUnitario();
-            
-            // TODO: Obtener recursoId desde recursoExternalId usando servicio de catálogo
-            // Por ahora, usamos un UUID temporal - esto debe ser implementado correctamente
-            UUID recursoId = obtenerRecursoIdDesdeExternalId(detalleCompra.getRecursoExternalId());
-            
-            RecepcionDetalleId detalleId = RecepcionDetalleId.generate();
-            RecepcionDetalle detalleRecepcion = RecepcionDetalle.crear(
-                detalleId,
-                detalleCommand.getDetalleOrdenId(),
-                recursoId,
-                AlmacenId.of(detalleCommand.getAlmacenId()),
-                detalleCommand.getCantidadRecibida(),
-                precioUnitario
-            );
-            detallesRecepcion.add(detalleRecepcion);
-        }
         
         Recepcion recepcion = Recepcion.crear(
             recepcionId,
@@ -191,17 +171,27 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             compra.marcarComoParcialmenteRecibida();
         }
         
-        // Step 10: Para cada RecepcionDetalle: crear MovimientoAlmacen, procesar Kardex y recalcular PMP
-        for (RecepcionDetalle detalleRecepcion : detallesRecepcion) {
+        // Step 10: Para cada detalle del comando: crear MovimientoAlmacen, procesar Kardex, recalcular PMP y crear RecepcionDetalle
+        for (var detalleCommand : command.getDetalles()) {
+            CompraDetalle detalleCompra = detallesPorId.get(detalleCommand.getDetalleOrdenId());
+            
+            // Obtener precio unitario del detalle de compra
+            BigDecimal precioUnitario = detalleCompra.getPrecioUnitario();
+            
+            // Obtener recursoId desde recursoExternalId usando servicio de catálogo
+            UUID recursoId = obtenerRecursoIdDesdeExternalId(detalleCompra.getRecursoExternalId());
+            
+            AlmacenId almacenId = AlmacenId.of(detalleCommand.getAlmacenId());
+            
             // Validar que el almacén existe y está activo
-            var almacen = almacenRepository.buscarPorId(detalleRecepcion.getAlmacenId())
+            var almacen = almacenRepository.buscarPorId(almacenId)
                     .orElseThrow(() -> new IllegalArgumentException(
-                        String.format("Almacén no encontrado: %s", detalleRecepcion.getAlmacenId().getValue())
+                        String.format("Almacén no encontrado: %s", almacenId.getValue())
                     ));
             
             if (!almacen.isActivo()) {
                 throw new IllegalStateException(
-                    String.format("El almacén %s no está activo", detalleRecepcion.getAlmacenId().getValue())
+                    String.format("El almacén %s no está activo", almacenId.getValue())
                 );
             }
             
@@ -209,19 +199,19 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             MovimientoAlmacenId movimientoId = MovimientoAlmacenId.generate();
             MovimientoAlmacen movimiento = MovimientoAlmacen.crearEntrada(
                 movimientoId,
-                detalleRecepcion.getAlmacenId(),
-                detalleRecepcion.getRecursoId(),
+                almacenId,
+                recursoId,
                 command.getFechaRecepcion(),
-                detalleRecepcion.getCantidadRecibida(),
-                detalleRecepcion.getPrecioUnitario(),
+                detalleCommand.getCantidadRecibida(),
+                precioUnitario,
                 command.getGuiaRemision(), // numeroDocumento
                 String.format("Recepción de compra %s", compraId.getValue()) // observaciones
             );
             
             // Obtener último registro de Kárdex (locking implícito por transacción)
             RegistroKardex ultimoRegistro = kardexRepository.buscarUltimoPorAlmacenIdYRecursoId(
-                detalleRecepcion.getAlmacenId().getValue(),
-                detalleRecepcion.getRecursoId()
+                almacenId.getValue(),
+                recursoId
             ).orElse(null);
             
             BigDecimal saldoCantidadAnterior = ultimoRegistro != null 
@@ -233,10 +223,10 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             
             // Procesar entrada y calcular nuevo PMP (REGLA-117)
             RegistroKardex nuevoRegistroKardex = gestionKardexService.procesarEntrada(
-                detalleRecepcion.getAlmacenId().getValue(),
-                detalleRecepcion.getRecursoId(),
-                detalleRecepcion.getCantidadRecibida(),
-                detalleRecepcion.getPrecioUnitario(),
+                almacenId.getValue(),
+                recursoId,
+                detalleCommand.getCantidadRecibida(),
+                precioUnitario,
                 movimientoId.getValue(),
                 saldoCantidadAnterior,
                 saldoValorAnterior
@@ -245,14 +235,37 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             // Persistir movimiento y registro de Kárdex
             movimientoAlmacenRepository.guardar(movimiento);
             kardexRepository.guardar(nuevoRegistroKardex);
+            
+            // Crear RecepcionDetalle con el movimientoAlmacenId
+            RecepcionDetalleId detalleId = RecepcionDetalleId.generate();
+            RecepcionDetalle detalleRecepcion = RecepcionDetalle.crear(
+                detalleId,
+                detalleCommand.getDetalleOrdenId(),
+                recursoId,
+                almacenId,
+                detalleCommand.getCantidadRecibida(),
+                precioUnitario,
+                movimientoId
+            );
+            detallesRecepcion.add(detalleRecepcion);
         }
+        
+        // Actualizar la recepción con los detalles creados
+        recepcion = Recepcion.crear(
+            recepcionId,
+            compraId,
+            command.getFechaRecepcion(),
+            command.getGuiaRemision(),
+            detallesRecepcion,
+            command.getUsuarioId()
+        );
         
         // Step 11: Persistir todos los cambios
         recepcionRepository.save(recepcion);
         compraRepository.save(compra);
         
-        // Step 12: Retornar RecepcionId
-        return recepcionId;
+        // Step 12: Retornar Recepcion completa
+        return recepcion;
     }
     
     /**

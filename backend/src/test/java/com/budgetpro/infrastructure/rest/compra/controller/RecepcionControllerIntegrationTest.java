@@ -8,8 +8,6 @@ import com.budgetpro.domain.logistica.almacen.port.out.MovimientoAlmacenReposito
 import com.budgetpro.domain.logistica.almacen.port.out.RegistroKardexRepository;
 import com.budgetpro.domain.logistica.compra.model.*;
 import com.budgetpro.domain.logistica.compra.port.out.CompraRepository;
-import com.budgetpro.domain.logistica.compra.port.out.RecepcionRepository;
-import com.budgetpro.domain.proyecto.model.EstadoProyecto;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.proyecto.port.out.ProyectoRepository;
@@ -18,9 +16,7 @@ import com.budgetpro.domain.catalogo.model.RecursoProxyId;
 import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
 import com.budgetpro.domain.logistica.almacen.port.out.AlmacenRepository;
 import com.budgetpro.infrastructure.AbstractIntegrationTest;
-import com.budgetpro.infrastructure.persistence.repository.almacen.KardexJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.compra.RecepcionJpaRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,9 +62,6 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private CompraRepository compraRepository;
 
     @Autowired
@@ -82,9 +74,6 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
     private RecursoProxyRepository recursoProxyRepository;
 
     @Autowired
-    private RecepcionRepository recepcionRepository;
-
-    @Autowired
     private MovimientoAlmacenRepository movimientoAlmacenRepository;
 
     @Autowired
@@ -92,9 +81,6 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private RecepcionJpaRepository recepcionJpaRepository;
-
-    @Autowired
-    private KardexJpaRepository kardexJpaRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -222,7 +208,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -265,7 +251,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, cantidadParcial, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -299,7 +285,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 }
                 """, LocalDate.now(), compraDetalleId, primeraRecepcion, almacenId);
 
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(primeraRequest))
                 .andExpect(status().isCreated());
@@ -323,7 +309,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, segundaRecepcion, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(segundaRequest))
                 .andExpect(status().isCreated())
@@ -356,7 +342,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 }
                 """, LocalDate.now(), compraDetalleId, primeraRecepcion, almacenId);
 
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(primeraRequest))
                 .andExpect(status().isCreated());
@@ -380,7 +366,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, sobreEntrega, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestSobreEntrega))
                 .andExpect(status().isBadRequest())
@@ -412,11 +398,11 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.error").value("BUSINESS_RULE_VIOLATION"));
+                .andExpect(status().isPreconditionFailed())
+                .andExpect(jsonPath("$.error").value("PROJECT_NOT_ACTIVE"));
     }
 
     @Test
@@ -438,7 +424,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 }
                 """, LocalDate.now(), guiaRemision, compraDetalleId, almacenId);
 
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(primeraRequest))
                 .andExpect(status().isCreated());
@@ -461,11 +447,11 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), guiaRemision, compraDetalleId, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(segundaRequest))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.error").value("BUSINESS_RULE_VIOLATION"));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("DUPLICATE_RECEPTION"));
     }
 
     @Test
@@ -487,7 +473,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());
@@ -527,11 +513,11 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, almacenId);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.error").value("BUSINESS_RULE_VIOLATION"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("INVALID_STATE"));
     }
 
     @Test
@@ -658,7 +644,7 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, cantidadEntrada, almacenId);
 
         // Act
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated());
@@ -713,10 +699,10 @@ class RecepcionControllerIntegrationTest extends AbstractIntegrationTest {
                 """, LocalDate.now(), compraDetalleId, almacenId);
 
         // Act
-        mockMvc.perform(post("/api/v1/ordenes-compra/{id}/recepciones", compraId)
+        mockMvc.perform(post("/api/v1/compras/{compraId}/recepciones", compraId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isPreconditionFailed());
 
         // Assert - Verificar que no se creó ninguna recepción
         entityManager.clear();

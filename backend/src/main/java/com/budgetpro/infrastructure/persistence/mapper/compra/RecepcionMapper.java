@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.persistence.mapper.compra;
 
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
+import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacenId;
 import com.budgetpro.domain.logistica.compra.model.CompraId;
 import com.budgetpro.domain.logistica.compra.model.Recepcion;
 import com.budgetpro.domain.logistica.compra.model.RecepcionDetalle;
@@ -67,7 +68,8 @@ public class RecepcionMapper {
             entity.getRecursoId(),
             AlmacenId.of(entity.getAlmacenId()),
             entity.getCantidadRecibida(),
-            entity.getPrecioUnitario()
+            entity.getPrecioUnitario(),
+            MovimientoAlmacenId.of(entity.getMovimientoAlmacenId())
         );
     }
 
@@ -124,7 +126,8 @@ public class RecepcionMapper {
             detalle.getRecursoId(),
             detalle.getAlmacenId().getValue(),
             detalle.getCantidadRecibida(),
-            detalle.getPrecioUnitario()
+            detalle.getPrecioUnitario(),
+            detalle.getMovimientoAlmacenId().getValue()
         );
     }
 }

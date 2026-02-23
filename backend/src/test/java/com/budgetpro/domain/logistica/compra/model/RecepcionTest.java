@@ -2,6 +2,7 @@ package com.budgetpro.domain.logistica.compra.model;
 
 import com.budgetpro.application.compra.exception.BusinessRuleException;
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
+import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacenId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -256,9 +257,9 @@ class RecepcionTest {
         AlmacenId almacenId = AlmacenId.generate();
 
         RecepcionDetalle detalle1 = RecepcionDetalle.crear(id1, compraDetalleId1, recursoId1, almacenId,
-                new BigDecimal("50.00"), new BigDecimal("10.00"));
+                new BigDecimal("50.00"), new BigDecimal("10.00"), MovimientoAlmacenId.generate());
         RecepcionDetalle detalle2 = RecepcionDetalle.crear(id2, compraDetalleId2, recursoId2, almacenId,
-                new BigDecimal("30.00"), new BigDecimal("15.00"));
+                new BigDecimal("30.00"), new BigDecimal("15.00"), MovimientoAlmacenId.generate());
 
         return List.of(detalle1, detalle2);
     }
@@ -270,6 +271,6 @@ class RecepcionTest {
         AlmacenId almacenId = AlmacenId.generate();
 
         return RecepcionDetalle.crear(id, compraDetalleId, recursoId, almacenId,
-                new BigDecimal("20.00"), new BigDecimal("12.00"));
+                new BigDecimal("20.00"), new BigDecimal("12.00"), MovimientoAlmacenId.generate());
     }
 }

@@ -1,20 +1,6 @@
 {
   "history": [
     {
-      "timestamp": "2026-02-08T03:32:25.298772+00:00Z",
-      "execution_time_ms": 14129.608392715454,
-      "total_violations": 1,
-      "by_severity": {
-        "warning": 1
-      },
-      "by_validator": {
-        "security_validator": 1
-      },
-      "by_module": {
-        "home": 1
-      }
-    },
-    {
       "timestamp": "2026-02-08T03:32:59.335282+00:00Z",
       "execution_time_ms": 6315.756320953369,
       "total_violations": 1,
@@ -1495,6 +1481,20 @@
       "by_module": {
         "home": 1,
         "backend": 1
+      }
+    },
+    {
+      "timestamp": "2026-02-23T20:33:17.781338+00:00Z",
+      "execution_time_ms": 49.330711364746094,
+      "total_violations": 1,
+      "by_severity": {
+        "warning": 1
+      },
+      "by_validator": {
+        "security_validator": 1
+      },
+      "by_module": {
+        "home": 1
       }
     }
   ],

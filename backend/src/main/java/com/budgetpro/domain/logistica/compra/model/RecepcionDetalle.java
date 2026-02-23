@@ -1,6 +1,7 @@
 package com.budgetpro.domain.logistica.compra.model;
 
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
+import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacenId;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -29,18 +30,20 @@ public final class RecepcionDetalle {
     private final AlmacenId almacenId; // Almacén donde se recibe (soporte multi-almacén)
     private final BigDecimal cantidadRecibida; // Cantidad recibida en esta recepción
     private final BigDecimal precioUnitario; // Precio unitario al momento de la recepción
+    private final MovimientoAlmacenId movimientoAlmacenId; // ID del movimiento de almacén creado
 
     /**
      * Constructor privado. Usar factory methods.
      */
     private RecepcionDetalle(RecepcionDetalleId id, UUID compraDetalleId, UUID recursoId, AlmacenId almacenId,
-            BigDecimal cantidadRecibida, BigDecimal precioUnitario) {
+            BigDecimal cantidadRecibida, BigDecimal precioUnitario, MovimientoAlmacenId movimientoAlmacenId) {
         this.id = Objects.requireNonNull(id, "El ID del detalle de recepción no puede ser nulo");
         this.compraDetalleId = Objects.requireNonNull(compraDetalleId, "El compraDetalleId no puede ser nulo");
         this.recursoId = Objects.requireNonNull(recursoId, "El recursoId no puede ser nulo");
         this.almacenId = Objects.requireNonNull(almacenId, "El almacenId no puede ser nulo");
         this.cantidadRecibida = validarCantidad(cantidadRecibida);
         this.precioUnitario = validarPrecio(precioUnitario);
+        this.movimientoAlmacenId = Objects.requireNonNull(movimientoAlmacenId, "El movimientoAlmacenId no puede ser nulo");
     }
 
     /**
@@ -52,11 +55,12 @@ public final class RecepcionDetalle {
      * @param almacenId el ID del almacén donde se recibe
      * @param cantidadRecibida la cantidad recibida (debe ser > 0)
      * @param precioUnitario el precio unitario (debe ser >= 0)
+     * @param movimientoAlmacenId el ID del movimiento de almacén creado
      * @return una nueva instancia de RecepcionDetalle
      */
     public static RecepcionDetalle crear(RecepcionDetalleId id, UUID compraDetalleId, UUID recursoId,
-            AlmacenId almacenId, BigDecimal cantidadRecibida, BigDecimal precioUnitario) {
-        return new RecepcionDetalle(id, compraDetalleId, recursoId, almacenId, cantidadRecibida, precioUnitario);
+            AlmacenId almacenId, BigDecimal cantidadRecibida, BigDecimal precioUnitario, MovimientoAlmacenId movimientoAlmacenId) {
+        return new RecepcionDetalle(id, compraDetalleId, recursoId, almacenId, cantidadRecibida, precioUnitario, movimientoAlmacenId);
     }
 
     /**
@@ -119,6 +123,10 @@ public final class RecepcionDetalle {
         return precioUnitario;
     }
 
+    public MovimientoAlmacenId getMovimientoAlmacenId() {
+        return movimientoAlmacenId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -137,7 +145,7 @@ public final class RecepcionDetalle {
     @Override
     public String toString() {
         return String.format(
-                "RecepcionDetalle{id=%s, compraDetalleId=%s, recursoId=%s, almacenId=%s, cantidadRecibida=%s, precioUnitario=%s}",
-                id, compraDetalleId, recursoId, almacenId, cantidadRecibida, precioUnitario);
+                "RecepcionDetalle{id=%s, compraDetalleId=%s, recursoId=%s, almacenId=%s, cantidadRecibida=%s, precioUnitario=%s, movimientoAlmacenId=%s}",
+                id, compraDetalleId, recursoId, almacenId, cantidadRecibida, precioUnitario, movimientoAlmacenId);
     }
 }

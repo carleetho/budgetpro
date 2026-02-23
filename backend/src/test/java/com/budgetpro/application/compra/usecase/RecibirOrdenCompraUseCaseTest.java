@@ -205,10 +205,11 @@ class RecibirOrdenCompraUseCaseTest {
         )).thenReturn(nuevoRegistroKardex);
 
         // Act
-        RecepcionId recepcionId = useCase.ejecutar(command);
+        Recepcion recepcion = useCase.ejecutar(command);
 
         // Assert
-        assertNotNull(recepcionId);
+        assertNotNull(recepcion);
+        assertNotNull(recepcion.getId());
 
         // Verificar que se guardó la recepción
         verify(recepcionRepository, times(1)).save(any(Recepcion.class));
@@ -312,10 +313,11 @@ class RecibirOrdenCompraUseCaseTest {
         )).thenReturn(nuevoRegistroKardex);
 
         // Act
-        RecepcionId recepcionId = useCase.ejecutar(command);
+        Recepcion recepcion = useCase.ejecutar(command);
 
         // Assert
-        assertNotNull(recepcionId);
+        assertNotNull(recepcion);
+        assertNotNull(recepcion.getId());
 
         // Verificar que se guardó la recepción
         verify(recepcionRepository, times(1)).save(any(Recepcion.class));

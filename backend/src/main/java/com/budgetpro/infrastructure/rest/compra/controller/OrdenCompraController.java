@@ -12,6 +12,7 @@ import com.budgetpro.domain.logistica.compra.port.in.EnviarOrdenCompraUseCase;
 import com.budgetpro.domain.logistica.compra.port.in.SolicitarAprobacionUseCase;
 import com.budgetpro.domain.logistica.compra.port.out.OrdenCompraRepository;
 import com.budgetpro.domain.logistica.compra.port.out.ProveedorRepository;
+import com.budgetpro.application.compra.exception.AuthenticationRequiredException;
 import com.budgetpro.infrastructure.rest.compra.dto.DetalleOrdenCompraRequest;
 import com.budgetpro.infrastructure.rest.compra.dto.DetalleOrdenCompraResponse;
 import com.budgetpro.infrastructure.rest.compra.dto.OrdenCompraRequest;
@@ -588,15 +589,15 @@ public class OrdenCompraController {
      * Obtiene el ID del usuario actual del contexto de seguridad.
      * 
      * @return El UUID del usuario actual
-     * @throws IllegalStateException si no se puede obtener el usuario del contexto
+     * @throws AuthenticationRequiredException si no se puede obtener el usuario del contexto
      */
     private UUID getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
-            // Para desarrollo, usar un UUID por defecto
-            // En producción, esto debería lanzar una excepción de autenticación
-            return UUID.fromString("00000000-0000-0000-0000-000000000000");
+            throw new AuthenticationRequiredException(
+                "Se requiere autenticación para realizar esta operación"
+            );
         }
 
         // Intentar obtener el userId del principal
@@ -606,12 +607,22 @@ public class OrdenCompraController {
             try {
                 return UUID.fromString((String) principal);
             } catch (IllegalArgumentException e) {
-                // Si no es un UUID válido, usar el email como fallback temporal
-                return UUID.fromString("00000000-0000-0000-0000-000000000000");
+                throw new AuthenticationRequiredException(
+                    "No se pudo extraer el ID de usuario del token de autenticación"
+                );
             }
         }
 
-        // Fallback: usar UUID por defecto para desarrollo
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+        // Si el principal no es String, intentar extraer de UserDetails
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            // Por ahora, no soportamos este formato
+            throw new AuthenticationRequiredException(
+                "Formato de autenticación no soportado"
+            );
+        }
+
+        throw new AuthenticationRequiredException(
+            "No se pudo determinar el usuario autenticado"
+        );
     }
 }
