@@ -6,12 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Aggregate Root del agregado COMPRA.
  * 
  * Representa una compra realizada en el proyecto.
+ * 
+ * Máquina de estados:
+ * BORRADOR → APROBADA → ENVIADA → PARCIAL → RECIBIDA
+ * 
+ * Transiciones permitidas:
+ * - BORRADOR → APROBADA (aprobar)
+ * - APROBADA → ENVIADA (enviar)
+ * - ENVIADA → PARCIAL (marcarComoParcialmenteRecibida)
+ * - ENVIADA → RECIBIDA (marcarComoRecibida)
+ * - PARCIAL → RECIBIDA (marcarComoRecibida)
  * 
  * Invariantes: - El proyectoId es obligatorio - La fecha no puede ser nula - El
  * proveedor no puede estar vacío - La lista de detalles no puede ser nula ni
@@ -29,7 +38,7 @@ public final class Compra {
     // aprobación):
     // - fecha: puede actualizarse (actualizarFecha)
     // - proveedor: puede cambiarse (actualizarProveedor)
-    // - estado: workflow transitions (BORRADOR → APROBADA)
+    // - estado: workflow transitions (BORRADOR → APROBADA → ENVIADA → PARCIAL → RECIBIDA)
     // - total: recalculado dinámicamente cuando se agregan/modifican detalles
     // - version: optimistic locking
     // nosemgrep: budgetpro.domain.immutability.entity-final-fields.logistica
@@ -133,6 +142,57 @@ public final class Compra {
      */
     public void aprobar() {
         this.estado = EstadoCompra.APROBADA;
+    }
+
+    /**
+     * Envía la compra al proveedor (transición de APROBADA a ENVIADA).
+     * 
+     * @throws IllegalStateException si la compra no está en estado APROBADA
+     */
+    public void enviar() {
+        if (this.estado != EstadoCompra.APROBADA) {
+            throw new IllegalStateException("Solo se puede enviar una compra aprobada");
+        }
+        this.estado = EstadoCompra.ENVIADA;
+    }
+
+    /**
+     * Marca la compra como parcialmente recibida (transición a PARCIAL).
+     * Permite transición desde ENVIADA o PARCIAL (para actualizar el estado parcial).
+     * 
+     * @throws IllegalStateException si la compra no está en estado ENVIADA o PARCIAL
+     */
+    public void marcarComoParcialmenteRecibida() {
+        if (this.estado != EstadoCompra.ENVIADA && this.estado != EstadoCompra.PARCIAL) {
+            throw new IllegalStateException("Estado inválido para recepción parcial");
+        }
+        this.estado = EstadoCompra.PARCIAL;
+    }
+
+    /**
+     * Marca la compra como completamente recibida (transición a RECIBIDA).
+     * Permite transición desde ENVIADA o PARCIAL.
+     * 
+     * @throws IllegalStateException si la compra no está en estado ENVIADA o PARCIAL
+     */
+    public void marcarComoRecibida() {
+        if (this.estado != EstadoCompra.ENVIADA && this.estado != EstadoCompra.PARCIAL) {
+            throw new IllegalStateException("Estado inválido para recepción completa");
+        }
+        this.estado = EstadoCompra.RECIBIDA;
+    }
+
+    /**
+     * Verifica si la compra está completamente recibida.
+     * 
+     * Una compra está completamente recibida cuando todos los detalles tienen
+     * cantidadRecibida >= cantidad.
+     * 
+     * @return true si todos los detalles tienen cantidadRecibida >= cantidad, false en caso contrario
+     */
+    public boolean estaCompletamenteRecibida() {
+        return detalles.stream().allMatch(d -> 
+            d.getCantidadRecibida().compareTo(d.getCantidad()) >= 0);
     }
 
     /**

@@ -66,6 +66,9 @@ public class CompraDetalleEntity {
     @Column(name = "subtotal", nullable = false, precision = 19, scale = 4)
     private BigDecimal subtotal;
 
+    @Column(name = "cantidad_recibida", nullable = false, precision = 19, scale = 6)
+    private BigDecimal cantidadRecibida = BigDecimal.ZERO;
+
     @Version
     @Column(name = "version", nullable = false)
     private Integer version;
@@ -97,6 +100,7 @@ public class CompraDetalleEntity {
      * @param cantidad Cantidad comprada
      * @param precioUnitario Precio unitario
      * @param subtotal Subtotal calculado
+     * @param cantidadRecibida Cantidad recibida (puede ser null, se inicializa a BigDecimal.ZERO)
      * @param version Versión (puede ser null para nuevas entidades)
      */
     public CompraDetalleEntity(UUID id, CompraEntity compra,
@@ -108,7 +112,7 @@ public class CompraDetalleEntity {
                                com.budgetpro.domain.logistica.compra.model.RelacionContractual relacionContractual,
                                com.budgetpro.domain.logistica.compra.model.RubroInsumo rubroInsumo,
                                BigDecimal cantidad, BigDecimal precioUnitario,
-                               BigDecimal subtotal, Integer version) {
+                               BigDecimal subtotal, BigDecimal cantidadRecibida, Integer version) {
         this.id = id;
         this.compra = compra;
         this.recursoExternalId = recursoExternalId;
@@ -121,6 +125,7 @@ public class CompraDetalleEntity {
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.subtotal = subtotal;
+        this.cantidadRecibida = cantidadRecibida != null ? cantidadRecibida : BigDecimal.ZERO;
         this.version = version; // CRÍTICO: Acepta null, Hibernate lo manejará
     }
 
@@ -220,6 +225,14 @@ public class CompraDetalleEntity {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public BigDecimal getCantidadRecibida() {
+        return cantidadRecibida;
+    }
+
+    public void setCantidadRecibida(BigDecimal cantidadRecibida) {
+        this.cantidadRecibida = cantidadRecibida;
     }
 
     public Integer getVersion() {
