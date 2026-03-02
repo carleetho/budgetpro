@@ -19,6 +19,15 @@ public interface EVMDataProvider {
     BigDecimal getBudgetAtCompletion(UUID proyectoId);
 
     /**
+     * Obtiene el Budget at Completion (BAC) ajustado:
+     * BAC + suma de todas las órdenes de cambio APROBADAS.
+     *
+     * @param proyectoId id del proyecto
+     * @return BAC ajustado (incluye change orders aprobadas)
+     */
+    BigDecimal getAdjustedBudgetAtCompletion(UUID proyectoId);
+
+    /**
      * Obtiene el Planned Value (PV) - Valor Planificado a la fecha de corte.
      */
     BigDecimal getPlannedValue(UUID proyectoId, LocalDateTime fechaCorte);

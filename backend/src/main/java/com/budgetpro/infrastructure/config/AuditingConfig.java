@@ -1,5 +1,6 @@
 package com.budgetpro.infrastructure.config;
 
+import com.budgetpro.shared.SystemActorIds;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class AuditingConfig {
 
-    private static final UUID SYSTEM_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final UUID SYSTEM_USER_ID = SystemActorIds.EVENT_INFRA_SYSTEM_USER_UUID;
 
     @Bean
     public AuditorAware<UUID> auditorAware() {

@@ -1,6 +1,6 @@
 package com.budgetpro.domain.logistica.compra.model;
 
-import com.budgetpro.application.compra.exception.BusinessRuleException;
+import com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,11 +72,11 @@ public final class Recepcion {
      * 
      * @param guiaRemision la guía de remisión a validar
      * @return la guía de remisión normalizada (trimmed)
-     * @throws BusinessRuleException si la guía de remisión es nula o vacía
+     * @throws CompraDomainRuleException si la guía de remisión es nula o vacía
      */
     private String validarGuiaRemision(String guiaRemision) {
         if (guiaRemision == null || guiaRemision.isBlank()) {
-            throw new BusinessRuleException("La Guía de Remisión es obligatoria para recepción de bienes físicos");
+            throw new CompraDomainRuleException("La Guía de Remisión es obligatoria para recepción de bienes físicos");
         }
         return guiaRemision.trim();
     }

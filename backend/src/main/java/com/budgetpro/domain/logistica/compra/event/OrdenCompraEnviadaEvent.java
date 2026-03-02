@@ -1,7 +1,5 @@
 package com.budgetpro.domain.logistica.compra.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,10 +7,10 @@ import java.util.UUID;
 
 /**
  * Evento de dominio publicado cuando una orden de compra es enviada al proveedor.
- * 
+ *
  * Se publica cuando la orden transiciona de APROBADA a ENVIADA.
  */
-public class OrdenCompraEnviadaEvent extends ApplicationEvent {
+public class OrdenCompraEnviadaEvent {
 
     private final UUID ordenId;
     private final String numero;
@@ -22,10 +20,11 @@ public class OrdenCompraEnviadaEvent extends ApplicationEvent {
     private final List<DetalleEvento> detalles;
     private final UUID userId;
     private final String correlationId;
+    private final LocalDateTime eventTimestamp;
 
-    public OrdenCompraEnviadaEvent(Object source, UUID ordenId, String numero, UUID proyectoId, UUID proveedorId,
-                                   BigDecimal montoTotal, List<DetalleEvento> detalles, UUID userId, String correlationId) {
-        super(source);
+    public OrdenCompraEnviadaEvent(UUID ordenId, String numero, UUID proyectoId, UUID proveedorId,
+            BigDecimal montoTotal, List<DetalleEvento> detalles, UUID userId, String correlationId,
+            LocalDateTime eventTimestamp) {
         this.ordenId = ordenId;
         this.numero = numero;
         this.proyectoId = proyectoId;
@@ -34,6 +33,7 @@ public class OrdenCompraEnviadaEvent extends ApplicationEvent {
         this.detalles = detalles != null ? List.copyOf(detalles) : List.of();
         this.userId = userId;
         this.correlationId = correlationId;
+        this.eventTimestamp = eventTimestamp != null ? eventTimestamp : LocalDateTime.now();
     }
 
     public UUID getOrdenId() {
@@ -60,14 +60,8 @@ public class OrdenCompraEnviadaEvent extends ApplicationEvent {
         return detalles;
     }
 
-    /**
-     * Obtiene el timestamp del evento usando el método heredado de ApplicationEvent.
-     */
     public LocalDateTime getEventTimestamp() {
-        return LocalDateTime.ofInstant(
-            java.time.Instant.ofEpochMilli(getTimestamp()),
-            java.time.ZoneId.systemDefault()
-        );
+        return eventTimestamp;
     }
 
     public UUID getUserId() {
