@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EVMTimeSeriesMigrationTest extends AbstractIntegrationTest {
+class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
 
     private static final UUID PROYECTO_CON_SNAPSHOT = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1");
     private static final UUID PROYECTO_SIN_SNAPSHOT = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2");
