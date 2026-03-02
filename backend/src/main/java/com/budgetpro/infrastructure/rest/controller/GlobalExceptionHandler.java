@@ -1,5 +1,6 @@
 package com.budgetpro.infrastructure.rest.controller;
 
+import com.budgetpro.application.finanzas.evm.port.in.ProyectoNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,15 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("message", ex.getMessage());
         body.put("error", "NOT_FOUND");
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(ProyectoNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleProyectoNotFound(ProyectoNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Proyecto no encontrado");
+        body.put("proyectoId", ex.getProyectoId().toString());
         body.put("status", HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
