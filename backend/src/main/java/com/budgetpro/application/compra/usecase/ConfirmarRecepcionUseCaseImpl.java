@@ -99,7 +99,6 @@ public class ConfirmarRecepcionUseCaseImpl implements ConfirmarRecepcionUseCase 
 
         String correlationId = UUID.randomUUID().toString();
         OrdenCompraRecibidaEvent event = new OrdenCompraRecibidaEvent(
-            this,
             ordenCompra.getId().getValue(),
             ordenCompra.getNumero(),
             ordenCompra.getProyectoId(),
@@ -107,7 +106,8 @@ public class ConfirmarRecepcionUseCaseImpl implements ConfirmarRecepcionUseCase 
             ordenCompra.getMontoTotal(),
             detallesEvento,
             userId,
-            correlationId
+            correlationId,
+            now
         );
 
         eventPublisher.publishEvent(event);

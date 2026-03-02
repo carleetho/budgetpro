@@ -15,6 +15,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException.class)
+    public ResponseEntity<Map<String, Object>> handleCompraDomainRule(
+            com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("error", "BUSINESS_RULE_VIOLATION");
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    }
+
     @ExceptionHandler(com.budgetpro.application.compra.exception.BusinessRuleException.class)
     public ResponseEntity<Map<String, Object>> handleCompraBusinessRule(com.budgetpro.application.compra.exception.BusinessRuleException ex) {
         Map<String, Object> body = new HashMap<>();
