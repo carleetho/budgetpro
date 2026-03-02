@@ -1,6 +1,8 @@
 package com.budgetpro.infrastructure.persistence.adapter.evm;
 
 import com.budgetpro.domain.finanzas.evm.port.out.EVMDataProvider;
+import com.budgetpro.infrastructure.persistence.entity.cambio.EstadoOrdenCambio;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -14,10 +16,40 @@ import java.util.UUID;
 @Component
 public class EVMFakeDataProviderAdapter implements EVMDataProvider {
 
+    private static final BigDecimal DEFAULT_BAC = BigDecimal.TEN;
+    private final EntityManager entityManager;
+
+    public EVMFakeDataProviderAdapter(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
     @Override
     public BigDecimal getBudgetAtCompletion(UUID proyectoId) {
-        // TODO: Conectar con PresupuestoRepository
-        return BigDecimal.TEN; // Placeholder
+        BigDecimal bac = entityManager.createQuery(
+                "SELECT p.presupuestoTotal FROM ProyectoEntity p WHERE p.id = :proyectoId",
+                BigDecimal.class)
+                .setParameter("proyectoId", proyectoId)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+
+        return bac != null ? bac : DEFAULT_BAC;
+    }
+
+    @Override
+    public BigDecimal getAdjustedBudgetAtCompletion(UUID proyectoId) {
+        BigDecimal bac = getBudgetAtCompletion(proyectoId);
+        BigDecimal approvedChangeOrders = entityManager.createQuery(
+                "SELECT COALESCE(SUM(oc.impactoPresupuesto), 0) "
+                        + "FROM OrdenCambioEntity oc "
+                        + "WHERE oc.proyecto.id = :proyectoId "
+                        + "AND oc.estado = :estado",
+                BigDecimal.class)
+                .setParameter("proyectoId", proyectoId)
+                .setParameter("estado", EstadoOrdenCambio.APROBADO)
+                .getSingleResult();
+
+        return bac.add(approvedChangeOrders);
     }
 
     @Override
