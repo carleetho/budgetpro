@@ -78,6 +78,12 @@ public interface EVMTimeSeriesRepository {
      * </p>
      *
      * <p>
+     * <b>(c.1) Contrato transaccional:</b> este método debe invocarse dentro del flujo de escritura
+     * (transacción de mutación activa). Llamarlo desde flujos de solo lectura no aporta valor y puede
+     * introducir bloqueo innecesario.
+     * </p>
+     *
+     * <p>
      * <b>(d) Patrón de referencia:</b> ver {@code docs/canonical/modules/INVENTARIO_MODULE_CANONICAL.md}
      * sección <i>11. Technical Debt &amp; Risks</i> (Locking / Row Locking) como guía de gobierno
      * para escenarios de alta concurrencia.

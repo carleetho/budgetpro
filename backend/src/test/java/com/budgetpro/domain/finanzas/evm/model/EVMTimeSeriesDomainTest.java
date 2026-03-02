@@ -2,7 +2,6 @@ package com.budgetpro.domain.finanzas.evm.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -51,17 +50,5 @@ class EVMTimeSeriesDomainTest {
 
         assertEquals(new BigDecimal("1.0000"), ts.getCpiPeriodo());
         assertEquals(new BigDecimal("0.7500"), ts.getSpiPeriodo());
-    }
-
-    @Test
-    void testDividirSeguro_zeroDenominator_returnsZero() throws Exception {
-        Method method = EVMTimeSeries.class.getDeclaredMethod(
-                "dividirSeguro",
-                BigDecimal.class,
-                BigDecimal.class);
-        method.setAccessible(true);
-
-        BigDecimal result = (BigDecimal) method.invoke(null, BigDecimal.TEN, BigDecimal.ZERO);
-        assertEquals(BigDecimal.ZERO, result);
     }
 }

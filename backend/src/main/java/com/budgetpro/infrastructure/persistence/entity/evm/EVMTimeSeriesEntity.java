@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,6 +52,7 @@ public class EVMTimeSeriesEntity extends AuditEntity {
     private UUID proyectoId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Setter(AccessLevel.NONE)
     @JoinColumn(name = "proyecto_id", nullable = false, updatable = false, insertable = false)
     private ProyectoEntity proyecto;
 
