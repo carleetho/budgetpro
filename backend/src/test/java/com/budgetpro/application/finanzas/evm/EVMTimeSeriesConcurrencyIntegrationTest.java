@@ -29,8 +29,8 @@ import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import(EVMTimeSeriesConcurrencyTest.HibernateSqlCaptureConfig.class)
-class EVMTimeSeriesConcurrencyTest extends AbstractIntegrationTest {
+@Import(EVMTimeSeriesConcurrencyIntegrationTest.HibernateSqlCaptureConfig.class)
+class EVMTimeSeriesConcurrencyIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
