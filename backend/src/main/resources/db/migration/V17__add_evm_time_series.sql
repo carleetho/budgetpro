@@ -66,12 +66,12 @@ SELECT
     s.ev,
     s.ac,
     s.bac,
-    s.bac AS bac_ajustado,  -- Initial bac_ajustado equals bac
+    s.bac AS bac_ajustado,  -- Baseline assumption: no approved CO yet, so bac_ajustado = bac
     s.cpi,
     s.spi,
     NOW() AS created_at,
     NOW() AS updated_at,
-    '00000000-0000-0000-0000-000000000001'::UUID AS created_by  -- SystemUser.SYSTEM_UUID
+    '00000000-0000-0000-0000-000000000001'::UUID AS created_by  -- com.budgetpro.shared.SystemActorIds.EVENT_INFRA_SYSTEM_USER_UUID_TEXT
 FROM (
     -- Get the latest snapshot per project (MAX fecha_corte)
     SELECT DISTINCT ON (proyecto_id)
