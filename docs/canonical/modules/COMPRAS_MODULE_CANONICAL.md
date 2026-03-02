@@ -94,7 +94,7 @@ graph TD
 | UC-L01 | Register Direct Purchase  | P0       | ✅     |
 | UC-L02 | Check Budget Availability | P0       | ✅     |
 | UC-L03 | Generate Purchase Order   | P1       | ✅     |
-| UC-L04 | Receive Goods (Partial)   | P1       | ✅     |
+| UC-L04 | Receive Goods              | P1       | ✅     |
 
 ## 7. Domain Services
 

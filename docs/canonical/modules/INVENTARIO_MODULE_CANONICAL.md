@@ -33,7 +33,7 @@
 | REGLA-085 | **Para registrar movimiento de almacén: almacenId, recursoId, tipoMovimiento, fechaMovimiento, cantidad y precioUnitario son obligatorios; cantidad > 0; precioUnitario >= 0.** | ✅ Implemented |
 | REGLA-102 | **Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).** | 🟡 Implemented |
 | REGLA-105 | **Un Proyecto en BORRADOR no puede ejecutar compras, inventarios, mano de obra ni avances físicos.** | 🟡 Implemented |
-| REGLA-117 | **Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal.** | 🟡 Implemented |
+| REGLA-117 | **Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal.** | ✅ Implemented |
 | REGLA-118 | **Un movimiento de inventario solo puede existir si proyecto ACTIVO, presupuesto CONGELADO, compra válida y salida imputada a Partida.** | 🟡 Implemented |
 | REGLA-119 | **Salida sin Partida es ilegal; entrada sin compra es ilegal.** | 🟡 Implemented |
 | REGLA-120 | **La salida de inventario reduce saldo disponible del APU; exceso debe registrarse como Excepción formal.** | 🟡 Implemented |
@@ -83,7 +83,7 @@
 | ID     | Use Case                      | Priority | Status           |
 | ------ | ----------------------------- | -------- | ---------------- |
 | UC-I01 | View Stock                    | P0       | ✅               |
-| UC-I02 | Register Ingress (Purchase)   | P0       | ✅ (via Compras) |
+| UC-I02 | Register Ingress (Purchase)   | P0       | ✅               |
 | UC-I03 | Register Egress (Consumption) | P1       | 🔴               |
 | UC-I04 | Warehouse Transfer            | P2       | 🔴               |
 
@@ -216,7 +216,7 @@ Para registrar movimiento: campos obligatorios y valores positivos.
 
 ### REGLA-117: Purchase-Inventory Integration
 
-**Status:** 🟡 Policy
+**Status:** ✅ Verified
 **Type:** Gobierno
 **Severity:** HIGH
 
