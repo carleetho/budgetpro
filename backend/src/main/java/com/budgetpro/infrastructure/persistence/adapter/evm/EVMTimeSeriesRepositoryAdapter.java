@@ -8,7 +8,6 @@ import com.budgetpro.infrastructure.persistence.repository.evm.JpaEVMTimeSeriesR
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -74,8 +73,7 @@ public class EVMTimeSeriesRepositoryAdapter implements EVMTimeSeriesRepository {
     }
 
     private EVMTimeSeries toDomain(EVMTimeSeriesEntity entity) {
-        // EVMTimeSeries no expone reconstruir(); se usa crear() con baseline de deltas.
-        return EVMTimeSeries.crear(
+        return EVMTimeSeries.reconstruir(
                 EVMTimeSeriesId.de(entity.getId()),
                 entity.getProyectoId(),
                 entity.getFechaCorte(),
@@ -85,9 +83,8 @@ public class EVMTimeSeriesRepositoryAdapter implements EVMTimeSeriesRepository {
                 entity.getAcAcumulado(),
                 entity.getBacTotal(),
                 entity.getBacAjustado(),
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
+                entity.getCpiPeriodo(),
+                entity.getSpiPeriodo(),
                 entity.getMoneda());
     }
 }

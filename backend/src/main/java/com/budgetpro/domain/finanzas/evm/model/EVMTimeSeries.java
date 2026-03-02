@@ -127,6 +127,40 @@ public final class EVMTimeSeries {
     }
 
     /**
+     * Factory method para reconstruir una instancia desde persistencia.
+     *
+     * Usa directamente los índices de período almacenados (CPI/SPI) para evitar
+     * recalcularlos con deltas inexistentes en el contexto de lectura.
+     */
+    public static EVMTimeSeries reconstruir(
+            EVMTimeSeriesId id,
+            UUID proyectoId,
+            LocalDate fechaCorte,
+            int periodo,
+            BigDecimal pvAcumulado,
+            BigDecimal evAcumulado,
+            BigDecimal acAcumulado,
+            BigDecimal bacTotal,
+            BigDecimal bacAjustado,
+            BigDecimal cpiPeriodo,
+            BigDecimal spiPeriodo,
+            String moneda) {
+        return new EVMTimeSeries(
+                id,
+                proyectoId,
+                fechaCorte,
+                periodo,
+                moneda,
+                pvAcumulado,
+                evAcumulado,
+                acAcumulado,
+                bacTotal,
+                bacAjustado,
+                cpiPeriodo,
+                spiPeriodo);
+    }
+
+    /**
      * Realiza una división segura que retorna BigDecimal.ZERO si el denominador es cero.
      * 
      * Utiliza RoundingMode.HALF_UP con scale 4 para todas las divisiones.
