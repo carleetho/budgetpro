@@ -1,6 +1,7 @@
 # --- Maven / Java ---
 target/
 **/target/
+target
 !**/src/main/**/target/ # Solo si usas plugins específicos que escriban ahí
 **/*.class
 **/*.jar
@@ -9,6 +10,7 @@ target/
 # --- Frontend (Estructura Monorepo) ---
 node_modules/
 **/node_modules/
+node_modules
 .next/
 **/ .next/
 dist/
@@ -29,6 +31,7 @@ _logs/
 .DS_Store
 Thumbs.db
 .gemini/
+.gemini
 .braingrid/
 # node_modules/ -> Removed duplicate
 # target/ -> Removed duplicate
