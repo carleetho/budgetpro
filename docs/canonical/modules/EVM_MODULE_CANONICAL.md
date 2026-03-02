@@ -122,4 +122,5 @@ graph TD
 
 ## 11. Technical Debt & Risks
 
-- [ ] **Performance**: Aggregating progress for project-level EVM on the fly is slow. Needs Materialized Views. (High)
+- [x] **Performance**: Aggregating progress for project-level EVM on the fly is slow. Needs Materialized Views. (High)
+  - **Resolved in REQ-61**: `evm_time_series` materialized table introduced (V17 migration). Updated via `ValuacionCerradaEvent` -> `ValuacionCerradaEventListener` (`@TransactionalEventListener AFTER_COMMIT`). Pessimistic write lock on `findLatestWithLock()` prevents concurrent delta miscalculation. Cold-start backfill seeds existing projects from `evm_snapshot`.
