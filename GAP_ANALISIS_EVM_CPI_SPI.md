@@ -131,7 +131,7 @@ GET | `/api/v1/proyectos/{id}/evm` | Get standard EVM metrics | 🔴
 | **VAC** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **CV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **SV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
-| **S-Curve** | ❌ No | 🔴 Missing | ✅ Correcto |
+| **S-Curve** | ✅ Sí | GET /api/v1/evm/{proyectoId}/s-curve | ✅ Correcto |
 | **Forecast Date** | ❌ No | 🔴 Missing | ✅ Correcto |
 
 ---
@@ -181,9 +181,7 @@ GET | `/api/v1/evm/{proyectoId}` | Get EVM snapshot with CPI/SPI | ✅
 
 ### 2. **Implementar Features Faltantes** (Prioridad Media)
 
-1. **S-Curve Report Generation**
-   - Endpoint: `GET /api/v1/evm/{proyectoId}/s-curve?startDate={date}&endDate={date}`
-   - Response: Array de puntos (fecha, EV acumulado) para gráfico
+1. ✅ COMPLETADO — Ver ObtenerSCurveUseCase, EVMController.
 
 2. **Forecast Completion Date**
    - Agregar campo `forecastCompletionDate` a `EVMSnapshot`
