@@ -10,16 +10,18 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Adaptador temporal para proveer datos a EVM. TODO: Implementar integración
- * real con módulos de Presupuesto, Avance y Costos via Repositories o Services.
+ * Adaptador JPA para proveer datos base de EVM.
+ *
+ * Nota: actualmente consulta directamente entidades vía {@code EntityManager}.
+ * En una iteración posterior puede migrarse a puertos/repositorios dedicados.
  */
 @Component
-public class EVMFakeDataProviderAdapter implements EVMDataProvider {
+public class EVMJpaDataProviderAdapter implements EVMDataProvider {
 
     private static final BigDecimal DEFAULT_BAC = BigDecimal.TEN;
     private final EntityManager entityManager;
 
-    public EVMFakeDataProviderAdapter(EntityManager entityManager) {
+    public EVMJpaDataProviderAdapter(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 

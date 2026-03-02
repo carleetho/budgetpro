@@ -5,6 +5,7 @@ import com.budgetpro.domain.finanzas.evm.model.EVMTimeSeries;
 import com.budgetpro.domain.finanzas.evm.model.EVMTimeSeriesId;
 import com.budgetpro.domain.finanzas.evm.port.out.EVMDataProvider;
 import com.budgetpro.domain.finanzas.evm.port.out.EVMTimeSeriesRepository;
+import com.budgetpro.shared.SystemActorIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,8 +17,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
-
 @Component
 public class ValuacionCerradaEventListener {
 
@@ -38,7 +37,7 @@ public class ValuacionCerradaEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onValuacionCerrada(ValuacionCerradaEvent event) {
-        UUID proyectoId = event.proyectoId();
+        var proyectoId = event.proyectoId();
         LocalDateTime fechaCorte = event.fechaCorte().atStartOfDay();
 
         // 1) Carga de acumulados actuales
@@ -79,14 +78,7 @@ public class ValuacionCerradaEventListener {
                     "Duplicate ValuacionCerradaEvent ignored for proyectoId={} fechaCorte={} createdBy={}",
                     proyectoId,
                     event.fechaCorte(),
-                    SystemUser.SYSTEM_UUID);
-        }
-    }
-
-    private static final class SystemUser {
-        private static final UUID SYSTEM_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-
-        private SystemUser() {
+                    SystemActorIds.EVENT_INFRA_SYSTEM_USER_UUID);
         }
     }
 }

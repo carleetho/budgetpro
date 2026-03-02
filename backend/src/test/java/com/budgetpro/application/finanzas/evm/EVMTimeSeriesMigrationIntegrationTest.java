@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +16,7 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
 
     private static final UUID PROYECTO_CON_SNAPSHOT = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1");
     private static final UUID PROYECTO_SIN_SNAPSHOT = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2");
+    private static final String SYSTEM_USER_UUID = "00000000-0000-0000-0000-000000000001";
 
     private static final String BACKFILL_DML = """
             INSERT INTO evm_time_series (
@@ -49,7 +51,7 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
                 s.spi,
                 NOW() AS created_at,
                 NOW() AS updated_at,
-                '00000000-0000-0000-0000-000000000001'::UUID AS created_by
+                '%s'::UUID AS created_by
             FROM (
                 SELECT DISTINCT ON (proyecto_id)
                     proyecto_id,
@@ -69,7 +71,7 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
                 WHERE ets.proyecto_id = s.proyecto_id
                   AND ets.fecha_corte = CAST(s.fecha_corte AS DATE)
             );
-            """;
+            """.formatted(SYSTEM_USER_UUID);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -80,11 +82,11 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
             "DELETE FROM evm_snapshot WHERE proyecto_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'",
             "DELETE FROM proyecto WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'",
             "INSERT INTO proyecto (id, nombre, ubicacion, estado, moneda, presupuesto_total, version, created_by) " +
-                    "VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'REQ61-MIGR-01', 'Test', 'ACTIVO', 'USD', 1000, 0, '00000000-0000-0000-0000-000000000001')",
+                    "VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'REQ61-MIGR-01', 'Test', 'ACTIVO', 'USD', 1000, 0, '" + SYSTEM_USER_UUID + "')",
             "INSERT INTO evm_snapshot (id, proyecto_id, fecha_corte, fecha_calculo, pv, ev, ac, bac, cv, sv, cpi, spi, eac, etc, vac, interpretacion, created_by) " +
-                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-09 08:00:00', NOW(), 10, 8, 9, 100, -1, -2, 0.8889, 0.8000, 0, 0, 0, 'test', '00000000-0000-0000-0000-000000000001')",
+                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-09 08:00:00', NOW(), 10, 8, 9, 100, -1, -2, 0.8889, 0.8000, 0, 0, 0, 'test', '" + SYSTEM_USER_UUID + "')",
             "INSERT INTO evm_snapshot (id, proyecto_id, fecha_corte, fecha_calculo, pv, ev, ac, bac, cv, sv, cpi, spi, eac, etc, vac, interpretacion, created_by) " +
-                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-10 08:00:00', NOW(), 15, 12, 11, 100, 1, -3, 1.0909, 0.8000, 0, 0, 0, 'test', '00000000-0000-0000-0000-000000000001')"
+                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-10 08:00:00', NOW(), 15, 12, 11, 100, 1, -3, 1.0909, 0.8000, 0, 0, 0, 'test', '" + SYSTEM_USER_UUID + "')"
     })
     void testAC_MIGR_01_backfillInsertsRowForProjectWithSnapshot() {
         executeBackfill();
@@ -125,9 +127,9 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
             "DELETE FROM evm_snapshot WHERE proyecto_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'",
             "DELETE FROM proyecto WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'",
             "INSERT INTO proyecto (id, nombre, ubicacion, estado, moneda, presupuesto_total, version, created_by) " +
-                    "VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'REQ61-MIGR-02', 'Test', 'ACTIVO', 'USD', 1000, 0, '00000000-0000-0000-0000-000000000001')",
+                    "VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'REQ61-MIGR-02', 'Test', 'ACTIVO', 'USD', 1000, 0, '" + SYSTEM_USER_UUID + "')",
             "INSERT INTO evm_snapshot (id, proyecto_id, fecha_corte, fecha_calculo, pv, ev, ac, bac, cv, sv, cpi, spi, eac, etc, vac, interpretacion, created_by) " +
-                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-11 08:00:00', NOW(), 20, 19, 18, 120, 1, -1, 1.0556, 0.9500, 0, 0, 0, 'test', '00000000-0000-0000-0000-000000000001')"
+                    "VALUES ('aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '2026-03-11 08:00:00', NOW(), 20, 19, 18, 120, 1, -1, 1.0556, 0.9500, 0, 0, 0, 'test', '" + SYSTEM_USER_UUID + "')"
     })
     void testAC_MIGR_02_backfillIsIdempotent() {
         executeBackfill();
@@ -146,7 +148,7 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
             "DELETE FROM evm_snapshot WHERE proyecto_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'",
             "DELETE FROM proyecto WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'",
             "INSERT INTO proyecto (id, nombre, ubicacion, estado, moneda, presupuesto_total, version, created_by) " +
-                    "VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'REQ61-MIGR-03', 'Test', 'ACTIVO', 'USD', 800, 0, '00000000-0000-0000-0000-000000000001')"
+                    "VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'REQ61-MIGR-03', 'Test', 'ACTIVO', 'USD', 800, 0, '" + SYSTEM_USER_UUID + "')"
     })
     void testAC_MIGR_03_projectWithoutSnapshotGetsNoRow() {
         executeBackfill();
@@ -159,6 +161,6 @@ class EVMTimeSeriesMigrationIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void executeBackfill() {
-        jdbcTemplate.execute(BACKFILL_DML);
+        jdbcTemplate.execute(Objects.requireNonNull(BACKFILL_DML));
     }
 }
