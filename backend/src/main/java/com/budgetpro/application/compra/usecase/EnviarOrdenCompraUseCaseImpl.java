@@ -59,7 +59,6 @@ public class EnviarOrdenCompraUseCaseImpl implements EnviarOrdenCompraUseCase {
 
         String correlationId = UUID.randomUUID().toString();
         OrdenCompraEnviadaEvent event = new OrdenCompraEnviadaEvent(
-            this,
             ordenCompra.getId().getValue(),
             ordenCompra.getNumero(),
             ordenCompra.getProyectoId(),
@@ -67,7 +66,8 @@ public class EnviarOrdenCompraUseCaseImpl implements EnviarOrdenCompraUseCase {
             ordenCompra.getMontoTotal(),
             detallesEvento,
             userId,
-            correlationId
+            correlationId,
+            now
         );
 
         eventPublisher.publishEvent(event);
