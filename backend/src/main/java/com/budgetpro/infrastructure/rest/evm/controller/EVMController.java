@@ -1,10 +1,13 @@
 package com.budgetpro.infrastructure.rest.evm.controller;
 
 import com.budgetpro.application.evm.service.EVMCalculationService;
+import com.budgetpro.application.finanzas.evm.port.in.ForecastResult;
+import com.budgetpro.application.finanzas.evm.port.in.ObtenerForecastFechaUseCase;
 import com.budgetpro.application.finanzas.evm.port.in.ObtenerSCurveUseCase;
 import com.budgetpro.application.finanzas.evm.port.in.SCurveResult;
 import com.budgetpro.domain.finanzas.evm.model.EVMSnapshot;
 import com.budgetpro.infrastructure.rest.evm.dto.EVMSnapshotResponse;
+import com.budgetpro.infrastructure.rest.evm.dto.ForecastResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.SCurveResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +27,13 @@ public class EVMController {
 
     private final EVMCalculationService evmCalculationService;
     private final ObtenerSCurveUseCase obtenerSCurveUseCase;
+    private final ObtenerForecastFechaUseCase obtenerForecastFechaUseCase;
 
-    public EVMController(EVMCalculationService evmCalculationService, ObtenerSCurveUseCase obtenerSCurveUseCase) {
+    public EVMController(EVMCalculationService evmCalculationService, ObtenerSCurveUseCase obtenerSCurveUseCase,
+            ObtenerForecastFechaUseCase obtenerForecastFechaUseCase) {
         this.evmCalculationService = evmCalculationService;
         this.obtenerSCurveUseCase = obtenerSCurveUseCase;
+        this.obtenerForecastFechaUseCase = obtenerForecastFechaUseCase;
     }
 
     /**
@@ -50,6 +56,15 @@ public class EVMController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         SCurveResult result = obtenerSCurveUseCase.obtener(proyectoId, startDate, endDate);
         return ResponseEntity.ok(toResponse(result));
+    }
+
+    /**
+     * Obtiene la fecha de finalización proyectada basada en SPI y cronograma (REQ-63, UC-E05).
+     */
+    @GetMapping("/{proyectoId}/forecast")
+    public ResponseEntity<ForecastResponse> getForecast(@PathVariable UUID proyectoId) {
+        ForecastResult result = obtenerForecastFechaUseCase.obtener(proyectoId);
+        return ResponseEntity.ok(toForecastResponse(result));
     }
 
     private EVMSnapshotResponse toResponse(EVMSnapshot snapshot) {
@@ -77,5 +92,16 @@ public class EVMController {
                 result.bacTotal(),
                 result.bacAjustado(),
                 dataPoints);
+    }
+
+    private ForecastResponse toForecastResponse(ForecastResult result) {
+        return new ForecastResponse(
+                result.proyectoId(),
+                result.fechaCorteBase(),
+                result.forecastCompletionDate(),
+                result.fechaFinPlanificada(),
+                result.remainingDays(),
+                result.spiUsed(),
+                result.forecastFallback());
     }
 }
