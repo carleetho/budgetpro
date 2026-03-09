@@ -74,4 +74,10 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository, com.budget
     public java.util.List<Proyecto> findAll() {
         return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<Proyecto> findAllWithFrecuenciaControl() {
+        return jpaRepository.findAllWithFrecuenciaControl().stream().map(mapper::toDomain).toList();
+    }
 }

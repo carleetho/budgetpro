@@ -1,14 +1,18 @@
 package com.budgetpro.infrastructure.rest.evm.controller;
 
 import com.budgetpro.application.evm.service.EVMCalculationService;
+import com.budgetpro.application.finanzas.evm.port.in.CerrarPeriodoUseCase;
 import com.budgetpro.application.finanzas.evm.port.in.ForecastResult;
 import com.budgetpro.application.finanzas.evm.port.in.ObtenerForecastFechaUseCase;
 import com.budgetpro.application.finanzas.evm.port.in.ObtenerSCurveUseCase;
 import com.budgetpro.application.finanzas.evm.port.in.SCurveResult;
 import com.budgetpro.domain.finanzas.evm.model.EVMSnapshot;
+import com.budgetpro.infrastructure.rest.evm.dto.CerrarPeriodoRequest;
+import com.budgetpro.infrastructure.rest.evm.dto.CerrarPeriodoResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.EVMSnapshotResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.ForecastResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.SCurveResponse;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,15 +29,19 @@ import java.util.UUID;
 @RequestMapping("/api/v1/evm")
 public class EVMController {
 
+    private static final String STATUS_CERRADO = "CERRADO";
+
     private final EVMCalculationService evmCalculationService;
     private final ObtenerSCurveUseCase obtenerSCurveUseCase;
     private final ObtenerForecastFechaUseCase obtenerForecastFechaUseCase;
+    private final CerrarPeriodoUseCase cerrarPeriodoUseCase;
 
     public EVMController(EVMCalculationService evmCalculationService, ObtenerSCurveUseCase obtenerSCurveUseCase,
-            ObtenerForecastFechaUseCase obtenerForecastFechaUseCase) {
+            ObtenerForecastFechaUseCase obtenerForecastFechaUseCase, CerrarPeriodoUseCase cerrarPeriodoUseCase) {
         this.evmCalculationService = evmCalculationService;
         this.obtenerSCurveUseCase = obtenerSCurveUseCase;
         this.obtenerForecastFechaUseCase = obtenerForecastFechaUseCase;
+        this.cerrarPeriodoUseCase = cerrarPeriodoUseCase;
     }
 
     /**
@@ -65,6 +73,21 @@ public class EVMController {
     public ResponseEntity<ForecastResponse> getForecast(@PathVariable UUID proyectoId) {
         ForecastResult result = obtenerForecastFechaUseCase.obtener(proyectoId);
         return ResponseEntity.ok(toForecastResponse(result));
+    }
+
+    /**
+     * Cierra un período de valuación para el proyecto (REQ-64, Invariante E-04).
+     */
+    @PostMapping("/{proyectoId}/cerrar-periodo")
+    public ResponseEntity<CerrarPeriodoResponse> cerrarPeriodo(
+            @PathVariable UUID proyectoId,
+            @Valid @RequestBody CerrarPeriodoRequest request) {
+        String periodoId = cerrarPeriodoUseCase.cerrar(proyectoId, request.fechaCorte());
+        return ResponseEntity.ok(new CerrarPeriodoResponse(
+                proyectoId,
+                periodoId,
+                request.fechaCorte(),
+                STATUS_CERRADO));
     }
 
     private EVMSnapshotResponse toResponse(EVMSnapshot snapshot) {

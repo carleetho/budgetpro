@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,12 +45,16 @@ class EVMControllerTest {
     @Mock
     private com.budgetpro.application.finanzas.evm.port.in.ObtenerForecastFechaUseCase obtenerForecastFechaUseCase;
 
+    @Mock
+    private com.budgetpro.application.finanzas.evm.port.in.CerrarPeriodoUseCase cerrarPeriodoUseCase;
+
     @BeforeEach
     void setUp() {
         EVMController controller = new EVMController(
                 evmCalculationService,
                 obtenerSCurveUseCase,
-                obtenerForecastFechaUseCase);
+                obtenerForecastFechaUseCase,
+                cerrarPeriodoUseCase);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -155,5 +160,25 @@ class EVMControllerTest {
                 .andExpect(jsonPath("$.dataPoints[1].fechaCorte").value("2025-04-30"));
 
         verify(obtenerSCurveUseCase).obtener(proyectoId, startDate, endDate);
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/evm/{proyectoId}/cerrar-periodo retorna 200 con proyectoId, periodoId, fechaCorte, status")
+    void deberiaCerrarPeriodoConExito() throws Exception {
+        UUID proyectoId = UUID.randomUUID();
+        String requestBody = "{\"fechaCorte\": \"2025-01-13\"}";
+        when(cerrarPeriodoUseCase.cerrar(eq(proyectoId), eq(java.time.LocalDate.of(2025, 1, 13))))
+                .thenReturn("PER-2025-01-13");
+
+        mockMvc.perform(post("/api/v1/evm/{proyectoId}/cerrar-periodo", proyectoId)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proyectoId").value(proyectoId.toString()))
+                .andExpect(jsonPath("$.periodoId").value("PER-2025-01-13"))
+                .andExpect(jsonPath("$.fechaCorte").value("2025-01-13"))
+                .andExpect(jsonPath("$.status").value("CERRADO"));
+
+        verify(cerrarPeriodoUseCase).cerrar(eq(proyectoId), eq(java.time.LocalDate.of(2025, 1, 13)));
     }
 }

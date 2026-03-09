@@ -19,7 +19,7 @@
 | E-01 | **Metrado Cap**: Physical concrete progress cannot exceed the budgeted metrado without a Change Order. Strict mode exception enforcement **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
 | E-02 | **Date Constraint**: Progress cannot be reported with a future date.                                                                                                   | ✅ Implemented    |
 | E-03 | **Active Project**: Progress can only be reported for projects in `EN_EJECUCION`.                                                                                      | ✅ Implemented    |
-| E-04 | **Period Consistency**: Valuations must align with defined reporting periods (weekly/monthly).                                                                         | 🟡 Partial        |
+| E-04 | **Period Consistency**: Valuations must align with defined reporting periods (weekly/monthly). FrecuenciaControl enum added to Proyecto. ValuacionCerradaEvent fires on CRON and manual endpoint. HTTP 422 on misalignment. | ✅ Implemented    |
 | E-05 | **EV Cap**: Earned Value (EV) cannot exceed Budget At Completion (BAC) - prevents >100% reporting.                                                                     | ✅ Implemented    |
 
 

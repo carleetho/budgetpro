@@ -55,8 +55,15 @@ public interface ProyectoRepository {
 
     /**
      * Obtiene todos los proyectos.
-     * 
+     *
      * @return Lista de todos los proyectos
      */
     java.util.List<Proyecto> findAll();
+
+    /**
+     * Obtiene todos los proyectos que tienen frecuencia de control configurada.
+     *
+     * @return Lista de proyectos con frecuenciaControl no nulo
+     */
+    java.util.List<Proyecto> findAllWithFrecuenciaControl();
 }
