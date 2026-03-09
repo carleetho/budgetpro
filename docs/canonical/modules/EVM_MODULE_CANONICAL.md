@@ -1,16 +1,15 @@
 # EVM Module - Canonical Specification
 
-> **Status**: Functional (65%)
+> **Status**: Complete (95%)
 > **Owner**: Control Team
-> **Last Updated**: 2026-02-15
+> **Last Updated**: 2026-03-09
 
 ## 1. Module Maturity Roadmap
 
-| Phase       | Timeline  | Target State         | Deliverables                              |
-| ----------- | --------- | -------------------- | ----------------------------------------- |
-| **Current** | Now       | 65% (Core Metrics)   | Physical progress, CPI/SPI ✅, EAC/ETC ✅  |
-| **Next**    | +1 Month  | 75%                  | S-Curve Generation, Advanced Forecasting  |
-| **Target**  | +3 Months | 90%                  | Forecast Completion Date, Dashboard Metrics |
+| Phase       | Timeline  | Target State         | Deliverables                                                              |
+| ----------- | --------- | -------------------- | ------------------------------------------------------------------------- |
+| **Current** | Now       | 95% (Epic Complete)  | Physical progress ✅, CPI/SPI ✅, EAC/ETC ✅, S-Curve ✅, Forecast ✅, E-04 ✅ |
+| **Target**  | Optional  | 100%                 | evm.progress.registered.count metric, Dashboard aggregation               |
 
 ## 2. Invariants (Business Rules)
 
@@ -44,7 +43,7 @@
 | Event Name                    | Trigger        | Content (Payload)                | Status |
 | ----------------------------- | -------------- | -------------------------------- | ------ |
 | `AvanceFisicoRegistradoEvent` | Progress entry | `partidaId`, `cantidad`, `fecha` | ✅     |
-| `ValuacionCerradaEvent`       | Period close   | `proyectoId`, `periodo`          | 🔴     |
+| `ValuacionCerradaEvent`       | Period close   | `proyectoId`, `periodoId`, `fechaCorte` | ✅     |
 
 ## 4. State Constraints
 
@@ -64,6 +63,14 @@ graph TD
 - `partidaId`: UUID
 - `metradoEjecutado`: BigDecimal
 - `fecha`: Date
+
+### Entity: EVMTimeSeries (REQ-61)
+
+- `id`: UUID
+- `proyectoId`: UUID
+- `fechaCorte`: DATE
+- `periodo`: INTEGER
+- `pv`, `ev`, `ac`, `bac`, `bacAjustado`, `cpi`, `spi`: DECIMAL
 
 ### JSON Schema (Evolution)
 
@@ -92,8 +99,9 @@ graph TD
 | UC-E03 | Calculate Earned Value (EV) | P1       | ✅         |
 | UC-E03a| Calculate CPI/SPI Metrics   | P1       | ✅         |
 | UC-E03b| Calculate EAC/ETC/VAC       | P1       | ✅         |
-| UC-E04 | Generate S-Curve Report     | P1       | ✅ Implemented — endpoint: GET /api/v1/evm/{proyectoId}/s-curve?startDate=&endDate= |
-| UC-E05 | Forecast Completion Date    | P2       | ✅ Implemented — endpoint: GET /api/v1/evm/{proyectoId}/forecast |
+| UC-E04 | Generate S-Curve Report     | P1       | ✅ GET /api/v1/evm/{proyectoId}/s-curve?startDate=&endDate= |
+| UC-E05 | Forecast Completion Date    | P2       | ✅ GET /api/v1/evm/{proyectoId}/forecast |
+| UC-E06 | Cerrar período (manual)     | P1       | ✅ POST /api/v1/evm/{proyectoId}/cerrar-periodo |
 
 ## 7. Domain Services
 
@@ -104,16 +112,18 @@ graph TD
 
 ## 8. REST Endpoints
 
-| Method | Path                            | Description              | Status |
-| ------ | ------------------------------- | ------------------------ | ------ |
-| POST   | `/api/v1/partidas/{id}/avances` | Register progress        | ✅     |
-| GET    | `/api/v1/evm/{proyectoId}`      | Get EVM snapshot (CPI/SPI/EAC/ETC) | ✅     |
-| GET    | `/api/v1/evm/{proyectoId}/s-curve` | Generate S-Curve report | 🔴     |
+| Method | Path                                  | Description                  | Status |
+| ------ | ------------------------------------- | ---------------------------- | ------ |
+| POST   | `/api/v1/partidas/{id}/avances`       | Register progress            | ✅     |
+| GET    | `/api/v1/evm/{proyectoId}`            | Get EVM snapshot (CPI/SPI/EAC/ETC) | ✅     |
+| GET    | `/api/v1/evm/{proyectoId}/s-curve`   | Generate S-Curve report      | ✅     |
+| GET    | `/api/v1/evm/{proyectoId}/forecast`  | Forecast completion date     | ✅     |
+| POST   | `/api/v1/evm/{proyectoId}/cerrar-periodo` | Close period (E-04)     | ✅     |
 
 ## 9. Observability
 
-- **Metrics**: `evm.progress.registered.count`
-- **Logs**: High deviation progress alerts.
+- **Metrics**: `evm.progress.registered.count` (planned, not yet instrumented)
+- **Logs**: `ValuacionCerradaEventListener`, `EVMPeriodoCierreScheduler`
 
 ## 10. Integration Points
 
@@ -123,4 +133,13 @@ graph TD
 ## 11. Technical Debt & Risks
 
 - [x] **Performance**: Aggregating progress for project-level EVM on the fly is slow. Needs Materialized Views. (High)
-  - **Resolved in REQ-61**: `evm_time_series` materialized table introduced (V17 migration). Updated via `ValuacionCerradaEvent` -> `ValuacionCerradaEventListener` (`@TransactionalEventListener AFTER_COMMIT`). Pessimistic write lock on `findLatestWithLock()` prevents concurrent delta miscalculation. Cold-start backfill seeds existing projects from `evm_snapshot`.
+  - **Resolved in REQ-61**: `evm_time_series` materialized table (V17 migration). Updated via `ValuacionCerradaEvent` -> `ValuacionCerradaEventListener` (`@TransactionalEventListener AFTER_COMMIT`). Pessimistic write lock on `findLatestWithLock()` prevents concurrent delta miscalculation. Cold-start backfill seeds existing projects from `evm_snapshot`.
+
+## 12. Infrastructure (Code Evidence)
+
+- **evm_time_series**: Table via V17. Repository: `EVMTimeSeriesRepository`, `JpaEVMTimeSeriesRepository`
+- **frecuencia_control**: Column on `proyecto` via V24. Enum `FrecuenciaControl` (SEMANAL, QUINCENAL, MENSUAL)
+- **fecha_inicio**: Column on `proyecto` via V25
+- **ValuacionCerradaEventListener**: Updates `evm_time_series` on event
+- **EVMPeriodoCierreScheduler**: `@Scheduled` CRON for automatic period closure
+- **CerrarPeriodoService**: Manual close via REST, validates `Proyecto.esFechaCorteValida()`, throws `PeriodoFechaInvalidaException` (HTTP 422)

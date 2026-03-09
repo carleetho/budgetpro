@@ -9,7 +9,7 @@ Good for detailed reports.
 | Module          | Invariants (30%) | Use Cases (35%) | Tech Debt (20%) | Obs (15%) | **Overall** | **Level**  |
 | --------------- | ---------------- | --------------- | --------------- | --------- | ----------- | ---------- |
 | **Presupuesto** | 90%              | 85%             | 70%             | 50%       | **79%**     | Complete   |
-| **EVM**         | 40%              | 30%             | 80%             | 25%       | **38%**     | Functional |
+| **EVM**         | 95%              | 95%             | 90%             | 40%       | **87%**     | Complete   |
 | **RRHH**        | 20%              | 10%             | 90%             | 0%        | **27%**     | Skeletal   |
 
 ## 2. Mermaid Chart (Visual)
@@ -22,10 +22,10 @@ graph LR
     subgraph "Level 3: Complete"
         P[Presupuesto: 79%]
         X[Cross-Cutting: 90%]
+        E[EVM: 87%]
     end
 
     subgraph "Level 2: Functional"
-        E[EVM: 38%]
         C[Cronograma: 45%]
         I[Inventario: 50%]
     end
@@ -36,7 +36,7 @@ graph LR
 
     style P fill:#4caf50,stroke:#333,color:white
     style X fill:#4caf50,stroke:#333,color:white
-    style E fill:#ffeb3b,stroke:#333
+    style E fill:#4caf50,stroke:#333,color:white
     style R fill:#ff5252,stroke:#333,color:white
 ```
 
@@ -44,8 +44,8 @@ graph LR
 
 Track delta since last quarter.
 
-### Q2 2026 Snapshot
+### Q1 2026 Snapshot
 
-- **Presupuesto**: 79% (↑ 5%)
-- **EVM**: 38% (↑ 12%) - _Fast Mover_
+- **Presupuesto**: 79% (—)
+- **EVM**: 87% (↑ 49%) - _Epic Complete (REQ-61/62/63/64)_
 - **RRHH**: 27% (—) - _Stagnant_

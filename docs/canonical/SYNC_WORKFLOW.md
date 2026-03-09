@@ -2,6 +2,10 @@
 
 > **Goal**: Keep Canonical Notebooks as the "Living Source of Truth".
 
+## 0. Code-First Validation
+
+Cuando evalúes el estado de un módulo (madurez, features, cobertura), **valida contra código y git** antes de confiar en los `.md`. La documentación puede estar desincronizada. La fuente de verdad para "qué está implementado" es el código; el canonical debe reflejarlo 1:1.
+
 ## 1. When to Update
 
 Update notebooks **BEFORE** or **DURING** the PR, never after.
