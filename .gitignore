@@ -72,3 +72,14 @@ __pycache__/
 *$py.class
 .pytest_cache/
 .test_axiom_integration/
+
+# --- Auditoría raíz: artefactos de escaneo y generados ---
+findings.json
+findings.sarif
+semgrep-findsecbug.json
+domain_files*.txt
+full_domain_list.txt
+hardened_files.txt
+unprotected_files.txt
+status_detailed.txt
+pr_body_*.md
