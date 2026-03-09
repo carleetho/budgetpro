@@ -132,7 +132,7 @@ GET | `/api/v1/proyectos/{id}/evm` | Get standard EVM metrics | 🔴
 | **CV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **SV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **S-Curve** | ✅ Sí | GET /api/v1/evm/{proyectoId}/s-curve | ✅ Correcto |
-| **Forecast Date** | ❌ No | 🔴 Missing | ✅ Correcto |
+| **Forecast Date** | ✅ Sí | GET /api/v1/evm/{proyectoId}/forecast | ✅ Correcto |
 
 ---
 
@@ -183,9 +183,7 @@ GET | `/api/v1/evm/{proyectoId}` | Get EVM snapshot with CPI/SPI | ✅
 
 1. ✅ COMPLETADO — Ver ObtenerSCurveUseCase, EVMController.
 
-2. **Forecast Completion Date**
-   - Agregar campo `forecastCompletionDate` a `EVMSnapshot`
-   - Cálculo: `LocalDate completionDate = fechaCorte.plusDays(remainingDays / spi)`
+2. ✅ COMPLETADO — Ver ObtenerForecastFechaUseCase, EVMController.
 
 ---
 

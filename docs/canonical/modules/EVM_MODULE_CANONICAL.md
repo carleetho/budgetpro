@@ -93,7 +93,7 @@ graph TD
 | UC-E03a| Calculate CPI/SPI Metrics   | P1       | ✅         |
 | UC-E03b| Calculate EAC/ETC/VAC       | P1       | ✅         |
 | UC-E04 | Generate S-Curve Report     | P1       | ✅ Implemented — endpoint: GET /api/v1/evm/{proyectoId}/s-curve?startDate=&endDate= |
-| UC-E05 | Forecast Completion Date    | P2       | 🔴         |
+| UC-E05 | Forecast Completion Date    | P2       | ✅ Implemented — endpoint: GET /api/v1/evm/{proyectoId}/forecast |
 
 ## 7. Domain Services
 
