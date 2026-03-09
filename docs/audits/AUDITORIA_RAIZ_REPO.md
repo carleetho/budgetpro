@@ -123,8 +123,19 @@
    ```bash
    git rm --cached findings.json findings.sarif semgrep-findsecbug.json
    ```
+   > ⚠️ **Importante**: `git rm --cached` solo deja de trackear los archivos en commits futuros. Los resultados de escaneo **siguen accesibles en el historial** (commits anteriores). Para eliminarlos por completo del historial, ver paso 1b.
 
-2. **Añadir a `.gitignore`**:
+2. **Eliminar del historial** (obligatorio si los archivos llegaron a commitearse):
+   ```bash
+   git filter-branch --force --index-filter \
+     'git rm --cached --ignore-unmatch findings.json findings.sarif semgrep-findsecbug.json' \
+     --prune-empty -- --all
+   git for-each-ref --format='%(refname)' refs/original/ | xargs -n 1 git update-ref -d
+   git reflog expire --expire=now --all && git gc --prune=now --aggressive
+   ```
+   Después: `git push --force-with-lease origin main` (coordinar con el equipo; reescribe historia).
+
+3. **Añadir a `.gitignore`**:
    ```
    findings.json
    findings.sarif
@@ -133,13 +144,13 @@
 
 ### Prioridad 2 (limpieza)
 
-3. **Eliminar del índice** los `.txt` generados (si no los usa CI):
+4. **Eliminar del índice** los `.txt` generados (si no los usa CI):
    ```bash
    git rm --cached domain_files.txt domain_files_clean.txt domain_files_final.txt \
      full_domain_list.txt hardened_files.txt unprotected_files.txt status_detailed.txt
    ```
 
-4. **Añadir a `.gitignore`**:
+5. **Añadir a `.gitignore`**:
    ```
    domain_files*.txt
    full_domain_list.txt
@@ -150,9 +161,9 @@
 
 ### Prioridad 3 (organización, opcional)
 
-5. Mover documentos históricos a `docs/archive/` o `docs/audits/`.
-6. Mover scripts a `scripts/` si se prefiere raíz más limpia.
-7. Añadir `pr_body_*.md` a `.gitignore` si son solo borradores locales.
+6. Mover documentos históricos a `docs/archive/` o `docs/audits/`.
+7. Mover scripts a `scripts/` si se prefiere raíz más limpia.
+8. Añadir `pr_body_*.md` a `.gitignore` si son solo borradores locales.
 
 ---
 
@@ -165,4 +176,8 @@ ls -la *.md *.sh *.txt 2>/dev/null
 # Confirmar que findings no se trackea
 git ls-files | grep findings
 # (debería estar vacío)
+
+# Verificar que no existen en el historial de main
+git rev-list main | while read c; do git ls-tree -r $c --name-only | grep -E 'findings|semgrep-findsecbug'; done
+# (debería estar vacío si se ejecutó filter-branch)
 ```
