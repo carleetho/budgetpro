@@ -110,6 +110,8 @@ AXIOM se ejecuta automáticamente en cada PR y Push hacia `main` y `develop` med
 
 Para más detalles, consulta la [Guía del Desarrollador de AXIOM Lazy Code](tools/axiom/docs/lazy-code-validator.md).
 
+Si `git commit` falla con "unknown option trailer", ver [docs/TROUBLESHOOTING_GIT_COMMIT.md](docs/TROUBLESHOOTING_GIT_COMMIT.md).
+
 ## 🔍 Semgrep - Análisis de Seguridad y Calidad
 
 El proyecto utiliza **Semgrep** para detectar vulnerabilidades de seguridad, errores de lógica de dominio y asegurar el cumplimiento de la arquitectura hexagonal.
