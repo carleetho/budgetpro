@@ -20,16 +20,19 @@ public class ProyectoMapper {
      */
     public ProyectoEntity toEntity(Proyecto proyecto) {
         if (proyecto == null) {
-            return null;
+            throw new IllegalArgumentException("Proyecto no puede ser null");
         }
 
-        return new ProyectoEntity(
+        ProyectoEntity entity = new ProyectoEntity(
             proyecto.getId().getValue(),
             proyecto.getNombre(),
             proyecto.getUbicacion(),
             proyecto.getEstado(),
             null // CRÍTICO: null para nuevas entidades, Hibernate manejará la versión
         );
+        entity.setFechaInicio(proyecto.getFechaInicio());
+        entity.setFrecuenciaControl(proyecto.getFrecuenciaControl());
+        return entity;
     }
 
     /**
@@ -39,7 +42,7 @@ public class ProyectoMapper {
      */
     public ProyectoEntity toEntityForUpdate(Proyecto proyecto, ProyectoEntity existingEntity) {
         if (proyecto == null) {
-            return null;
+            throw new IllegalArgumentException("Proyecto no puede ser null");
         }
 
         ProyectoEntity entity = new ProyectoEntity(
@@ -50,6 +53,8 @@ public class ProyectoMapper {
             existingEntity.getVersion() // CRÍTICO: Copiar versión de entidad existente
         );
         entity.setCreatedAt(existingEntity.getCreatedAt()); // Preservar createdAt
+        entity.setFechaInicio(proyecto.getFechaInicio());
+        entity.setFrecuenciaControl(proyecto.getFrecuenciaControl());
         return entity;
     }
 
@@ -58,14 +63,16 @@ public class ProyectoMapper {
      */
     public Proyecto toDomain(ProyectoEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("ProyectoEntity no puede ser null");
         }
 
         return Proyecto.reconstruir(
             ProyectoId.from(entity.getId()),
             entity.getNombre(),
             entity.getUbicacion(),
-            entity.getEstado()
+            entity.getEstado(),
+            entity.getFechaInicio(),
+            entity.getFrecuenciaControl()
         );
     }
 
@@ -78,6 +85,8 @@ public class ProyectoMapper {
         existingEntity.setNombre(proyecto.getNombre());
         existingEntity.setUbicacion(proyecto.getUbicacion());
         existingEntity.setEstado(proyecto.getEstado());
+        existingEntity.setFechaInicio(proyecto.getFechaInicio());
+        existingEntity.setFrecuenciaControl(proyecto.getFrecuenciaControl());
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
     }
 
@@ -89,7 +98,7 @@ public class ProyectoMapper {
      */
     public ProyectoResponse toResponse(Proyecto proyecto) {
         if (proyecto == null) {
-            return null;
+            throw new IllegalArgumentException("Proyecto no puede ser null");
         }
 
         return new ProyectoResponse(
@@ -108,7 +117,7 @@ public class ProyectoMapper {
      */
     public ProyectoResponse toResponse(ProyectoEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("ProyectoEntity no puede ser null");
         }
 
         return new ProyectoResponse(

@@ -23,7 +23,7 @@ public final class Proyecto {
     private final String ubicacion;
     private final EstadoProyecto estado;
     private final LocalDateTime fechaInicio;
-    private FrecuenciaControl frecuenciaControl;
+    private final FrecuenciaControl frecuenciaControl;
 
     /**
      * Constructor privado. Usar factory methods.
@@ -132,10 +132,19 @@ public final class Proyecto {
 
     /**
      * Configura la frecuencia de control/corte para reportes (Invariante E-04).
+     * Requiere fechaInicio no nula cuando se configura una frecuencia, ya que
+     * esFechaCorteValida la necesita para validar.
+     *
+     * @param frecuencia  SEMANAL, QUINCENAL o MENSUAL; null para limpiar la configuración
+     * @param fechaInicio fecha de inicio del proyecto; obligatoria cuando frecuencia no es null
+     * @return Nueva instancia de Proyecto con la configuración aplicada
      */
-    public void configurarFrecuencia(FrecuenciaControl frecuencia) {
-        Objects.requireNonNull(frecuencia, "frecuenciaControl no puede ser nulo");
-        this.frecuenciaControl = frecuencia;
+    public Proyecto configurarFrecuencia(FrecuenciaControl frecuencia, LocalDateTime fechaInicio) {
+        if (frecuencia != null && fechaInicio == null) {
+            throw new IllegalArgumentException("fechaInicio es obligatoria cuando se configura frecuencia de control");
+        }
+        LocalDateTime fecha = frecuencia != null ? fechaInicio : null;
+        return new Proyecto(this.id, this.nombre, this.ubicacion, this.estado, fecha, frecuencia);
     }
 
     /**

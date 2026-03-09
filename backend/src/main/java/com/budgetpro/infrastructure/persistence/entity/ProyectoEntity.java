@@ -7,6 +7,7 @@ package com.budgetpro.infrastructure.persistence.entity;
 // REGLA-146
 // REGLA-149
 // REGLA-150
+import com.budgetpro.domain.finanzas.proyecto.model.FrecuenciaControl;
 import com.budgetpro.infrastructure.persistence.converter.EstadoProyectoConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -76,6 +78,13 @@ public class ProyectoEntity extends AuditEntity {
     @Version
     @Column(name = "version", nullable = false)
     private Integer version;
+
+    @Column(name = "fecha_inicio")
+    private LocalDateTime fechaInicio;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "frecuencia_control", length = 20)
+    private FrecuenciaControl frecuenciaControl;
 
     @PrePersist
     private void prePersist() {

@@ -2,8 +2,10 @@ package com.budgetpro.infrastructure.persistence.repository;
 
 import com.budgetpro.infrastructure.persistence.entity.ProyectoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,6 +14,9 @@ import java.util.UUID;
  */
 @Repository
 public interface ProyectoJpaRepository extends JpaRepository<ProyectoEntity, UUID> {
+
+    @Query("SELECT p FROM ProyectoEntity p WHERE p.frecuenciaControl IS NOT NULL")
+    List<ProyectoEntity> findAllWithFrecuenciaControl();
 
     /**
      * Busca un proyecto por su nombre.

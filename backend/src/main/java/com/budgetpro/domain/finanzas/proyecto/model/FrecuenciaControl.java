@@ -40,7 +40,7 @@ public enum FrecuenciaControl {
         Objects.requireNonNull(fechaCorte, "fechaCorte no puede ser nula");
 
         long days = ChronoUnit.DAYS.between(fechaInicio, fechaCorte);
-        if (days < 0) {
+        if (days <= 0) {
             return false;
         }
 
