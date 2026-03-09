@@ -1,5 +1,6 @@
 package com.budgetpro.infrastructure.rest.controller;
 
+import com.budgetpro.application.finanzas.evm.exception.PeriodoFechaInvalidaException;
 import com.budgetpro.application.finanzas.evm.port.in.ProyectoNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,14 @@ public class GlobalExceptionHandler {
         body.put("error", "NOT_FOUND");
         body.put("status", HttpStatus.NOT_FOUND.value());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(PeriodoFechaInvalidaException.class)
+    public ResponseEntity<Map<String, Object>> handlePeriodoFechaInvalida(PeriodoFechaInvalidaException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage());
+        body.put("fechaCorte", ex.getFechaCorte().toString());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
     }
 
     @ExceptionHandler(ProyectoNotFoundException.class)

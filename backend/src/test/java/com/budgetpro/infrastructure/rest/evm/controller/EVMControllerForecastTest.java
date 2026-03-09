@@ -42,12 +42,16 @@ class EVMControllerForecastTest {
     @Mock
     private ObtenerForecastFechaUseCase obtenerForecastFechaUseCase;
 
+    @Mock
+    private com.budgetpro.application.finanzas.evm.port.in.CerrarPeriodoUseCase cerrarPeriodoUseCase;
+
     @BeforeEach
     void setUp() {
         EVMController controller = new EVMController(
                 evmCalculationService,
                 obtenerSCurveUseCase,
-                obtenerForecastFechaUseCase);
+                obtenerForecastFechaUseCase,
+                cerrarPeriodoUseCase);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
