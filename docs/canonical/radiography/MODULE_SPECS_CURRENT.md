@@ -1,7 +1,7 @@
 # MODULE_SPECS_CURRENT.md - Current State Radiography
 
 > **Scope**: Module Maturity
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-03-09
 > **Authors**: Antigravity
 
 ## 1. Maturity Assessment
@@ -9,7 +9,7 @@
 | Module               | Core Responsibility                    | Current Maturity     | Status                                                       |
 | -------------------- | -------------------------------------- | -------------------- | ------------------------------------------------------------ |
 | **1. Presupuesto**   | Financial Planning, WBS, Cost Analysis | **Completed (80%)**  | Core features stable. Snapshot integration active.           |
-| **2. EVM**           | Physical progress tracking, Valuations | **Functional (65%)** | CPI/SPI implemented ✅. EAC/ETC/VAC implemented ✅. Missing S-Curve and forecast completion date. |
+| **2. EVM**           | Physical progress tracking, Valuations | **Complete (95%)**   | CPI/SPI ✅, EAC/ETC/VAC ✅, S-Curve ✅, Forecast ✅, Period consistency (E-04) ✅. evm_time_series materialized. |
 | **3. Cronograma**    | Time planning, Dependency management   | **Functional (60%)** | Critical Path and Gantt visualization implemented.           |
 | **4. Estimacion**    | Billing, Sequential approvals          | **Functional (60%)** | Core flow (Gen->Approve->Pay) working.                       |
 | **5. Compras**       | Procurement, Stock ingress             | **Functional (40%)** | Basic purchase registration. Missing complex flows (Orders). |
@@ -26,5 +26,5 @@
 
 ## 3. Recommendation
 
-- **Next Focus**: Bring EVM and Compras to "Completed" status to close the implementation loop (Plan -> Buy -> Build -> Bill).
+- **Next Focus**: Bring Compras to "Completed" status to close the implementation loop (Plan -> Buy -> Build -> Bill). EVM epic (REQ-61/62/63/64) complete.
 - **Tech Debt**: Standardize Error Handling across newer modules.

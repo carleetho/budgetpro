@@ -1,0 +1,18 @@
+---
+description: Validar siempre código y git antes que documentación .md
+alwaysApply: true
+---
+
+# Code-First Validation
+
+Cuando evalúes el estado del proyecto —madurez, features implementadas, cobertura—:
+
+1. **Prioriza código y git** sobre archivos `.md` y reportes. La documentación puede estar desactualizada porque no se actualiza automáticamente al hacer commits.
+
+2. **Evidencia de código**: Usa `grep`, `read_file`, inspección de endpoints, use cases, tests y migraciones para determinar qué está implementado.
+
+3. **Evidencia de git**: Usa `git log`, `git branch`, merges de PRs para confirmar qué cambios están en main/develop.
+
+4. **No asumas** que un `.md` refleja la realidad si no lo has validado contra el código. Si hay discrepancia, el código es la fuente de verdad.
+
+5. **Después de cambios de features**: Si actualizas documentación canonical/notebooks, hazlo 1:1 con lo que el código implementa.
