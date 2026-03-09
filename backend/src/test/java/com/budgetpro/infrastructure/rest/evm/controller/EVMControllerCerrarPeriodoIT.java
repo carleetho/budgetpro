@@ -131,6 +131,27 @@ class EVMControllerCerrarPeriodoIT extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("fechaCorte null")
+    class FechaCorteNull {
+
+        @Test
+        @DisplayName("retorna HTTP 400 con mensaje de validación")
+        void retorna400ConValidacion() throws Exception {
+            ProyectoId proyectoId = ProyectoId.nuevo();
+            Proyecto proyecto = Proyecto.reconstruir(
+                    proyectoId, "Proyecto", "Loc", EstadoProyecto.ACTIVO, null, null);
+            proyectoRepository.save(proyecto);
+
+            String requestBody = "{}";
+
+            mockMvc.perform(post("/api/v1/evm/{proyectoId}/cerrar-periodo", proyectoId.getValue())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
     @DisplayName("proyecto inexistente")
     class ProyectoInexistente {
 

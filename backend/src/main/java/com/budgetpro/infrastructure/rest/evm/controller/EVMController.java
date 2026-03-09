@@ -12,6 +12,7 @@ import com.budgetpro.infrastructure.rest.evm.dto.CerrarPeriodoResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.EVMSnapshotResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.ForecastResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.SCurveResponse;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +81,7 @@ public class EVMController {
     @PostMapping("/{proyectoId}/cerrar-periodo")
     public ResponseEntity<CerrarPeriodoResponse> cerrarPeriodo(
             @PathVariable UUID proyectoId,
-            @RequestBody CerrarPeriodoRequest request) {
+            @Valid @RequestBody CerrarPeriodoRequest request) {
         String periodoId = cerrarPeriodoUseCase.cerrar(proyectoId, request.fechaCorte());
         return ResponseEntity.ok(new CerrarPeriodoResponse(
                 proyectoId,

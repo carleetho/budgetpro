@@ -60,14 +60,14 @@ public class EVMPeriodoCierreScheduler {
         var proyectoId = proyecto.getId().getValue();
 
         if (!proyecto.esFechaCorteValida(today)) {
-            log.warn("Periodo omitido para proyecto {} — fecha no alineada o ya cerrado",
-                    proyectoId);
+            log.warn("Periodo omitido para proyecto {} — fecha de corte no alineada con frecuencia {}",
+                    proyectoId, proyecto.getFrecuenciaControl().name());
             return;
         }
 
         if (evmTimeSeriesRepository.existsByProyectoIdAndFechaCorte(proyectoId, today)) {
-            log.warn("Periodo omitido para proyecto {} — fecha no alineada o ya cerrado",
-                    proyectoId);
+            log.warn("Periodo omitido para proyecto {} — ya existe cierre para fecha {}",
+                    proyectoId, today);
             return;
         }
 
