@@ -1,15 +1,19 @@
 package com.budgetpro.domain.proyecto.model;
 
+import com.budgetpro.domain.finanzas.proyecto.model.FrecuenciaControl;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Aggregate Root del agregado PROYECTO.
- * 
+ *
  * Representa un proyecto de construcción con su identidad, ubicación y estado.
- * 
+ *
  * Invariantes: - El nombre no puede estar vacío - El nombre debe ser único
  * (validado a nivel de persistencia) - El estado no puede ser nulo
- * 
+ *
  * Contexto: Gestión de Proyectos
  */
 public final class Proyecto {
@@ -18,11 +22,14 @@ public final class Proyecto {
     private final String nombre;
     private final String ubicacion;
     private final EstadoProyecto estado;
+    private final LocalDateTime fechaInicio;
+    private FrecuenciaControl frecuenciaControl;
 
     /**
      * Constructor privado. Usar factory methods.
      */
-    private Proyecto(ProyectoId id, String nombre, String ubicacion, EstadoProyecto estado) {
+    private Proyecto(ProyectoId id, String nombre, String ubicacion, EstadoProyecto estado,
+                     LocalDateTime fechaInicio, FrecuenciaControl frecuenciaControl) {
         validarInvariantes(nombre, estado);
 
         this.id = Objects.requireNonNull(id, "El ID del proyecto no puede ser nulo");
@@ -30,20 +37,30 @@ public final class Proyecto {
         this.ubicacion = ubicacion != null ? ubicacion.trim() : null;
         // REGLA-043
         this.estado = Objects.requireNonNull(estado, "El estado del proyecto no puede ser nulo");
+        this.fechaInicio = fechaInicio;
+        this.frecuenciaControl = frecuenciaControl;
     }
 
     /**
      * Factory method para crear un nuevo Proyecto en estado BORRADOR.
      */
     public static Proyecto crear(ProyectoId id, String nombre, String ubicacion) {
-        return new Proyecto(id, nombre, ubicacion, EstadoProyecto.BORRADOR);
+        return new Proyecto(id, nombre, ubicacion, EstadoProyecto.BORRADOR, null, null);
     }
 
     /**
      * Factory method para reconstruir un Proyecto desde persistencia.
      */
     public static Proyecto reconstruir(ProyectoId id, String nombre, String ubicacion, EstadoProyecto estado) {
-        return new Proyecto(id, nombre, ubicacion, estado);
+        return reconstruir(id, nombre, ubicacion, estado, null, null);
+    }
+
+    /**
+     * Factory method para reconstruir un Proyecto desde persistencia con frecuencia de control.
+     */
+    public static Proyecto reconstruir(ProyectoId id, String nombre, String ubicacion, EstadoProyecto estado,
+                                      LocalDateTime fechaInicio, FrecuenciaControl frecuenciaControl) {
+        return new Proyecto(id, nombre, ubicacion, estado, fechaInicio, frecuenciaControl);
     }
 
     /**
@@ -70,47 +87,72 @@ public final class Proyecto {
 
     /**
      * Actualiza el nombre del proyecto.
-     * 
+     *
      * @return Nueva instancia de Proyecto con el nombre actualizado.
      */
     public Proyecto actualizarNombre(String nuevoNombre) {
-        return new Proyecto(this.id, nuevoNombre, this.ubicacion, this.estado);
+        return new Proyecto(this.id, nuevoNombre, this.ubicacion, this.estado, this.fechaInicio, this.frecuenciaControl);
     }
 
     /**
      * Actualiza la ubicación del proyecto.
-     * 
+     *
      * @return Nueva instancia de Proyecto con la ubicación actualizada.
      */
     public Proyecto actualizarUbicacion(String nuevaUbicacion) {
-        return new Proyecto(this.id, this.nombre, nuevaUbicacion, this.estado);
+        return new Proyecto(this.id, this.nombre, nuevaUbicacion, this.estado, this.fechaInicio, this.frecuenciaControl);
     }
 
     /**
      * Inicia el proyecto (cambia el estado a ACTIVO).
-     * 
+     *
      * @return Nueva instancia de Proyecto en estado ACTIVO.
      */
     public Proyecto activar() {
-        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.ACTIVO);
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.ACTIVO, this.fechaInicio, this.frecuenciaControl);
     }
 
     /**
      * Suspende el proyecto (cambia el estado a SUSPENDIDO).
-     * 
+     *
      * @return Nueva instancia de Proyecto en estado SUSPENDIDO.
      */
     public Proyecto suspender() {
-        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.SUSPENDIDO);
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.SUSPENDIDO, this.fechaInicio, this.frecuenciaControl);
     }
 
     /**
      * Finaliza el proyecto (cambia el estado a CERRADO).
-     * 
+     *
      * @return Nueva instancia de Proyecto en estado CERRADO.
      */
     public Proyecto cerrar() {
-        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.CERRADO);
+        return new Proyecto(this.id, this.nombre, this.ubicacion, EstadoProyecto.CERRADO, this.fechaInicio, this.frecuenciaControl);
+    }
+
+    /**
+     * Configura la frecuencia de control/corte para reportes (Invariante E-04).
+     */
+    public void configurarFrecuencia(FrecuenciaControl frecuencia) {
+        Objects.requireNonNull(frecuencia, "frecuenciaControl no puede ser nulo");
+        this.frecuenciaControl = frecuencia;
+    }
+
+    /**
+     * Indica si la fecha de corte es válida según la frecuencia configurada.
+     * Si frecuenciaControl es null, no hay exigencia y retorna true.
+     *
+     * @param fechaCorte fecha de corte a validar
+     * @return true si no hay enforcement o si la fecha es válida según la frecuencia
+     */
+    public boolean esFechaCorteValida(LocalDate fechaCorte) {
+        if (frecuenciaControl == null) {
+            return true;
+        }
+        if (fechaInicio == null) {
+            return false;
+        }
+        return frecuenciaControl.esFechaValida(fechaInicio.toLocalDate(), fechaCorte);
     }
 
     // Getters
@@ -133,6 +175,14 @@ public final class Proyecto {
 
     public boolean isActivo() {
         return estado == EstadoProyecto.ACTIVO;
+    }
+
+    public LocalDateTime getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public FrecuenciaControl getFrecuenciaControl() {
+        return frecuenciaControl;
     }
 
     @Override
