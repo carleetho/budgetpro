@@ -45,6 +45,12 @@ public class EVMTimeSeriesRepositoryAdapter implements EVMTimeSeriesRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean existsByProyectoIdAndFechaCorte(UUID proyectoId, LocalDate fechaCorte) {
+        return jpaRepository.existsByProyectoIdAndFechaCorte(proyectoId, fechaCorte);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<EVMTimeSeries> findLatestByProyectoId(UUID proyectoId) {
         return jpaRepository.findFirstByProyectoIdOrderByFechaCorteDesc(proyectoId).map(this::toDomain);
     }

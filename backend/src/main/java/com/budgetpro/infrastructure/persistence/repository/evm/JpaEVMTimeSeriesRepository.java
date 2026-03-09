@@ -44,6 +44,11 @@ public interface JpaEVMTimeSeriesRepository extends JpaRepository<EVMTimeSeriesE
     Optional<EVMTimeSeriesEntity> findLatestByProyectoIdWithLock(@Param("proyectoId") UUID proyectoId);
 
     /**
+     * Verifica si existe una fila con (proyecto_id, fecha_corte) para evitar duplicados.
+     */
+    boolean existsByProyectoIdAndFechaCorte(UUID proyectoId, LocalDate fechaCorte);
+
+    /**
      * Consulta por rango de fechas ascendente; start/end null se interpretan como no acotados.
      */
     @Query("""

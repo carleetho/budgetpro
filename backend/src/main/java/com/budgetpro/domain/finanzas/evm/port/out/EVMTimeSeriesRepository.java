@@ -58,6 +58,17 @@ public interface EVMTimeSeriesRepository {
     Optional<com.budgetpro.domain.finanzas.evm.model.EVMTimeSeries> findLatestByProyectoId(UUID proyectoId);
 
     /**
+     * Indica si existe una fila en evm_time_series para el proyecto y fecha de corte dados.
+     *
+     * <p>Usado por {@code EVMPeriodoCierreScheduler} para evitar cerrar duplicados (REQ-64).
+     *
+     * @param proyectoId id del proyecto
+     * @param fechaCorte fecha de corte
+     * @return true si existe fila con (proyecto_id, fecha_corte)
+     */
+    boolean existsByProyectoIdAndFechaCorte(UUID proyectoId, LocalDate fechaCorte);
+
+    /**
      * Obtiene la última entrada de serie temporal del proyecto con lock pesimista de escritura.
      *
      * <p>
