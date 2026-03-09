@@ -74,6 +74,10 @@ public class ObtenerForecastFechaUseCaseImpl implements ObtenerForecastFechaUseC
         BigDecimal evAcumulado = ts.getEvAcumulado() != null ? ts.getEvAcumulado() : ZERO;
         BigDecimal spiAcumulado = evAcumulado.divide(pvAcumulado, SPI_SCALE, RoundingMode.HALF_UP);
 
+        if (spiAcumulado.compareTo(ZERO) <= 0) {
+            return buildFallback(proyectoId, ts.getFechaCorte(), fechaFinPlanificada);
+        }
+
         int remainingDays = workingDayCalculator.workingDaysBetween(ts.getFechaCorte(), fechaFinPlanificada);
         int actualRemainingWorkingDays = new BigDecimal(remainingDays)
                 .divide(spiAcumulado, 0, RoundingMode.CEILING)

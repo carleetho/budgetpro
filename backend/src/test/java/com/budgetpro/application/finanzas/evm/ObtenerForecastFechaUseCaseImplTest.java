@@ -134,6 +134,37 @@ class ObtenerForecastFechaUseCaseImplTest {
             verify(workingDayCalculator, never()).workingDaysBetween(any(), any());
             verify(workingDayCalculator, never()).plusWorkingDays(any(), anyInt());
         }
+
+        @Test
+        @DisplayName("aplica fallback cuando evAcumulado=0 (evita ArithmeticException por división por spi)")
+        void deberiaAplicarFallbackCuandoEvAcumuladoEsCero() {
+            LocalDate fechaCorte = LocalDate.of(2025, 6, 15);
+            LocalDate fechaFinPlanificada = LocalDate.of(2025, 12, 31);
+
+            EVMTimeSeries ts = crearEVMTimeSeries(fechaCorte, BigDecimal.ZERO, new BigDecimal("100000"));
+            ProgramaObra programa = ProgramaObra.reconstruir(
+                    ProgramaObraId.nuevo(),
+                    proyectoId,
+                    LocalDate.of(2025, 1, 1),
+                    fechaFinPlanificada,
+                    365,
+                    0L);
+
+            when(proyectoRepository.existsById(any(ProyectoId.class))).thenReturn(true);
+            when(programaObraRepository.findByProyectoId(proyectoId)).thenReturn(Optional.of(programa));
+            when(evmTimeSeriesRepository.findLatestByProyectoId(proyectoId)).thenReturn(Optional.of(ts));
+
+            ForecastResult result = useCase.obtener(proyectoId);
+
+            assertThat(result.forecastCompletionDate()).isEqualTo(fechaFinPlanificada);
+            assertThat(result.forecastFallback()).isTrue();
+            assertThat(result.spiUsed()).isEqualByComparingTo("0.0000");
+            assertThat(result.fechaCorteBase()).isEqualTo(fechaCorte);
+            assertThat(result.remainingDays()).isEqualTo(0);
+
+            verify(workingDayCalculator, never()).workingDaysBetween(any(), any());
+            verify(workingDayCalculator, never()).plusWorkingDays(any(), anyInt());
+        }
     }
 
     @Nested
