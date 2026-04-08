@@ -1,8 +1,10 @@
-# EVM Module - Canonical Specification
+# EVM_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Complete (95%)
-> **Owner**: Control Team
-> **Last Updated**: 2026-03-09
+> **Scope**: Earned Value Management  
+> **Status**: Complete (95%)  
+> **Owner**: Control Team  
+> **Last Updated**: 2026-04-07  
+> **Authors**: Ing. CL, Antigravity
 
 ## 1. Module Maturity Roadmap
 
@@ -99,7 +101,7 @@ graph TD
 | UC-E03 | Calculate Earned Value (EV) | P1       | ✅         |
 | UC-E03a| Calculate CPI/SPI Metrics   | P1       | ✅         |
 | UC-E03b| Calculate EAC/ETC/VAC       | P1       | ✅         |
-| UC-E04 | Generate S-Curve Report     | P1       | ✅ GET /api/v1/evm/{proyectoId}/s-curve?startDate=&endDate= |
+| UC-E04 | Generate S-Curve Report     | P1       | ✅ Implemented |
 | UC-E05 | Forecast Completion Date    | P2       | ✅ GET /api/v1/evm/{proyectoId}/forecast |
 | UC-E06 | Cerrar período (manual)     | P1       | ✅ POST /api/v1/evm/{proyectoId}/cerrar-periodo |
 

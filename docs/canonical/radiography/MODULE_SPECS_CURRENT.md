@@ -1,15 +1,15 @@
-# MODULE_SPECS_CURRENT.md - Current State Radiography
+# MODULE_SPECS_CURRENT.md — Current State Radiography
 
-> **Scope**: Module Maturity
-> **Last Updated**: 2026-03-09
-> **Authors**: Antigravity
+> **Scope**: Module Maturity  
+> **Last Updated**: 2026-04-07  
+> **Authors**: Ing. CL, Antigravity
 
 ## 1. Maturity Assessment
 
 | Module               | Core Responsibility                    | Current Maturity     | Status                                                       |
 | -------------------- | -------------------------------------- | -------------------- | ------------------------------------------------------------ |
 | **1. Presupuesto**   | Financial Planning, WBS, Cost Analysis | **Completed (80%)**  | Core features stable. Snapshot integration active.           |
-| **2. EVM**           | Physical progress tracking, Valuations | **Complete (95%)**   | CPI/SPI ✅, EAC/ETC/VAC ✅, S-Curve ✅, Forecast ✅, Period consistency (E-04) ✅. evm_time_series materialized. |
+| **2. EVM**           | Physical progress tracking, Valuations | **Completed (80%)**  | CPI/SPI/EAC/ETC/VAC ✅, S-Curve (UC-E04) ✅, forecast (UC-E05) ✅, cierre de período E-04 (CRON + manual) ✅, `evm_time_series` materializado. Pendiente: métrica `evm.progress.registered.count` y agregación dashboard (roadmap). |
 | **3. Cronograma**    | Time planning, Dependency management   | **Functional (60%)** | Critical Path and Gantt visualization implemented.           |
 | **4. Estimacion**    | Billing, Sequential approvals          | **Functional (60%)** | Core flow (Gen->Approve->Pay) working.                       |
 | **5. Compras**       | Procurement, Stock ingress             | **Functional (40%)** | Basic purchase registration. Missing complex flows (Orders). |
