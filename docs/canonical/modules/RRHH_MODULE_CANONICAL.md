@@ -1,15 +1,15 @@
 # RRHH Module - Canonical Specification
 
-> **Status**: Skeletal (20%)
+> **Status**: Partial (≈35%; code-aligned)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-02-07
+> **Last Updated**: 2026-04-07
 
 > [!CAUTION]
 > **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
 >
-> **Current Maturity:** 20% (Skeletal)  
-> **Grounding Score:** 1.5 / 5.0 (Critical)  
-> **Hallucination Risk:** 60%+
+> **Current Maturity (code-aligned):** ≈35% (config + core RRHH flows)  
+> **Grounding Score:** subir tras auditoría REQ-RRHH-01; contrastar con `backend/`  
+> **Hallucination Risk:** moderado si el notebook no se cruza con el código
 >
 > This module is under active development with incomplete documentation. AI assistants may hallucinate implementations based on general HR knowledge that do not match BudgetPro's specific Civil Construction regime rules (rain days, altitude bonuses, regional factors).
 >
@@ -20,14 +20,14 @@
 > - ❌ Generating new features or business logic
 >
 > **Minimum Maturity for AI Code Generation:** 50%  
-> **Current Status:** Questions only
+> **Current Status:** revisión asistida sí; generación ciega de reglas de obra **no**
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State      | Deliverables                            |
 | ----------- | --------- | ----------------- | --------------------------------------- |
-| **Current** | Now       | 20% (Config Only) | Global/Project Labor Config             |
-| **Next**    | +1 Month  | 50%               | Personnel Registry, Attendance (Tareos) |
+| **Current** | Now       | ≈35% (Config + core flows) | Global/Project labor config persisted; REGLA-150 on assign/attend; payroll/cost queries wired |
+| **Next**    | +1 Month  | 50%               | Personnel Registry, Attendance (Tareos) polish |
 | **Target**  | +3 Months | 80%               | Payroll (Planillas), Social Benefits    |
 
 ## 2. Invariants (Business Rules)
@@ -36,7 +36,7 @@
 | ---- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | R-01 | **Labor Regime**: Construction Civil Regime (Civil Construction) rules must apply for worker category caps.                       | 🟡 Config only    |
 | R-02 | **Attendance**: Cannot register attendance for inactive workers. InactiveWorkerException validation **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
-| R-03 | **Double Booking**: Worker cannot be in two sites on same day.                                                                    | 🔴 Missing        |
+| R-03 | **Double Booking**: Worker cannot be in two sites on same day (temporal overlap). **Overlap filter** uses domain `detectOverlap` + overnight window (2026-04-07). | 🟡 Partial (same-worker intervals; multi-site semantics TBD) |
 | R-04 | **Config Integrity**: Regime config values must be non-negative (days) and positive (factors).                                    | ✅ Implemented    |
 
 
@@ -54,13 +54,13 @@
 | REGLA-123 | **El costo de mano de obra nunca se registra como salario neto; se calcula costo empresa con prestaciones.** | 🟡 Implemented |
 | REGLA-124 | **No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.** | 🟡 Implemented |
 | REGLA-125 | **El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.** | 🟡 Implemented |
-| REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | 🟡 Implemented |
+| REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | ✅ Enforced (asignación a proyecto + registro asistencia vía `ProyectoNoActivoException`; 2026-04-07) |
 
 ## 3. Domain Events
 
 | Event Name                | Trigger      | Content (Payload)  | Status |
 | ------------------------- | ------------ | ------------------ | ------ |
-| `PersonalContratadoEvent` | New contract | `workerId`, `role` | 🔴     |
+| `PersonalContratadoEvent` | New contract | `workerId`, nombre, apellido, cargo, tipo empleado, fecha inicio, `occurredAt` | ✅ Published desde `CrearEmpleadoUseCaseImpl` (2026-04-07) |
 
 ## 4. State Constraints
 
@@ -71,6 +71,11 @@ graph TD
 ```
 
 ## 5. Data Contracts
+
+### Persistence: ConfiguracionLaboralExtendida (infra)
+
+- **Global config**: fila con `proyecto_id` **NULL** (Flyway `V26__rrhh_config_laboral_global_nullable_proyecto.sql` alinea NOT NULL → nullable).
+- **Adapter RRHH**: `ConfiguracionLaboralRepositoryAdapter` implementa `save`, `findActiveByProyecto`, `findGlobalActive`, historiales por rango; `findEffectiveConfig` resuelve proyecto → fallback global con nombres de método Spring Data correctos (`proyecto` / `proyecto.id`).
 
 ### Entity: ConfiguracionLaboral
 
@@ -100,9 +105,9 @@ graph TD
 | ID     | Use Case                  | Priority | Status |
 | ------ | ------------------------- | -------- | ------ |
 | UC-R01 | Configure Labor Rates     | P0       | ✅     |
-| UC-R02 | Register Worker           | P0       | 🔴     |
-| UC-R03 | Register Daily Attendance | P1       | 🔴     |
-| UC-R04 | Generate Payroll          | P1       | 🔴     |
+| UC-R02 | Register Worker           | P0       | ✅ (`CrearEmpleado` + evento dominio) |
+| UC-R03 | Register Daily Attendance | P1       | 🟡 (activo/nocturno/solape + proyecto ACTIVO; costos por proyecto consultan `findByProyectoAndPeriodo`) |
+| UC-R04 | Generate Payroll          | P1       | 🟡 (`CalcularNomina`: ISR desde constante aplicación; IMSS desde `%` configuración; falla explícita si no hay config) |
 
 ## 7. Domain Services
 
@@ -114,7 +119,7 @@ graph TD
 | Method | Path                            | Description      | Status |
 | ------ | ------------------------------- | ---------------- | ------ |
 | PUT    | `/api/v1/configuracion-laboral` | Set global rates | ✅     |
-| POST   | `/api/v1/personal`              | Register worker  | 🔴     |
+| POST   | `/api/v1/personal`              | Register worker  | 🟡 (ver OpenAPI/código; flujo principal vía caso de uso) |
 
 ## 9. Observability
 
@@ -129,3 +134,5 @@ graph TD
 ## 11. Technical Debt & Risks
 
 - [ ] **Complex Regime**: Civil Construction regime is complex (holidays, rain days, altitude). Needs a robust Rules Engine, not just simple math. (High)
+- [ ] **Consultar costos**: varianza sigue con costo estimado fijo de demostración; agrupación CUADRILLA/PARTIDA placeholder `"N/A"`.
+- [ ] **Nómina**: ISR sigue siendo factor fijo en `NominaConstants` (no tabla fiscal progresiva).
