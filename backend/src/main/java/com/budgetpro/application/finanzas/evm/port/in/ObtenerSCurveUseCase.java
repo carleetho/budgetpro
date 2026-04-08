@@ -13,6 +13,8 @@ public interface ObtenerSCurveUseCase {
      * @param endDate fecha de fin inclusiva (nullable: {@code null} = hasta la fecha actual)
      * @return {@link SCurveResult} con la curva S; lista {@code dataPoints} vacía si no hay datos
      * @throws ProyectoNotFoundException si el proyecto no existe (HTTP 404)
+     * @throws IllegalArgumentException si ambas fechas están presentes y {@code startDate} es posterior a
+     *             {@code endDate} (HTTP 400)
      */
     SCurveResult obtener(UUID proyectoId, LocalDate startDate, LocalDate endDate);
 }
