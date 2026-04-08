@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConfiguracionLaboralExtendidaMapperTest {
 
@@ -82,6 +83,26 @@ class ConfiguracionLaboralExtendidaMapperTest {
         assertEquals(new BigDecimal("0.2"), fsr.get("factorTurnoNocturno"));
         assertEquals(new BigDecimal("0.3"), fsr.get("factorRiesgo"));
         assertEquals(new BigDecimal("0.4"), fsr.get("factorRegional"));
+    }
+
+    @Test
+    void toDomain_entityNull_lanzaIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> mapper.toDomain(null));
+    }
+
+    @Test
+    void copyToEntity_domainNull_lanzaIllegalArgumentException() {
+        ConfiguracionLaboralExtendidaEntity target = new ConfiguracionLaboralExtendidaEntity();
+        assertThrows(IllegalArgumentException.class,
+                () -> mapper.copyToEntity(null, null, target));
+    }
+
+    @Test
+    void copyToEntity_targetNull_lanzaIllegalArgumentException() {
+        ConfiguracionLaboralExtendida domain = new ConfiguracionLaboralExtendida(UUID.randomUUID().toString(), null,
+                LocalDate.now(), null, 1, 1, BigDecimal.ZERO, 0, 252, BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO);
+        assertThrows(IllegalArgumentException.class, () -> mapper.copyToEntity(domain, null, null));
     }
 
     @Test

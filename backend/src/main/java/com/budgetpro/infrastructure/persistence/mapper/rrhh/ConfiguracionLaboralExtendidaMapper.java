@@ -21,7 +21,7 @@ public class ConfiguracionLaboralExtendidaMapper {
 
     public ConfiguracionLaboralExtendida toDomain(ConfiguracionLaboralExtendidaEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("ConfiguracionLaboralExtendidaEntity must not be null");
         }
         Map<String, Object> fsr = entity.getFsrConfig();
         if (fsr == null) {
@@ -41,8 +41,11 @@ public class ConfiguracionLaboralExtendidaMapper {
      */
     public void copyToEntity(ConfiguracionLaboralExtendida domain, ProyectoEntity proyectoOrNull,
             ConfiguracionLaboralExtendidaEntity target) {
-        if (domain == null || target == null) {
-            return;
+        if (domain == null) {
+            throw new IllegalArgumentException("ConfiguracionLaboralExtendida domain must not be null");
+        }
+        if (target == null) {
+            throw new IllegalArgumentException("ConfiguracionLaboralExtendidaEntity target must not be null");
         }
         target.setId(UUID.fromString(domain.getId()));
         target.setProyecto(proyectoOrNull);
