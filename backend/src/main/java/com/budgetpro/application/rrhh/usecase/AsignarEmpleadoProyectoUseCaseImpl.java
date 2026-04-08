@@ -4,12 +4,14 @@ import com.budgetpro.application.recurso.port.out.RecursoRepository;
 import com.budgetpro.application.rrhh.dto.AsignacionProyectoResponse;
 import com.budgetpro.application.rrhh.dto.AsignarEmpleadoProyectoCommand;
 import com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException;
+import com.budgetpro.application.rrhh.exception.ProyectoNoActivoException;
 import com.budgetpro.application.rrhh.port.in.AsignarEmpleadoProyectoUseCase;
 import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
 import com.budgetpro.domain.catalogo.model.RecursoProxy;
 import com.budgetpro.domain.catalogo.model.RecursoProxyId;
 import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
+import com.budgetpro.domain.proyecto.model.EstadoProyecto;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.proyecto.port.out.ProyectoRepository;
@@ -48,9 +50,14 @@ public class AsignarEmpleadoProyectoUseCaseImpl implements AsignarEmpleadoProyec
                         throw new IllegalStateException("El empleado no está activo: " + command.empleadoId());
                 }
 
-                // 2. Validate project exists
+                // 2. Validate project exists y REGLA-150: solo ACTIVO
                 Proyecto proyecto = proyectoRepository.findById(ProyectoId.from(command.proyectoId())).orElseThrow(
                                 () -> new IllegalArgumentException("Proyecto no encontrado: " + command.proyectoId()));
+                if (proyecto.getEstado() != EstadoProyecto.ACTIVO) {
+                        throw new ProyectoNoActivoException(String.format(
+                                        "Proyecto no activo (id=%s, estado=%s). Solo proyectos ACTIVO permiten asignar personal.",
+                                        command.proyectoId(), proyecto.getEstado()));
+                }
 
                 // 3. Check for overlapping assignments
                 if (asignacionRepository.existsOverlap(empleado.getId(), command.fechaInicio(), command.fechaFin())) {

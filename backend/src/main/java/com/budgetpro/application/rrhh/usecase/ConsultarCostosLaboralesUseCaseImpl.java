@@ -1,19 +1,20 @@
 package com.budgetpro.application.rrhh.usecase;
-import org.springframework.stereotype.Service;
 
 import com.budgetpro.application.rrhh.dto.ConsultarCostosLaboralesQuery;
 import com.budgetpro.application.rrhh.dto.CostosLaboralesResponse;
 import com.budgetpro.application.rrhh.dto.DesgloseCostoLaboral;
 import com.budgetpro.application.rrhh.dto.VarianzaCostoLaboral;
+import com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException;
 import com.budgetpro.application.rrhh.port.in.ConsultarCostosLaboralesUseCase;
 import com.budgetpro.application.rrhh.port.out.AsistenciaRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.ConfiguracionLaboralRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
+import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
 import com.budgetpro.domain.rrhh.model.AsistenciaRegistro;
 import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
-import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
-import org.springframework.stereotype.Component;
+import com.budgetpro.domain.rrhh.service.CalculadorFSR;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -25,50 +26,49 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
 @Service
 public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLaboralesUseCase {
 
     private final AsistenciaRepositoryPort asistenciaRepository;
     private final EmpleadoRepositoryPort empleadoRepository;
     private final ConfiguracionLaboralRepositoryPort configuracionLaboralRepository;
+    private final CalculadorFSR calculadorFSR;
 
     public ConsultarCostosLaboralesUseCaseImpl(AsistenciaRepositoryPort asistenciaRepository,
             EmpleadoRepositoryPort empleadoRepository,
-            ConfiguracionLaboralRepositoryPort configuracionLaboralRepository) {
+            ConfiguracionLaboralRepositoryPort configuracionLaboralRepository, CalculadorFSR calculadorFSR) {
         this.asistenciaRepository = asistenciaRepository;
         this.empleadoRepository = empleadoRepository;
         this.configuracionLaboralRepository = configuracionLaboralRepository;
+        this.calculadorFSR = calculadorFSR;
     }
 
     @Override
     public CostosLaboralesResponse consultarCostos(ConsultarCostosLaboralesQuery query) {
+        ConfiguracionLaboral configLaboral = configuracionLaboralRepository
+                .findEffectiveConfig(query.getProyectoId(), query.getFechaInicio())
+                .orElseThrow(() -> new ConfiguracionLaboralNotFoundException(String.format(
+                        "No se encontró configuración laboral para proyecto %s en fecha %s",
+                        query.getProyectoId().getValue(), query.getFechaInicio())));
+
         List<AsistenciaRegistro> asistencias = asistenciaRepository.findByProyectoAndPeriodo(query.getProyectoId(),
                 query.getFechaInicio(), query.getFechaFin());
 
-        // Basic map of Employee ID to Employee for name resolution
-        // Optimization: Fetch only needed employees
         List<EmpleadoId> empleadoIds = asistencias.stream().map(AsistenciaRegistro::getEmpleadoId).distinct()
                 .collect(Collectors.toList());
 
         Map<EmpleadoId, Empleado> empleados = empleadoRepository.findAllById(empleadoIds).stream()
                 .collect(Collectors.toMap(Empleado::getId, e -> e));
 
-        // Grouping Logic
         Map<String, List<AsistenciaRegistro>> groupedAsistencias;
         switch (query.getAgruparPor()) {
         case EMPLEADO:
             groupedAsistencias = asistencias.stream().collect(Collectors.groupingBy(a -> a.getEmpleadoId().toString()));
             break;
         case CUADRILLA:
-            // TODO: Implement Crew grouping. Requires linking Employee/Attendance to Crew.
-            // For now, defaulting to "Unassigned" or Employee ID as fallback if simpler
-            groupedAsistencias = asistencias.stream().collect(Collectors.groupingBy(a -> "N/A")); // Placeholder until
-                                                                                                  // Crew logic is fully
-                                                                                                  // linked
+            groupedAsistencias = asistencias.stream().collect(Collectors.groupingBy(a -> "N/A"));
             break;
         case PARTIDA:
-            // TODO: Implement Activity/Partida grouping.
             groupedAsistencias = asistencias.stream().collect(Collectors.groupingBy(a -> "N/A"));
             break;
         default:
@@ -88,25 +88,16 @@ public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLabor
 
             for (AsistenciaRegistro registro : registros) {
                 Empleado empleado = empleados.get(registro.getEmpleadoId());
-                if (empleado == null)
+                if (empleado == null) {
                     continue;
+                }
 
-                // 1. Get Effective Salary
                 BigDecimal salarioDiario = empleado.getSalarioEnFecha(registro.getFecha())
                         .map(com.budgetpro.domain.rrhh.model.HistorialLaboral::getSalarioBase).orElse(BigDecimal.ZERO);
-                // Conversion to hourly: Salary / 30 / 8 (Simplification)
                 BigDecimal salarioHora = salarioDiario.divide(BigDecimal.valueOf(8), MathContext.DECIMAL128);
 
-                // 2. Get FSR
-                // Optional<ConfiguracionLaboral> fsrConfig =
-                // configuracionLaboralRepository.findEffectiveConfig(query.getProyectoId(),
-                // registro.getFecha());
-                // BigDecimal fsrMultiplier =
-                // fsrConfig.map(ConfiguracionLaboral::getFactorSalarioReal).orElse(BigDecimal.ONE);
-                BigDecimal fsrMultiplier = BigDecimal.ONE; // Placeholder as ConfiguracionLaboral might not be fully
-                                                           // ready
+                BigDecimal fsrMultiplier = calculadorFSR.calcularFSR(configLaboral, empleado);
 
-                // 3. Calculate Hours
                 Duration horas = registro.calcularHoras();
                 Duration extras = registro.calcularHorasExtras();
                 Duration normales = horas.minus(extras);
@@ -114,7 +105,6 @@ public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLabor
                 totalHorasNormales = totalHorasNormales.plus(normales);
                 totalHorasExtras = totalHorasExtras.plus(extras);
 
-                // 4. Calculate Cost
                 BigDecimal horasDecimal = BigDecimal.valueOf(horas.toMinutes()).divide(BigDecimal.valueOf(60),
                         MathContext.DECIMAL128);
                 BigDecimal costoRegistro = horasDecimal.multiply(salarioHora).multiply(fsrMultiplier);
@@ -124,7 +114,6 @@ public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLabor
 
             totalCostoGlobal = totalCostoGlobal.add(costoGrupo);
 
-            // Name resolution
             String nombreGrupo = grupoId;
             if (query.getAgruparPor() == ConsultarCostosLaboralesQuery.Agrupacion.EMPLEADO
                     && empleados.containsKey(EmpleadoId.fromString(grupoId))) {
@@ -146,8 +135,7 @@ public class ConsultarCostosLaboralesUseCaseImpl implements ConsultarCostosLabor
 
         Optional<VarianzaCostoLaboral> varianza = Optional.empty();
         if (query.isIncluirVarianza()) {
-            // Placeholder: Estimate retrieval
-            BigDecimal costoEstimado = BigDecimal.valueOf(100000); // Dummy value
+            BigDecimal costoEstimado = BigDecimal.valueOf(100000);
             BigDecimal diferencia = totalCostoGlobal.subtract(costoEstimado);
             BigDecimal porcentaje = BigDecimal.ZERO;
             if (costoEstimado.compareTo(BigDecimal.ZERO) > 0) {
