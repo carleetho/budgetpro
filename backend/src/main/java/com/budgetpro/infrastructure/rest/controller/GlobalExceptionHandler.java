@@ -175,6 +175,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(body);
     }
 
+    @ExceptionHandler(com.budgetpro.application.rrhh.exception.ProyectoNoActivoException.class)
+    public ResponseEntity<Map<String, Object>> handleProyectoNoActivo(
+            com.budgetpro.application.rrhh.exception.ProyectoNoActivoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("error", "PROYECTO_NO_ACTIVO");
+        body.put("status", HttpStatus.PRECONDITION_FAILED.value());
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(body);
+    }
+
+    @ExceptionHandler(com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleConfiguracionLaboralNotFound(
+            com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("error", "CONFIGURACION_LABORAL_NO_ENCONTRADA");
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    }
+
     @ExceptionHandler(com.budgetpro.application.compra.exception.AuthenticationRequiredException.class)
     public ResponseEntity<Map<String, Object>> handleAuthenticationRequired(
             com.budgetpro.application.compra.exception.AuthenticationRequiredException ex) {
