@@ -2,6 +2,7 @@ package com.budgetpro.application.rrhh.usecase;
 
 import com.budgetpro.application.rrhh.dto.CrearEmpleadoCommand;
 import com.budgetpro.application.rrhh.dto.EmpleadoResponse;
+import com.budgetpro.application.rrhh.event.PersonalContratadoEvent;
 import com.budgetpro.application.rrhh.exception.NumeroIdentificacionDuplicadoException;
 import com.budgetpro.application.rrhh.port.in.CrearEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
@@ -9,9 +10,12 @@ import com.budgetpro.domain.rrhh.model.Contacto;
 import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.domain.rrhh.model.HistorialLaboral;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+
+import java.time.LocalDateTime;
 
 @Service
 @Validated
@@ -19,9 +23,12 @@ import org.springframework.validation.annotation.Validated;
 public class CrearEmpleadoUseCaseImpl implements CrearEmpleadoUseCase {
 
     private final EmpleadoRepositoryPort empleadoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public CrearEmpleadoUseCaseImpl(EmpleadoRepositoryPort empleadoRepository) {
+    public CrearEmpleadoUseCaseImpl(EmpleadoRepositoryPort empleadoRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.empleadoRepository = empleadoRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -41,6 +48,12 @@ public class CrearEmpleadoUseCaseImpl implements CrearEmpleadoUseCase {
 
         // 4. Save to repository
         Empleado saved = empleadoRepository.save(empleado);
+
+        HistorialLaboral historialInicial = saved.getSalarioActual()
+                .orElseThrow(() -> new IllegalStateException("Empleado recién creado sin historial laboral activo"));
+        eventPublisher.publishEvent(new PersonalContratadoEvent(saved.getId().getValue(), saved.getNombre(),
+                saved.getApellido(), historialInicial.getCargo(), historialInicial.getTipoEmpleado().name(),
+                historialInicial.getFechaInicio(), LocalDateTime.now()));
 
         // 5. Map to response
         return mapToResponse(saved);

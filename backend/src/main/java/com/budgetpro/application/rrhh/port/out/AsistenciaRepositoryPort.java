@@ -16,7 +16,16 @@ public interface AsistenciaRepositoryPort {
     List<AsistenciaRegistro> findByEmpleadosAndPeriodo(List<EmpleadoId> empleadoIds, LocalDate startDate,
             LocalDate endDate);
 
-    List<AsistenciaRegistro> findOverlapping(EmpleadoId empleadoId, LocalDateTime start, LocalDateTime end);
+    /**
+     * Returns existing records that truly overlap in time with the proposed interval.
+     *
+     * @param start
+     *            interval start (wall-clock); {@code start.toLocalDate()} is the attendance date
+     * @param end
+     *            interval end; may fall on the calendar day after {@code start} for overnight shifts
+     */
+    List<AsistenciaRegistro> findOverlapping(EmpleadoId empleadoId, ProyectoId proyectoId, LocalDateTime start,
+            LocalDateTime end);
 
     List<AsistenciaRegistro> findByProyectoAndPeriodo(ProyectoId proyectoId, LocalDate startDate, LocalDate endDate);
 }

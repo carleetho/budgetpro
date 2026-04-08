@@ -4,44 +4,55 @@ import com.budgetpro.application.rrhh.port.out.ConfiguracionLaboralRepositoryPor
 import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
 import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboralId;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
+import com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida;
+import com.budgetpro.infrastructure.persistence.entity.ProyectoEntity;
 import com.budgetpro.infrastructure.persistence.entity.rrhh.ConfiguracionLaboralExtendidaEntity;
+import com.budgetpro.infrastructure.persistence.mapper.rrhh.ConfiguracionLaboralExtendidaMapper;
+import com.budgetpro.infrastructure.persistence.repository.ProyectoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.rrhh.ConfiguracionLaboralExtendidaJpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component("rrhhConfiguracionLaboralRepositoryAdapter")
 public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLaboralRepositoryPort {
 
     private final ConfiguracionLaboralExtendidaJpaRepository repository;
+    private final ConfiguracionLaboralExtendidaMapper extendidaMapper;
+    private final ProyectoJpaRepository proyectoJpaRepository;
 
-    public ConfiguracionLaboralRepositoryAdapter(ConfiguracionLaboralExtendidaJpaRepository repository) {
+    public ConfiguracionLaboralRepositoryAdapter(ConfiguracionLaboralExtendidaJpaRepository repository,
+            ConfiguracionLaboralExtendidaMapper extendidaMapper, ProyectoJpaRepository proyectoJpaRepository) {
         this.repository = repository;
+        this.extendidaMapper = extendidaMapper;
+        this.proyectoJpaRepository = proyectoJpaRepository;
     }
 
     @Override
     public Optional<ConfiguracionLaboral> findEffectiveConfig(ProyectoId proyectoId, LocalDate fecha) {
         // 1. Try project-specific config
         var projectConfig = repository
-                .findFirstByProyectoIdAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
+                .findFirstByProyecto_IdAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
                         proyectoId.getValue(), fecha);
 
         if (projectConfig.isPresent()) {
-            return projectConfig.map(this::toDomain);
+            return projectConfig.map(this::toSobrecostoDomain);
         }
 
         // 2. Fallback to global config
         var globalConfig = repository
-                .findFirstByProyectoIdIsNullAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(fecha);
+                .findFirstByProyectoIsNullAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(fecha);
 
-        return globalConfig.map(this::toDomain);
+        return globalConfig.map(this::toSobrecostoDomain);
     }
 
-    private ConfiguracionLaboral toDomain(ConfiguracionLaboralExtendidaEntity entity) {
+    private ConfiguracionLaboral toSobrecostoDomain(ConfiguracionLaboralExtendidaEntity entity) {
         if (entity == null)
             return null;
 
@@ -69,32 +80,44 @@ public class ConfiguracionLaboralRepositoryAdapter implements ConfiguracionLabor
     }
 
     @Override
-    public com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida save(
-            com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida config) {
-        throw new UnsupportedOperationException("Not implemented");
+    public ConfiguracionLaboralExtendida save(ConfiguracionLaboralExtendida config) {
+        UUID id = UUID.fromString(config.getId());
+        ConfiguracionLaboralExtendidaEntity entity = repository.findById(id).orElseGet(() -> {
+            ConfiguracionLaboralExtendidaEntity e = new ConfiguracionLaboralExtendidaEntity();
+            e.setId(id);
+            return e;
+        });
+        ProyectoEntity proyecto = null;
+        if (config.getProyectoId() != null) {
+            proyecto = proyectoJpaRepository.getReferenceById(config.getProyectoId().getValue());
+        }
+        extendidaMapper.copyToEntity(config, proyecto, entity);
+        return extendidaMapper.toDomain(repository.save(entity));
     }
 
     @Override
-    public Optional<com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida> findActiveByProyecto(
-            ProyectoId proyectoId) {
-        return Optional.empty();
+    public Optional<ConfiguracionLaboralExtendida> findActiveByProyecto(ProyectoId proyectoId) {
+        return repository.findByProyecto_IdAndFechaVigenciaFinIsNull(proyectoId.getValue()).map(extendidaMapper::toDomain);
     }
 
     @Override
-    public Optional<com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida> findGlobalActive() {
-        return Optional.empty();
+    public Optional<ConfiguracionLaboralExtendida> findGlobalActive() {
+        return repository.findByProyectoIsNullAndFechaVigenciaFinIsNull().map(extendidaMapper::toDomain);
     }
 
     @Override
-    public java.util.List<com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida> findHistoryByProyecto(
-            ProyectoId proyectoId, LocalDate start, LocalDate end) {
-        return java.util.List.of();
+    public List<ConfiguracionLaboralExtendida> findHistoryByProyecto(ProyectoId proyectoId, LocalDate start,
+            LocalDate end) {
+        return repository
+                .findByProyecto_IdAndFechaVigenciaInicioBetweenOrderByFechaVigenciaInicioAsc(proyectoId.getValue(), start,
+                        end)
+                .stream().map(extendidaMapper::toDomain).collect(Collectors.toList());
     }
 
     @Override
-    public java.util.List<com.budgetpro.domain.rrhh.model.ConfiguracionLaboralExtendida> findHistoryGlobal(
-            LocalDate start, LocalDate end) {
-        return java.util.List.of();
+    public List<ConfiguracionLaboralExtendida> findHistoryGlobal(LocalDate start, LocalDate end) {
+        return repository.findByProyectoIsNullAndFechaVigenciaInicioBetweenOrderByFechaVigenciaInicioAsc(start, end)
+                .stream().map(extendidaMapper::toDomain).collect(Collectors.toList());
     }
 
     private Integer getInteger(Map<String, Object> map, String key) {

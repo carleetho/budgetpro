@@ -1,8 +1,9 @@
 package com.budgetpro.application.rrhh.usecase;
-import org.springframework.stereotype.Service;
 
+import com.budgetpro.application.rrhh.constant.NominaConstants;
 import com.budgetpro.application.rrhh.dto.CalcularNominaCommand;
 import com.budgetpro.application.rrhh.dto.NominaResponse;
+import com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException;
 import com.budgetpro.application.rrhh.port.in.CalcularNominaUseCase;
 import com.budgetpro.application.rrhh.port.out.AsistenciaRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.ConfiguracionLaboralRepositoryPort;
@@ -11,12 +12,16 @@ import com.budgetpro.application.rrhh.port.out.NominaRepositoryPort;
 import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
 import com.budgetpro.domain.rrhh.model.*;
 import com.budgetpro.domain.rrhh.service.CalculadorFSR;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,10 +52,12 @@ public class CalcularNominaUseCaseImpl implements CalcularNominaUseCase {
             throw new IllegalStateException("Payroll already exists for this project and period");
         }
 
-        // 2. Fetch Configuration
+        // 2. Fetch Configuration (proyecto → global); obligatoria para deducciones y FSR
         ConfiguracionLaboral config = configuracionRepositoryPort
                 .findEffectiveConfig(command.getProyectoId(), command.getPeriodoInicio())
-                .orElseThrow(() -> new IllegalStateException("No labor configuration found for project/date"));
+                .orElseThrow(() -> new ConfiguracionLaboralNotFoundException(String.format(
+                        "No se encontró configuración laboral para proyecto %s con vigencia a partir de %s",
+                        command.getProyectoId().getValue(), command.getPeriodoInicio())));
 
         // 3. Fetch Employees
         List<Empleado> empleados;
@@ -108,7 +115,6 @@ public class CalcularNominaUseCaseImpl implements CalcularNominaUseCase {
 
         // Iterate each day
         for (LocalDate date = inicio; !date.isAfter(fin); date = date.plusDays(1)) {
-            final LocalDate currentDate = date; // for lambda
             Optional<HistorialLaboral> historialOpt = empleado.getSalarioEnFecha(date);
 
             if (historialOpt.isPresent()) {
@@ -180,9 +186,10 @@ public class CalcularNominaUseCaseImpl implements CalcularNominaUseCase {
         BigDecimal totalPercepciones = salarioTotalPeriodo.add(horasExtrasTotalCost).add(bonoAsistencia)
                 .add(otrosIngresos);
 
-        // Deductions
-        BigDecimal deduccionesFiscales = totalPercepciones.multiply(new BigDecimal("0.10")); // Mock 10%
-        BigDecimal deduccionesSeguridadSocial = totalPercepciones.multiply(new BigDecimal("0.05")); // Mock 5%
+        BigDecimal tasaSeguridadSocial = config.getPorcentajeSeguridadSocial()
+                .divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP);
+        BigDecimal deduccionesFiscales = totalPercepciones.multiply(NominaConstants.PORCENTAJE_ISR);
+        BigDecimal deduccionesSeguridadSocial = totalPercepciones.multiply(tasaSeguridadSocial);
         BigDecimal otrasDeducciones = BigDecimal.ZERO;
 
         BigDecimal costoPatronal = salarioTotalPeriodo.multiply(fsrMultiplier); // Basic approximation of cost impact

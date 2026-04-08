@@ -16,12 +16,22 @@ public interface ConfiguracionLaboralExtendidaJpaRepository
     /**
      * Find global configuration effective on or before the given date.
      */
-    Optional<ConfiguracionLaboralExtendidaEntity> findFirstByProyectoIdIsNullAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
+    Optional<ConfiguracionLaboralExtendidaEntity> findFirstByProyectoIsNullAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
             LocalDate date);
 
     /**
      * Find project-specific configuration effective on or before the given date.
      */
-    Optional<ConfiguracionLaboralExtendidaEntity> findFirstByProyectoIdAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
+    Optional<ConfiguracionLaboralExtendidaEntity> findFirstByProyecto_IdAndFechaVigenciaInicioLessThanEqualOrderByFechaVigenciaInicioDesc(
             UUID proyectoId, LocalDate date);
+
+    Optional<ConfiguracionLaboralExtendidaEntity> findByProyecto_IdAndFechaVigenciaFinIsNull(UUID proyectoId);
+
+    Optional<ConfiguracionLaboralExtendidaEntity> findByProyectoIsNullAndFechaVigenciaFinIsNull();
+
+    List<ConfiguracionLaboralExtendidaEntity> findByProyecto_IdAndFechaVigenciaInicioBetweenOrderByFechaVigenciaInicioAsc(
+            UUID proyectoId, LocalDate start, LocalDate end);
+
+    List<ConfiguracionLaboralExtendidaEntity> findByProyectoIsNullAndFechaVigenciaInicioBetweenOrderByFechaVigenciaInicioAsc(
+            LocalDate start, LocalDate end);
 }

@@ -25,7 +25,7 @@ public class ConfiguracionLaboralExtendidaEntity extends AuditEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "proyecto_id", nullable = false)
+    @JoinColumn(name = "proyecto_id")
     private ProyectoEntity proyecto;
 
     @Column(name = "fecha_vigencia_inicio", nullable = false)
