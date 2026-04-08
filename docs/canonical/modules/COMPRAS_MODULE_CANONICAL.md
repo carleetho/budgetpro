@@ -1,8 +1,10 @@
-# COMPRAS Module - Canonical Specification
+# COMPRAS_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Functional (60%)
-> **Owner**: Logistica Team
-> **Last Updated**: 2026-02-15
+> **Scope**: Procurement & logistics (compras directas y órdenes de compra)  
+> **Status**: Functional (60%)  
+> **Owner**: Logistica Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
 
 ## 1. Module Maturity Roadmap
 
@@ -21,6 +23,10 @@
 | L-03 | **Stock Update**: Every purchase of "Material" must increase physical inventory.                                  | ✅ Implemented |
 | L-04 | **Provider Valid**: Must purchase from active providers only.                                                     | ✅ Implemented |
 
+**Trazabilidad código (L-03 / L-04):**
+
+- **L-03:** entrada a inventario en compra directa vía `ProcesarCompraService` / `RegistrarCompraUseCase`; recepciones parciales `POST /api/v1/compras/{compraId}/recepciones` (`RecibirOrdenCompraUseCase`); cierre OC `POST /api/v1/ordenes-compra/{id}/confirmar-recepcion` (`ConfirmarRecepcionUseCase`).
+- **L-04:** en flujo OC, `ProveedorValidator` en `SolicitarAprobacionUseCaseImpl` + entidad `Proveedor` (tabla `proveedor`). La compra directa (`Compra`) sigue usando `proveedor` como **String** (legacy).
 
 ### 2.2 Extended Rule Inventory (Phase 1 Alignment)
 
@@ -38,7 +44,7 @@
 | REGLA-117 | **Toda compra de bienes físicos genera entrada a inventario; inventario sin compra es ilegal.** | 🟡 Implemented |
 | REGLA-119 | **Salida sin Partida es ilegal; entrada sin compra es ilegal.** | 🟡 Implemented |
 | REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | 🟡 Implemented |
-| REGLA-153 | **Toda compra debe vincularse a una Partida válida del Presupuesto CONGELADO.** | 🟡 Implemented |
+| REGLA-153 | **Toda compra debe vincularse a una Partida válida del Presupuesto CONGELADO.** | ✅ Implemented (OC: `PresupuestoValidatorAdapter` exige `CONGELADO` + saldo; `PartidaValidator` / dominio exigen partida **hoja**; errores citan `REGLA-153`) |
 | REGLA-157 | **El exceso de consumo debe registrarse como Excepción de consumo o Insumo asociado a Orden de Cambio.** | 🟡 Implemented |
 
 ## 3. Domain Events
@@ -62,15 +68,28 @@ graph TD
 
 - **Constraint**: Inventory only increases on `RECIBIDA`.
 - **State Machine**: BORRADOR → SOLICITADA → APROBADA → ENVIADA → RECIBIDA
-- **Rejection**: SOLICITADA → BORRADOR (rechazo de aprobación)
+- **Rejection**: SOLICITADA → BORRADOR (`OrdenCompra.rechazar()` en dominio). **Deuda:** no hay endpoint REST dedicado para rechazo de OC en `OrdenCompraController` (solo transiciones listadas en §8).
 
 ## 5. Data Contracts
 
-### Entity: Compra
+**Paquete de dominio:** `com.budgetpro.domain.logistica.compra` (no existe `com.budgetpro.domain.compras`).
+
+### Entity: Compra (compra directa, legacy)
 
 - `id`: UUID
-- `proveedor`: String
+- `proveedor`: String (texto libre; distinto del catálogo `Proveedor` usado en OC)
 - `total`: BigDecimal
+- Relación: N:1 `Proyecto`, detalles `CompraDetalle`
+
+### Entity: Proveedor (órdenes de compra)
+
+- `id`: UUID, `ruc` (único), `razonSocial`, `estado` (`ACTIVO` | `INACTIVO` | `BLOQUEADO`), auditoría
+- Tabla: `proveedor` (migración `V20__create_proveedor_and_orden_compra.sql`)
+
+### Aggregate: OrdenCompra
+
+- `id`, `numero`, `proyectoId`, `proveedorId` → `Proveedor`, `estado`, líneas `DetalleOrdenCompra` con `partidaId`, importes
+- Tablas: `orden_compra`, `detalle_orden_compra`
 
 ### JSON Schema (Evolution)
 
@@ -93,19 +112,20 @@ graph TD
 | ------ | ------------------------- | -------- | ------ |
 | UC-L01 | Register Direct Purchase  | P0       | ✅     |
 | UC-L02 | Check Budget Availability | P0       | ✅     |
-| UC-L03 | Generate Purchase Order   | P1       | ✅     |
-| UC-L04 | Receive Goods              | P1       | ✅     |
+| UC-L03 | Generate Purchase Order   | P1       | ✅ `CrearOrdenCompraUseCase` + `OrdenCompraController` (`/api/v1/ordenes-compra`). No existe clase `GenerarOrdenCompraUseCase`. |
+| UC-L04 | Receive Goods              | P1       | ✅ OC: `ConfirmarRecepcionUseCase` + `POST .../confirmar-recepcion`. Compra directa: `RecibirOrdenCompraUseCase` + `POST /api/v1/compras/{compraId}/recepciones`. |
 
 ## 7. Domain Services
 
-- **Service**: `CompraService`
-- **Responsibility**: Validates budget caps and coordinates inventory updates.
+- **Service**: `ProcesarCompraService` (compra directa: presupuesto, billetera, inventario según reglas).
+- **Orden de compra:** lógica de estado y validaciones en `OrdenCompra` + casos de uso en `application` (`SolicitarAprobacionUseCaseImpl`, `EnviarOrdenCompraUseCaseImpl`, etc.).
 
 ## 8. REST Endpoints
 
 | Method | Path                                | Description                          | Status |
 | ------ | ----------------------------------- | ------------------------------------ | ------ |
 | POST   | `/api/v1/compras`                   | Register direct purchase             | ✅     |
+| POST   | `/api/v1/compras/{compraId}/recepciones` | Register reception (direct `Compra`; partial/full) | ✅     |
 | POST   | `/api/v1/ordenes-compra`            | Create purchase order                | ✅     |
 | GET    | `/api/v1/ordenes-compra`            | List purchase orders (with filters)  | ✅     |
 | GET    | `/api/v1/ordenes-compra/{id}`      | Get purchase order by ID             | ✅     |
@@ -128,9 +148,10 @@ graph TD
 
 ## 11. Technical Debt & Risks
 
-- [x] **Free Text Providers**: ✅ Resolved - `Proveedor` entity implemented. Migration guide available at `docs/migration/PROVIDER_MIGRATION_GUIDE.md`
+- [x] **Free Text Providers**: ✅ Resuelto para **órdenes de compra** (`Proveedor` + tabla `proveedor`). **Legacy:** agregado `Compra` directa mantiene `proveedor` como `String`. Guía: `docs/migration/PROVIDER_MIGRATION_GUIDE.md`.
 - [ ] **Pagination**: List endpoints don't support pagination yet (Medium)
 - [ ] **Provider API**: REST endpoints for Provider CRUD not yet implemented (Medium)
+- [ ] **OC rejection REST**: Dominio soporta `OrdenCompra.rechazar()` (SOLICITADA → BORRADOR); falta exponer caso de uso/endpoint REST alineado a §4 (Low/Medium)
 
 ## 12. API Documentation
 
@@ -148,7 +169,7 @@ graph TD
 - `solicitar()`: BORRADOR → SOLICITADA (validates L-01, L-04, REGLA-153)
 - `aprobar()`: SOLICITADA → APROBADA
 - `rechazar()`: SOLICITADA → BORRADOR
-- `enviar()`: APROBADA → ENVIADA (publishes `OrdenCompraEnviadaEvent`)
+- `enviar()`: APROBADA → ENVIADA (publishes `OrdenCompraEnviadaEvent` vía `ApplicationEventPublisher` en `EnviarOrdenCompraUseCaseImpl`)
 - `confirmarRecepcion()`: ENVIADA → RECIBIDA (updates inventory, publishes `OrdenCompraRecibidaEvent`)
 
 ### 13.2. Provider Entity

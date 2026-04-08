@@ -1,8 +1,12 @@
-# ESTIMACION Module - Canonical Specification
+# ESTIMACION_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Functional (60%)
-> **Owner**: Finanzas Team
-> **Last Updated**: 2026-01-31
+> **Scope**: Estimaciones de avance, aprobación secuencial, integración con billetera y anticipos  
+> **Status**: Functional (60%)  
+> **Owner**: Finanzas Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Dominio:** `com.budgetpro.domain.finanzas.estimacion` · **Servicios dominio:** `GeneradorEstimacionService` · **Aplicación:** `com.budgetpro.application.estimacion` · **REST:** `EstimacionController` bajo `/api/v1/proyectos`.
 
 ## 1. Module Maturity Roadmap
 
@@ -44,7 +48,7 @@
 
 | Event Name                | Trigger              | Content (Payload)               | Status |
 | ------------------------- | -------------------- | ------------------------------- | ------ |
-| `EstimacionAprobadaEvent` | Approval action      | `estimacionId`, `montoNeto`     | ✅     |
+| `EstimacionAprobadaEvent` | Approval action      | `estimacionId`, `montoNeto`     | 🔴 No hay clase/evento Spring publicado con este nombre (2026-04-08); el flujo es **síncrono** en `AprobarEstimacionUseCaseImpl` (persistencia + billetera). |
 | `EstimacionPagadaEvent`   | Payment confirmation | `estimacionId`, `transactionId` | 🔴     |
 
 ## 4. State Constraints
@@ -91,22 +95,25 @@ graph TD
 | ------- | ------------------------- | -------- | ------ |
 | UC-ES01 | Generate Estimacion       | P0       | ✅     |
 | UC-ES02 | Approve Estimacion        | P0       | ✅     |
-| UC-ES03 | Calculate Deductions      | P1       | 🟡     |
+| UC-ES03 | Calculate Deductions      | P1       | 🟡 Lógica en **generación** (`GenerarEstimacionUseCaseImpl`: amortización anticipo, retención FG) y dominio `Estimacion`; no es un caso de uso REST separado. |
 | UC-ES04 | Print Payment Certificate | P1       | 🔴     |
 
-## 7. Domain Services
+## 7. Domain / application orchestration
 
-- **Service**: `EstimacionService`
-- **Responsibility**: Calculates amounts based on current progress vs previous cumulative.
-- **Methods**:
-  - `generar(proyectoId)`: Creates next sequential estimation.
+- **`GeneradorEstimacionService`**: acumulados por partida vs estimaciones previas **aprobadas**, validación de volumen (REGLA-016), cálculo de amortización de anticipo y retención FG.
+- **`GenerarEstimacionUseCaseImpl`**: orquesta proyecto/presupuesto, número secuencial, detalles por partida, persistencia en `BORRADOR`.
+- **`AprobarEstimacionUseCaseImpl`**: transición `BORRADOR` → `APROBADA`, anticipos, **INGRESO** en `Billetera` del proyecto (ES-02).
 
 ## 8. REST Endpoints
 
-| Method | Path                                  | Description      | Status |
-| ------ | ------------------------------------- | ---------------- | ------ |
-| POST   | `/api/v1/proyectos/{id}/estimaciones` | Generate new     | ✅     |
-| PUT    | `/api/v1/estimaciones/{id}/aprobar`   | Approve and Bill | ✅     |
+| Method | Path | Description | Status |
+| ------ | ---- | ----------- | ------ |
+| POST | `/api/v1/proyectos/{proyectoId}/estimaciones` | Generar estimación (`GenerarEstimacionUseCase`) | ✅ |
+| PUT | `/api/v1/proyectos/estimaciones/{estimacionId}/aprobar` | Aprobar y registrar ingreso en billetera (`AprobarEstimacionUseCase`) — **204** | ✅ |
+
+**Nota de ruta:** el `aprobar` cuelga del prefijo `/api/v1/proyectos`, no de `/api/v1/estimaciones/...` (evitar reverse drift en clientes y OpenAPI).
+
+**Deuda REST:** no hay `GET` de listado ni consulta por id de estimación en `EstimacionController`.
 
 ## 9. Observability
 
@@ -115,12 +122,14 @@ graph TD
 
 ## 10. Integration Points
 
-- **Consumes**: `AvanceFisico` (EVM) for "This Period" progress.
-- **Exposes**: `Income` to `Billetera`.
+- **Consumes**: Partidas (`PartidaRepository`) y metrado contratado para tope de volumen; estimaciones previas **aprobadas** para acumulados. El avance del período llega en el **payload** (`detalles`), no como lectura obligatoria del agregado `AvanceFisico`.
+- **Exposes**: Movimiento de **INGRESO** en `Billetera` al aprobar (`AprobarEstimacionUseCaseImpl`).
 
 ## 11. Technical Debt & Risks
 
 - [ ] **Rounding Errors**: Potential cent-differences in cumulative calculations. Needs standard RoundingMode. (Medium)
+- [ ] **API de lectura**: Falta listar / obtener estimación por id vía REST.
+- [ ] **Eventos**: Si se desacopla reporting u otros módulos, publicar evento explícito post-aprobación (hoy todo inline).
 
 ## 12. Detailed Rule Specifications
 

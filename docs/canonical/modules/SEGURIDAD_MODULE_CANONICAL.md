@@ -1,4 +1,11 @@
-# SEGURIDAD MODULE CANONICAL NOTEBOOK
+# SEGURIDAD_MODULE_CANONICAL.md — Current State Radiography
+
+> **Scope**: Autenticación JWT stateless, registro/login, filtro de seguridad  
+> **Status**: Functional (75%)  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Config:** `com.budgetpro.infrastructure.config.SecurityConfig` · **REST:** `AuthController` → `/api/v1/auth` · **JWT:** `JwtService`, `JwtAuthenticationFilter` · **Usuarios:** `UsuarioEntity`, `UsuarioJpaRepository`.
 
 ## 1. Propósito del Módulo
 El módulo de Seguridad gestiona la autenticación, autorización y protección de rutas de la aplicación. Utiliza JWT (JSON Web Tokens) para sesiones stateless y RBAC (Role-Based Access Control) para permisos.
@@ -195,3 +202,17 @@ JWT expira en 24 horas por defecto (jwt.expiration-hours: 24).
 // ...
 this.expiration = Duration.ofHours(expirationHours);
 ```
+
+---
+
+## Apéndice A — REST API (`AuthController`, sync 2026-04-08)
+
+| Method | Path | Descripción |
+| --- | --- | --- |
+| POST | `/api/v1/auth/login` | `LoginRequest` → JWT + datos básicos en `AuthResponse` |
+| POST | `/api/v1/auth/register` | `RegisterRequest` — rol por defecto `RESIDENTE` — **201** + token |
+| GET | `/api/v1/auth/me` | Perfil del usuario autenticado (`AuthMeResponse`); **401** si anónimo |
+
+**Política HTTP (REGLA-052):** `SecurityConfig` permite sin autenticación `/api/public/**`, `/api/v1/auth/**`, `/v3/api-docs/**`, `/swagger-ui/**`; el resto exige JWT válido.
+
+**CORS:** ver `SecurityConfig.corsConfigurationSource` (p. ej. `localhost:3000` en configuración actual).

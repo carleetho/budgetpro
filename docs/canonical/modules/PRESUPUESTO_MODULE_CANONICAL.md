@@ -1,8 +1,10 @@
-# PRESUPUESTO Module - Canonical Specification
+# PRESUPUESTO_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Complete (80%)
-> **Owner**: Finanzas Team
-> **Last Updated**: 2026-01-31
+> **Scope**: Presupuesto, WBS (Partidas), congelamiento y reporting asociado  
+> **Status**: Complete (80%)  
+> **Owner**: Finanzas Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
 
 ## 1. Module Maturity Roadmap
 
@@ -39,9 +41,9 @@
 | REGLA-037 | **En Partida: presupuestoId obligatorio, item no vacío, descripción no vacía, metrado no negativo y nivel >= 1.** | ✅ Implemented |
 | REGLA-038 | **Si una partida tiene padreId, debe pertenecer al mismo presupuestoId (validado a nivel de aplicación).** | ✅ Implemented |
 | REGLA-044 | **El nombre del presupuesto no puede estar vacío; el proyectoId y el estado son obligatorios.** | ✅ Implemented |
-| REGLA-045 | **Al aprobar presupuesto, el estado cambia a APROBADO y esContractual se marca true.** | ✅ Implemented |
-| REGLA-046 | **El presupuesto APROBADO es de solo lectura.** | ✅ Implemented |
-| REGLA-047 | **El metradoOriginal de partida es inmutable si el presupuesto está APROBADO.** | ✅ Implemented |
+| REGLA-045 | **Al aprobar presupuesto, el estado pasa a congelado contractual (`CONGELADO`) y `esContractual` true.** (En código no existe enum `APROBADO`.) | ✅ Implemented |
+| REGLA-046 | **El presupuesto en estado `CONGELADO` es de solo lectura estructural** (salvo políticas de hash de ejecución). | ✅ Implemented |
+| REGLA-047 | **El metradoOriginal de partida es inmutable si el presupuesto está `CONGELADO`.** | ✅ Implemented |
 | REGLA-048 | **Si metradoVigente es nulo al persistir una partida, se iguala a metradoOriginal.** | ✅ Implemented |
 | REGLA-060 | **En proyecto, el estado está restringido por CHECK en migraciones.** | ✅ Implemented |
 | REGLA-061 | **En presupuesto, el estado está restringido por CHECK en migraciones.** | ✅ Implemented |
@@ -79,30 +81,42 @@
 
 ## 3. Domain Events
 
-| Event Name                 | Trigger             | Content (Payload)                          | Status             |
-| -------------------------- | ------------------- | ------------------------------------------ | ------------------ |
-| `PresupuestoCreadoEvent`   | New budget creation | `presupuestoId`, `proyectoId`              | ✅                 |
-| `PresupuestoAprobadoEvent` | Freeze action       | `presupuestoId`, `totalMonto`, `timestamp` | ✅                 |
-| `PartidaCreadaEvent`       | Adding a partida    | `partidaId`, `presupuestoId`               | 🟡 (Internal only) |
+| Event Name                 | Trigger             | Content (Payload)                          | Status |
+| -------------------------- | ------------------- | ------------------------------------------ | ------ |
+| `PresupuestoCreadoEvent`   | New budget creation | `presupuestoId`, `proyectoId`              | 🔴 No implementado como evento de dominio / `ApplicationEventPublisher` (2026-04-08) |
+| `PresupuestoAprobadoEvent` | Freeze action       | `presupuestoId`, `totalMonto`, `timestamp` | 🟡 Parcial: `Presupuesto.aprobar()` + `IntegrityAuditLog` / hashes SHA-256 (`integrityHashApproval`, `integrityHashExecution`); sin bus de eventos tipo Spring documentado |
+| `PartidaCreadaEvent`       | Adding a partida    | `partidaId`, `presupuestoId`               | 🔴 No publicado como evento dedicado |
+
+**Nota:** La integridad y auditoría al aprobar están en dominio (`Presupuesto`, `IntegrityAuditLog`); integraciones “Cronograma / EVM” vía eventos nombrados quedan como **deuda de diseño** hasta existan publishers explícitos.
 
 ## 4. State Constraints
 
 ```mermaid
 graph TD
-    BORRADOR -->|Aprobar| CONGELADO
-    CONGELADO -->|Reabrir (Admin)| BORRADOR
+    BORRADOR -->|aprobar| CONGELADO
+    CONGELADO -->|invalidar| INVALIDADO
 ```
 
-- **Constraint**: Transitions to CONGELADO trigger `ProgramaObra` freezing.
+- **Semántica `aprobar`:** en código el estado resultante es **`EstadoPresupuesto.CONGELADO`** (no existe literal `APROBADO` en el enum). Las reglas REGLA-045/046 del inventario usan “aprobado” en sentido de negocio = **congelado / contractual**.
+- **Constraint**: Aprobar exige cadena **Proyecto → Presupuesto (CONGELADO) → Cronograma** (`PresupuestoService`, `PresupuestoSinCronogramaException`); congelamiento de `ProgramaObra` alineado al flujo de aprobación.
+- **INVALIDADO:** valor en enum y BD; transiciones de aplicación específicas — ver código y políticas de negocio.
 
 ## 5. Data Contracts
 
-### Entity: Presupuesto
+### Entity: Presupuesto (dominio `com.budgetpro.domain.finanzas.presupuesto`)
 
-- `id`: UUID (Immutable)
-- `proyectoId`: UUID (Immutable)
+- `id`: `PresupuestoId`
+- `proyectoId`: UUID
 - `nombre`: String
+- `estado`: `BORRADOR` | `CONGELADO` | `INVALIDADO`
 - `esContractual`: Boolean
+- `version`: optimistic locking
+- **Integridad:** `integrityHashApproval`, `integrityHashExecution`, `integrityHashGeneratedAt` (patrón dual-hash en `Presupuesto.aprobar()`)
+- **Respuesta API (`PresupuestoResponse`):** incluye `costoTotal`, `precioVenta`, `createdAt`, `updatedAt`
+
+### Moneda
+
+- **No** vive en el agregado `Presupuesto` en el modelo actual; **REGLA-071** aplica a **Proyecto** (`moneda` 3 caracteres). Consultar API de proyecto para moneda contractual.
 
 ### JSON Schema (Evolution)
 
@@ -113,7 +127,7 @@ graph TD
   "properties": {
     "moneda": {
       "type": "string",
-      "description": "Status: 🔴 Missing (Planned for v2)"
+      "description": "En Proyecto, no en Presupuesto (ver REGLA-071). Opcional v2 en agregado presupuesto."
     }
   }
 }
@@ -126,26 +140,46 @@ graph TD
 | UC-P01 | Create Budget         | P0       | ✅     |
 | UC-P02 | Add Partidas (WBS)    | P0       | ✅     |
 | UC-P03 | Assign APU/Snapshot   | P0       | ✅     |
-| UC-P04 | Approve/Freeze Budget | P0       | ✅     |
-| UC-P05 | Clone Budget          | P2       | 🔴     |
-| UC-P06 | Export to Excel       | P1       | 🔴     |
+| UC-P04 | Approve/Freeze Budget | P0       | ✅ `AprobarPresupuestoUseCase` → `PresupuestoService.aprobar()` → estado `CONGELADO` |
+| UC-P05 | Consult Budget        | P0       | ✅ `GET /api/v1/presupuestos/{id}` (`ConsultarPresupuestoUseCase`) |
+| UC-P06 | Cost Control Report   | P1       | ✅ `GET /api/v1/presupuestos/{id}/control-costos` (`ConsultarControlCostosUseCase`) |
+| UC-P07 | Bill of Materials Explosion | P1 | ✅ `GET /api/v1/presupuestos/{id}/explosion-insumos` (`ExplotarInsumosPresupuestoUseCase`) |
+| UC-P08 | Clone Budget          | P2       | 🔴     |
+| UC-P09 | Export to Excel       | P1       | 🔴     |
 
 ## 7. Domain Services
 
 - **Service**: `PresupuestoService`
 - **Responsibility**: Coordinator of invariants for budget aggregate.
-- **Methods**:
-  - `crear(command)`: Initializes root.
-  - `aprobar(id)`: Validates completeness and freezes.
+- **Methods** (dominio):
+  - Orquestación en `PresupuestoService`: carga agregado, `presupuesto.aprobar(...)`, snapshot cronograma, persistencia.
+  - `Presupuesto.aprobar(approvedBy, IntegrityHashService)`: pasa a `CONGELADO`, `esContractual`, genera hashes.
 
 ## 8. REST Endpoints
+
+### Presupuesto (`PresupuestoController` + `SobrecostoController`)
 
 | Method | Path                                   | Description      | Status |
 | ------ | -------------------------------------- | ---------------- | ------ |
 | POST   | `/api/v1/presupuestos`                 | Create budget    | ✅     |
-| POST   | `/api/v1/partidas`                     | Add partida      | ✅     |
-| POST   | `/api/v1/presupuestos/{id}/aprobar`    | Freeze budget    | ✅     |
-| PUT    | `/api/v1/presupuestos/{id}/sobrecosto` | Config overheads | ✅     |
+| GET    | `/api/v1/presupuestos/{presupuestoId}` | Get budget by ID | ✅     |
+| POST   | `/api/v1/presupuestos/{presupuestoId}/aprobar` | Approve/freeze → `CONGELADO` | ✅ 204 |
+| GET    | `/api/v1/presupuestos/{presupuestoId}/control-costos` | Plan vs real cost report | ✅ |
+| GET    | `/api/v1/presupuestos/{presupuestoId}/explosion-insumos` | BOM explosion (leaf partidas) | ✅ |
+| PUT    | `/api/v1/presupuestos/{presupuestoId}/sobrecosto` | Configure overhead % (`SobrecostoController`) | ✅ |
+
+### Partidas (WBS) — `PartidaController`
+
+| Method | Path                | Description   | Status |
+| ------ | ------------------- | ------------- | ------ |
+| POST   | `/api/v1/partidas`  | Add partida   | ✅     |
+
+### Configuración laboral (FSR) — `LaboralController` (relacionado P-06 / indirectos)
+
+| Method | Path | Description | Status |
+| ------ | ---- | ----------- | ------ |
+| PUT    | `/api/v1/configuracion-laboral` | Config global | ✅ |
+| PUT    | `/api/v1/proyectos/{proyectoId}/configuracion-laboral` | Config por proyecto | ✅ |
 
 ## 9. Observability
 
@@ -154,10 +188,12 @@ graph TD
 
 ## 10. Integration Points
 
-- **Consumes**: `CatalogoService` (for Snapshots)
-- **Exposes**: `PresupuestoAprobadoEvent` to `Cronograma` and `EVM`
+- **Consumes**: Catálogo / APU para snapshots de partidas; cronograma (`ProgramaObra`) como prerequisito de aprobación.
+- **Exposes**: Presupuesto congelado vía repositorios y validadores (`PresupuestoValidatorAdapter` en compras, etc.). **Eventos nombrados** hacia Cronograma/EVM: ver §3 (deuda si se requiere bus asíncrono).
 
 ## 11. Technical Debt & Risks
 
 - [ ] **Legacy APUs**: Support for legacy non-snapshot APUs complicates validation logic. (Medium)
 - [ ] **Recursion Performance**: Recursive WBS loading needs optimization for deep trees. (Low)
+- [ ] **Domain events**: Publicar explícitamente `PresupuestoCreadoEvent` / `PresupuestoAprobadoEvent` (o equivalente) si se requiere desacoplar Cronograma/EVM vía mensajería. (Medium)
+- [ ] **Partidas**: Solo `POST` crear; sin listado/árbol REST dedicado en `PartidaController` (consumir vía presupuesto/proyecto según otros endpoints). (Low)

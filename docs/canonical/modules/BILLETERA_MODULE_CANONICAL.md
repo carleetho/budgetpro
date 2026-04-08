@@ -1,8 +1,12 @@
-# BILLETERA Module - Canonical Specification
+# BILLETERA_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Functional (50%)
-> **Owner**: Finanzas Team
-> **Last Updated**: 2026-01-31
+> **Scope**: Caja del proyecto, movimientos INGRESO/EGRESO, saldo no negativo  
+> **Status**: Functional (50%)  
+> **Owner**: Finanzas Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Dominio:** `com.budgetpro.domain.finanzas.model` (`Billetera`, `MovimientoCaja`) · **Aplicación:** `com.budgetpro.application.finanzas.billetera` · **REST:** `BilleteraController` → `/api/v1/billeteras`.
 
 ## 1. Module Maturity Roadmap
 
@@ -74,21 +78,24 @@
 
 | ID     | Use Case                 | Priority | Status |
 | ------ | ------------------------ | -------- | ------ |
-| UC-B01 | Register Ingress (Cobro) | P0       | ✅     |
-| UC-B02 | Register Egress (Pago)   | P0       | ✅     |
-| UC-B03 | Check Balance            | P0       | ✅     |
+| UC-B01 | Register Ingress (Cobro) | P0       | ✅ `RegistrarMovimientoCajaUseCase` + REST (`INGRESO`) |
+| UC-B02 | Register Egress (Pago)   | P0       | 🟡 REST acepta `EGRESO`, pero `RegistrarMovimientoCajaUseCaseImpl` llama a `Billetera.egresar(..., null, false)` — **deuda** documentada en código (falta `presupuestoId` / política explícita en API). |
+| UC-B03 | Check Balance            | P0       | 🔴 **Sin endpoint REST** de saldo o movimientos bajo `BilleteraController` (2026-04-08). |
 | UC-B04 | Multi-currency Transfer  | P2       | 🔴     |
 
-## 7. Domain Services
+## 7. Domain / application
 
-- **Service**: `BilleteraService`
-- **Responsibility**: Ledger management.
+- **Agregado `Billetera`:** ingresar / egresar con invariantes (saldo ≥ 0, tope de movimientos sin evidencia, etc.).
+- **`RegistrarMovimientoCajaUseCaseImpl`:** único caso de uso expuesto vía REST para caja genérica.
+- **Integración indirecta:** `AprobarEstimacionUseCaseImpl` y flujos de **compra** cargan `Billetera` por `proyectoId` sin pasar por `BilleteraController`.
 
 ## 8. REST Endpoints
 
-| Method | Path                               | Description           | Status |
-| ------ | ---------------------------------- | --------------------- | ------ |
-| GET    | `/api/v1/proyectos/{id}/billetera` | Get balance/movements | ✅     |
+| Method | Path | Description | Status |
+| ------ | ---- | ----------- | ------ |
+| POST | `/api/v1/billeteras/{billeteraId}/movimientos` | Registrar movimiento (`RegistrarMovimientoRequest`: monto; moneda PEN/USD/EUR; tipo INGRESO o EGRESO; referencia obligatoria; evidencia opcional) | ✅ |
+
+**Corrección (reverse drift):** no existe en código `GET /api/v1/proyectos/{id}/billetera` en controladores actuales; la lectura de saldo/movimientos para UI queda como **deuda** salvo otro endpoint no listado aquí.
 
 ## 9. Observability
 
@@ -103,3 +110,5 @@
 ## 11. Technical Debt & Risks
 
 - [ ] **Concurrency**: Balance updates need Optimistic Locking to prevent Race Conditions. (Critical)
+- [ ] **Consulta REST**: Exponer saldo y/o historial de `MovimientoCaja` por proyecto o `billeteraId`.
+- [ ] **EGRESO vía API genérica:** alinear request/use case con reglas de `Billetera.egresar` (presupuesto / integridad) o documentar perfil “solo ingreso manual”.

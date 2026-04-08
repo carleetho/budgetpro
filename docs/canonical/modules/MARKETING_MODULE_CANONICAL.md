@@ -1,8 +1,12 @@
-# MARKETING Module - Canonical Specification
+# MARKETING_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Functional (100%)
-> **Owner**: Growth Team
-> **Last Updated**: 2026-02-09
+> **Scope**: Captación pública (leads / solicitud de demo)  
+> **Status**: Functional (40%) — superficie mínima (un POST público)  
+> **Owner**: Growth Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Aplicación:** `com.budgetpro.application.marketing.service.LeadService` · **Persistencia:** `LeadEntity` · **REST:** `PublicController` → `/api/public/v1`.
 
 ## 1. Module Overview
 Manages Leads and Public Inquiries.
@@ -72,3 +76,13 @@ Para crear lead público: validaciones de entrada estrictas para seguridad.
 @Size(max = 100) String nombreContacto;
 // Prevents overflow attacks
 ```
+
+---
+
+## Apéndice A — REST API (sync 2026-04-08)
+
+| Method | Path | Descripción |
+| --- | --- | --- |
+| POST | `/api/public/v1/demo-request` | Alta de lead (`CrearLeadRequest` → `LeadService.crearLead`) — **201** + `Location` `/api/public/v1/demo-request/{id}` |
+
+**Seguridad:** ruta bajo `/api/public/**` — **sin JWT** (`SecurityConfig` → `permitAll`). **Deuda:** CRM interno, listados admin y transiciones de estado vía API no expuestas en este controlador.
