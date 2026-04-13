@@ -1,6 +1,6 @@
 # Estudios de gaps por módulo (programa v2)
 
-> **Last Updated**: 2026-04-12  
+> **Last Updated**: 2026-04-13  
 > **Rama típica**: `feature/gaps-<slug>` (una por módulo o por ola).  
 > **Regla**: PR **I1** (implementación) incluye código y canónicos/radiografía en el mismo PR. PR **G0** solo añade o actualiza estudios `.md` aquí.
 
@@ -10,6 +10,26 @@
 - **Metodología** hallazgos abiertos/cerrados: [CODE_DOC_REVIEW_LOG.md](../CODE_DOC_REVIEW_LOG.md)
 - **Índice canónico ↔ código**: [MODULE_CODE_ALIGNMENT_INDEX.md](../MODULE_CODE_ALIGNMENT_INDEX.md)
 - **Plantilla** para nuevos estudios: [_TEMPLATE.md](./_TEMPLATE.md)
+
+## Cola ejecutable (hallazgos O-*)
+
+Índice **code-first**: cada fila enlaza al gap study del módulo; el texto del hallazgo vive en [CODE_DOC_REVIEW_LOG.md](../CODE_DOC_REVIEW_LOG.md) §3 (no duplicar aquí). Orden de módulos = orden ascendente de % en [SCOREBOARD_17.md](../SCOREBOARD_17.md).
+
+| Módulo | O-* (en este repo) | Gap study |
+| ------ | ------------------ | --------- |
+| Producción | O-07, O-08 | [PRODUCCION_GAP_STUDY.md](./PRODUCCION_GAP_STUDY.md) |
+| Marketing | O-01 (listado), O-09 | [MARKETING_GAP_STUDY.md](./MARKETING_GAP_STUDY.md) |
+| Cronograma | O-10 | [CRONOGRAMA_GAP_STUDY.md](./CRONOGRAMA_GAP_STUDY.md) |
+| Partidas | O-11 | [PARTIDAS_GAP_STUDY.md](./PARTIDAS_GAP_STUDY.md) |
+| Almacén / inventario | O-12 | [INVENTARIO_GAP_STUDY.md](./INVENTARIO_GAP_STUDY.md) |
+| Billetera | O-03, O-15 | [BILLETERA_GAP_STUDY.md](./BILLETERA_GAP_STUDY.md) |
+| Recursos | O-01 (catálogo) | [RECURSOS_GAP_STUDY.md](./RECURSOS_GAP_STUDY.md) |
+| Auditoría | O-16 | [AUDITORIA_GAP_STUDY.md](./AUDITORIA_GAP_STUDY.md) |
+| Compras | O-01 (listado OC) | [COMPRAS_GAP_STUDY.md](./COMPRAS_GAP_STUDY.md) |
+| Cross-Cutting | O-02 | [CROSS_CUTTING_GAP_STUDY.md](./CROSS_CUTTING_GAP_STUDY.md) |
+| Transversal / datos | O-04 | [DATA_MODEL_CURRENT.md](../DATA_MODEL_CURRENT.md) (Flyway); cerrar en PR infra acotado |
+
+Los módulos sin fila propia en esta tabla **no** tienen hoy un O-* dedicado en §3; nuevos hallazgos deben añadirse primero al review log y luego enlazarse aquí. **RRHH** (2026-04-13): sin O-* abiertos en §3; seguimiento en [RRHH_GAP_STUDY.md](./RRHH_GAP_STUDY.md) (GF-04 P0, GR-02).
 
 ## Convención de nombres
 

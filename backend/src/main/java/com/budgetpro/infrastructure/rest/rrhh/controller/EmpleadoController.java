@@ -1,21 +1,24 @@
 package com.budgetpro.infrastructure.rest.rrhh.controller;
 
+import com.budgetpro.application.rrhh.dto.AsignacionProyectoResponse;
 import com.budgetpro.application.rrhh.dto.EmpleadoResponse;
+import com.budgetpro.application.rrhh.port.in.AsignarEmpleadoProyectoUseCase;
 import com.budgetpro.application.rrhh.port.in.ActualizarEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.in.ConsultarEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.in.CrearEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.in.InactivarEmpleadoUseCase;
 import com.budgetpro.domain.rrhh.model.EstadoEmpleado;
 import com.budgetpro.infrastructure.rest.rrhh.dto.ActualizarEmpleadoRequest;
+import com.budgetpro.infrastructure.rest.rrhh.dto.AsignarEmpleadoProyectoRequest;
 import com.budgetpro.infrastructure.rest.rrhh.dto.CrearEmpleadoRequest;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/rrhh/empleados")
@@ -25,14 +28,17 @@ public class EmpleadoController {
     private final ActualizarEmpleadoUseCase actualizarEmpleadoUseCase;
     private final ConsultarEmpleadoUseCase consultarEmpleadoUseCase;
     private final InactivarEmpleadoUseCase inactivarEmpleadoUseCase;
+    private final AsignarEmpleadoProyectoUseCase asignarEmpleadoProyectoUseCase;
 
     public EmpleadoController(CrearEmpleadoUseCase crearEmpleadoUseCase,
             ActualizarEmpleadoUseCase actualizarEmpleadoUseCase, ConsultarEmpleadoUseCase consultarEmpleadoUseCase,
-            InactivarEmpleadoUseCase inactivarEmpleadoUseCase) {
+            InactivarEmpleadoUseCase inactivarEmpleadoUseCase,
+            AsignarEmpleadoProyectoUseCase asignarEmpleadoProyectoUseCase) {
         this.crearEmpleadoUseCase = crearEmpleadoUseCase;
         this.actualizarEmpleadoUseCase = actualizarEmpleadoUseCase;
         this.consultarEmpleadoUseCase = consultarEmpleadoUseCase;
         this.inactivarEmpleadoUseCase = inactivarEmpleadoUseCase;
+        this.asignarEmpleadoProyectoUseCase = asignarEmpleadoProyectoUseCase;
     }
 
     @PostMapping
@@ -57,6 +63,15 @@ public class EmpleadoController {
             return ResponseEntity.ok(consultarEmpleadoUseCase.findByEstado(estado));
         }
         return ResponseEntity.ok(consultarEmpleadoUseCase.findAll());
+    }
+
+    @PostMapping("/{empleadoId}/asignaciones")
+    public ResponseEntity<AsignacionProyectoResponse> asignarProyecto(@PathVariable UUID empleadoId,
+            @RequestBody @Valid AsignarEmpleadoProyectoRequest request) {
+        AsignacionProyectoResponse response = asignarEmpleadoProyectoUseCase.asignar(request.toCommand(empleadoId));
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{asignacionId}")
+                .buildAndExpand(response.id()).toUri();
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{id}")

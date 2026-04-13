@@ -2,6 +2,7 @@ package com.budgetpro.infrastructure.rest.rrhh.controller;
 
 import com.budgetpro.application.rrhh.dto.AsistenciaResponse;
 import com.budgetpro.application.rrhh.dto.ResumenAsistenciaResponse;
+import com.budgetpro.application.rrhh.exception.FiltrosConsultaAsistenciaIncompletosException;
 import com.budgetpro.application.rrhh.port.in.ConsultarAsistenciaUseCase;
 import com.budgetpro.application.rrhh.port.in.RegistrarAsistenciaUseCase;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
@@ -9,14 +10,14 @@ import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.infrastructure.rest.rrhh.dto.RegistrarAsistenciaRequest;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import org.springframework.util.StringUtils;
+
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -48,18 +49,18 @@ public class AsistenciaController {
             @RequestParam(required = false) String proyectoId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
-        if (empleadoId != null) {
+        boolean porEmpleado = StringUtils.hasText(empleadoId);
+        boolean porProyecto = StringUtils.hasText(proyectoId);
+        if (!porEmpleado && !porProyecto) {
+            throw new FiltrosConsultaAsistenciaIncompletosException(
+                    "Debe indicar empleadoId o proyectoId para consultar asistencias en el rango de fechas.");
+        }
+        if (porEmpleado) {
             return ResponseEntity.ok(consultarAsistenciaUseCase.consultarPorEmpleado(EmpleadoId.fromString(empleadoId),
                     fechaInicio, fechaFin));
-        } else if (proyectoId != null) {
-            return ResponseEntity.ok(consultarAsistenciaUseCase.consultarPorProyecto(ProyectoId.from(proyectoId),
-                    fechaInicio, fechaFin));
         }
-        // If neither is provided, return empty list or bad request.
-        // For now, returning empty list as per typical behavior if filters are missing
-        // but required to narrow down scope,
-        // though requirements didn't specify strict validation here.
-        return ResponseEntity.ok(Collections.emptyList());
+        return ResponseEntity.ok(consultarAsistenciaUseCase.consultarPorProyecto(ProyectoId.from(proyectoId),
+                fechaInicio, fechaFin));
     }
 
     @GetMapping("/resumen")

@@ -121,6 +121,20 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "CONFIGURACION_LABORAL_NO_ENCONTRADA", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.budgetpro.application.rrhh.exception.FiltrosConsultaAsistenciaIncompletosException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleFiltrosConsultaAsistenciaIncompletos(
+            com.budgetpro.application.rrhh.exception.FiltrosConsultaAsistenciaIncompletosException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "MISSING_ATTENDANCE_FILTERS", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleAsignacionProyectoConflicto(
+            com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "ASIGNACION_PROYECTO_CONFLICTO", ex.getMessage()));
+    }
+
     @ExceptionHandler(com.budgetpro.application.compra.exception.AuthenticationRequiredException.class)
     public ResponseEntity<ErrorResponses.ErrorResponse> handleAuthenticationRequired(
             com.budgetpro.application.compra.exception.AuthenticationRequiredException ex) {

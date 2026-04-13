@@ -2,7 +2,7 @@
 
 > **Status**: Partial (≈35%; code-aligned)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-04-12
+> **Last Updated**: 2026-04-13 (GF-02 asignación REST; §8.1 GF-01 rutas paralelas)
 
 > [!CAUTION]
 > **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
@@ -127,9 +127,10 @@ Superficie bajo **`/api/v1/rrhh`** (controladores en `infrastructure/rest/rrhh/c
 | GET | `/api/v1/rrhh/empleados/{id}` | idem | Detalle | ✅ |
 | GET | `/api/v1/rrhh/empleados` | idem | Listado (opcional `estado`) | ✅ |
 | PUT | `/api/v1/rrhh/empleados/{id}` | idem | Actualizar | ✅ |
+| POST | `/api/v1/rrhh/empleados/{empleadoId}/asignaciones` | idem | Asignar empleado a proyecto (REGLA-150: proyecto **ACTIVO**); solape → **409** `ASIGNACION_PROYECTO_CONFLICTO` | ✅ |
 | DELETE | `/api/v1/rrhh/empleados/{id}` | idem | Inactivar | ✅ |
 | POST | `/api/v1/rrhh/asistencias` | `AsistenciaController` | Registrar asistencia | 🟡 |
-| GET | `/api/v1/rrhh/asistencias` | idem | Listar por empleado o proyecto + rango fechas | 🟡 |
+| GET | `/api/v1/rrhh/asistencias` | idem | Listar por empleado **o** proyecto + rango; sin ambos filtros → **400** `MISSING_ATTENDANCE_FILTERS` | 🟡 |
 | GET | `/api/v1/rrhh/asistencias/resumen` | idem | Resumen mensual | ✅ |
 | POST | `/api/v1/rrhh/nominas/calcular` | `NominaController` | Calcular nómina | 🟡 |
 | GET | `/api/v1/rrhh/nominas/{id}` | idem | Consultar nómina | ✅ |
@@ -139,6 +140,11 @@ Superficie bajo **`/api/v1/rrhh`** (controladores en `infrastructure/rest/rrhh/c
 | PUT | `/api/v1/rrhh/cuadrillas/{id}/miembros` | idem | Miembros | ✅ |
 | POST | `/api/v1/rrhh/cuadrillas/{id}/actividades` | idem | Asignar actividad | ✅ |
 | GET | `/api/v1/rrhh/costos` | `CostosLaboralesController` | Costos laborales por proyecto + rango | 🟡 |
+
+### 8.1 Rutas paralelas (fuera de `/api/v1/rrhh`)
+
+- **`LaboralController`** (`infrastructure/rest/sobrecosto/controller/LaboralController.java`) sigue exponiendo configuración laboral FSR en **`PUT /api/v1/configuracion-laboral`** (global) y **`PUT /api/v1/proyectos/{proyectoId}/configuracion-laboral`** vía `ConfigurarLaboralUseCase` — misma necesidad de negocio que la tabla §8, **otra capa de aplicación** y contrato pensado para flujos Presupuesto / sobrecosto. Los clientes nuevos del **perímetro RRHH** deben preferir **`/api/v1/rrhh/configuracion/**`**.
+- **No** hay en el backend una ruta `/api/v1/personal`; el registro de personas operativo es **`/api/v1/rrhh/empleados`**.
 
 ## 9. Observability
 
