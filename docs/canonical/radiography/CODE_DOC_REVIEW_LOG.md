@@ -38,6 +38,7 @@
 | O-06 | **RRHH: `GET .../asistencias` sin filtros** | Si faltan `empleadoId` y `proyectoId`, responde 200 con lista vacía; conviene 400 o contrato explícito — [gaps/RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) (GF-03). |
 | O-07 | **Producción: contratos REST duales** | `ProduccionController` bajo `/api/v1` vs `ReporteProduccionController` bajo `/api/v1/produccion/reportes`; PATCH vs POST en aprobar/rechazar; IDs desde auditor vs body; listado `/reportes` filtra/pagina en memoria tras `findByProyectoId` — [gaps/PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) (GF-01, GF-02, GF-05). |
 | O-08 | **Producción: `GET /produccion/reportes` sin proyectoId** | Responde 200 con lista vacía si falta `proyectoId` — [gaps/PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) (GF-04). |
+| O-09 | **Marketing: sin API autenticada para transición de estado de lead** | Solo creación pública (`NUEVO`) y `GET` internos; REGLA-108 sin mutación REST — [gaps/MARKETING_GAP_STUDY.md](./gaps/MARKETING_GAP_STUDY.md) (GF-01). |
 
 ## 4. REGLA-* (muestra)
 

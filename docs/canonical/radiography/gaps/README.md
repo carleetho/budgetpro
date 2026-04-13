@@ -23,6 +23,7 @@ Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes 
 
 - **RRHH** (Ola 1, 2026-04-12): [RRHH_GAP_STUDY.md](./RRHH_GAP_STUDY.md)
 - **Producción** (Ola 1 cadena, 2026-04-12): [PRODUCCION_GAP_STUDY.md](./PRODUCCION_GAP_STUDY.md)
+- **Marketing** (Ola 1 cadena, 2026-04-12): [MARKETING_GAP_STUDY.md](./MARKETING_GAP_STUDY.md)
 
 ## Criterios de madurez (Ola 2)
 
