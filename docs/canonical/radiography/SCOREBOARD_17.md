@@ -10,7 +10,7 @@
 | Orden | Módulo | % | Nivel (resumen) | Tier | Notebook | Gap study |
 | ----- | ------ | --- | ----------------- | ---- | -------- | --------- |
 | 1 | RRHH | 35 | Partial | P1 | [RRHH_MODULE_CANONICAL.md](../modules/RRHH_MODULE_CANONICAL.md) | [RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) |
-| 2 | Producción | 55 | Functional | P2 | [PRODUCCION_MODULE_CANONICAL.md](../modules/PRODUCCION_MODULE_CANONICAL.md) | pendiente |
+| 2 | Producción | 55 | Functional | P2 | [PRODUCCION_MODULE_CANONICAL.md](../modules/PRODUCCION_MODULE_CANONICAL.md) | [PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) |
 | 3 | Marketing | 55 | Functional | P3 | [MARKETING_MODULE_CANONICAL.md](../modules/MARKETING_MODULE_CANONICAL.md) | pendiente |
 | 4 | Cronograma | 60 | Functional | P1 | [CRONOGRAMA_MODULE_CANONICAL.md](../modules/CRONOGRAMA_MODULE_CANONICAL.md) | pendiente |
 | 5 | Partidas | 65 | Functional | P0 | [PARTIDAS_MODULE_CANONICAL.md](../modules/PARTIDAS_MODULE_CANONICAL.md) | pendiente |

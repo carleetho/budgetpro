@@ -36,6 +36,8 @@
 | O-04 | **Flyway `V17__` duplicado** | Conviven dos scripts; riesgo de orden/ambiente — ver `DATA_MODEL_CURRENT.md` §2. |
 | O-05 | **RRHH: asignación empleado ↔ proyecto sin REST** | `AsignarEmpleadoProyectoUseCaseImpl` en application; sin `*Controller` que exponga el flujo — ver [gaps/RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) (GF-02). |
 | O-06 | **RRHH: `GET .../asistencias` sin filtros** | Si faltan `empleadoId` y `proyectoId`, responde 200 con lista vacía; conviene 400 o contrato explícito — [gaps/RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) (GF-03). |
+| O-07 | **Producción: contratos REST duales** | `ProduccionController` bajo `/api/v1` vs `ReporteProduccionController` bajo `/api/v1/produccion/reportes`; PATCH vs POST en aprobar/rechazar; IDs desde auditor vs body; listado `/reportes` filtra/pagina en memoria tras `findByProyectoId` — [gaps/PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) (GF-01, GF-02, GF-05). |
+| O-08 | **Producción: `GET /produccion/reportes` sin proyectoId** | Responde 200 con lista vacía si falta `proyectoId` — [gaps/PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) (GF-04). |
 
 ## 4. REGLA-* (muestra)
 
