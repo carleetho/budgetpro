@@ -1,6 +1,6 @@
 # RRHH_GAP_STUDY.md — Estudio de brechas (Ola 1)
 
-> **Tipo de PR**: G0 (solo documentación + alineación canónica §8 verificada en código).  
+> **Tipo de PR**: I1 + G0 (R-03 dominio + docs madurez 50%).  
 > **Rama**: `feature/gaps-rrhh-ola1`  
 > **Fecha**: 2026-04-12 · **I1**: 2026-04-13 GF-03, GF-02, UC-R03 POST polish · **G0**: 2026-04-13 GF-01 (canónico §8.1)
 
@@ -10,9 +10,9 @@
 | Campo               | Valor                                                              |
 | ------------------- | ------------------------------------------------------------------ |
 | Módulo              | RRHH                                                               |
-| % oficial (tablero) | **35%** — [SCOREBOARD_17.md](../SCOREBOARD_17.md)                  |
+| % oficial (tablero) | **50%** — [SCOREBOARD_17.md](../SCOREBOARD_17.md)                  |
 | Notebook            | [RRHH_MODULE_CANONICAL.md](../../modules/RRHH_MODULE_CANONICAL.md) |
-| Fecha revisión      | 2026-04-13 (GF-01/02/03 + UC-R03 POST alineado dominio/aplicación)   |
+| Fecha revisión      | 2026-04-13 (R-03 cerrado; madurez 50%; GF-01/02/03 + UC-R03 POST)   |
 | Autor / revisores   | Code-first scan `backend/.../infrastructure/rest/rrhh`             |
 
 
@@ -28,7 +28,7 @@
   - `CuadrillaController` → `/api/v1/rrhh/cuadrillas`
   - `CostosLaboralesController` → `/api/v1/rrhh/costos`
 - **Migraciones**: `V15__create_rrhh_schema.sql`, `V26__rrhh_config_laboral_global_nullable_proyecto.sql`
-- **Excepciones REST** (muestra): `GlobalExceptionHandler` maneja `ProyectoNoActivoException`, `InactiveWorkerException` (400 `INACTIVE_WORKER`), `TrabajadorNoAsignadoAlProyectoException` (422 `EMPLEADO_NO_ASIGNADO_PROYECTO`), `AsistenciaSuperpuestaException` (409 `ASISTENCIA_SUPERPUESTA`), `ConfiguracionLaboralNotFoundException`, `FiltrosConsultaAsistenciaIncompletosException`, `AsignacionProyectoConflictoException` (409 `ASIGNACION_PROYECTO_CONFLICTO`)
+- **Excepciones REST** (muestra): `GlobalExceptionHandler` maneja `ProyectoNoActivoException`, `InactiveWorkerException` (400 `INACTIVE_WORKER`), `TrabajadorNoAsignadoAlProyectoException` (422 `EMPLEADO_NO_ASIGNADO_PROYECTO`), `AsistenciaSuperpuestaException` (409 `ASISTENCIA_SUPERPUESTA`), `AsignacionSuperpuestaException` (dominio R-03 → 409 `ASIGNACION_PROYECTO_CONFLICTO`), `ConfiguracionLaboralNotFoundException`, `FiltrosConsultaAsistenciaIncompletosException`, `AsignacionProyectoConflictoException` (409 legado)
 - **Tests de referencia**: `RrhhRegla150ProyectoActivoTest`, `RegistrarAsistenciaUseCaseImplTest`, `CrearEmpleadoUseCaseImplTest`, `CalculadorFSRTest`, `RegistroAsistenciaPoliticaTest`, `AsistenciaControllerTest`, `EmpleadoControllerTest`, adaptadores bajo `...persistence...rrhh`
 
 ## 3. Gaps funcionales (REST / casos de uso)
@@ -48,7 +48,7 @@
 | ID    | Regla (ID canónico)                 | Estado doc | Estado código | Notas                                                                        |
 | ----- | ----------------------------------- | ---------- | ------------- | ---------------------------------------------------------------------------- |
 | GR-01 | R-02 asistencia trabajador inactivo | ✅          | ✅ / tests     | `InactiveWorkerException` + `RegistroAsistenciaPolitica` en `POST .../asistencias` |
-| GR-02 | R-03 doble booking / solape         | 🟡 Partial | 🟡            | Solape **horario** de tareo + nocturno existente; solape **asignación** multi-sitio: puerto `AsignacionSolapeValidator` + `NoOpAsignacionSolapeValidator` hasta PO |
+| GR-02 | R-03 doble booking / solape         | ✅          | ✅            | `RegimenCivilSolapeValidator`: intersección inclusiva de intervalos de asignación; `AsignacionSuperpuestaException` → 409 `ASIGNACION_PROYECTO_CONFLICTO`; tareo + nocturno |
 | GR-03 | REGLA-150 proyecto ACTIVO           | ✅          | ✅             | `ProyectoNoActivoException` / dominio `ProyectoNoActivoParaOperacionException` + test `RrhhRegla150ProyectoActivoTest`          |
 | GR-04 | UC-R04 nómina                       | 🟡         | 🟡            | ISR fijo `NominaConstants`; deuda ya listada en canónico §11                 |
 | GR-05 | REGLA-125 tareo (asignación + fechas + no duplicidad) | ✅ | ✅ | `RegistroAsistenciaPolitica` + `existsVigenteAsignacionEmpleadoProyectoEnFecha` + tests `RegistrarAsistenciaUseCaseImplTest` / `AsistenciaControllerTest` |
@@ -66,8 +66,7 @@
 
 ## 6. Candidatos de cierre (priorizado)
 
-1. **P0 (negocio / compliance)**: Definir con PO el alcance R-03 multi-sitio y reglas de régimen; no incrementar % sin cierre acordado.
-   - **I1 (2026-04-13) — base técnica R-03 (sin cierre de negocio)**: en dominio RRHH existe el puerto `com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator` (empleado, ventana `fechaInicio`/`fechaFin`, colección de `AsignacionProyecto`). La implementación de referencia `AmbiguityBlockedAsignacionSolapeValidator` **no** contiene algoritmo de solape: lanza `UnsupportedOperationException` explícita por `[AMBIGUITY_DETECTED]` / decisión de PO pendiente. Tests JUnit 5 cubren el bloqueo del stub y el contrato de error en asignación (`AsignacionProyectoConflictoException` → 409 `ASIGNACION_PROYECTO_CONFLICTO` vía `GlobalExceptionHandler` cuando el repositorio detecta solape). **Pendiente**: definición multi-sitio + sustitución del stub por política acordada y cableado del puerto al flujo de aplicación.
+1. ~~**P0 (negocio / compliance)**: Definir con PO el alcance R-03 multi-sitio y reglas de régimen~~ **✅ CERRADO (2026-04-13)**: decisión PO — bloqueo duro por **intersección inclusiva** de intervalos de fechas de asignación del mismo empleado (`RegimenCivilSolapeValidator`); dominio `AsignacionSuperpuestaException`; REST 409 `ASIGNACION_PROYECTO_CONFLICTO`. Stub `AmbiguityBlockedAsignacionSolapeValidator` solo para pruebas de bloqueo explícito.
 2. ~~**P1**: Asignación empleado ↔ proyecto vía REST~~ **Hecho (2026-04-13)**: `POST .../empleados/{empleadoId}/asignaciones`; conflicto solape → 409 documentado en handler.
 3. ~~**P2**: Endurecer contrato `GET .../asistencias`~~ **Hecho (2026-04-13)**: 400 + `GlobalExceptionHandler` + `FiltrosConsultaAsistenciaIncompletosException`; pendiente OpenAPI/Swagger si aplica.
 4. **P2**: Nómina — roadmap hacia tabla ISR progresiva (fuera de este G0).
@@ -75,8 +74,8 @@
 
 ## 7. Definición de hecho para subir %
 
-- **Hacia ~50%** (alineado al roadmap canónico): cierre verificable de UC-R03 🟡→✅ en los criterios definidos con PO + evidencia (tests + REST); registro de personal / tareos “polish” acotado en canónico.
-- Este documento **no** cambia el % solo: actualiza inventario de brechas para la siguiente iteración **I1** si hay código.
+- **~50% alcanzado (2026-04-13)**: R-03 con decisión PO documentada en canónico + tests + REST (`AsignacionSuperpuestaException` / 409); tablero y `RRHH_MODULE_CANONICAL` alineados.
+- **Hacia ~65%**: nómina (ISR progresivo), costos laborales verificables, polish tareos — evidencia code-first antes de subir % en tablero.
 
 ## 8. Referencias cruzadas
 
@@ -105,5 +104,5 @@ Un **solo** objetivo por PR; no mezclar cierre completo de **R-03 / GR-02** (mul
 
 - **Rama**: `feature/i1-rrhh-asignacion-rest` (opción A) o `feature/i1-rrhh-asistencias-contract` (opción B).
 - **Mismo PR I1**: código + cabecera `Status` del [canónico](../../modules/RRHH_MODULE_CANONICAL.md) y fila del scoreboard **solo si** aplica salto Ola 2 (DoD P0/P1); si no sube %, actualizar solo gap study + `CODE_DOC_REVIEW_LOG.md` (cerrar O-* o dejar nota).
-- **R-03 (GR-02)**: el PR dedicado con criterios de solape multi-sitio acordados sigue pendiente; el **2026-04-13** añadió solo puerto dominio + stub bloqueado + tests de contrato (ver §6 ítem 1).
+- **R-03 (GR-02)**: **cerrado 2026-04-13** — lógica en `RegimenCivilSolapeValidator` + cableado en asignación y tareo (ver §6 ítem 1).
 

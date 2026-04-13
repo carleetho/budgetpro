@@ -1,33 +1,15 @@
 # RRHH Module - Canonical Specification
 
-> **Status**: Partial (≈35%; code-aligned)
+> **Status**: Functional (≈50%; code-aligned; R-03 asignaciones cerrado)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-04-13 (UC-R03 POST: `RegistroAsistenciaPolitica`; GF-02 asignación REST; §8.1 GF-01 rutas paralelas)
-
-> [!CAUTION]
-> **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
->
-> **Current Maturity (code-aligned):** ≈35% (config + core RRHH flows)  
-> **Grounding Score:** subir tras auditoría REQ-RRHH-01; contrastar con `backend/`  
-> **Hallucination Risk:** moderado si el notebook no se cruza con el código
->
-> This module is under active development with incomplete documentation. AI assistants may hallucinate implementations based on general HR knowledge that do not match BudgetPro's specific Civil Construction regime rules (rain days, altitude bonuses, regional factors).
->
-> **Safe AI Usage:**
->
-> - ✅ Asking clarifying questions
-> - ✅ Reviewing existing code
-> - ❌ Generating new features or business logic
->
-> **Minimum Maturity for AI Code Generation:** 50%  
-> **Current Status:** revisión asistida sí; generación ciega de reglas de obra **no**
+> **Last Updated**: 2026-04-13 (R-03 `RegimenCivilSolapeValidator`; madurez 50%; UC-R03 POST; GF-02)
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State      | Deliverables                            |
 | ----------- | --------- | ----------------- | --------------------------------------- |
-| **Current** | Now       | ≈35% (Config + core flows) | Global/Project labor config persisted; REGLA-150 on assign/attend; payroll/cost queries wired |
-| **Next**    | +1 Month  | 50%               | Personnel Registry, Attendance (Tareos) polish |
+| **Current** | Now       | ≈50% (Config + core + R-03) | Labor config; asignación y tareo con REGLA-150/125/R-03; `RegimenCivilSolapeValidator`; nómina/costos siguen en evolución |
+| **Next**    | +1 Month  | 65%               | Pulido tareos avanzado, nómina (ISR progresivo), registro personal |
 | **Target**  | +3 Months | 80%               | Payroll (Planillas), Social Benefits    |
 
 ## 2. Invariants (Business Rules)
@@ -36,7 +18,7 @@
 | ---- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | R-01 | **Labor Regime**: Construction Civil Regime (Civil Construction) rules must apply for worker category caps.                       | 🟡 Config only    |
 | R-02 | **Attendance**: Cannot register attendance for inactive workers. InactiveWorkerException validation **IMPLEMENTED** (2026-02-07). | ✅ Fully Enforced |
-| R-03 | **Double Booking**: Worker cannot be in two sites on same day (temporal overlap). **Overlap filter** uses domain `detectOverlap` + overnight window (2026-04-07). | 🟡 Partial (same-worker intervals; multi-site semantics TBD) |
+| R-03 | **Double Booking**: No dos obras con solape de calendario en asignaciones del mismo trabajador; intervalos `[fechaInicio, fechaFin]` inclusivos (`fechaFin` null = abierto). Implementado en `RegimenCivilSolapeValidator` + asistencia (`detectOverlap` nocturno). **Decisión PO (2026-04-13):** bloqueo duro por intersección inclusiva de fechas frente a asignaciones existentes. | ✅ Implemented |
 | R-04 | **Config Integrity**: Regime config values must be non-negative (days) and positive (factors).                                    | ✅ Implemented    |
 
 
@@ -52,7 +34,7 @@
 | REGLA-102 | **Ningún proceso operativo puede existir fuera del presupuesto (compras, inventarios, mano de obra, avances físicos, pagos).** | 🟡 Implemented |
 | REGLA-122 | **Mano de obra es costo real; todo tiempo trabajado cuesta y deja rastro.** | 🟡 Implemented |
 | REGLA-123 | **El costo de mano de obra nunca se registra como salario neto; se calcula costo empresa con prestaciones.** | 🟡 Implemented |
-| REGLA-124 | **No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.** | 🟡 Implemented |
+| REGLA-124 | **No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.** | ✅ Enforced vía R-03 `RegimenCivilSolapeValidator` en asignación y delegación en tareo (2026-04-13) |
 | REGLA-125 | **El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.** | ✅ Enforced en `POST /api/v1/rrhh/asistencias` vía `RegistroAsistenciaPolitica` + persistencia `existsVigenteAsignacionEmpleadoProyectoEnFecha` (2026-04-13) |
 | REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | ✅ Enforced (asignación a proyecto + registro asistencia vía `ProyectoNoActivoException`; 2026-04-07) |
 
@@ -106,7 +88,7 @@ graph TD
 | ------ | ------------------------- | -------- | ------ |
 | UC-R01 | Configure Labor Rates     | P0       | ✅     |
 | UC-R02 | Register Worker           | P0       | ✅ (`CrearEmpleado` + evento dominio) |
-| UC-R03 | Register Daily Attendance | P1       | ✅ **POST** (R-02, REGLA-150, REGLA-125 + nocturno/solape horario existente); límite R-03 multi-sitio delegado al puerto `AsignacionSolapeValidator` (**`NoOpAsignacionSolapeValidator`** en arranque). Costos por proyecto / nómina siguen 🟡 (`findByProyectoAndPeriodo`, `CalcularNomina`) |
+| UC-R03 | Register Daily Attendance | P1       | ✅ **POST** (R-02, REGLA-150, REGLA-125 + nocturno/solape horario); R-03 asignación vía `RegimenCivilSolapeValidator` + `findAsignacionesByEmpleadoId`. Costos por proyecto / nómina siguen 🟡 (`findByProyectoAndPeriodo`, `CalcularNomina`) |
 | UC-R04 | Generate Payroll          | P1       | 🟡 (`CalcularNomina`: ISR desde constante aplicación; IMSS desde `%` configuración; falla explícita si no hay config) |
 
 ## 7. Domain Services

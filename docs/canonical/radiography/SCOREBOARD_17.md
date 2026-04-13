@@ -1,7 +1,7 @@
 # SCOREBOARD_17 — Madurez única (17 notebooks)
 
 > **Scope**: Una sola tabla para ordenar el programa de gaps (bajo → alto %).  
-> **Last Updated**: 2026-04-12  
+> **Last Updated**: 2026-04-13  
 > **Fuente del %**: cabecera `**Status**` de cada [`*_MODULE_CANONICAL.md`](../modules/); reconciliado con [`MODULE_SPECS_CURRENT.md`](./MODULE_SPECS_CURRENT.md) donde exista fila.  
 > **Tier**: [`MODULE_CODE_ALIGNMENT_INDEX.md`](./MODULE_CODE_ALIGNMENT_INDEX.md) §2 (valor `—` = no asignado en índice).
 
@@ -9,7 +9,7 @@
 
 | Orden | Módulo | % | Nivel (resumen) | Tier | Notebook | Gap study |
 | ----- | ------ | --- | ----------------- | ---- | -------- | --------- |
-| 1 | RRHH | 35 | Partial | P1 | [RRHH_MODULE_CANONICAL.md](../modules/RRHH_MODULE_CANONICAL.md) | [RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) |
+| 1 | RRHH | 50 | Functional | P1 | [RRHH_MODULE_CANONICAL.md](../modules/RRHH_MODULE_CANONICAL.md) | [RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) |
 | 2 | Producción | 55 | Functional | P2 | [PRODUCCION_MODULE_CANONICAL.md](../modules/PRODUCCION_MODULE_CANONICAL.md) | [PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) |
 | 3 | Marketing | 55 | Functional | P3 | [MARKETING_MODULE_CANONICAL.md](../modules/MARKETING_MODULE_CANONICAL.md) | [MARKETING_GAP_STUDY.md](./gaps/MARKETING_GAP_STUDY.md) |
 | 4 | Cronograma | 60 | Functional | P1 | [CRONOGRAMA_MODULE_CANONICAL.md](../modules/CRONOGRAMA_MODULE_CANONICAL.md) | [CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) |
