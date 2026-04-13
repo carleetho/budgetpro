@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.persistence.adapter.rrhh;
 
 import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
+import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.rrhh.model.AsignacionProyecto;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.infrastructure.persistence.entity.rrhh.AsignacionProyectoEntity;
@@ -48,5 +49,12 @@ public class AsignacionProyectoRepositoryAdapter implements AsignacionProyectoRe
     @Override
     public boolean existsOverlap(EmpleadoId employeeId, LocalDate start, LocalDate end) {
         return repository.existsOverlap(employeeId.getValue(), start, end);
+    }
+
+    @Override
+    public boolean existsVigenteAsignacionEmpleadoProyectoEnFecha(EmpleadoId empleadoId, ProyectoId proyectoId,
+            LocalDate fecha) {
+        return repository.existsVigenteAsignacionEmpleadoProyectoEnFecha(empleadoId.getValue(), proyectoId.getValue(),
+                fecha);
     }
 }

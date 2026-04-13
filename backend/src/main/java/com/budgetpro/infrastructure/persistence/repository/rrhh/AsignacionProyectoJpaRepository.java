@@ -16,4 +16,12 @@ public interface AsignacionProyectoJpaRepository extends JpaRepository<Asignacio
     boolean existsOverlap(@org.springframework.data.repository.query.Param("empleadoId") UUID empleadoId,
             @org.springframework.data.repository.query.Param("startDate") java.time.LocalDate startDate,
             @org.springframework.data.repository.query.Param("endDate") java.time.LocalDate endDate);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(a) > 0 FROM AsignacionProyectoEntity a "
+            + "WHERE a.empleado.id = :empleadoId AND a.proyecto.id = :proyectoId "
+            + "AND a.fechaInicio <= :fecha AND (a.fechaFin IS NULL OR a.fechaFin >= :fecha)")
+    boolean existsVigenteAsignacionEmpleadoProyectoEnFecha(
+            @org.springframework.data.repository.query.Param("empleadoId") UUID empleadoId,
+            @org.springframework.data.repository.query.Param("proyectoId") UUID proyectoId,
+            @org.springframework.data.repository.query.Param("fecha") java.time.LocalDate fecha);
 }

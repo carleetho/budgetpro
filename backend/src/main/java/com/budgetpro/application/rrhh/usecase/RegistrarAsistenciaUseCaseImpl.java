@@ -5,16 +5,18 @@ import com.budgetpro.application.rrhh.dto.RegistrarAsistenciaCommand;
 import com.budgetpro.application.rrhh.exception.AsistenciaSuperpuestaException;
 import com.budgetpro.application.rrhh.exception.ProyectoNoActivoException;
 import com.budgetpro.application.rrhh.port.in.RegistrarAsistenciaUseCase;
+import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.AsistenciaRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.ProyectoRepositoryPort;
-import com.budgetpro.domain.proyecto.model.EstadoProyecto;
 import com.budgetpro.domain.proyecto.model.Proyecto;
-import com.budgetpro.domain.rrhh.exception.InactiveWorkerException;
+import com.budgetpro.domain.rrhh.exception.ProyectoNoActivoParaOperacionException;
+import com.budgetpro.domain.rrhh.exception.SolapeHorarioTareoException;
 import com.budgetpro.domain.rrhh.model.AsistenciaId;
 import com.budgetpro.domain.rrhh.model.AsistenciaRegistro;
 import com.budgetpro.domain.rrhh.model.Empleado;
-import com.budgetpro.domain.rrhh.model.EstadoEmpleado;
+import com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator;
+import com.budgetpro.domain.rrhh.service.RegistroAsistenciaPolitica;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +31,18 @@ public class RegistrarAsistenciaUseCaseImpl implements RegistrarAsistenciaUseCas
     private final EmpleadoRepositoryPort empleadoRepositoryPort;
     private final ProyectoRepositoryPort proyectoRepositoryPort;
     private final AsistenciaRepositoryPort asistenciaRepositoryPort;
+    private final AsignacionProyectoRepositoryPort asignacionProyectoRepositoryPort;
+    private final AsignacionSolapeValidator asignacionSolapeValidator;
 
     public RegistrarAsistenciaUseCaseImpl(EmpleadoRepositoryPort empleadoRepositoryPort,
-            ProyectoRepositoryPort proyectoRepositoryPort, AsistenciaRepositoryPort asistenciaRepositoryPort) {
+            ProyectoRepositoryPort proyectoRepositoryPort, AsistenciaRepositoryPort asistenciaRepositoryPort,
+            AsignacionProyectoRepositoryPort asignacionProyectoRepositoryPort,
+            AsignacionSolapeValidator asignacionSolapeValidator) {
         this.empleadoRepositoryPort = empleadoRepositoryPort;
         this.proyectoRepositoryPort = proyectoRepositoryPort;
         this.asistenciaRepositoryPort = asistenciaRepositoryPort;
+        this.asignacionProyectoRepositoryPort = asignacionProyectoRepositoryPort;
+        this.asignacionSolapeValidator = asignacionSolapeValidator;
     }
 
     @Override
@@ -42,19 +50,24 @@ public class RegistrarAsistenciaUseCaseImpl implements RegistrarAsistenciaUseCas
         Empleado empleado = empleadoRepositoryPort.findById(command.getEmpleadoId()).orElseThrow(
                 () -> new IllegalArgumentException("Empleado no encontrado: " + command.getEmpleadoId().getValue()));
 
-        if (empleado.getEstado() != EstadoEmpleado.ACTIVO) {
-            throw new InactiveWorkerException(command.getEmpleadoId(), empleado.getEstado(),
-                    String.format("Cannot register attendance: Worker is %s (must be ACTIVO)", empleado.getEstado()));
-        }
+        RegistroAsistenciaPolitica.validarEmpleadoActivoParaTareo(empleado);
 
         Proyecto proyecto = proyectoRepositoryPort.findById(command.getProyectoId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Proyecto no encontrado: " + command.getProyectoId().getValue()));
-        if (proyecto.getEstado() != EstadoProyecto.ACTIVO) {
-            throw new ProyectoNoActivoException(String.format(
-                    "Proyecto no activo (id=%s, estado=%s). Solo proyectos ACTIVO permiten registrar asistencia.",
-                    command.getProyectoId().getValue(), proyecto.getEstado()));
+        try {
+            RegistroAsistenciaPolitica.validarProyectoActivoParaTareo(proyecto);
+        } catch (ProyectoNoActivoParaOperacionException e) {
+            throw new ProyectoNoActivoException(e.getMessage());
         }
+
+        RegistroAsistenciaPolitica.validarCoherenciaTemporalTareo(command.getFecha(), command.getHoraEntrada(),
+                command.getHoraSalida());
+
+        boolean asignado = asignacionProyectoRepositoryPort.existsVigenteAsignacionEmpleadoProyectoEnFecha(
+                command.getEmpleadoId(), command.getProyectoId(), command.getFecha());
+        RegistroAsistenciaPolitica.validarAsignacionVigenteAlProyecto(command.getEmpleadoId(),
+                command.getProyectoId(), command.getFecha(), asignado);
 
         LocalDateTime inicioVentana = LocalDateTime.of(command.getFecha(), command.getHoraEntrada().toLocalTime());
         LocalDateTime finVentana;
@@ -67,10 +80,14 @@ public class RegistrarAsistenciaUseCaseImpl implements RegistrarAsistenciaUseCas
         List<AsistenciaRegistro> overlaps = asistenciaRepositoryPort.findOverlapping(command.getEmpleadoId(),
                 command.getProyectoId(), inicioVentana, finVentana);
 
-        if (!overlaps.isEmpty()) {
-            throw new AsistenciaSuperpuestaException(
-                    "Existen registros de asistencia superpuestos para el empleado en el horario indicado.");
+        try {
+            RegistroAsistenciaPolitica.validarSinSolapeConRegistrosExistentes(overlaps);
+        } catch (SolapeHorarioTareoException e) {
+            throw new AsistenciaSuperpuestaException(e.getMessage());
         }
+
+        RegistroAsistenciaPolitica.delegarValidacionSolapeAsignacionR03(asignacionSolapeValidator,
+                command.getEmpleadoId(), command.getFecha(), List.of());
 
         AsistenciaRegistro asistencia = AsistenciaRegistro.registrar(AsistenciaId.random(), command.getEmpleadoId(),
                 command.getProyectoId(), command.getFecha(), command.getHoraEntrada().toLocalTime(),
