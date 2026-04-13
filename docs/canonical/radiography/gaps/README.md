@@ -41,4 +41,24 @@ Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes 
 
 ## Criterios de madurez (Ola 2)
 
-Los incrementos de % en cabeceras canónicas y en `MODULE_SPECS_CURRENT.md` deben ir acompañados de cierre verificable de ítems P0/P1 del gap study correspondiente y evidencia code-first (REST, migraciones o tests). No confundir **madurez de producto** con **cobertura documental de reglas** (`docs/audits/current/CANONICAL_NOTEBOOKS_CHANGELOG.md`).
+### Madurez de producto vs cobertura de reglas
+
+| Concepto | Qué mide | Qué **no** sube el % oficial |
+| -------- | ---------- | ------------------------------ |
+| **Madurez de producto** | Comportamiento verificable en código: REST, casos de uso, persistencia (Flyway), invariantes y reglas de negocio **demostradas** con rutas bajo `backend/` o tests. El **% oficial** es el del [SCOREBOARD_17.md](../SCOREBOARD_17.md), alineado a la cabecera `Status` del canónico del módulo. | — |
+| **Cobertura documental / “reglas en papel”** | Exhaustividad del notebook, tablas de reglas en markdown o entradas en `docs/audits/current/CANONICAL_NOTEBOOKS_CHANGELOG.md`. | Sincronizar solo texto **sin** cambio de comportamiento en el backend **no** justifica subir el % del scoreboard. |
+
+### Umbrales mínimos para revisar el número (sin inflar)
+
+Los saltos son **acumulativos respecto al gap study vigente**: antes de pedir +10% debe cumplirse lo exigido para +5%.
+
+| Salto | Condición mínima (DoD) | Evidencia esperada en PR **I1** |
+| ----- | ------------------------ | -------------------------------- |
+| **+5%** | Cierre de **todos los P0** del `*_GAP_STUDY.md` del módulo (o re-clasificación a P1/P2 con justificación **code-first** en el propio gap study). | Rutas concretas (`Controller`, use case, `db/migration`), o tests que ejecuten el comportamiento; cabecera `Status` del canónico y fila del scoreboard actualizadas **al mismo valor**; `CODE_DOC_REVIEW_LOG.md` actualizado si aplica (cerrar H-*, abrir/cerrar O-*). |
+| **+10%** | Lo anterior **más** cierre de **todos los P1** abiertos en el gap study (o N/A documentado con cita a canónico/código). | Igual que +5%, más verificación explícita en el PR (comando de tests, captura de contrato REST, o nota de verificación manual **acotada**); si cambia el mensaje de la fila en `MODULE_SPECS_CURRENT.md`, ese archivo en el mismo PR. |
+
+### Reglas operativas
+
+- **G0** (solo gap study): puede documentar hallazgos sin mover el %.
+- **I1**: código + canónico + radiografía afectada en un solo PR; el % no sube por anticipado en un G0.
+- **Empates y doble verdad**: una convención — si divergen canónico y scoreboard, gana el **scoreboard** hasta que un I1 los reconcilie en el mismo commit.
