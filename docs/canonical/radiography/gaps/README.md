@@ -26,6 +26,7 @@ Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes 
 - **Marketing** (Ola 1 cadena, 2026-04-12): [MARKETING_GAP_STUDY.md](./MARKETING_GAP_STUDY.md)
 - **Cronograma** (Ola 1 cadena, 2026-04-12): [CRONOGRAMA_GAP_STUDY.md](./CRONOGRAMA_GAP_STUDY.md)
 - **Partidas** (Ola 1 cadena, 2026-04-12): [PARTIDAS_GAP_STUDY.md](./PARTIDAS_GAP_STUDY.md)
+- **Almacén / inventario** (Ola 1 cadena, 2026-04-12): [INVENTARIO_GAP_STUDY.md](./INVENTARIO_GAP_STUDY.md)
 
 ## Criterios de madurez (Ola 2)
 

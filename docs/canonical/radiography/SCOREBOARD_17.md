@@ -14,7 +14,7 @@
 | 3 | Marketing | 55 | Functional | P3 | [MARKETING_MODULE_CANONICAL.md](../modules/MARKETING_MODULE_CANONICAL.md) | [MARKETING_GAP_STUDY.md](./gaps/MARKETING_GAP_STUDY.md) |
 | 4 | Cronograma | 60 | Functional | P1 | [CRONOGRAMA_MODULE_CANONICAL.md](../modules/CRONOGRAMA_MODULE_CANONICAL.md) | [CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) |
 | 5 | Partidas | 65 | Functional | P0 | [PARTIDAS_MODULE_CANONICAL.md](../modules/PARTIDAS_MODULE_CANONICAL.md) | [PARTIDAS_GAP_STUDY.md](./gaps/PARTIDAS_GAP_STUDY.md) |
-| 6 | Almacén / inventario | 70 | Functional | P1 | [INVENTARIO_MODULE_CANONICAL.md](../modules/INVENTARIO_MODULE_CANONICAL.md) | pendiente |
+| 6 | Almacén / inventario | 70 | Functional | P1 | [INVENTARIO_MODULE_CANONICAL.md](../modules/INVENTARIO_MODULE_CANONICAL.md) | [INVENTARIO_GAP_STUDY.md](./gaps/INVENTARIO_GAP_STUDY.md) |
 | 7 | Billetera | 70 | Functional | P1 | [BILLETERA_MODULE_CANONICAL.md](../modules/BILLETERA_MODULE_CANONICAL.md) | pendiente |
 | 8 | Recursos | 70 | Functional | P2 | [RECURSOS_MODULE_CANONICAL.md](../modules/RECURSOS_MODULE_CANONICAL.md) | pendiente |
 | 9 | Auditoría | 70 | Functional | P3 | [AUDITORIA_MODULE_CANONICAL.md](../modules/AUDITORIA_MODULE_CANONICAL.md) | pendiente |

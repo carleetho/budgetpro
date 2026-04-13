@@ -108,6 +108,8 @@
 | POST | `/api/v1/transferencias/entre-bodegas` | Transferencia entre almacenes/bodegas (`TransferenciaEntreBodegasRequest`) | ✅ |
 | POST | `/api/v1/transferencias/entre-proyectos` | Transferencia entre proyectos (`TransferenciaEntreProyectosRequest`) | ✅ |
 
+**Estudio de gaps (Ola 1):** [INVENTARIO_GAP_STUDY.md](../radiography/gaps/INVENTARIO_GAP_STUDY.md) — **O-12** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
+
 ## 9. Observability
 
 - **Metrics**: `inventory.value.total`

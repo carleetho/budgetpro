@@ -41,6 +41,7 @@
 | O-09 | **Marketing: sin API autenticada para transición de estado de lead** | Solo creación pública (`NUEVO`) y `GET` internos; REGLA-108 sin mutación REST — [gaps/MARKETING_GAP_STUDY.md](./gaps/MARKETING_GAP_STUDY.md) (GF-01). |
 | O-10 | **Cronograma: `POST .../cronograma/baseline` en canónico §8 sin REST** | `CronogramaController` solo expone `POST .../actividades` y `GET .../cronograma`; sin mapping `.../baseline` en controladores auditados — [gaps/CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) (GF-01). |
 | O-11 | **Partidas: sin listado REST plano por presupuesto** | Solo `GET /partidas/{id}`, `GET /partidas/wbs?presupuestoId=` y creación; sin `GET /partidas?presupuestoId=` paginado — [gaps/PARTIDAS_GAP_STUDY.md](./gaps/PARTIDAS_GAP_STUDY.md) (GF-01). |
+| O-12 | **Inventario: observabilidad §9 y evento `InventarioBajoAlert` sin evidencia en código** | Canónico lista métricas/logs y evento dominio 🔴; `grep` en backend sin `InventarioBajoAlert` / `inventory.value.total`; Micrometer dedicado a otros módulos (`EvmMetrics`, `CatalogMetrics`, `IntegrityMetrics`) — [gaps/INVENTARIO_GAP_STUDY.md](./gaps/INVENTARIO_GAP_STUDY.md) (DT-02, DT-03). |
 
 ## 4. REGLA-* (muestra)
 
