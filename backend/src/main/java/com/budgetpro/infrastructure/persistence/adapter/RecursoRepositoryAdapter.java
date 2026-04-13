@@ -9,6 +9,7 @@ import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -92,6 +93,11 @@ public class RecursoRepositoryAdapter implements RecursoRepository {
         }
 
         return jpaRepository.findByNombreNormalizado(nombreNormalizado).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Recurso> findAll() {
+        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     /**

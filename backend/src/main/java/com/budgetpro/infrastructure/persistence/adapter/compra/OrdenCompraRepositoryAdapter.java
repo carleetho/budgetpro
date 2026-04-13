@@ -108,6 +108,14 @@ public class OrdenCompraRepositoryAdapter implements OrdenCompraRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public List<OrdenCompra> findAll() {
+        return jpaRepository.findAll().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public String generateNextNumero(int year) {
         String pattern = String.format("PO-%d-%%", year);
         List<OrdenCompraEntity> ordenes = jpaRepository.findByNumeroPattern(pattern);

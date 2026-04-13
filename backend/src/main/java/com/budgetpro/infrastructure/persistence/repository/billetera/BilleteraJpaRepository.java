@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.persistence.repository.billetera;
 
 import com.budgetpro.infrastructure.persistence.entity.billetera.BilleteraEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,10 @@ public interface BilleteraJpaRepository extends JpaRepository<BilleteraEntity, U
      * @return Optional con la billetera si existe
      */
     Optional<BilleteraEntity> findByProyectoId(UUID proyectoId);
+
+    @EntityGraph(attributePaths = "movimientos")
+    Optional<BilleteraEntity> findWithMovimientosById(UUID id);
+
+    @EntityGraph(attributePaths = "movimientos")
+    Optional<BilleteraEntity> findWithMovimientosByProyectoId(UUID proyectoId);
 }
