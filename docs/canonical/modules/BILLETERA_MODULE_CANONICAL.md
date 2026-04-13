@@ -99,6 +99,8 @@
 
 **Nota:** no hay `GET /api/v1/proyectos/{id}/billetera`; el cliente usa `billeteraId` conocido o flujos que lo resuelven por proyecto fuera de este controlador.
 
+**Estudio de gaps (Ola 1b):** [BILLETERA_GAP_STUDY.md](../radiography/gaps/BILLETERA_GAP_STUDY.md) — **O-03**, **O-15** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
+
 ## 9. Observability
 
 - **Metrics**: `wallet.balance.current`

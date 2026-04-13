@@ -15,17 +15,17 @@
 | 4 | Cronograma | 60 | Functional | P1 | [CRONOGRAMA_MODULE_CANONICAL.md](../modules/CRONOGRAMA_MODULE_CANONICAL.md) | [CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) |
 | 5 | Partidas | 65 | Functional | P0 | [PARTIDAS_MODULE_CANONICAL.md](../modules/PARTIDAS_MODULE_CANONICAL.md) | [PARTIDAS_GAP_STUDY.md](./gaps/PARTIDAS_GAP_STUDY.md) |
 | 6 | Almacén / inventario | 70 | Functional | P1 | [INVENTARIO_MODULE_CANONICAL.md](../modules/INVENTARIO_MODULE_CANONICAL.md) | [INVENTARIO_GAP_STUDY.md](./gaps/INVENTARIO_GAP_STUDY.md) |
-| 7 | Billetera | 70 | Functional | P1 | [BILLETERA_MODULE_CANONICAL.md](../modules/BILLETERA_MODULE_CANONICAL.md) | pendiente |
-| 8 | Recursos | 70 | Functional | P2 | [RECURSOS_MODULE_CANONICAL.md](../modules/RECURSOS_MODULE_CANONICAL.md) | pendiente |
-| 9 | Auditoría | 70 | Functional | P3 | [AUDITORIA_MODULE_CANONICAL.md](../modules/AUDITORIA_MODULE_CANONICAL.md) | pendiente |
-| 10 | Compras | 75 | Functional | — | [COMPRAS_MODULE_CANONICAL.md](../modules/COMPRAS_MODULE_CANONICAL.md) | pendiente |
-| 11 | Estimación | 75 | Functional | P1 | [ESTIMACION_MODULE_CANONICAL.md](../modules/ESTIMACION_MODULE_CANONICAL.md) | pendiente |
-| 12 | Seguridad | 75 | Functional | P3 | [SEGURIDAD_MODULE_CANONICAL.md](../modules/SEGURIDAD_MODULE_CANONICAL.md) | pendiente |
-| 13 | Presupuesto | 80 | Complete | P0/P1 | [PRESUPUESTO_MODULE_CANONICAL.md](../modules/PRESUPUESTO_MODULE_CANONICAL.md) | pendiente |
-| 14 | APU | 90 | Functional | P2 | [APU_MODULE_CANONICAL.md](../modules/APU_MODULE_CANONICAL.md) | pendiente |
-| 15 | Alertas | 90 | Functional | P2 | [ALERTAS_MODULE_CANONICAL.md](../modules/ALERTAS_MODULE_CANONICAL.md) | pendiente |
-| 16 | Cross-Cutting | 90 | Completed | P1 | [CROSS_CUTTING_MODULE_CANONICAL.md](../modules/CROSS_CUTTING_MODULE_CANONICAL.md) | pendiente |
-| 17 | EVM | 95 | Complete | — | [EVM_MODULE_CANONICAL.md](../modules/EVM_MODULE_CANONICAL.md) | pendiente |
+| 7 | Billetera | 70 | Functional | P1 | [BILLETERA_MODULE_CANONICAL.md](../modules/BILLETERA_MODULE_CANONICAL.md) | [BILLETERA_GAP_STUDY.md](./gaps/BILLETERA_GAP_STUDY.md) |
+| 8 | Recursos | 70 | Functional | P2 | [RECURSOS_MODULE_CANONICAL.md](../modules/RECURSOS_MODULE_CANONICAL.md) | [RECURSOS_GAP_STUDY.md](./gaps/RECURSOS_GAP_STUDY.md) |
+| 9 | Auditoría | 70 | Functional | P3 | [AUDITORIA_MODULE_CANONICAL.md](../modules/AUDITORIA_MODULE_CANONICAL.md) | [AUDITORIA_GAP_STUDY.md](./gaps/AUDITORIA_GAP_STUDY.md) |
+| 10 | Compras | 75 | Functional | — | [COMPRAS_MODULE_CANONICAL.md](../modules/COMPRAS_MODULE_CANONICAL.md) | [COMPRAS_GAP_STUDY.md](./gaps/COMPRAS_GAP_STUDY.md) |
+| 11 | Estimación | 75 | Functional | P1 | [ESTIMACION_MODULE_CANONICAL.md](../modules/ESTIMACION_MODULE_CANONICAL.md) | [ESTIMACION_GAP_STUDY.md](./gaps/ESTIMACION_GAP_STUDY.md) |
+| 12 | Seguridad | 75 | Functional | P3 | [SEGURIDAD_MODULE_CANONICAL.md](../modules/SEGURIDAD_MODULE_CANONICAL.md) | [SEGURIDAD_GAP_STUDY.md](./gaps/SEGURIDAD_GAP_STUDY.md) |
+| 13 | Presupuesto | 80 | Complete | P0/P1 | [PRESUPUESTO_MODULE_CANONICAL.md](../modules/PRESUPUESTO_MODULE_CANONICAL.md) | [PRESUPUESTO_GAP_STUDY.md](./gaps/PRESUPUESTO_GAP_STUDY.md) |
+| 14 | APU | 90 | Functional | P2 | [APU_MODULE_CANONICAL.md](../modules/APU_MODULE_CANONICAL.md) | [APU_GAP_STUDY.md](./gaps/APU_GAP_STUDY.md) |
+| 15 | Alertas | 90 | Functional | P2 | [ALERTAS_MODULE_CANONICAL.md](../modules/ALERTAS_MODULE_CANONICAL.md) | [ALERTAS_GAP_STUDY.md](./gaps/ALERTAS_GAP_STUDY.md) |
+| 16 | Cross-Cutting | 90 | Completed | P1 | [CROSS_CUTTING_MODULE_CANONICAL.md](../modules/CROSS_CUTTING_MODULE_CANONICAL.md) | [CROSS_CUTTING_GAP_STUDY.md](./gaps/CROSS_CUTTING_GAP_STUDY.md) |
+| 17 | EVM | 95 | Complete | — | [EVM_MODULE_CANONICAL.md](../modules/EVM_MODULE_CANONICAL.md) | [EVM_GAP_STUDY.md](./gaps/EVM_GAP_STUDY.md) |
 
 ## Notas
 

@@ -27,6 +27,17 @@ Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes 
 - **Cronograma** (Ola 1 cadena, 2026-04-12): [CRONOGRAMA_GAP_STUDY.md](./CRONOGRAMA_GAP_STUDY.md)
 - **Partidas** (Ola 1 cadena, 2026-04-12): [PARTIDAS_GAP_STUDY.md](./PARTIDAS_GAP_STUDY.md)
 - **Almacén / inventario** (Ola 1 cadena, 2026-04-12): [INVENTARIO_GAP_STUDY.md](./INVENTARIO_GAP_STUDY.md)
+- **Billetera** (Ola 1b, 2026-04-12): [BILLETERA_GAP_STUDY.md](./BILLETERA_GAP_STUDY.md)
+- **Recursos** (Ola 1b, 2026-04-12): [RECURSOS_GAP_STUDY.md](./RECURSOS_GAP_STUDY.md)
+- **Auditoría** (Ola 1b, 2026-04-12): [AUDITORIA_GAP_STUDY.md](./AUDITORIA_GAP_STUDY.md)
+- **Compras** (Ola 1b, 2026-04-12): [COMPRAS_GAP_STUDY.md](./COMPRAS_GAP_STUDY.md)
+- **Estimación** (Ola 1b, 2026-04-12): [ESTIMACION_GAP_STUDY.md](./ESTIMACION_GAP_STUDY.md)
+- **Seguridad** (Ola 1b, 2026-04-12): [SEGURIDAD_GAP_STUDY.md](./SEGURIDAD_GAP_STUDY.md)
+- **Presupuesto** (Ola 1b, 2026-04-12): [PRESUPUESTO_GAP_STUDY.md](./PRESUPUESTO_GAP_STUDY.md)
+- **APU** (Ola 1b, 2026-04-12): [APU_GAP_STUDY.md](./APU_GAP_STUDY.md)
+- **Alertas** (Ola 1b, 2026-04-12): [ALERTAS_GAP_STUDY.md](./ALERTAS_GAP_STUDY.md)
+- **Cross-Cutting** (Ola 1b, 2026-04-12): [CROSS_CUTTING_GAP_STUDY.md](./CROSS_CUTTING_GAP_STUDY.md)
+- **EVM** (Ola 1b, 2026-04-12): [EVM_GAP_STUDY.md](./EVM_GAP_STUDY.md)
 
 ## Criterios de madurez (Ola 2)
 

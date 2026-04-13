@@ -3,7 +3,7 @@
 > **Scope**: Análisis paramétrico de presupuesto (alertas de ingeniería / costos)  
 > **Status**: Functional (90%)  
 > **Owner**: Intelligence Team  
-> **Last Updated**: 2026-04-08  
+> **Last Updated**: 2026-04-12  
 > **Authors**: Antigravity (sync código `main`)
 
 **Dominio:** `com.budgetpro.domain.finanzas.alertas` · **Motor:** `AnalizadorParametricoService` · **Aplicación:** `AnalizarPresupuestoUseCase` / `AnalizarPresupuestoUseCaseImpl` · **REST:** `AnalisisController` → `/api/v1/analisis`.
@@ -112,3 +112,5 @@ Superar el tope del APU no bloquea la compra; se emite alerta.
 | GET | `/api/v1/analisis/alertas/{presupuestoId}` | Ejecuta el análisis y devuelve `AnalisisPresupuestoResponse` (alertas paramétricas agregadas). |
 
 **Deuda / alcance:** no hay otros verbos en `AnalisisController`; histórico o re-ejecución explícita dependen de capa de persistencia (`AnalisisPresupuestoRepository`) y del caso de uso, no de rutas adicionales documentadas aquí.
+
+**Estudio de gaps (Ola 1b):** [ALERTAS_GAP_STUDY.md](../radiography/gaps/ALERTAS_GAP_STUDY.md).

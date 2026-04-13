@@ -3,7 +3,7 @@
 > **Scope**: Trazabilidad JPA (timestamps, autor), políticas de no repudio en presupuesto y procesos  
 > **Status**: Functional (70%) — **transversal**; sin API REST dedicada de “consulta de auditoría”  
 > **Owner**: Security & Compliance Team  
-> **Last Updated**: 2026-04-08  
+> **Last Updated**: 2026-04-12  
 > **Authors**: Antigravity (sync código `main`)
 
 **Base JPA:** `com.budgetpro.infrastructure.persistence.entity.AuditEntity` (`created_at`, `updated_at`, `created_by` vía `@CreatedBy` + `AuditingEntityListener`). **Presupuesto:** `IntegrityAuditLog` / `IntegrityAuditRepository` (hashes y eventos de integridad), no confundir con un bus genérico de dominio.
@@ -86,3 +86,5 @@ Todo cambio de estado del Proyecto debe registrar estado anterior, nuevo, usuari
 | **Integridad presupuesto** | `IntegrityAuditLog`, repositorio de integridad | Consumo indirecto vía flujos de aprobación/compra |
 
 **REGLA-169 (Proyecto):** no se verificó entidad dedicada tipo `ProyectoAuditLog` en el escaneo 2026-04-08; tratar como **roadmap / deuda documental** hasta cruzar máquina de estados de `Proyecto` con persistencia explícita de historial.
+
+**Estudio de gaps (Ola 1b):** [AUDITORIA_GAP_STUDY.md](../radiography/gaps/AUDITORIA_GAP_STUDY.md) — **O-16** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).

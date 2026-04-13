@@ -30,7 +30,7 @@
 
 | ID | Tema | Notas |
 | --- | --- | --- |
-| O-01 | **Paginación en memoria** | `OrdenCompraController`, `MarketingLeadController` usan `findAll` + `subList`; riesgo de rendimiento. |
+| O-01 | **Paginación en memoria / catálogo completo** | `OrdenCompraController`, `MarketingLeadController` usan `findAll` + `subList`; `ObtenerRecursoUseCaseImpl.listar` usa `recursoRepository.findAll()` sin paginación en `GET /api/v1/recursos` — riesgo de rendimiento. |
 | O-02 | **`ProyectoNotFoundException`** | Respuesta distinta a `ErrorResponses` en `GlobalExceptionHandler` (deuda cross-cutting). |
 | O-03 | **EGRESO billetera** | API acepta `EGRESO`; use case puede invocar dominio con parámetros incompletos — seguir deuda en `BILLETERA_MODULE_CANONICAL.md`. |
 | O-04 | **Flyway `V17__` duplicado** | Conviven dos scripts; riesgo de orden/ambiente — ver `DATA_MODEL_CURRENT.md` §2. |
@@ -42,6 +42,8 @@
 | O-10 | **Cronograma: `POST .../cronograma/baseline` en canónico §8 sin REST** | `CronogramaController` solo expone `POST .../actividades` y `GET .../cronograma`; sin mapping `.../baseline` en controladores auditados — [gaps/CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) (GF-01). |
 | O-11 | **Partidas: sin listado REST plano por presupuesto** | Solo `GET /partidas/{id}`, `GET /partidas/wbs?presupuestoId=` y creación; sin `GET /partidas?presupuestoId=` paginado — [gaps/PARTIDAS_GAP_STUDY.md](./gaps/PARTIDAS_GAP_STUDY.md) (GF-01). |
 | O-12 | **Inventario: observabilidad §9 y evento `InventarioBajoAlert` sin evidencia en código** | Canónico lista métricas/logs y evento dominio 🔴; `grep` en backend sin `InventarioBajoAlert` / `inventory.value.total`; Micrometer dedicado a otros módulos (`EvmMetrics`, `CatalogMetrics`, `IntegrityMetrics`) — [gaps/INVENTARIO_GAP_STUDY.md](./gaps/INVENTARIO_GAP_STUDY.md) (DT-02, DT-03). |
+| O-15 | **Billetera: consulta REST acoplada a JPA** | `BilleteraQueryController` usa `BilleteraJpaRepository` y entidades `*Entity` en el adaptador REST en lugar de un puerto de aplicación dedicado para saldo/listado — [gaps/BILLETERA_GAP_STUDY.md](./gaps/BILLETERA_GAP_STUDY.md) (DT-01). |
+| O-16 | **Auditoría: sin API REST de consulta** | Trazabilidad vía `AuditEntity` / logs; ningún `*AuditController` para lectura gobernada — [gaps/AUDITORIA_GAP_STUDY.md](./gaps/AUDITORIA_GAP_STUDY.md) (GF-01, DT-01). |
 
 ## 4. REGLA-* (muestra)
 
