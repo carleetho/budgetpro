@@ -34,6 +34,8 @@
 | O-02 | **`ProyectoNotFoundException`** | Respuesta distinta a `ErrorResponses` en `GlobalExceptionHandler` (deuda cross-cutting). |
 | O-03 | **EGRESO billetera** | API acepta `EGRESO`; use case puede invocar dominio con parámetros incompletos — seguir deuda en `BILLETERA_MODULE_CANONICAL.md`. |
 | O-04 | **Flyway `V17__` duplicado** | Conviven dos scripts; riesgo de orden/ambiente — ver `DATA_MODEL_CURRENT.md` §2. |
+| O-05 | **RRHH: asignación empleado ↔ proyecto sin REST** | `AsignarEmpleadoProyectoUseCaseImpl` en application; sin `*Controller` que exponga el flujo — ver [gaps/RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) (GF-02). |
+| O-06 | **RRHH: `GET .../asistencias` sin filtros** | Si faltan `empleadoId` y `proyectoId`, responde 200 con lista vacía; conviene 400 o contrato explícito — [gaps/RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md) (GF-03). |
 
 ## 4. REGLA-* (muestra)
 

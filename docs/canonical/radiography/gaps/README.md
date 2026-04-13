@@ -19,7 +19,9 @@
 
 ## Orden de trabajo sugerido
 
-Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes que P3). El primer estudio previsto es **RRHH**.
+Orden ascendente por **% oficial** en `SCOREBOARD_17.md` (empate: tier P0 antes que P3).
+
+- **RRHH** (Ola 1, 2026-04-12): [RRHH_GAP_STUDY.md](./RRHH_GAP_STUDY.md)
 
 ## Criterios de madurez (Ola 2)
 
