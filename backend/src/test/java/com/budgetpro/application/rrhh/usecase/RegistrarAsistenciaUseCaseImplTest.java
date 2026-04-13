@@ -19,7 +19,7 @@ import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.domain.rrhh.model.TipoEmpleado;
 import com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator;
-import com.budgetpro.domain.rrhh.service.NoOpAsignacionSolapeValidator;
+import com.budgetpro.domain.rrhh.service.RegimenCivilSolapeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +57,7 @@ class RegistrarAsistenciaUseCaseImplTest {
     @Mock
     private AsignacionProyectoRepositoryPort asignacionProyectoRepositoryPort;
 
-    private final AsignacionSolapeValidator asignacionSolapeValidator = new NoOpAsignacionSolapeValidator();
+    private final AsignacionSolapeValidator asignacionSolapeValidator = new RegimenCivilSolapeValidator();
 
     private RegistrarAsistenciaUseCaseImpl useCase;
 
@@ -65,6 +66,8 @@ class RegistrarAsistenciaUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(asignacionProyectoRepositoryPort.findAsignacionesByEmpleadoId(any()))
+                .thenReturn(Collections.emptyList());
         useCase = new RegistrarAsistenciaUseCaseImpl(empleadoRepositoryPort, proyectoRepositoryPort,
                 asistenciaRepositoryPort, asignacionProyectoRepositoryPort, asignacionSolapeValidator);
     }

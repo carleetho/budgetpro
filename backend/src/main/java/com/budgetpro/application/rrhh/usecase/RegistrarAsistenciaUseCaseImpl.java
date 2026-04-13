@@ -12,6 +12,7 @@ import com.budgetpro.application.rrhh.port.out.ProyectoRepositoryPort;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.rrhh.exception.ProyectoNoActivoParaOperacionException;
 import com.budgetpro.domain.rrhh.exception.SolapeHorarioTareoException;
+import com.budgetpro.domain.rrhh.model.AsignacionProyecto;
 import com.budgetpro.domain.rrhh.model.AsistenciaId;
 import com.budgetpro.domain.rrhh.model.AsistenciaRegistro;
 import com.budgetpro.domain.rrhh.model.Empleado;
@@ -86,8 +87,10 @@ public class RegistrarAsistenciaUseCaseImpl implements RegistrarAsistenciaUseCas
             throw new AsistenciaSuperpuestaException(e.getMessage());
         }
 
+        List<AsignacionProyecto> asignacionesEmpleado = asignacionProyectoRepositoryPort
+                .findAsignacionesByEmpleadoId(command.getEmpleadoId());
         RegistroAsistenciaPolitica.delegarValidacionSolapeAsignacionR03(asignacionSolapeValidator,
-                command.getEmpleadoId(), command.getFecha(), List.of());
+                command.getEmpleadoId(), command.getFecha(), asignacionesEmpleado);
 
         AsistenciaRegistro asistencia = AsistenciaRegistro.registrar(AsistenciaId.random(), command.getEmpleadoId(),
                 command.getProyectoId(), command.getFecha(), command.getHoraEntrada().toLocalTime(),

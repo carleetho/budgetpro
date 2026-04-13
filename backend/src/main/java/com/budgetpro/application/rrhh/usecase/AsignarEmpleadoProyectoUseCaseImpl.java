@@ -3,7 +3,6 @@ package com.budgetpro.application.rrhh.usecase;
 import com.budgetpro.application.recurso.port.out.RecursoRepository;
 import com.budgetpro.application.rrhh.dto.AsignacionProyectoResponse;
 import com.budgetpro.application.rrhh.dto.AsignarEmpleadoProyectoCommand;
-import com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException;
 import com.budgetpro.application.rrhh.exception.ProyectoNoActivoException;
 import com.budgetpro.application.rrhh.port.in.AsignarEmpleadoProyectoUseCase;
 import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
@@ -23,11 +22,13 @@ import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.domain.rrhh.model.EstadoEmpleado;
 import com.budgetpro.domain.rrhh.model.HistorialLaboral;
+import com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class AsignarEmpleadoProyectoUseCaseImpl implements AsignarEmpleadoProyec
         private final RecursoRepository recursoCatalogRepository;
         private final RecursoProxyRepository recursoProxyRepository;
         private final AsignacionProyectoRepositoryPort asignacionRepository;
+        private final AsignacionSolapeValidator asignacionSolapeValidator;
 
         @Override
         @Transactional
@@ -59,11 +61,9 @@ public class AsignarEmpleadoProyectoUseCaseImpl implements AsignarEmpleadoProyec
                                         command.proyectoId(), proyecto.getEstado()));
                 }
 
-                // 3. Check for overlapping assignments
-                if (asignacionRepository.existsOverlap(empleado.getId(), command.fechaInicio(), command.fechaFin())) {
-                        throw new AsignacionProyectoConflictoException(empleado.getId(), command.fechaInicio(),
-                                        command.fechaFin());
-                }
+                // 3. R-03: solape de intervalos de asignación (dominio)
+                List<AsignacionProyecto> existentes = asignacionRepository.findAsignacionesByEmpleadoId(empleado.getId());
+                asignacionSolapeValidator.validar(empleado.getId(), command.fechaInicio(), command.fechaFin(), existentes);
 
                 // 4. Get employee's current position (cargo)
                 HistorialLaboral currentHistory = empleado.getSalarioActual().orElseThrow(

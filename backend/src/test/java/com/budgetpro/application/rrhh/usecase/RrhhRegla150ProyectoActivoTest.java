@@ -7,7 +7,7 @@ import com.budgetpro.application.rrhh.exception.ProyectoNoActivoException;
 import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.AsistenciaRepositoryPort;
 import com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator;
-import com.budgetpro.domain.rrhh.service.NoOpAsignacionSolapeValidator;
+import com.budgetpro.domain.rrhh.service.RegimenCivilSolapeValidator;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.ProyectoRepositoryPort;
 import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
@@ -64,7 +64,7 @@ class RrhhRegla150ProyectoActivoTest {
     @Mock
     private AsignacionProyectoRepositoryPort asignacionRepository;
 
-    private final AsignacionSolapeValidator asignacionSolapeValidator = new NoOpAsignacionSolapeValidator();
+    private final AsignacionSolapeValidator asignacionSolapeValidator = new RegimenCivilSolapeValidator();
 
     private RegistrarAsistenciaUseCaseImpl registrarAsistencia;
     private AsignarEmpleadoProyectoUseCaseImpl asignarEmpleado;
@@ -77,7 +77,7 @@ class RrhhRegla150ProyectoActivoTest {
         registrarAsistencia = new RegistrarAsistenciaUseCaseImpl(empleadoRepositoryPort, rrhhProyectoRepositoryPort,
                 asistenciaRepositoryPort, asignacionRepository, asignacionSolapeValidator);
         asignarEmpleado = new AsignarEmpleadoProyectoUseCaseImpl(empleadoRepositoryAsignar, proyectoRepository,
-                recursoCatalogRepository, recursoProxyRepository, asignacionRepository);
+                recursoCatalogRepository, recursoProxyRepository, asignacionRepository, asignacionSolapeValidator);
     }
 
     @Test

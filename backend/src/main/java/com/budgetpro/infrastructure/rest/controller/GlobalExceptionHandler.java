@@ -114,6 +114,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponses.error(HttpStatus.PRECONDITION_FAILED.value(), "PROYECTO_NO_ACTIVO", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleAsignacionSuperpuestaDominio(
+            com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "ASIGNACION_PROYECTO_CONFLICTO", ex.getMessage()));
+    }
+
     @ExceptionHandler(com.budgetpro.domain.rrhh.exception.InactiveWorkerException.class)
     public ResponseEntity<ErrorResponses.ErrorResponse> handleInactiveWorker(
             com.budgetpro.domain.rrhh.exception.InactiveWorkerException ex) {

@@ -1,9 +1,8 @@
 package com.budgetpro.infrastructure.rest.rrhh.controller;
 
 import com.budgetpro.application.rrhh.dto.AsignacionProyectoResponse;
-import com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException;
+import com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException;
 import com.budgetpro.application.rrhh.port.in.AsignarEmpleadoProyectoUseCase;
-import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.application.rrhh.port.in.ActualizarEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.in.ConsultarEmpleadoUseCase;
 import com.budgetpro.application.rrhh.port.in.CrearEmpleadoUseCase;
@@ -94,8 +93,8 @@ class EmpleadoControllerTest {
     void postAsignacion_conflicto_retorna409() throws Exception {
         UUID empleadoId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         UUID proyectoId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
-        when(asignarEmpleadoProyectoUseCase.asignar(any())).thenThrow(new AsignacionProyectoConflictoException(
-                EmpleadoId.of(empleadoId), LocalDate.of(2025, 4, 1), LocalDate.of(2025, 12, 31)));
+        when(asignarEmpleadoProyectoUseCase.asignar(any())).thenThrow(new AsignacionSuperpuestaException(
+                "Solape de asignación (R-03)"));
 
         String body = """
                 {"proyectoId":"%s","fechaInicio":"2025-04-01","fechaFin":"2025-12-31"}

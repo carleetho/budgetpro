@@ -2,18 +2,22 @@ package com.budgetpro.application.rrhh.usecase;
 
 import com.budgetpro.application.recurso.port.out.RecursoRepository;
 import com.budgetpro.application.rrhh.dto.AsignarEmpleadoProyectoCommand;
-import com.budgetpro.application.rrhh.exception.AsignacionProyectoConflictoException;
 import com.budgetpro.application.rrhh.port.out.AsignacionProyectoRepositoryPort;
 import com.budgetpro.application.rrhh.port.out.EmpleadoRepositoryPort;
+import com.budgetpro.domain.catalogo.model.RecursoProxyId;
 import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
 import com.budgetpro.domain.proyecto.model.EstadoProyecto;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.proyecto.port.out.ProyectoRepository;
+import com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException;
+import com.budgetpro.domain.rrhh.model.AsignacionProyecto;
+import com.budgetpro.domain.rrhh.model.AsignacionProyectoId;
 import com.budgetpro.domain.rrhh.model.Contacto;
 import com.budgetpro.domain.rrhh.model.Empleado;
 import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.domain.rrhh.model.TipoEmpleado;
+import com.budgetpro.domain.rrhh.service.RegimenCivilSolapeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,28 +59,33 @@ class AsignarEmpleadoProyectoUseCaseSolapeTest {
 
     private final UUID empleadoUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private final UUID proyectoUuid = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private final UUID otroProyectoUuid = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
 
     @BeforeEach
     void setUp() {
         asignarEmpleado = new AsignarEmpleadoProyectoUseCaseImpl(empleadoRepository, proyectoRepository,
-                recursoCatalogRepository, recursoProxyRepository, asignacionRepository);
+                recursoCatalogRepository, recursoProxyRepository, asignacionRepository, new RegimenCivilSolapeValidator());
     }
 
     @Test
-    @DisplayName("asignar: si existe solape detectado por repositorio, lanza AsignacionProyectoConflictoException (409 ASIGNACION_PROYECTO_CONFLICTO vía handler)")
-    void asignar_solapeExistente_lanzaAsignacionProyectoConflictoException() {
+    @DisplayName("asignar: solape de intervalos con asignación existente → AsignacionSuperpuestaException (409 ASIGNACION_PROYECTO_CONFLICTO vía handler)")
+    void asignar_solapeExistente_lanzaAsignacionSuperpuestaException() {
         when(empleadoRepository.findById(EmpleadoId.of(empleadoUuid)))
                 .thenReturn(Optional.of(empleadoActivo(empleadoUuid)));
         when(proyectoRepository.findById(ProyectoId.from(proyectoUuid)))
                 .thenReturn(Optional.of(Proyecto.reconstruir(ProyectoId.from(proyectoUuid), "Obra", "Lima",
                         EstadoProyecto.ACTIVO)));
-        when(asignacionRepository.existsOverlap(EmpleadoId.of(empleadoUuid), LocalDate.of(2025, 4, 1),
-                LocalDate.of(2025, 12, 31))).thenReturn(true);
+
+        AsignacionProyecto existente = AsignacionProyecto.reconstruir(AsignacionProyectoId.generate(),
+                EmpleadoId.of(empleadoUuid), ProyectoId.from(otroProyectoUuid), RecursoProxyId.generate(),
+                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 6, 30), null, null);
+        when(asignacionRepository.findAsignacionesByEmpleadoId(EmpleadoId.of(empleadoUuid)))
+                .thenReturn(List.of(existente));
 
         AsignarEmpleadoProyectoCommand command = new AsignarEmpleadoProyectoCommand(empleadoUuid, proyectoUuid,
                 LocalDate.of(2025, 4, 1), LocalDate.of(2025, 12, 31), new BigDecimal("40"), "OPERARIO");
 
-        assertThrows(AsignacionProyectoConflictoException.class, () -> asignarEmpleado.asignar(command));
+        assertThrows(AsignacionSuperpuestaException.class, () -> asignarEmpleado.asignar(command));
         verify(recursoProxyRepository, never()).save(any());
         verify(asignacionRepository, never()).save(any());
     }

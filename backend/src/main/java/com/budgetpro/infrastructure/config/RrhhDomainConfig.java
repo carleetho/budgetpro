@@ -2,7 +2,7 @@ package com.budgetpro.infrastructure.config;
 
 import com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator;
 import com.budgetpro.domain.rrhh.service.CalculadorFSR;
-import com.budgetpro.domain.rrhh.service.NoOpAsignacionSolapeValidator;
+import com.budgetpro.domain.rrhh.service.RegimenCivilSolapeValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,10 +15,10 @@ public class RrhhDomainConfig {
     }
 
     /**
-     * R-03 multi-sitio: sin política hasta decisión de PO; el puerto permanece cableable.
+     * R-03: solape duro de intervalos de asignación (decisión PO / régimen civil).
      */
     @Bean
     public AsignacionSolapeValidator asignacionSolapeValidator() {
-        return new NoOpAsignacionSolapeValidator();
+        return new RegimenCivilSolapeValidator();
     }
 }
