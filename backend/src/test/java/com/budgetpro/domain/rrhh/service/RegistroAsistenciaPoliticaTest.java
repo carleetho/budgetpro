@@ -5,6 +5,7 @@ import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.rrhh.exception.InactiveWorkerException;
 import com.budgetpro.domain.rrhh.exception.ProyectoNoActivoParaOperacionException;
+import com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException;
 import com.budgetpro.domain.rrhh.exception.SolapeHorarioTareoException;
 import com.budgetpro.domain.rrhh.exception.TrabajadorNoAsignadoAlProyectoException;
 import com.budgetpro.domain.rrhh.model.AsignacionProyectoId;
@@ -120,12 +121,25 @@ class RegistroAsistenciaPoliticaTest {
     }
 
     @Test
-    @DisplayName("delegación R-03 con NoOp → no lanza")
-    void delegarR03_noOp_ok() {
+    @DisplayName("delegación R-03 con régimen civil sin solape → no lanza")
+    void delegarR03_regimenSinSolape_ok() {
         EmpleadoId eid = EmpleadoId.of(EMP_UUID);
         LocalDate fecha = LocalDate.of(2025, 4, 1);
         assertDoesNotThrow(() -> RegistroAsistenciaPolitica.delegarValidacionSolapeAsignacionR03(
-                new NoOpAsignacionSolapeValidator(), eid, fecha, List.of()));
+                new RegimenCivilSolapeValidator(), eid, fecha, List.of()));
+    }
+
+    @Test
+    @DisplayName("delegación R-03 con régimen civil y solape de asignación → AsignacionSuperpuestaException")
+    void delegarR03_regimenConSolape_lanza() {
+        EmpleadoId eid = EmpleadoId.of(EMP_UUID);
+        LocalDate fecha = LocalDate.of(2025, 4, 1);
+        AsignacionProyecto ap = AsignacionProyecto.crear(AsignacionProyectoId.generate(), eid,
+                ProyectoId.from(PRJ_UUID), RecursoProxyId.generate(), LocalDate.of(2025, 3, 1),
+                LocalDate.of(2025, 5, 1), null, null);
+        assertThrows(AsignacionSuperpuestaException.class,
+                () -> RegistroAsistenciaPolitica.delegarValidacionSolapeAsignacionR03(
+                        new RegimenCivilSolapeValidator(), eid, fecha, List.of(ap)));
     }
 
     private static Empleado empleadoEnEstado(EstadoEmpleado estado) {

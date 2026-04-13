@@ -9,17 +9,17 @@ import java.util.Collection;
 /**
  * Puerto de dominio para la validación de solapes de asignación empleado ↔ proyecto (invariante R-03).
  * <p>
- * Recibe el identificador del empleado, la ventana temporal candidata (inicio/fin inclusive según política
- * que defina el adaptador) y las asignaciones ya conocidas para ese contexto de validación.
+ * Recibe el identificador del empleado, la ventana temporal candidata (inicio/fin inclusive; fin {@code null}
+ * = abierta) y las asignaciones ya conocidas para ese contexto de validación.
  * </p>
  */
 public interface AsignacionSolapeValidator {
 
     /**
-     * Garantiza que la ventana candidata no viola las reglas de solape acordadas para R-03.
+     * Garantiza que la ventana candidata no viola las reglas de solape R-03 (intersección inclusiva de
+     * intervalos de fechas frente a las asignaciones del mismo empleado).
      * <p>
-     * La semántica multi-sitio permanece marcada como {@code AMBIGUITY_DETECTED} en el canónico RRHH;
-     * la implementación de referencia en código permanece bloqueada hasta decisión de PO.
+     * Implementación de referencia: {@link com.budgetpro.domain.rrhh.service.RegimenCivilSolapeValidator}.
      * </p>
      *
      * @param empleadoId              trabajador bajo validación
