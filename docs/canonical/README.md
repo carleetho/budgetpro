@@ -12,8 +12,8 @@ These notebooks are designed to:
 
 ## Directory Structure
 
-- `radiography/`: Cross-cutting analyses of the current system state (5 notebooks).
-- `modules/`: Prescriptive 3-month roadmaps for each of the 9 modules.
+- `radiography/`: Análisis del estado actual (p. ej. `MODULE_SPECS_CURRENT`, `DATA_MODEL_CURRENT`, `MODULE_CODE_ALIGNMENT_INDEX`, `CODE_DOC_REVIEW_LOG`).
+- `modules/`: Especificación por dominio (**17** notebooks `*_MODULE_CANONICAL.md`).
 - `templates/`: Reusable markdown structures for creating consistent notebooks.
 
 ## Usage
