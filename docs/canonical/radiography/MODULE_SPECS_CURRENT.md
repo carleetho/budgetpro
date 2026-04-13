@@ -2,7 +2,8 @@
 
 > **Scope**: Module Maturity  
 > **Last Updated**: 2026-04-12  
-> **Authors**: Ing. CL, Antigravity, BudgetPro (code-first sync)
+> **Authors**: Ing. CL, Antigravity, BudgetPro (code-first sync)  
+> **Scoreboard (17 notebooks, orden gaps)**: [SCOREBOARD_17.md](./SCOREBOARD_17.md) · **Programa gaps v2**: [gaps/README.md](./gaps/README.md)
 
 ## 1. Maturity Assessment
 

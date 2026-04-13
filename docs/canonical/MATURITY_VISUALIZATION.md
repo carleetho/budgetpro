@@ -3,6 +3,12 @@
 > **Goal**: Communicate status at a glance.  
 > **Last Updated**: 2026-04-12 — Alineado con `MODULE_SPECS_CURRENT.md` y `MODULE_CODE_ALIGNMENT_INDEX.md` (no sustituye notebooks).
 
+## 0. Tablero de los 17 módulos
+
+El **orden de trabajo** del programa de gaps y el **% único por módulo** están en **[`radiography/SCOREBOARD_17.md`](radiography/SCOREBOARD_17.md)**. La matriz y el diagrama de abajo son plantillas de comunicación (subconjunto de módulos); no sustituyen ese tablero.
+
+- Estudios de brecha: [`radiography/gaps/README.md`](radiography/gaps/README.md)
+
 ## 1. Maturity Matrix (Markdown Table)
 
 Good for detailed reports.

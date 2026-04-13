@@ -9,6 +9,7 @@
 - Inventario REST desde `*Controller.java` bajo `infrastructure/rest`.
 - Contraste con `docs/canonical/modules/*_MODULE_CANONICAL.md` y radiografía (`MODULE_SPECS_CURRENT`, `DATA_MODEL_CURRENT`, `MODULE_CODE_ALIGNMENT_INDEX`).
 - Referencias: `docs/canonical/REVIEW_CHECKLIST.md`, `docs/canonical/AI_VALIDATION_CHECKLIST.md` (aplicación manual en esta pasada).
+- Programa de gaps por módulo (plantilla, orden de trabajo): [`gaps/README.md`](./gaps/README.md) · tablero de madurez: [`SCOREBOARD_17.md`](./SCOREBOARD_17.md).
 
 ## 2. Hallazgos corregidos (doc desfasada)
 

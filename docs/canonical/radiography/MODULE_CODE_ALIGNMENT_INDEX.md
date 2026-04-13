@@ -72,10 +72,11 @@ Referencias verificadas en `backend/.../infrastructure/rest` y migraciones `V27`
 
 ## 4. Cola siguiente (orden sugerido)
 
-1. Actualizar artefactos OpenAPI / Swagger donde rutas nuevas no estén publicadas.
-2. **`MATURITY_VISUALIZATION.md`**: matriz por módulo vs porcentajes de `MODULE_SPECS_CURRENT`.
-3. **Compras “Next”**: comparativo de precios, workflow avanzado (roadmap canónico).
-4. **Producción**: unificar contrato dual `ProduccionController` vs `ReporteProduccionController`.
+1. **Programa gaps v2 (Ola 0)**: tablero único [SCOREBOARD_17.md](./SCOREBOARD_17.md); estudios y plantilla [gaps/README.md](./gaps/README.md).
+2. Actualizar artefactos OpenAPI / Swagger donde rutas nuevas no estén publicadas.
+3. **`MATURITY_VISUALIZATION.md`**: matriz por módulo vs porcentajes de `MODULE_SPECS_CURRENT` (o enlace explícito al scoreboard ya añadido en §0).
+4. **Compras “Next”**: comparativo de precios, workflow avanzado (roadmap canónico).
+5. **Producción**: unificar contrato dual `ProduccionController` vs `ReporteProduccionController`.
 
 ### 4.1. Seguimiento técnico
 
