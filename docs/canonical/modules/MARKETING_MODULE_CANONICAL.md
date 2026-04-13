@@ -88,3 +88,5 @@ Para crear lead público: validaciones de entrada estrictas para seguridad.
 | GET | `/api/v1/marketing/leads/{leadId}` | Detalle lead |
 
 **Seguridad:** `/api/public/**` — **sin JWT** (`permitAll` en `SecurityConfig`). Las rutas `/api/v1/marketing/**` caen bajo **`.anyRequest().authenticated()`** (JWT obligatorio). **Deuda:** transiciones de estado / CRM workflow, mutaciones internas vía casos de uso (hoy solo GET en controlador interno).
+
+**Estudio de gaps (Ola 1):** [MARKETING_GAP_STUDY.md](../radiography/gaps/MARKETING_GAP_STUDY.md) — **O-09** y paginación **O-01** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).

@@ -183,6 +183,8 @@ if (atributos == null) {
 
 **Deuda:** sin `DELETE` REST explícito; sin paginación/filtros en `GET` listado.
 
+**Estudio de gaps (Ola 1b):** [RECURSOS_GAP_STUDY.md](../radiography/gaps/RECURSOS_GAP_STUDY.md) — **O-01** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
+
 ### Casos de uso
 
 | UC | Descripción | Implementación |

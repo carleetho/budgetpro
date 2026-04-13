@@ -119,6 +119,8 @@ graph TD
 
 **Deuda REST menor:** paginación/filtrado en listado; certificado de pago (UC-ES04).
 
+**Estudio de gaps (Ola 1b):** [ESTIMACION_GAP_STUDY.md](../radiography/gaps/ESTIMACION_GAP_STUDY.md).
+
 ## 9. Observability
 
 - **Metrics**: `estimacion.value.avg`

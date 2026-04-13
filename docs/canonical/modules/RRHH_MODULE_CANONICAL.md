@@ -2,7 +2,7 @@
 
 > **Status**: Partial (≈35%; code-aligned)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-04-07
+> **Last Updated**: 2026-04-12
 
 > [!CAUTION]
 > **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
@@ -116,10 +116,29 @@ graph TD
 
 ## 8. REST Endpoints
 
-| Method | Path                            | Description      | Status |
-| ------ | ------------------------------- | ---------------- | ------ |
-| PUT    | `/api/v1/configuracion-laboral` | Set global rates | ✅     |
-| POST   | `/api/v1/personal`              | Register worker  | 🟡 (ver OpenAPI/código; flujo principal vía caso de uso) |
+Superficie bajo **`/api/v1/rrhh`** (controladores en `infrastructure/rest/rrhh/controller`). Ver evidencia en [RRHH_GAP_STUDY.md](../radiography/gaps/RRHH_GAP_STUDY.md).
+
+| Method | Path | Controller | Descripción | Status |
+| ------ | ---- | ---------- | ----------- | ------ |
+| PUT | `/api/v1/rrhh/configuracion/global` | `ConfiguracionLaboralExtendidaController` | Config laboral global | ✅ |
+| PUT | `/api/v1/rrhh/configuracion/proyectos/{proyectoId}` | idem | Config por proyecto | ✅ |
+| GET | `/api/v1/rrhh/configuracion/proyectos/{proyectoId}/historial` | idem | Historial FSR (query fechas) | ✅ |
+| POST | `/api/v1/rrhh/empleados` | `EmpleadoController` | Crear empleado | ✅ |
+| GET | `/api/v1/rrhh/empleados/{id}` | idem | Detalle | ✅ |
+| GET | `/api/v1/rrhh/empleados` | idem | Listado (opcional `estado`) | ✅ |
+| PUT | `/api/v1/rrhh/empleados/{id}` | idem | Actualizar | ✅ |
+| DELETE | `/api/v1/rrhh/empleados/{id}` | idem | Inactivar | ✅ |
+| POST | `/api/v1/rrhh/asistencias` | `AsistenciaController` | Registrar asistencia | 🟡 |
+| GET | `/api/v1/rrhh/asistencias` | idem | Listar por empleado o proyecto + rango fechas | 🟡 |
+| GET | `/api/v1/rrhh/asistencias/resumen` | idem | Resumen mensual | ✅ |
+| POST | `/api/v1/rrhh/nominas/calcular` | `NominaController` | Calcular nómina | 🟡 |
+| GET | `/api/v1/rrhh/nominas/{id}` | idem | Consultar nómina | ✅ |
+| POST | `/api/v1/rrhh/cuadrillas` | `CuadrillaController` | Crear cuadrilla | ✅ |
+| GET | `/api/v1/rrhh/cuadrillas/{id}` | idem | Detalle | ✅ |
+| GET | `/api/v1/rrhh/cuadrillas` | idem | Listar | ✅ |
+| PUT | `/api/v1/rrhh/cuadrillas/{id}/miembros` | idem | Miembros | ✅ |
+| POST | `/api/v1/rrhh/cuadrillas/{id}/actividades` | idem | Asignar actividad | ✅ |
+| GET | `/api/v1/rrhh/costos` | `CostosLaboralesController` | Costos laborales por proyecto + rango | 🟡 |
 
 ## 9. Observability
 

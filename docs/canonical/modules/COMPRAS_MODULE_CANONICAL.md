@@ -149,6 +149,8 @@ graph TD
 | PUT | `/api/v1/proveedores/{id}` | Actualizar | ✅ |
 | DELETE | `/api/v1/proveedores/{id}` | Eliminar / baja lógica según dominio | ✅ |
 
+**Estudio de gaps (Ola 1b):** [COMPRAS_GAP_STUDY.md](../radiography/gaps/COMPRAS_GAP_STUDY.md) — **O-01** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
+
 ## 9. Observability
 
 - **Metrics**: `purchase.total.amount`

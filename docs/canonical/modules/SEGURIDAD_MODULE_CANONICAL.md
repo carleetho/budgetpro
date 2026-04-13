@@ -2,7 +2,7 @@
 
 > **Scope**: Autenticación JWT stateless, registro/login, filtro de seguridad  
 > **Status**: Functional (75%)  
-> **Last Updated**: 2026-04-08  
+> **Last Updated**: 2026-04-12  
 > **Authors**: Antigravity (sync código `main`)
 
 **Config:** `com.budgetpro.infrastructure.config.SecurityConfig` · **REST:** `AuthController` → `/api/v1/auth` · **JWT:** `JwtService`, `JwtAuthenticationFilter` · **Usuarios:** `UsuarioEntity`, `UsuarioJpaRepository`.
@@ -216,3 +216,5 @@ this.expiration = Duration.ofHours(expirationHours);
 **Política HTTP (REGLA-052):** `SecurityConfig` permite sin autenticación `/api/public/**`, `/api/v1/auth/**`, `/v3/api-docs/**`, `/swagger-ui/**`; el resto exige JWT válido.
 
 **CORS:** ver `SecurityConfig.corsConfigurationSource` (p. ej. `localhost:3000` en configuración actual).
+
+**Estudio de gaps (Ola 1b):** [SEGURIDAD_GAP_STUDY.md](../radiography/gaps/SEGURIDAD_GAP_STUDY.md).

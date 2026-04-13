@@ -156,6 +156,8 @@
 | POST   | `/api/v1/auth/login`    | JWT Login   | ✅     |
 | POST   | `/api/v1/auth/register` | Sign up     | ✅     |
 
+**Estudio de gaps (Ola 1b):** [CROSS_CUTTING_GAP_STUDY.md](../radiography/gaps/CROSS_CUTTING_GAP_STUDY.md) — **O-02**, **O-04** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
+
 ## 9. Observability
 
 - **Metrics**: `http.request.count`, `p99.latency`

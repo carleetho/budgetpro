@@ -2,7 +2,8 @@
 
 > **Scope**: Module Maturity  
 > **Last Updated**: 2026-04-12  
-> **Authors**: Ing. CL, Antigravity, BudgetPro (code-first sync)
+> **Authors**: Ing. CL, Antigravity, BudgetPro (code-first sync)  
+> **Scoreboard (17 notebooks, orden gaps)**: [SCOREBOARD_17.md](./SCOREBOARD_17.md) · **Programa gaps v2**: [gaps/README.md](./gaps/README.md)
 
 ## 1. Maturity Assessment
 
@@ -36,3 +37,9 @@
 
 Inventario de **17** notebooks en `docs/canonical/modules/`, mapeo a paquetes Java, REST y **tier** de auditoría:  
 **[MODULE_CODE_ALIGNMENT_INDEX.md](./MODULE_CODE_ALIGNMENT_INDEX.md)**.
+
+## 5. Criterios para subir el % (Ola 2)
+
+El **% oficial por módulo** vive en **[SCOREBOARD_17.md](./SCOREBOARD_17.md)** y debe coincidir con la cabecera `Status` del canónico tras cada **I1**.
+
+Los umbrales mínimos **+5%** y **+10%** (cierre P0 / P0+P1, evidencia code-first) y la separación entre **madurez de producto** y **cobertura documental de reglas** están detallados en **[gaps/README.md — Criterios de madurez (Ola 2)](./gaps/README.md#criterios-de-madurez-ola-2)**.

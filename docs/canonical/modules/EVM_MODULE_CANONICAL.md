@@ -122,9 +122,11 @@ graph TD
 | GET    | `/api/v1/evm/{proyectoId}/forecast`  | Forecast completion date     | ✅     |
 | POST   | `/api/v1/evm/{proyectoId}/cerrar-periodo` | Close period (E-04)     | ✅     |
 
+**Estudio de gaps (Ola 1b):** [EVM_GAP_STUDY.md](../radiography/gaps/EVM_GAP_STUDY.md) — alineación §9 con [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md) **H-10**.
+
 ## 9. Observability
 
-- **Metrics**: `evm.progress.registered.count` (planned, not yet instrumented)
+- **Metrics**: `evm.progress.registered.count` — instrumentado vía `EvmMetrics` (`METRIC_EVM_PROGRESS_REGISTERED_COUNT`; p. ej. incremento en `ValuacionCerradaEventListener` tras cierre de valuación). Sync 2026-04-12.
 - **Logs**: `ValuacionCerradaEventListener`, `EVMPeriodoCierreScheduler`
 
 ## 10. Integration Points

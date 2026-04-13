@@ -55,6 +55,8 @@ En API de **actualización de rendimiento**, el path usa `{apuSnapshotId}` (iden
 
 **Nota:** Las rutas viven bajo prefijo `/api/v1` (no hay subcontrolador `/api/v1/apu` raíz para el POST de creación).
 
+**Estudio de gaps (Ola 1b):** [APU_GAP_STUDY.md](../radiography/gaps/APU_GAP_STUDY.md).
+
 ## 6. Integración
 
 - **Partidas:** creación anidada en `partidaId`; validación de existencia en `CrearApuUseCaseImpl` (`PartidaRepository`).

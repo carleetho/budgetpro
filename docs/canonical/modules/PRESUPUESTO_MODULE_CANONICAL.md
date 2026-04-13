@@ -183,6 +183,8 @@ graph TD
 | PUT    | `/api/v1/configuracion-laboral` | Config global | ✅ |
 | PUT    | `/api/v1/proyectos/{proyectoId}/configuracion-laboral` | Config por proyecto | ✅ |
 
+**Estudio de gaps (Ola 1b):** [PRESUPUESTO_GAP_STUDY.md](../radiography/gaps/PRESUPUESTO_GAP_STUDY.md).
+
 ## 9. Observability
 
 - **Metrics**: `budget.created.count`, `budget.value.total`
