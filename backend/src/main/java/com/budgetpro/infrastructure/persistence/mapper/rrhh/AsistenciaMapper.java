@@ -17,7 +17,7 @@ public class AsistenciaMapper {
 
     public AsistenciaRegistro toDomain(AsistenciaRegistroEntity entity) {
         if (entity == null) {
-            return null;
+            throw new IllegalArgumentException("AsistenciaRegistroEntity no puede ser null");
         }
         // Ubicacion is not present in Entity, so passing null.
         return AsistenciaRegistro.registrar(AsistenciaId.of(entity.getId()),
@@ -27,7 +27,7 @@ public class AsistenciaMapper {
 
     public AsistenciaRegistroEntity toEntity(AsistenciaRegistro domain) {
         if (domain == null) {
-            return null;
+            throw new IllegalArgumentException("AsistenciaRegistro (dominio) no puede ser null");
         }
         AsistenciaRegistroEntity entity = new AsistenciaRegistroEntity();
         entity.setId(domain.getId().getValue());

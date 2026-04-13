@@ -114,6 +114,28 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponses.error(HttpStatus.PRECONDITION_FAILED.value(), "PROYECTO_NO_ACTIVO", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.budgetpro.domain.rrhh.exception.InactiveWorkerException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleInactiveWorker(
+            com.budgetpro.domain.rrhh.exception.InactiveWorkerException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "INACTIVE_WORKER", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.budgetpro.domain.rrhh.exception.TrabajadorNoAsignadoAlProyectoException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleTrabajadorNoAsignadoAlProyecto(
+            com.budgetpro.domain.rrhh.exception.TrabajadorNoAsignadoAlProyectoException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "EMPLEADO_NO_ASIGNADO_PROYECTO",
+                        ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.budgetpro.application.rrhh.exception.AsistenciaSuperpuestaException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleAsistenciaSuperpuesta(
+            com.budgetpro.application.rrhh.exception.AsistenciaSuperpuestaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "ASISTENCIA_SUPERPUESTA", ex.getMessage()));
+    }
+
     @ExceptionHandler(com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException.class)
     public ResponseEntity<ErrorResponses.ErrorResponse> handleConfiguracionLaboralNotFound(
             com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException ex) {
