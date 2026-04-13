@@ -66,6 +66,7 @@
 ## 6. Candidatos de cierre (priorizado)
 
 1. **P0 (negocio / compliance)**: Definir con PO el alcance R-03 multi-sitio y reglas de régimen; no incrementar % sin cierre acordado.
+   - **I1 (2026-04-13) — base técnica R-03 (sin cierre de negocio)**: en dominio RRHH existe el puerto `com.budgetpro.domain.rrhh.port.AsignacionSolapeValidator` (empleado, ventana `fechaInicio`/`fechaFin`, colección de `AsignacionProyecto`). La implementación de referencia `AmbiguityBlockedAsignacionSolapeValidator` **no** contiene algoritmo de solape: lanza `UnsupportedOperationException` explícita por `[AMBIGUITY_DETECTED]` / decisión de PO pendiente. Tests JUnit 5 cubren el bloqueo del stub y el contrato de error en asignación (`AsignacionProyectoConflictoException` → 409 `ASIGNACION_PROYECTO_CONFLICTO` vía `GlobalExceptionHandler` cuando el repositorio detecta solape). **Pendiente**: definición multi-sitio + sustitución del stub por política acordada y cableado del puerto al flujo de aplicación.
 2. ~~**P1**: Asignación empleado ↔ proyecto vía REST~~ **Hecho (2026-04-13)**: `POST .../empleados/{empleadoId}/asignaciones`; conflicto solape → 409 documentado en handler.
 3. ~~**P2**: Endurecer contrato `GET .../asistencias`~~ **Hecho (2026-04-13)**: 400 + `GlobalExceptionHandler` + `FiltrosConsultaAsistenciaIncompletosException`; pendiente OpenAPI/Swagger si aplica.
 4. **P2**: Nómina — roadmap hacia tabla ISR progresiva (fuera de este G0).
@@ -103,5 +104,5 @@ Un **solo** objetivo por PR; no mezclar cierre completo de **R-03 / GR-02** (mul
 
 - **Rama**: `feature/i1-rrhh-asignacion-rest` (opción A) o `feature/i1-rrhh-asistencias-contract` (opción B).
 - **Mismo PR I1**: código + cabecera `Status` del [canónico](../../modules/RRHH_MODULE_CANONICAL.md) y fila del scoreboard **solo si** aplica salto Ola 2 (DoD P0/P1); si no sube %, actualizar solo gap study + `CODE_DOC_REVIEW_LOG.md` (cerrar O-* o dejar nota).
-- **R-03 (GR-02)**: reservar para un PR posterior dedicado, con criterios de solape acordados en canónico y tests de dominio.
+- **R-03 (GR-02)**: el PR dedicado con criterios de solape multi-sitio acordados sigue pendiente; el **2026-04-13** añadió solo puerto dominio + stub bloqueado + tests de contrato (ver §6 ítem 1).
 
