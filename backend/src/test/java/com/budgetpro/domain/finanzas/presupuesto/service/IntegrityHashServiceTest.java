@@ -316,8 +316,7 @@ class IntegrityHashServiceTest {
 
     private APUSnapshot crearAPUSnapshotConRendimientoDiferente(UUID partidaId) {
         APUSnapshot apu = crearAPUSnapshot(partidaId);
-        apu.actualizarRendimiento(new BigDecimal("3.0"), UUID.randomUUID());
-        return apu;
+        return apu.actualizarRendimiento(new BigDecimal("3.0"), UUID.randomUUID());
     }
 
     private List<Partida> crearPartidasConEstadoFinanciero() {

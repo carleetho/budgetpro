@@ -109,18 +109,21 @@ class ActualizarRendimientoUseCaseImplTest {
         when(presupuestoRepository.findById(any(PresupuestoId.class))).thenReturn(Optional.of(presupuesto));
         when(calculoApuDinamicoService.calcularCostoTotalAPU(any(APUSnapshot.class), anyString()))
                 .thenReturn(costoTotalEsperado);
-        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenReturn(apuSnapshot);
+        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
         useCase.actualizarRendimiento(apuSnapshotId, nuevoRendimiento, usuarioId);
 
         // Then
-        assertThat(apuSnapshot.getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
-        assertThat(apuSnapshot.isRendimientoModificado()).isTrue();
-        assertThat(apuSnapshot.getRendimientoModificadoPor()).isEqualTo(usuarioId);
-        assertThat(apuSnapshot.getRendimientoModificadoEn()).isNotNull();
+        var captor = org.mockito.ArgumentCaptor.forClass(APUSnapshot.class);
+        verify(apuSnapshotRepository).save(captor.capture());
 
-        verify(apuSnapshotRepository).save(apuSnapshot);
+        APUSnapshot saved = captor.getValue();
+        assertThat(saved.getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
+        assertThat(saved.isRendimientoModificado()).isTrue();
+        assertThat(saved.getRendimientoModificadoPor()).isEqualTo(usuarioId);
+        assertThat(saved.getRendimientoModificadoEn()).isNotNull();
+
         verify(calculoApuDinamicoService).calcularCostoTotalAPU(any(APUSnapshot.class), anyString());
         verify(integrityHashService, never()).calculateExecutionHash(any(Presupuesto.class));
     }
@@ -145,15 +148,17 @@ class ActualizarRendimientoUseCaseImplTest {
         when(presupuestoRepository.findById(any(PresupuestoId.class))).thenReturn(Optional.of(presupuesto));
         when(calculoApuDinamicoService.calcularCostoTotalAPU(any(APUSnapshot.class), anyString()))
                 .thenReturn(costoTotalEsperado);
-        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenReturn(apuSnapshot);
+        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenAnswer(inv -> inv.getArgument(0));
         doNothing().when(presupuestoRepository).save(any(Presupuesto.class));
 
         // When
         useCase.actualizarRendimiento(apuSnapshotId, nuevoRendimiento, usuarioId);
 
         // Then
-        assertThat(apuSnapshot.getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
-        verify(apuSnapshotRepository).save(apuSnapshot);
+        var captor = org.mockito.ArgumentCaptor.forClass(APUSnapshot.class);
+        verify(apuSnapshotRepository).save(captor.capture());
+        assertThat(captor.getValue().getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
+
         verify(presupuestoRepository).save(presupuesto);
         verify(integrityHashService, times(2)).calculateExecutionHash(presupuesto); // Una vez al aprobar, otra al actualizar
     }
@@ -232,7 +237,7 @@ class ActualizarRendimientoUseCaseImplTest {
         when(presupuestoRepository.findById(any(PresupuestoId.class))).thenReturn(Optional.of(presupuesto));
         when(calculoApuDinamicoService.calcularCostoTotalAPU(any(APUSnapshot.class), anyString()))
                 .thenReturn(costoTotalEsperado);
-        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenReturn(apuSnapshot);
+        when(apuSnapshotRepository.save(any(APUSnapshot.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
         useCase.actualizarRendimiento(apuSnapshotId, nuevoRendimiento, usuarioId);
@@ -240,6 +245,8 @@ class ActualizarRendimientoUseCaseImplTest {
         // Then
         verify(calculoApuDinamicoService).calcularCostoTotalAPU(eq(apuSnapshot), anyString());
         // El servicio de cálculo debe manejar el recálculo en cascada de herramientas
-        assertThat(apuSnapshot.getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
+        var captor = org.mockito.ArgumentCaptor.forClass(APUSnapshot.class);
+        verify(apuSnapshotRepository).save(captor.capture());
+        assertThat(captor.getValue().getRendimientoVigente()).isEqualByComparingTo(nuevoRendimiento);
     }
 }

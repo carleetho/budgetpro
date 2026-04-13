@@ -1,6 +1,6 @@
 package com.budgetpro.domain.logistica.compra.model;
 
-import com.budgetpro.application.compra.exception.BusinessRuleException;
+import com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException;
 import com.budgetpro.domain.logistica.almacen.model.AlmacenId;
 import com.budgetpro.domain.logistica.almacen.model.MovimientoAlmacenId;
 import org.junit.jupiter.api.DisplayName;
@@ -76,7 +76,7 @@ class RecepcionTest {
 
         // When/Then
         assertThatThrownBy(() -> Recepcion.crear(id, compraId, fechaRecepcion, null, detalles, usuarioId))
-                .isInstanceOf(BusinessRuleException.class)
+                .isInstanceOf(CompraDomainRuleException.class)
                 .hasMessageContaining("La Guía de Remisión es obligatoria para recepción de bienes físicos");
     }
 
@@ -92,11 +92,11 @@ class RecepcionTest {
 
         // When/Then
         assertThatThrownBy(() -> Recepcion.crear(id, compraId, fechaRecepcion, "  ", detalles, usuarioId))
-                .isInstanceOf(BusinessRuleException.class)
+                .isInstanceOf(CompraDomainRuleException.class)
                 .hasMessageContaining("La Guía de Remisión es obligatoria para recepción de bienes físicos");
 
         assertThatThrownBy(() -> Recepcion.crear(id, compraId, fechaRecepcion, "", detalles, usuarioId))
-                .isInstanceOf(BusinessRuleException.class)
+                .isInstanceOf(CompraDomainRuleException.class)
                 .hasMessageContaining("La Guía de Remisión es obligatoria para recepción de bienes físicos");
     }
 

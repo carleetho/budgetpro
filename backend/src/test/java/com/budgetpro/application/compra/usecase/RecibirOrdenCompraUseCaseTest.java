@@ -2,6 +2,9 @@ package com.budgetpro.application.compra.usecase;
 
 import com.budgetpro.application.compra.command.RecibirOrdenCompraCommand;
 import com.budgetpro.application.compra.exception.BusinessRuleException;
+import com.budgetpro.application.compra.exception.DuplicateReceptionException;
+import com.budgetpro.application.compra.exception.InvalidStateException;
+import com.budgetpro.application.compra.exception.ProjectNotActiveException;
 import com.budgetpro.domain.catalogo.model.RecursoProxy;
 import com.budgetpro.domain.catalogo.model.RecursoProxyId;
 import com.budgetpro.domain.catalogo.port.RecursoProxyRepository;
@@ -332,7 +335,7 @@ class RecibirOrdenCompraUseCaseTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar BusinessRuleException si el proyecto no está ACTIVO")
+    @DisplayName("Debe lanzar ProjectNotActiveException si el proyecto no está ACTIVO")
     void debeLanzarExcepcionSiProyectoNoEstaActivo() {
         // Arrange
         Compra compra = crearCompraBasica(EstadoCompra.ENVIADA);
@@ -349,8 +352,8 @@ class RecibirOrdenCompraUseCaseTest {
         when(proyectoRepository.findById(proyectoDomainId)).thenReturn(Optional.of(proyecto));
 
         // Act & Assert
-        BusinessRuleException exception = assertThrows(
-            BusinessRuleException.class,
+        ProjectNotActiveException exception = assertThrows(
+            ProjectNotActiveException.class,
             () -> useCase.ejecutar(command)
         );
 
@@ -363,7 +366,7 @@ class RecibirOrdenCompraUseCaseTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar BusinessRuleException si la guía de remisión ya existe")
+    @DisplayName("Debe lanzar DuplicateReceptionException si la guía de remisión ya existe")
     void debeLanzarExcepcionSiGuiaRemisionDuplicada() {
         // Arrange
         Compra compra = crearCompraBasica(EstadoCompra.ENVIADA);
@@ -377,8 +380,8 @@ class RecibirOrdenCompraUseCaseTest {
             .thenReturn(true);
 
         // Act & Assert
-        BusinessRuleException exception = assertThrows(
-            BusinessRuleException.class,
+        DuplicateReceptionException exception = assertThrows(
+            DuplicateReceptionException.class,
             () -> useCase.ejecutar(command)
         );
 
@@ -454,7 +457,7 @@ class RecibirOrdenCompraUseCaseTest {
     }
 
     @Test
-    @DisplayName("Debe lanzar IllegalStateException si la compra no está en estado ENVIADA o PARCIAL")
+    @DisplayName("Debe lanzar InvalidStateException si la compra no está en estado ENVIADA o PARCIAL")
     void debeLanzarExcepcionSiEstadoCompraInvalido() {
         // Arrange
         Compra compra = crearCompraBasica(EstadoCompra.BORRADOR);
@@ -468,8 +471,8 @@ class RecibirOrdenCompraUseCaseTest {
             .thenReturn(false);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-            IllegalStateException.class,
+        InvalidStateException exception = assertThrows(
+            InvalidStateException.class,
             () -> useCase.ejecutar(command)
         );
 
