@@ -5,6 +5,7 @@ import com.budgetpro.domain.finanzas.evm.model.EVMTimeSeries;
 import com.budgetpro.domain.finanzas.evm.model.EVMTimeSeriesId;
 import com.budgetpro.domain.finanzas.evm.port.out.EVMDataProvider;
 import com.budgetpro.domain.finanzas.evm.port.out.EVMTimeSeriesRepository;
+import com.budgetpro.infrastructure.observability.EvmMetrics;
 import com.budgetpro.shared.SystemActorIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +27,15 @@ public class ValuacionCerradaEventListener {
 
     private final EVMTimeSeriesRepository repository;
     private final EVMDataProvider dataProvider;
+    private final EvmMetrics evmMetrics;
 
     public ValuacionCerradaEventListener(
             EVMTimeSeriesRepository repository,
-            EVMDataProvider dataProvider) {
+            EVMDataProvider dataProvider,
+            EvmMetrics evmMetrics) {
         this.repository = repository;
         this.dataProvider = dataProvider;
+        this.evmMetrics = evmMetrics;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -73,6 +77,7 @@ public class ValuacionCerradaEventListener {
         // 4) Persistencia con idempotencia
         try {
             repository.save(ts);
+            evmMetrics.progressRegistered();
         } catch (DataIntegrityViolationException ex) {
             log.warn(
                     "Duplicate ValuacionCerradaEvent ignored for proyectoId={} fechaCorte={} createdBy={}",
