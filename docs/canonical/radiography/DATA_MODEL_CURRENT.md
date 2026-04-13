@@ -1,8 +1,8 @@
 # DATA_MODEL_CURRENT.md — Current State Radiography
 
 > **Scope**: JPA/Database  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync Compras / OC; ampliación cola 5: EVM, RRHH, reajuste, recepciones, integridad, producción, alertas)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity, BudgetPro (Flyway V27–V33 + alineación JPA)
 
 ## 1. Overview
 
@@ -73,9 +73,9 @@ erDiagram
 | `Recepcion`            | id, compra_id, fecha, guía, auditoría (`V21`)    | N:1 `Compra`                                   | Cumplimiento recepción compra directa                                       |
 | `RecepcionDetalle`     | compra_detalle_id, recurso_id, almacen_id, cantidades (`V21`, `V23`) | N:1 Recepción                         | FK opcional `movimiento_almacen_id` → `movimiento_almacen`                 |
 
-**Almacén (JPA + FK en migraciones):** existen `AlmacenEntity`, `MovimientoAlmacenEntity`, `StockActualEntity` (paquete `entity.almacen`) usadas por `AlmacenController` / recepciones. Las migraciones `V21`/`V23` referencian tablas `almacen` y `movimiento_almacen`; **no** hay `CREATE TABLE` de esas tablas en el listado actual de `db/migration` del repositorio — validar despliegue (script externo, orden Flyway u omisión documentada).
+**Almacén (JPA + Flyway):** `V27__create_almacen_schema.sql` crea el esquema de almacén (`almacen`, `movimiento_almacen`, `stock_actual`, etc.) alineado a `AlmacenEntity` / `MovimientoAlmacenEntity` / `StockActualEntity` y a `AlmacenController`. Las migraciones `V21`/`V23` enlazan recepciones a `movimiento_almacen` donde aplica.
 
-**Transferencias:** columna `transferencia_id` en `movimiento_inventario` prepara trazabilidad; el dominio incluye `TransferenciaService` **sin** tabla dedicada localizada en migraciones en este escaneo (2026-04-08).
+**Transferencias:** columna `transferencia_id` en `movimiento_inventario` (`V10`); dominio `TransferenciaService` expuesto vía **`TransferenciaController`** (`POST /api/v1/transferencias/entre-bodegas`, `.../entre-proyectos`). No se documenta aquí una tabla `transferencia` dedicada: la trazabilidad opera vía movimientos de inventario/almacén según implementación.
 
 ### 3.4. Cronograma
 
@@ -115,14 +115,14 @@ Ajustes posteriores: `V26__rrhh_config_laboral_global_nullable_proyecto.sql` (nu
 | `estimacion_reajuste` | `EstimacionReajusteEntity` | Cabecera por proyecto/presupuesto/fecha; UK `(proyecto_id, numero_estimacion)` |
 | `detalle_reajuste_partida` | `DetalleReajustePartidaEntity` | Líneas por partida |
 
-**API:** `POST /api/v1/reajustes/calcular` (`ReajusteController`). **Migración:** no aparece un `CREATE TABLE` para estas tablas en el set actual de Flyway del repo; confirmar en BD real o añadir migración explícita si falta.
+**API:** `POST /api/v1/reajustes/calcular` (`ReajusteController`). **Migración:** `V32__create_reajuste_schema.sql` en el repo.
 
 ### 3.8. Integridad y análisis
 
 | Tabla | Migración | Uso |
 | ----- | --------- | ----- |
 | `presupuesto_integrity_audit` | `V17__create_presupuesto_integrity_audit.sql` | Eventos HASH_GENERATED / VALIDATED / VIOLATION (`IntegrityAuditLog`) |
-| `analisis_presupuesto` | (persistencia vía `AnalisisPresupuestoEntity`; confirmar migración en entorno) | Resultado de `AnalizarPresupuestoUseCase` / alertas paramétricas |
+| `analisis_presupuesto` | `V31__create_alertas_schema.sql` (esquema alertas / análisis según script) | Resultado de `AnalizarPresupuestoUseCase` / alertas paramétricas |
 
 ### 3.9. Producción (RPC)
 
@@ -135,7 +135,19 @@ Ajustes posteriores: `V26__rrhh_config_laboral_global_nullable_proyecto.sql` (nu
 
 | Tabla | Entidad | Notas |
 | ----- | ------- | ----- |
-| `marketing_lead` | `LeadEntity` | Leads públicos (`PublicController`). **Migración:** no localizada en `db/migration` del repo en este escaneo; validar entorno. |
+| `marketing_lead` | `LeadEntity` | Leads públicos (`PublicController`) y API interna (`MarketingLeadController`). **Migración:** `V30__create_marketing_lead.sql`. |
+
+### 3.11. Lote Flyway V27–V33 (suplemento al modelo core)
+
+| Script | Contenido resumido |
+| ------ | ------------------ |
+| `V27__create_almacen_schema.sql` | Esquema almacén / movimiento / stock |
+| `V28__create_estimacion_schema.sql` | Tablas `estimacion`, `detalle_estimacion` (y relaciones al esquema existente) |
+| `V29__create_produccion_schema.sql` | `reporte_produccion`, `detalle_rpc` |
+| `V30__create_marketing_lead.sql` | `marketing_lead` |
+| `V31__create_alertas_schema.sql` | Esquema análisis / alertas (`analisis_presupuesto`, etc.) |
+| `V32__create_reajuste_schema.sql` | `indice_precios`, `estimacion_reajuste`, `detalle_reajuste_partida` |
+| `V33__create_cronograma_operativo_schema.sql` | `actividad_programada`, `dependencia_actividad` |
 
 ## 4. Key Relationships
 
@@ -146,4 +158,4 @@ Ajustes posteriores: `V26__rrhh_config_laboral_global_nullable_proyecto.sql` (nu
 - **Recepciones compra directa:** `recepcion` / `recepcion_detalle` (`V21`) + vínculo opcional a `movimiento_almacen` (`V23`).
 - **EVM:** snapshots puntuales + serie temporal para reporting y cierre de período.
 - **RRHH:** esquema relacional amplio en `V15`; dominio en `com.budgetpro.domain.rrhh`.
-- **Reajuste / leads / almacén:** tablas mapeadas en JPA; contrastar siempre con `information_schema` en el entorno si falta DDL en el repo.
+- **Reajuste / leads / almacén / producción / cronograma operativo:** ver `V27`–`V33` en `db/migration`; contrastar con `information_schema` en entornos que aplicaron scripts manuales antes de Flyway.
