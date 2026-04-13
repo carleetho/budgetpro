@@ -1,7 +1,7 @@
 # PARTIDAS_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: WBS (partidas presupuestarias), jerarquía, metrados y vínculo con APU / avance físico  
-> **Status**: Functional (lectura parcial: por id + WBS; sin PUT/DELETE vía `/partidas`)  
+> **Status**: Functional (~65%; lectura parcial: por id + WBS; sin PUT/DELETE vía `/partidas`)  
 > **Owner**: Finanzas Team  
 > **Last Updated**: 2026-04-12  
 > **Authors**: Antigravity (sync código `main`), BudgetPro
