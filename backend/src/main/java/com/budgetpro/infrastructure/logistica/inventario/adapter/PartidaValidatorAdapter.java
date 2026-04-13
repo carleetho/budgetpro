@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
+@Component("inventarioPartidaValidatorAdapter")
 public class PartidaValidatorAdapter implements PartidaValidator {
 
     private final PartidaJpaRepository repository;
