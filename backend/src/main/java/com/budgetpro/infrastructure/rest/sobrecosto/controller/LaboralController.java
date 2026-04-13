@@ -13,6 +13,9 @@ import java.util.UUID;
 
 /**
  * Controller REST para operaciones de configuración laboral (FSR).
+ * <p>
+ * Superficie paralela a {@code /api/v1/rrhh/configuracion/**} (RRHH extendido); ver
+ * {@code docs/canonical/modules/RRHH_MODULE_CANONICAL.md} §8.1.
  */
 @RestController
 @RequestMapping("/api/v1")
