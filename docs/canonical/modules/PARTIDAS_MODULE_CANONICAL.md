@@ -207,8 +207,12 @@ Para crear partida vía REST: `presupuestoId`, `item`, `descripcion` y `nivel` o
 | PUT | `/api/v1/apu/{apuSnapshotId}/rendimiento` | Actualizar rendimiento de snapshot APU | `ApuController` |
 | GET | `/api/v1/partidas/{id}` | Obtener partida por id (`ObtenerPartidaUseCase`) | `PartidaController` |
 | GET | `/api/v1/partidas/wbs` | Árbol WBS (`?presupuestoId={uuid}`) (`ObtenerWbsUseCase`) | `PartidaController` |
+| GET | `/api/v1/partidas/{partidaId}/apu` | Obtener APU vigente por partida (`ObtenerApuUseCase`) | `ApuController` |
+| GET | `/api/v1/apu/{apuId}` | Obtener APU por id de snapshot | `ApuController` |
 
 **Lectura:** no hay `GET /api/v1/partidas` “plano” ni paginación por presupuesto fuera de WBS; `GET /api/v1/presupuestos/{id}` sigue siendo metadatos de presupuesto sin árbol embebido.
+
+**Estudio de gaps (Ola 1):** [PARTIDAS_GAP_STUDY.md](../radiography/gaps/PARTIDAS_GAP_STUDY.md) — **O-11** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
 
 ## 5. Persistencia (metrado y congelamiento)
 
