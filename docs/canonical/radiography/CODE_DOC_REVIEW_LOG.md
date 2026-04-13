@@ -40,6 +40,7 @@
 | O-08 | **Producción: `GET /produccion/reportes` sin proyectoId** | Responde 200 con lista vacía si falta `proyectoId` — [gaps/PRODUCCION_GAP_STUDY.md](./gaps/PRODUCCION_GAP_STUDY.md) (GF-04). |
 | O-09 | **Marketing: sin API autenticada para transición de estado de lead** | Solo creación pública (`NUEVO`) y `GET` internos; REGLA-108 sin mutación REST — [gaps/MARKETING_GAP_STUDY.md](./gaps/MARKETING_GAP_STUDY.md) (GF-01). |
 | O-10 | **Cronograma: `POST .../cronograma/baseline` en canónico §8 sin REST** | `CronogramaController` solo expone `POST .../actividades` y `GET .../cronograma`; sin mapping `.../baseline` en controladores auditados — [gaps/CRONOGRAMA_GAP_STUDY.md](./gaps/CRONOGRAMA_GAP_STUDY.md) (GF-01). |
+| O-11 | **Partidas: sin listado REST plano por presupuesto** | Solo `GET /partidas/{id}`, `GET /partidas/wbs?presupuestoId=` y creación; sin `GET /partidas?presupuestoId=` paginado — [gaps/PARTIDAS_GAP_STUDY.md](./gaps/PARTIDAS_GAP_STUDY.md) (GF-01). |
 
 ## 4. REGLA-* (muestra)
 
