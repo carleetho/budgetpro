@@ -67,3 +67,16 @@
 - Tablero: [SCOREBOARD_17.md](../SCOREBOARD_17.md) (fila Producción).
 - Hallazgos: [CODE_DOC_REVIEW_LOG.md](../CODE_DOC_REVIEW_LOG.md) §3 (O-07, O-08).
 - Canónico §1.1 enlazado desde el mismo PR.
+
+## 9. Ola Producción / Marketing — PRs incrementales (plan)
+
+Secuencia sugerida para **no** big-bang en **GF-01** (dual API). Cada fila = un PR I1 o G0 acotado.
+
+| # | PR | Entrega | Notas |
+| --- | --- | --- | --- |
+| P1 | `feature/i1-produccion-reportes-proyectoId` | **O-08 / GF-04**: exigir `proyectoId` (400 + problema) o contrato explícito documentado + test | No toca aún unificación de prefijos |
+| P2 | `feature/i1-produccion-listado-bd` | Reducir **GF-05**: paginación o límites en repositorio en `ReporteProduccionController#listar` | Mitiga patrón O-01 |
+| P3 | `feature/i1-produccion-aprobar-semantica` | **GF-02 / O-07** (parcial): alinear verbo/cuerpo entre `PATCH .../produccion` y `POST .../reportes/.../aprobar` vía adaptador o deprecación anunciada | Requiere decisión de producto |
+| P4 | `feature/i1-produccion-contrato-unico` | **GF-01**: una superficie pública acordada + migración de clientes + OpenAPI único | PR grande pero **último** en la secuencia |
+
+**Marketing** (**O-01** listado en memoria; **O-09** transición de estado): coordinar en ventana distinta o después de P2 si el mismo equipo toca paginación; ver [MARKETING_GAP_STUDY.md §9](./MARKETING_GAP_STUDY.md).

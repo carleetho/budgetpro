@@ -1,7 +1,7 @@
 # MODULE_CODE_ALIGNMENT_INDEX.md — Catálogo canónico ↔ código
 
 > **Scope**: Auditoría reverse-drift / cola de sincronización  
-> **Last Updated**: 2026-04-12  
+> **Last Updated**: 2026-04-13  
 > **Authors**: Antigravity (code-first scan), BudgetPro (sync canónica)
 
 ## 1. Clasificación (prioridad de revisión)
@@ -46,7 +46,7 @@ Referencias verificadas en `backend/.../infrastructure/rest` y migraciones `V27`
 | 9 | `INVENTARIO_MODULE_CANONICAL.md` | `domain.logistica.inventario`, almacén, transferencia | inventario proyecto, almacén movimientos, `POST /transferencias/*` | P1 | Sync 2026-04-12: GET movimientos almacén; transferencias REST |
 | 10 | `EVM_MODULE_CANONICAL.md` | `domain.finanzas.evm` | `/api/v1/evm` | — | Métrica `evm.progress.registered.count` implementada (listener) |
 | 11 | `PRODUCCION_MODULE_CANONICAL.md` | `application.produccion`, JPA RPC | `POST/GET .../proyectos/{id}/produccion`, `/api/v1/produccion/reportes/*` | P2 | Dual controller; sin cambio en esta sync |
-| 12 | `RRHH_MODULE_CANONICAL.md` | `domain.rrhh` | `/api/v1/rrhh/*` | P1 | Canónico ≈35% |
+| 12 | `RRHH_MODULE_CANONICAL.md` | `domain.rrhh` | `/api/v1/rrhh/*`; `POST .../rrhh/empleados/{id}/asignaciones` | P1 | Canónico ≈35%; asignación REST alineada (2026-04-13) |
 | 13 | `ALERTAS_MODULE_CANONICAL.md` | `domain.finanzas.alertas` | `GET /api/v1/analisis/alertas/{presupuestoId}` | P2 | Flyway `V31__create_alertas_schema.sql` en repo |
 | 14 | `AUDITORIA_MODULE_CANONICAL.md` | `AuditEntity`, `IntegrityAuditLog` | transversal (sin REST auditoría) | P3 | Sin cambio en esta sync |
 | 15 | `MARKETING_MODULE_CANONICAL.md` | `LeadService`, `LeadEntity` | `POST /api/public/v1/demo-request` + `/api/v1/marketing/leads` | P3 | Sync 2026-04-12: API interna de leads; DDL `V30` |

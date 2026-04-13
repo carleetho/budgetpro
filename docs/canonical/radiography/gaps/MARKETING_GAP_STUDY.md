@@ -64,3 +64,15 @@
 
 - Tablero: [SCOREBOARD_17.md](../SCOREBOARD_17.md).
 - Hallazgos: [CODE_DOC_REVIEW_LOG.md](../CODE_DOC_REVIEW_LOG.md) §3 (**O-01** compartido; **O-09** marketing).
+
+## 9. Ola Producción / Marketing — PRs incrementales (plan)
+
+Orden sugerido **solo Marketing** (complementa [PRODUCCION_GAP_STUDY.md §9](./PRODUCCION_GAP_STUDY.md)).
+
+| # | PR | Entrega | Notas |
+| --- | --- | --- | --- |
+| M1 | `feature/i1-marketing-lead-estado` | **O-09 / GF-01**: endpoint autenticado de transición de estado (p. ej. `PATCH /api/v1/marketing/leads/{id}`) + caso de uso + tests **REGLA-108** | Un flujo de negocio por PR; no añadir CRM completo |
+| M2 | `feature/i1-marketing-leads-paginacion-bd` | **O-01**: sustituir `findAll` + `subList` por consulta paginada en `MarketingLeadController` | Alineado a candidato §6.2 |
+| M3 | `feature/g0-marketing-publico-abuso` o I1 acotado | **GF-05**: rate limit / política en `POST /api/public/v1/demo-request` según amenaza aceptada | Puede empezar como spike G0 |
+
+**Coordinación con Producción**: si un mismo desarrollador aborda “paginación en memoria”, priorizar **P2** del gap Producción o **M2** aquí en PRs separados (dos ramas, dos revisiones).
