@@ -1,10 +1,10 @@
 # PARTIDAS_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: WBS (partidas presupuestarias), jerarquía, metrados y vínculo con APU / avance físico  
-> **Status**: Functional (alineado a capacidad actual de API; sin CRUD completo vía `/partidas`)  
+> **Status**: Functional (lectura parcial: por id + WBS; sin PUT/DELETE vía `/partidas`)  
 > **Owner**: Finanzas Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
 **Dominio:** `com.budgetpro.domain.finanzas.partida` · **Aplicación:** `com.budgetpro.application.partida` · **REST:** `com.budgetpro.infrastructure.rest.partida`, `...rest.avance`, `...rest.apu`.
 
@@ -190,6 +190,8 @@ Para crear partida vía REST: `presupuestoId`, `item`, `descripcion` y `nivel` o
 | UC-PT01 | Crear partida (raíz o hija) bajo presupuesto no congelado | `CrearPartidaUseCase` / `CrearPartidaUseCaseImpl` | ✅ |
 | — | Registrar avance físico de partida | `RegistrarAvanceUseCase` (`AvanceController`) | ✅ |
 | — | Crear APU asociado a partida | `CrearApuUseCase` (`ApuController`) | ✅ |
+| — | Obtener partida por id | `ObtenerPartidaUseCase` (`PartidaController`) | ✅ |
+| — | Obtener árbol WBS por presupuesto | `ObtenerWbsUseCase` (`GET .../wbs?presupuestoId=`) | ✅ |
 
 **Congelamiento (P-01):** si `presupuesto.isAprobado()` (estado `CONGELADO`), `CrearPartidaUseCaseImpl` lanza `FrozenBudgetException` antes de persistir.
 
@@ -203,8 +205,10 @@ Para crear partida vía REST: `presupuestoId`, `item`, `descripcion` y `nivel` o
 | POST | `/api/v1/partidas/{partidaId}/avances` | Registrar avance físico | `AvanceController` |
 | POST | `/api/v1/partidas/{partidaId}/apu` | Crear APU para la partida | `ApuController` |
 | PUT | `/api/v1/apu/{apuSnapshotId}/rendimiento` | Actualizar rendimiento de snapshot APU | `ApuController` |
+| GET | `/api/v1/partidas/{id}` | Obtener partida por id (`ObtenerPartidaUseCase`) | `PartidaController` |
+| GET | `/api/v1/partidas/wbs` | Árbol WBS (`?presupuestoId={uuid}`) (`ObtenerWbsUseCase`) | `PartidaController` |
 
-**Lectura de árbol WBS:** no hay `GET /api/v1/partidas`, `GET .../{id}` ni listado por presupuesto en `PartidaController`. `GET /api/v1/presupuestos/{id}` devuelve metadatos del presupuesto **sin** árbol de partidas; otras operaciones (explosión de insumos, OC, cronograma) consumen `partidaId` cuando ya se conoce el identificador.
+**Lectura:** no hay `GET /api/v1/partidas` “plano” ni paginación por presupuesto fuera de WBS; `GET /api/v1/presupuestos/{id}` sigue siendo metadatos de presupuesto sin árbol embebido.
 
 ## 5. Persistencia (metrado y congelamiento)
 
@@ -213,8 +217,8 @@ Para crear partida vía REST: `presupuestoId`, `item`, `descripcion` y `nivel` o
 
 ## 6. Deuda técnica y límites
 
-- [ ] **CRUD REST de partidas:** solo creación explícita; sin PUT/PATCH/DELETE ni GET por id en controlador dedicado.
-- [ ] **Listado / árbol:** sin endpoint de consulta bajo `/api/v1/partidas` (impacto en clientes y documentación OpenAPI).
+- [ ] **CRUD REST de partidas:** solo creación explícita; sin PUT/PATCH/DELETE.
+- [ ] **Listado plano:** sin `GET /api/v1/partidas` paginado por presupuesto (existe WBS vía query `presupuestoId`).
 - [ ] **Opcional:** alinear `CrearPartidaUseCaseImpl` con comando REST (hacer `nivel` opcional cuando hay `padreId` y calcular `padre.nivel + 1`) para reducir fricción del cliente.
 
 ## 7. Cruce con `PRESUPUESTO_MODULE_CANONICAL.md`

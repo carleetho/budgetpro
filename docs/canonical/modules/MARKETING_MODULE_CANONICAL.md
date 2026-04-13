@@ -1,12 +1,12 @@
 # MARKETING_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: Captación pública (leads / solicitud de demo)  
-> **Status**: Functional (40%) — superficie mínima (un POST público)  
+> **Status**: Functional (55%) — POST público + lectura interna paginada  
 > **Owner**: Growth Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
-**Aplicación:** `com.budgetpro.application.marketing.service.LeadService` · **Persistencia:** `LeadEntity` · **REST:** `PublicController` → `/api/public/v1`.
+**Aplicación:** `com.budgetpro.application.marketing.service.LeadService` · **Persistencia:** `LeadEntity` / `LeadJpaRepository` · **REST público:** `PublicController` → `/api/public/v1` · **REST interno:** `MarketingLeadController` → `/api/v1/marketing/leads`.
 
 ## 1. Module Overview
 Manages Leads and Public Inquiries.
@@ -31,7 +31,7 @@ Manages Leads and Public Inquiries.
 El estado de Lead debe estar en {NUEVO, CONTACTADO, CONVERTIDO}.
 
 **Implementation:**
-- **Database:** `V18__create_marketing_lead.sql`
+- **Database:** `V30__create_marketing_lead.sql`
 - **Constraint:** CHECK
 
 **Code Evidence:**
@@ -79,10 +79,12 @@ Para crear lead público: validaciones de entrada estrictas para seguridad.
 
 ---
 
-## Apéndice A — REST API (sync 2026-04-08)
+## Apéndice A — REST API (sync 2026-04-12)
 
 | Method | Path | Descripción |
 | --- | --- | --- |
 | POST | `/api/public/v1/demo-request` | Alta de lead (`CrearLeadRequest` → `LeadService.crearLead`) — **201** + `Location` `/api/public/v1/demo-request/{id}` |
+| GET | `/api/v1/marketing/leads` | Listado paginado (`page`, `size`, default 20, max 200) — lectura desde `LeadJpaRepository` |
+| GET | `/api/v1/marketing/leads/{leadId}` | Detalle lead |
 
-**Seguridad:** ruta bajo `/api/public/**` — **sin JWT** (`SecurityConfig` → `permitAll`). **Deuda:** CRM interno, listados admin y transiciones de estado vía API no expuestas en este controlador.
+**Seguridad:** `/api/public/**` — **sin JWT** (`permitAll` en `SecurityConfig`). Las rutas `/api/v1/marketing/**` caen bajo **`.anyRequest().authenticated()`** (JWT obligatorio). **Deuda:** transiciones de estado / CRM workflow, mutaciones internas vía casos de uso (hoy solo GET en controlador interno).

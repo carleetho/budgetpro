@@ -1,10 +1,10 @@
 # INVENTARIO_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: Stock por proyecto, costo promedio, movimientos de almacén (entrada/salida)  
-> **Status**: Functional (55%)  
+> **Status**: Functional (70%)  
 > **Owner**: Logistica Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
 **Dominio inventario:** `com.budgetpro.domain.logistica.inventario` (`GestionInventarioService`, etc.) · **Aplicación consulta:** `com.budgetpro.application.inventario` · **Almacén REST:** `com.budgetpro.application.almacen` + `AlmacenController` → `/api/v1/almacen`.
 
@@ -12,7 +12,7 @@
 
 | Phase       | Timeline  | Target State         | Deliverables                         |
 | ----------- | --------- | -------------------- | ------------------------------------ |
-| **Current** | Now       | 55% (Stock + almacén API) | Consulta por proyecto, movimientos almacén, PMP          |
+| **Current** | Now       | 70% (Stock + almacén + transferencias REST) | Consulta por proyecto, movimientos almacén, transferencias HTTP, PMP |
 | **Next**    | +1 Month  | 75%                  | Movements (Salida a Obra), Transfers |
 | **Target**  | +3 Months | 90%                  | Physical Audit, Waste Analysis       |
 
@@ -89,13 +89,14 @@
 | UC-I01 | View Stock                    | P0       | ✅               |
 | UC-I02 | Register Ingress (Purchase)   | P0       | ✅               |
 | UC-I03 | Register Egress (Consumption) | P1       | 🟡 **Parcial:** `POST /api/v1/almacen/movimientos` con `tipoMovimiento` **SALIDA** e imputación (`partidaId` cuando aplica; ver REGLA-049). No hay flujo REST separado “consumo obra” además de almacén. |
-| UC-I04 | Warehouse Transfer            | P2       | 🔴 Existe `TransferenciaService` en dominio (`domain.logistica.transferencia`); **sin** `TransferenciaController` / ruta REST dedicada (2026-04-08). |
+| UC-I04 | Warehouse Transfer            | P2       | ✅ `TransferenciaController` — `POST /api/v1/transferencias/entre-bodegas` y `POST /api/v1/transferencias/entre-proyectos` (orquesta dominio `TransferenciaService` / casos de uso asociados). |
 
 ## 7. Domain / application
 
 - **`GestionInventarioService`** y repositorios de dominio: PMP, validaciones de stock, integración con compras/recepciones.
 - **`ConsultarInventarioUseCase` / `ConsultarInventarioUseCaseImpl`:** lectura agregada por proyecto → REST.
 - **`RegistrarMovimientoAlmacenUseCase`:** registro de movimientos vía `AlmacenController`.
+- **`ConsultarMovimientosAlmacenUseCase`:** listado de movimientos por `almacenId` (filtro opcional `recursoId`).
 
 ## 8. REST Endpoints
 
@@ -103,6 +104,9 @@
 | ------ | ---- | ----------- | ------ |
 | GET | `/api/v1/proyectos/{proyectoId}/inventario` | Listar ítems de inventario del proyecto (`ConsultarInventarioUseCase`) | ✅ |
 | POST | `/api/v1/almacen/movimientos` | Registrar movimiento de almacén (entrada/salida; body `RegistrarMovimientoAlmacenRequest`) | ✅ |
+| GET | `/api/v1/almacen/movimientos` | Listar movimientos (`almacenId` obligatorio; `recursoId` opcional) | ✅ |
+| POST | `/api/v1/transferencias/entre-bodegas` | Transferencia entre almacenes/bodegas (`TransferenciaEntreBodegasRequest`) | ✅ |
+| POST | `/api/v1/transferencias/entre-proyectos` | Transferencia entre proyectos (`TransferenciaEntreProyectosRequest`) | ✅ |
 
 ## 9. Observability
 
@@ -117,8 +121,7 @@
 ## 11. Technical Debt & Risks
 
 - [ ] **Locking**: High concurrency on same item (e.g., Cement) needs Row Locking. (Medium)
-- [ ] **Transferencias**: Lógica de dominio sin superficie REST documentada.
-- [ ] **Visibilidad**: Sin GET de movimientos de almacén ni detalle de stock por almacén en la API listada aquí.
+- [ ] **Detalle stock por almacén**: refinamiento de consultas agregadas vs UI avanzada.
 
 ## 12. Detailed Rule Specifications
 
