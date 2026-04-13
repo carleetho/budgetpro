@@ -5,6 +5,7 @@ import com.budgetpro.application.apu.dto.CrearApuCommand;
 import com.budgetpro.application.apu.dto.ApuResponse;
 import com.budgetpro.application.apu.port.in.ActualizarRendimientoUseCase;
 import com.budgetpro.application.apu.port.in.CrearApuUseCase;
+import com.budgetpro.application.apu.port.in.ObtenerApuUseCase;
 import com.budgetpro.infrastructure.rest.apu.dto.ActualizarRendimientoRequest;
 import com.budgetpro.infrastructure.rest.apu.dto.CrearApuRequest;
 import jakarta.validation.Valid;
@@ -25,11 +26,14 @@ public class ApuController {
 
     private final CrearApuUseCase crearApuUseCase;
     private final ActualizarRendimientoUseCase actualizarRendimientoUseCase;
+    private final ObtenerApuUseCase obtenerApuUseCase;
 
     public ApuController(CrearApuUseCase crearApuUseCase,
-                         ActualizarRendimientoUseCase actualizarRendimientoUseCase) {
+                         ActualizarRendimientoUseCase actualizarRendimientoUseCase,
+                         ObtenerApuUseCase obtenerApuUseCase) {
         this.crearApuUseCase = crearApuUseCase;
         this.actualizarRendimientoUseCase = actualizarRendimientoUseCase;
+        this.obtenerApuUseCase = obtenerApuUseCase;
     }
 
     /**
@@ -82,5 +86,15 @@ public class ApuController {
                 request.usuarioId()
         );
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/partidas/{partidaId}/apu")
+    public ResponseEntity<ApuResponse> obtenerPorPartida(@PathVariable UUID partidaId) {
+        return ResponseEntity.ok(obtenerApuUseCase.obtenerPorPartidaId(partidaId));
+    }
+
+    @GetMapping("/apu/{apuId}")
+    public ResponseEntity<ApuResponse> obtenerPorId(@PathVariable UUID apuId) {
+        return ResponseEntity.ok(obtenerApuUseCase.obtenerPorId(apuId));
     }
 }

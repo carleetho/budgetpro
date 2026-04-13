@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.rest.almacen.controller;
 
 import com.budgetpro.application.almacen.dto.MovimientoAlmacenResponse;
+import com.budgetpro.application.almacen.port.in.ConsultarMovimientosAlmacenUseCase;
 import com.budgetpro.application.almacen.port.in.RegistrarMovimientoAlmacenUseCase;
 import com.budgetpro.infrastructure.rest.almacen.dto.RegistrarMovimientoAlmacenRequest;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -18,9 +20,12 @@ import java.util.UUID;
 public class AlmacenController {
 
     private final RegistrarMovimientoAlmacenUseCase registrarMovimientoUseCase;
+    private final ConsultarMovimientosAlmacenUseCase consultarMovimientosAlmacenUseCase;
 
-    public AlmacenController(RegistrarMovimientoAlmacenUseCase registrarMovimientoUseCase) {
+    public AlmacenController(RegistrarMovimientoAlmacenUseCase registrarMovimientoUseCase,
+                             ConsultarMovimientosAlmacenUseCase consultarMovimientosAlmacenUseCase) {
         this.registrarMovimientoUseCase = registrarMovimientoUseCase;
+        this.consultarMovimientosAlmacenUseCase = consultarMovimientosAlmacenUseCase;
     }
 
     /**
@@ -49,5 +54,12 @@ public class AlmacenController {
         return ResponseEntity
                 .created(URI.create("/api/v1/almacen/movimientos/" + response.id()))
                 .body(response);
+    }
+
+    @GetMapping("/movimientos")
+    public ResponseEntity<List<MovimientoAlmacenResponse>> listarMovimientos(
+            @RequestParam UUID almacenId,
+            @RequestParam(required = false) UUID recursoId) {
+        return ResponseEntity.ok(consultarMovimientosAlmacenUseCase.listar(almacenId, recursoId));
     }
 }
