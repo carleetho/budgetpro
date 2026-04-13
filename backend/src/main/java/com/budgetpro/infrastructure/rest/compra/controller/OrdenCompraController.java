@@ -33,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -201,7 +202,9 @@ public class OrdenCompraController {
             @Parameter(description = "ID del proyecto para filtrar", example = "550e8400-e29b-41d4-a716-446655440000")
             @RequestParam(required = false) UUID proyectoId,
             @Parameter(description = "Estado de la orden para filtrar", example = "BORRADOR")
-            @RequestParam(required = false) OrdenCompraEstado estado) {
+            @RequestParam(required = false) OrdenCompraEstado estado,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         
         List<OrdenCompra> ordenes;
         
@@ -212,15 +215,32 @@ public class OrdenCompraController {
         } else if (estado != null) {
             ordenes = ordenCompraRepository.findByEstado(estado);
         } else {
-            // Si no hay filtros, retornar lista vacía (en producción se podría implementar paginación)
-            ordenes = List.of();
+            ordenes = ordenCompraRepository.findAll();
         }
 
-        List<OrdenCompraResponse> response = ordenes.stream()
+        if (page < 0 || size <= 0 || size > 200) {
+            throw new IllegalArgumentException("Parámetros de paginación inválidos");
+        }
+        int from = Math.min(page * size, ordenes.size());
+        int to = Math.min(from + size, ordenes.size());
+
+        List<OrdenCompraResponse> response = ordenes.subList(from, to).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/rechazar")
+    public ResponseEntity<Void> rechazar(@PathVariable UUID id) {
+        UUID userId = getCurrentUserId();
+        OrdenCompra ordenCompra = ordenCompraRepository.findById(OrdenCompraId.from(id))
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                        String.format("Orden de compra no encontrada: %s", id)
+                ));
+        ordenCompra.rechazar(userId, LocalDateTime.now());
+        ordenCompraRepository.save(ordenCompra);
+        return ResponseEntity.noContent().build();
     }
 
     /**

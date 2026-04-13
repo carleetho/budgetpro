@@ -1,7 +1,7 @@
 package com.budgetpro.infrastructure.rest.recurso.advice;
 
 import com.budgetpro.application.recurso.exception.RecursoDuplicadoException;
-import org.slf4j.MDC;
+import com.budgetpro.infrastructure.rest.error.ErrorResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,18 +30,10 @@ public class RecursoControllerAdvice {
      * @return ResponseEntity con código 409 y mensaje de error
      */
     @ExceptionHandler(RecursoDuplicadoException.class)
-    public ResponseEntity<ErrorResponse> handleRecursoDuplicado(RecursoDuplicadoException ex) {
-        ErrorResponse error = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.CONFLICT.value(),
-            "CONFLICT",
-            ex.getMessage(),
-            getTraceId()
-        );
-        
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleRecursoDuplicado(RecursoDuplicadoException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(error);
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "CONFLICT", ex.getMessage()));
     }
 
     /**
@@ -53,7 +45,7 @@ public class RecursoControllerAdvice {
      * @return ResponseEntity con código 400 y lista de errores de validación
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponses.ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
         
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -62,17 +54,9 @@ public class RecursoControllerAdvice {
             fieldErrors.put(fieldName, errorMessage);
         });
         
-        ValidationErrorResponse error = new ValidationErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            "BAD_REQUEST",
-            fieldErrors,
-            getTraceId()
-        );
-        
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+                .body(ErrorResponses.validation(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", fieldErrors));
     }
 
     /**
@@ -84,55 +68,9 @@ public class RecursoControllerAdvice {
      * @return ResponseEntity con código 400 y mensaje de error
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-        ErrorResponse error = new ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.BAD_REQUEST.value(),
-            "BAD_REQUEST",
-            ex.getMessage(),
-            getTraceId()
-        );
-        
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(error);
-    }
-
-    /**
-     * DTO para respuestas de error genéricas.
-     * Formato JSON estándar: timestamp, status, error, message, traceId.
-     * El traceId permite al frontend reportar errores con referencia exacta para debugging.
-     */
-    public record ErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            String error,
-            String message,
-            String traceId
-    ) {
-    }
-
-    /**
-     * DTO para respuestas de error de validación.
-     * Lista campo y error para cada campo inválido.
-     * Incluye traceId para correlacionar errores con logs del servidor.
-     */
-    public record ValidationErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            String error,
-            Map<String, String> fieldErrors,
-            String traceId
-    ) {
-    }
-
-    /**
-     * Obtiene el traceId (correlationId) del MDC para incluirlo en las respuestas de error.
-     * Si no existe en el MDC (por ejemplo, si el filtro no se ejecutó), retorna null.
-     * 
-     * @return El traceId del MDC o null si no existe
-     */
-    private String getTraceId() {
-        return MDC.get("correlationId");
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "BAD_REQUEST", ex.getMessage()));
     }
 }

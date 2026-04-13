@@ -1,6 +1,7 @@
 package com.budgetpro.infrastructure.rest.proyecto.advice;
 
 import com.budgetpro.application.proyecto.exception.ProyectoDuplicadoException;
+import com.budgetpro.infrastructure.rest.error.ErrorResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,74 +26,45 @@ public class ProyectoControllerAdvice {
      * Maneja excepciones de proyecto duplicado.
      */
     @ExceptionHandler(ProyectoDuplicadoException.class)
-    public ResponseEntity<Map<String, Object>> handleProyectoDuplicado(ProyectoDuplicadoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "PROYECTO_DUPLICADO");
-        body.put("status", HttpStatus.CONFLICT.value());
-        
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleProyectoDuplicado(ProyectoDuplicadoException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(body);
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "PROYECTO_DUPLICADO", ex.getMessage()));
     }
 
     /**
      * Maneja errores de validación de argumentos.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", "Error de validación en los datos enviados");
-        body.put("error", "VALIDATION_ERROR");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        
+    public ResponseEntity<ErrorResponses.ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errors.put(error.getField(), error.getDefaultMessage());
         });
-        body.put("errors", errors);
-        
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(body);
+                .body(ErrorResponses.validation(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", errors));
     }
 
     /**
      * Maneja excepciones de argumentos ilegales.
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "ILLEGAL_ARGUMENT");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(body);
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "ILLEGAL_ARGUMENT", ex.getMessage()));
     }
 
     /**
      * Maneja todas las demás excepciones no manejadas.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleGenericException(Exception ex) {
         logger.error("Error no manejado al procesar petición de proyecto", ex);
-        
-        Map<String, Object> body = new HashMap<>();
         String message = ex.getMessage() != null ? ex.getMessage() : "Error interno del servidor";
-        body.put("message", message);
-        body.put("error", "INTERNAL_SERVER_ERROR");
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("exceptionType", ex.getClass().getSimpleName());
-        
-        // En desarrollo, incluir el stack trace (remover en producción)
-        if (ex.getCause() != null) {
-            body.put("cause", ex.getCause().getMessage());
-        }
-        
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(body);
+                .body(ErrorResponses.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "INTERNAL_SERVER_ERROR", message));
     }
 }
