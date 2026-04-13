@@ -1,7 +1,10 @@
 package com.budgetpro.infrastructure.rest.recurso.controller;
 
 import com.budgetpro.application.recurso.dto.RecursoResponse;
+import com.budgetpro.application.recurso.port.in.ActualizarRecursoUseCase;
 import com.budgetpro.application.recurso.port.in.CrearRecursoUseCase;
+import com.budgetpro.application.recurso.port.in.ObtenerRecursoUseCase;
+import com.budgetpro.infrastructure.rest.recurso.dto.ActualizarRecursoRequest;
 import com.budgetpro.infrastructure.rest.recurso.dto.CrearRecursoRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Controlador REST para operaciones relacionadas con Recursos.
@@ -23,9 +28,15 @@ import java.net.URI;
 public class RecursoController {
 
     private final CrearRecursoUseCase crearRecursoUseCase;
+    private final ObtenerRecursoUseCase obtenerRecursoUseCase;
+    private final ActualizarRecursoUseCase actualizarRecursoUseCase;
 
-    public RecursoController(CrearRecursoUseCase crearRecursoUseCase) {
+    public RecursoController(CrearRecursoUseCase crearRecursoUseCase,
+                             ObtenerRecursoUseCase obtenerRecursoUseCase,
+                             ActualizarRecursoUseCase actualizarRecursoUseCase) {
         this.crearRecursoUseCase = crearRecursoUseCase;
+        this.obtenerRecursoUseCase = obtenerRecursoUseCase;
+        this.actualizarRecursoUseCase = actualizarRecursoUseCase;
     }
 
     /**
@@ -54,5 +65,21 @@ public class RecursoController {
                 .status(HttpStatus.CREATED)
                 .location(location)
                 .body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RecursoResponse> obtenerPorId(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(obtenerRecursoUseCase.obtenerPorId(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RecursoResponse>> listar() {
+        return ResponseEntity.ok(obtenerRecursoUseCase.listar());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RecursoResponse> actualizar(@PathVariable("id") UUID id,
+                                                      @RequestBody @Valid ActualizarRecursoRequest request) {
+        return ResponseEntity.ok(actualizarRecursoUseCase.actualizar(request.toCommand(id)));
     }
 }

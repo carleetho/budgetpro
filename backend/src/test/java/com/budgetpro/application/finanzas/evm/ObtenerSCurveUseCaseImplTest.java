@@ -104,6 +104,19 @@ class ObtenerSCurveUseCaseImplTest {
     }
 
     @Test
+    void deberiaLanzarIllegalArgumentSiStartDatePosteriorAEndDate() {
+        LocalDate start = LocalDate.of(2025, 6, 1);
+        LocalDate end = LocalDate.of(2025, 1, 1);
+
+        assertThatThrownBy(() -> useCase.obtener(proyectoId, start, end))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("startDate");
+
+        verify(proyectoRepository, never()).existsById(any(ProyectoId.class));
+        verify(evmTimeSeriesRepository, never()).findByProyectoId(any(UUID.class), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
     void deberiaLanzarProyectoNotFoundSiProyectoNoExiste() {
         when(proyectoRepository.existsById(any(ProyectoId.class))).thenReturn(false);
 

@@ -1,6 +1,10 @@
-# 🔍 GAP ANALYSIS: EVM Module - CPI/SPI Implementation Status
+# GAP_ANALISIS_EVM_CPI_SPI.md
 
-**Fecha**: 2026-02-15  
+> **Scope**: Análisis de Brechas EVM  
+> **Last Updated**: 2026-04-07  
+> **Authors**: Ing. CL  
+
+**Fecha del análisis original**: 2026-02-15  
 **Objetivo**: Identificar la discrepancia entre documentación y código real
 
 ---
@@ -100,23 +104,18 @@ GET | `/api/v1/proyectos/{id}/evm` | Get standard EVM metrics | 🔴
 8. ✅ **Interpretación automática**: Texto descriptivo de CPI/SPI
 9. ✅ **API Endpoint**: `GET /api/v1/evm/{proyectoId}` funcional
 
-### ❌ LO QUE REALMENTE FALTA
+### ✅ Sincronización 2026-04-07 (código `main`)
 
-1. 🔴 **S-Curve Report Generation** (UC-E04, P1)
-   - Generación de gráfico S-Curve (curva de avance acumulado)
-   - Endpoint: No existe `/api/v1/evm/{proyectoId}/s-curve`
+1. **S-Curve Report Generation (UC-E04)** — ✅ **COMPLETADO** — Endpoint `GET /api/v1/evm/{proyectoId}/s-curve` (`ObtenerSCurveUseCase`, `EVMController`).
 
-2. 🔴 **Forecast Completion Date** (UC-E05, P2)
-   - Proyección de fecha de finalización basada en SPI
-   - Cálculo: `Completion Date = Current Date + (Remaining Work / SPI)`
+2. **Forecast Completion Date (UC-E05)** — ✅ **COMPLETADO** — Endpoint `GET /api/v1/evm/{proyectoId}/forecast`.
 
-3. 🔴 **ValuacionCerradaEvent** (Domain Event)
-   - Evento cuando se cierra un período de valuación
-   - Estado: No implementado
+3. **ValuacionCerradaEvent / E-04** — ✅ **COMPLETADO** en línea con `EVM_MODULE_CANONICAL.md` (listener, CRON `EVMPeriodoCierreScheduler`, cierre manual).
 
-4. 🟡 **Period Consistency** (E-04)
-   - Validación de alineación con períodos de reporte (semanal/mensual)
-   - Estado: Parcial
+### 🟡 Pendientes menores (roadmap EVM)
+
+- Métrica `evm.progress.registered.count` (observabilidad).
+- Agregación tipo dashboard entre módulos.
 
 ---
 
@@ -131,8 +130,8 @@ GET | `/api/v1/proyectos/{id}/evm` | Get standard EVM metrics | 🔴
 | **VAC** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **CV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
 | **SV** | ✅ Sí | ✅ Documentado | ✅ Correcto |
-| **S-Curve** | ✅ Sí | GET /api/v1/evm/{proyectoId}/s-curve | ✅ Correcto |
-| **Forecast Date** | ✅ Sí | GET /api/v1/evm/{proyectoId}/forecast | ✅ Correcto |
+| **S-Curve** | ✅ Sí | Antes 🔴 Missing en texto narrativo (corregido 2026-04-07) | ✅ Correcto |
+| **Forecast Date** | ✅ Sí | Alineado con endpoints actuales | ✅ Correcto |
 
 ---
 
@@ -179,26 +178,26 @@ GET | `/api/v1/evm/{proyectoId}` | Get EVM snapshot with CPI/SPI | ✅
 **2. EVM** | Functional (65%) | CPI/SPI implemented. Missing S-Curve and advanced forecasting.
 ```
 
-### 2. **Implementar Features Faltantes** (Prioridad Media)
+### 2. **Features EVM (UC-E04 / UC-E05 / E-04)**
 
-1. ✅ COMPLETADO — Ver ObtenerSCurveUseCase, EVMController.
+1. ✅ **COMPLETADO** — S-Curve: `ObtenerSCurveUseCase`, `EVMController`, `EVMTimeSeriesRepository` / `evm_time_series`.
 
-2. ✅ COMPLETADO — Ver ObtenerForecastFechaUseCase, EVMController.
+2. ✅ **COMPLETADO** — Forecast: `ObtenerForecastFechaUseCase`, `EVMController`.
+
+3. ✅ **COMPLETADO** — Cierre de período y propagación de serie temporal (ver canónico EVM).
 
 ---
 
-## ✅ CONCLUSIÓN
+## ✅ CONCLUSIÓN (2026-04-07)
 
-**El gap NO es CPI/SPI** (están implementados). **El gap real es**:
+**CPI/SPI/EAC/ETC/VAC** están implementados y expuestos. **No había “gap de código” en S-Curve o forecast**: el problema era **reverse drift** (código en `main` adelantado respecto a partes del análisis histórico y narrativas).
 
-1. **Documentación desactualizada** que dice que CPI/SPI faltan
-2. **S-Curve Generation** (no implementado)
-3. **Forecast Completion Date** (no implementado)
-4. **Ruta de endpoint incorrecta** en documentación
+**Acción aplicada**: sincronización documental + regla de API explícita: rango `startDate > endDate` en UC-E04 → `IllegalArgumentException` → HTTP 400 (`GlobalExceptionHandler`).
 
-**Maturity actualizada**: EVM debería ser **65%** (no 50%), ya que CPI/SPI están implementados.
+**Seguimiento**: mantener `docs/canonical` y este GAP alineados con `main` en cada PR que toque EVM (ver `SYNC_WORKFLOW.md`).
 
 ---
 
 **Generado por**: Análisis de código vs. documentación  
-**Fecha**: 2026-02-15
+**Fecha análisis original**: 2026-02-15  
+**Última sincronización**: 2026-04-07

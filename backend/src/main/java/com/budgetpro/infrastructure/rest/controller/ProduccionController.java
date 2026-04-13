@@ -7,7 +7,8 @@ import com.budgetpro.infrastructure.persistence.entity.produccion.DetalleRPCEnti
 import com.budgetpro.infrastructure.persistence.entity.produccion.ReporteProduccionEntity;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.produccion.ReporteProduccionJpaRepository;
-import com.budgetpro.infrastructure.rest.dto.produccion.*;
+import com.budgetpro.infrastructure.rest.dto.produccion.CrearReporteRequest;
+import com.budgetpro.infrastructure.rest.dto.produccion.RechazarReporteRequest;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.AuditorAware;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,62 +47,84 @@ public class ProduccionController {
      * POST /proyectos/{proyectoId}/produccion
      */
     @PostMapping("/proyectos/{proyectoId}/produccion")
-    public ResponseEntity<ReporteResponse> crearReporte(@PathVariable UUID proyectoId,
-                                                        @Valid @RequestBody CrearReporteRequest request) {
+    public ResponseEntity<com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse> crearReporte(
+            @PathVariable UUID proyectoId,
+            @Valid @RequestBody CrearReporteRequest request) {
         ReporteProduccionEntity entity = mapToEntity(proyectoId, request);
         ReporteProduccionEntity saved = produccionService.crearReporte(entity);
         return ResponseEntity
                 .created(URI.create("/api/v1/produccion/" + saved.getId()))
-                .body(mapToResponse(saved));
+                .body(mapToUnifiedResponse(saved));
     }
 
     /**
      * GET /proyectos/{proyectoId}/produccion
      */
     @GetMapping("/proyectos/{proyectoId}/produccion")
-    public ResponseEntity<List<ReporteResumenResponse>> listarReportes(@PathVariable UUID proyectoId) {
-        List<ReporteResumenResponse> resumen = reporteProduccionJpaRepository.findByProyectoId(proyectoId)
-                .stream()
-                .map(this::mapToResumen)
+    public ResponseEntity<List<com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse>> listarReportes(
+            @PathVariable UUID proyectoId,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        if (page < 0 || size <= 0 || size > 200) {
+            throw new IllegalArgumentException("Parámetros de paginación inválidos");
+        }
+
+        var estadoEnum = (estado == null || estado.isBlank())
+                ? null
+                : com.budgetpro.infrastructure.persistence.entity.produccion.EstadoReporteProduccion.valueOf(estado.trim().toUpperCase());
+
+        List<ReporteProduccionEntity> all = reporteProduccionJpaRepository.findByProyectoId(proyectoId);
+        List<ReporteProduccionEntity> filtered = all.stream()
+                .filter(r -> estadoEnum == null || r.getEstado() == estadoEnum)
+                .filter(r -> startDate == null || (r.getFechaReporte() != null && !r.getFechaReporte().isBefore(startDate)))
+                .filter(r -> endDate == null || (r.getFechaReporte() != null && !r.getFechaReporte().isAfter(endDate)))
                 .toList();
-        return ResponseEntity.ok(resumen);
+
+        int from = Math.min(page * size, filtered.size());
+        int to = Math.min(from + size, filtered.size());
+
+        return ResponseEntity.ok(filtered.subList(from, to).stream().map(this::mapToUnifiedResponse).toList());
     }
 
     /**
      * GET /produccion/{id}
      */
     @GetMapping("/produccion/{id}")
-    public ResponseEntity<ReporteResponse> obtenerDetalle(@PathVariable UUID id) {
+    public ResponseEntity<com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse> obtenerDetalle(@PathVariable UUID id) {
         ReporteProduccionEntity reporte = reporteProduccionJpaRepository.findWithDetallesById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Reporte no encontrado."));
-        return ResponseEntity.ok(mapToResponse(reporte));
+        return ResponseEntity.ok(mapToUnifiedResponse(reporte));
     }
 
     /**
      * PATCH /produccion/{id}/aprobar
      */
     @PatchMapping("/produccion/{id}/aprobar")
-    public ResponseEntity<ReporteResponse> aprobar(@PathVariable UUID id) {
+    public ResponseEntity<com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse> aprobar(@PathVariable UUID id) {
         UUID aprobadorId = auditorAware.getCurrentAuditor().orElse(null);
         if (aprobadorId == null) {
             throw new BusinessRuleException("No se pudo determinar el aprobador actual.");
         }
         ReporteProduccionEntity saved = produccionService.aprobarReporte(id, aprobadorId);
-        return ResponseEntity.ok(mapToResponse(saved));
+        return ResponseEntity.ok(mapToUnifiedResponse(saved));
     }
 
     /**
      * PATCH /produccion/{id}/rechazar
      */
     @PatchMapping("/produccion/{id}/rechazar")
-    public ResponseEntity<ReporteResponse> rechazar(@PathVariable UUID id,
-                                                    @Valid @RequestBody RechazarReporteRequest request) {
+    public ResponseEntity<com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse> rechazar(@PathVariable UUID id,
+                                                                                                            @Valid @RequestBody RechazarReporteRequest request) {
         UUID aprobadorId = auditorAware.getCurrentAuditor().orElse(null);
         if (aprobadorId == null) {
             throw new BusinessRuleException("No se pudo determinar el aprobador actual.");
         }
         ReporteProduccionEntity saved = produccionService.rechazarReporte(id, aprobadorId, request.motivo());
-        return ResponseEntity.ok(mapToResponse(saved));
+        return ResponseEntity.ok(mapToUnifiedResponse(saved));
     }
 
     private ReporteProduccionEntity mapToEntity(UUID proyectoId, CrearReporteRequest request) {
@@ -128,47 +152,26 @@ public class ProduccionController {
         return entity;
     }
 
-    private ReporteResumenResponse mapToResumen(ReporteProduccionEntity entity) {
-        return new ReporteResumenResponse(
-                entity.getId(),
-                entity.getFechaReporte(),
-                entity.getEstado() != null ? entity.getEstado().name() : null,
-                entity.getResponsableId(),
-                resolveNombre(entity.getResponsableId()),
-                entity.getAprobadorId(),
-                resolveNombre(entity.getAprobadorId()),
-                entity.getDetalles() != null ? entity.getDetalles().size() : 0
-        );
-    }
-
-    private ReporteResponse mapToResponse(ReporteProduccionEntity entity) {
-        List<DetalleItemResponse> detalles = entity.getDetalles().stream()
-                .map(d -> new DetalleItemResponse(
+    private com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse mapToUnifiedResponse(ReporteProduccionEntity entity) {
+        var detalles = entity.getDetalles().stream()
+                .map(d -> new com.budgetpro.infrastructure.rest.produccion.dto.DetalleRPCResponse(
+                        d.getId(),
                         d.getPartida().getId(),
-                        d.getPartida().getDescripcion(),
                         d.getCantidadReportada()
                 ))
                 .toList();
 
-        return new ReporteResponse(
+        return new com.budgetpro.infrastructure.rest.produccion.dto.ReporteProduccionResponse(
                 entity.getId(),
                 entity.getFechaReporte(),
-                entity.getEstado() != null ? entity.getEstado().name() : null,
                 entity.getResponsableId(),
-                resolveNombre(entity.getResponsableId()),
                 entity.getAprobadorId(),
-                resolveNombre(entity.getAprobadorId()),
+                entity.getEstado() != null ? entity.getEstado().name() : null,
                 entity.getComentario(),
                 entity.getUbicacionGps(),
                 detalles
         );
     }
 
-    private String resolveNombre(UUID usuarioId) {
-        if (usuarioId == null) {
-            return null;
-        }
-        String shortId = usuarioId.toString().substring(0, 8);
-        return "Usuario " + shortId;
-    }
+    // Nota: el endpoint legacy ya no expone "nombre"; el contrato unificado devuelve IDs.
 }

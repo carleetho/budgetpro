@@ -3,6 +3,7 @@ package com.budgetpro.infrastructure.rest.estimacion.controller;
 import com.budgetpro.application.estimacion.dto.EstimacionResponse;
 import com.budgetpro.application.estimacion.dto.GenerarEstimacionCommand;
 import com.budgetpro.application.estimacion.port.in.AprobarEstimacionUseCase;
+import com.budgetpro.application.estimacion.port.in.ConsultarEstimacionUseCase;
 import com.budgetpro.application.estimacion.port.in.GenerarEstimacionUseCase;
 import com.budgetpro.infrastructure.rest.estimacion.dto.GenerarEstimacionRequest;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,11 +23,14 @@ public class EstimacionController {
 
     private final GenerarEstimacionUseCase generarEstimacionUseCase;
     private final AprobarEstimacionUseCase aprobarEstimacionUseCase;
+    private final ConsultarEstimacionUseCase consultarEstimacionUseCase;
 
     public EstimacionController(GenerarEstimacionUseCase generarEstimacionUseCase,
-                                AprobarEstimacionUseCase aprobarEstimacionUseCase) {
+                                AprobarEstimacionUseCase aprobarEstimacionUseCase,
+                                ConsultarEstimacionUseCase consultarEstimacionUseCase) {
         this.generarEstimacionUseCase = generarEstimacionUseCase;
         this.aprobarEstimacionUseCase = aprobarEstimacionUseCase;
+        this.consultarEstimacionUseCase = consultarEstimacionUseCase;
     }
 
     /**
@@ -74,5 +79,15 @@ public class EstimacionController {
     public ResponseEntity<Void> aprobarEstimacion(@PathVariable UUID estimacionId) {
         aprobarEstimacionUseCase.aprobar(estimacionId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{proyectoId}/estimaciones")
+    public ResponseEntity<List<EstimacionResponse>> listarPorProyecto(@PathVariable UUID proyectoId) {
+        return ResponseEntity.ok(consultarEstimacionUseCase.listarPorProyecto(proyectoId));
+    }
+
+    @GetMapping("/estimaciones/{estimacionId}")
+    public ResponseEntity<EstimacionResponse> obtenerPorId(@PathVariable UUID estimacionId) {
+        return ResponseEntity.ok(consultarEstimacionUseCase.obtenerPorId(estimacionId));
     }
 }

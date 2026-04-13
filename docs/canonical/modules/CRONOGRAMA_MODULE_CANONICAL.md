@@ -2,7 +2,7 @@
 
 > **Status**: Functional (60%)
 > **Owner**: Planificación Team
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-04-08
 
 ## 1. Module Maturity Roadmap
 
@@ -19,9 +19,10 @@
 | C-01 | **Program Frozen**: When Budget is approved, the Program must be frozen (Baseline creation). | ✅ Implemented        |
 | C-02 | **Dependency Integrity**: Start-to-Finish dependencies cannot create circular references.    | 🟡 Partial            |
 | C-03 | **One Activity Per Leaf**: Currently simplified to one activity per partida leaf.            | 🟡 Partial (Need 1:N) |
-| C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🔴 Missing            |
+| C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🟡 Revisar código     |
 | C-05 | **Temporal Consistency**: Activity end date must be ≥ start date (zero duration allowed).    | ✅ Implemented        |
 
+> **Nota C-04 (sync 2026-04-08):** Existe `WorkingDayCalculator` en `com.budgetpro.domain.finanzas.evm.util`, usado por **forecast EVM** (`ObtenerForecastFechaUseCaseImpl`). **No consta** en este análisis que el **cronograma de obra** (`CalculoCronogramaService` / `CronogramaService`) reutilice esa misma política de días hábiles. Mantener 🟡 hasta auditoría explícita del cálculo de duraciones en cronograma.
 
 ### 2.2 Extended Rule Inventory (Phase 1 Alignment)
 

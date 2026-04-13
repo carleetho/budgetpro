@@ -1,12 +1,12 @@
 # INTEGRATION_PATTERNS_CURRENT.md - Current State Radiography
 
 > **Scope**: API & External Systems
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-04-12
 > **Authors**: Antigravity
 
 ## 1. Overview
 
-Documents the current integration surfaces: Internal REST APIs and External System Adapters.
+Documents the current integration surfaces: Internal REST APIs and External System Adapters. Superficies nuevas o duales (p. ej. `BilleteraController` + `BilleteraQueryController`) se listan en los notebooks de módulo y en **[MODULE_CODE_ALIGNMENT_INDEX.md](./MODULE_CODE_ALIGNMENT_INDEX.md)**.
 
 ## 2. Internal REST API (Inbound)
 

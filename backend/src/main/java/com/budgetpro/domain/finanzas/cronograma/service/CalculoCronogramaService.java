@@ -2,6 +2,7 @@ package com.budgetpro.domain.finanzas.cronograma.service;
 
 import com.budgetpro.domain.finanzas.cronograma.model.ActividadProgramada;
 import com.budgetpro.domain.finanzas.cronograma.model.ProgramaObra;
+import com.budgetpro.domain.finanzas.evm.util.WorkingDayCalculator;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.UUID;
  * No persiste, solo calcula.
  */
 public class CalculoCronogramaService {
+    private final WorkingDayCalculator workingDayCalculator = new WorkingDayCalculator();
 
     /**
      * Calcula la duración total del programa basándose en las actividades.
@@ -68,8 +70,9 @@ public class CalculoCronogramaService {
             return null;
         }
 
-        // Calcular duración en días (incluyendo ambos días)
-        return (int) java.time.temporal.ChronoUnit.DAYS.between(fechaInicioMasTemprana, fechaFinMasTardia) + 1;
+        // C-04: política explícita de días hábiles (Lun-Vie), alineada con EVM/Forecast.
+        // El WorkingDayCalculator usa rango [start, end), así que usamos end+1 para incluir el último día.
+        return workingDayCalculator.workingDaysBetween(fechaInicioMasTemprana, fechaFinMasTardia.plusDays(1));
     }
 
     /**

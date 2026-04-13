@@ -27,7 +27,7 @@ public class BilleteraController {
             @Valid @RequestBody RegistrarMovimientoRequest request) {
 
         String monedaNormalized = request.moneda().toUpperCase();
-        TipoMovimiento tipo = TipoMovimiento.valueOf(request.tipo());
+        TipoMovimiento tipo = TipoMovimiento.valueOf(request.tipo().toUpperCase());
 
         MovimientoCaja movimiento = registrarMovimientoUseCase.registrar(BilleteraId.of(billeteraId), request.monto(),
                 monedaNormalized, tipo, request.referencia(), request.evidenciaUrl());

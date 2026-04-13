@@ -1,8 +1,12 @@
-# ALERTAS PARAMÉTRICAS Module - Canonical Specification
+# ALERTAS_MODULE_CANONICAL.md — Current State Radiography
 
-> **Status**: Functional (100%)
-> **Owner**: Intelligence Team
-> **Last Updated**: 2026-02-09
+> **Scope**: Análisis paramétrico de presupuesto (alertas de ingeniería / costos)  
+> **Status**: Functional (90%)  
+> **Owner**: Intelligence Team  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Dominio:** `com.budgetpro.domain.finanzas.alertas` · **Motor:** `AnalizadorParametricoService` · **Aplicación:** `AnalizarPresupuestoUseCase` / `AnalizarPresupuestoUseCaseImpl` · **REST:** `AnalisisController` → `/api/v1/analisis`.
 
 ## 1. Module Overview
 Monitors engineering and financial parameters to detect anomalies proactively.
@@ -98,3 +102,13 @@ Superar el tope del APU no bloquea la compra; se emite alerta.
 ```java
 // Non-blocking validation logic in ComprasService
 ```
+
+---
+
+## Apéndice A — REST API (sync 2026-04-08)
+
+| Method | Path | Descripción |
+| --- | --- | --- |
+| GET | `/api/v1/analisis/alertas/{presupuestoId}` | Ejecuta el análisis y devuelve `AnalisisPresupuestoResponse` (alertas paramétricas agregadas). |
+
+**Deuda / alcance:** no hay otros verbos en `AnalisisController`; histórico o re-ejecución explícita dependen de capa de persistencia (`AnalisisPresupuestoRepository`) y del caso de uso, no de rutas adicionales documentadas aquí.

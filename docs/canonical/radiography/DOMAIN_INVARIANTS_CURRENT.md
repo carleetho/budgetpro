@@ -1,13 +1,15 @@
 # DOMAIN_INVARIANTS_CURRENT.md - Complete Rule Catalog
 
 > **Scope**: Cross-cutting
-> **Last Updated**: 2026-02-09
+> **Last Updated**: 2026-04-12
 > **Total Rules**: 161
 > **Source**: Canonical Notebooks
 
 ## 1. Overview
 This document catalogs all 161 business rules across the BudgetPro domain. 
 For detailed implementation specifications, technical traces, and code evidence, refer to the [Canonical Notebooks](../modules/).
+
+**Nota (sync código):** la vigencia de cada REGLA frente al código debe contrastarse con los notebooks de módulo y, para hallazgos recientes de drift doc↔código, ver **[CODE_DOC_REVIEW_LOG.md](./CODE_DOC_REVIEW_LOG.md)**.
 
 ## 2. Invariants by Module
 

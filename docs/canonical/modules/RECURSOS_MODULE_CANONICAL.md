@@ -1,4 +1,13 @@
-# RECURSOS MODULE CANONICAL NOTEBOOK
+# RECURSOS_MODULE_CANONICAL.md — Current State Radiography
+
+> **Scope**: Catálogo maestro de insumos (Materiales, MO, Equipo, Subcontrato)  
+> **Status**: Functional (70%)  
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
+
+**Dominio:** `com.budgetpro.domain.finanzas.recurso` · **`TipoRecurso`:** `com.budgetpro.domain.shared.model.TipoRecurso` · **Aplicación:** `com.budgetpro.application.recurso` · **REST:** `RecursoController` → `/api/v1/recursos`.
+
+**Nota de IDs:** el **REGLA-037** de §2 de este archivo aplica al agregado **Recurso** (nombre, tipo, unidad). El **REGLA-037** de `PRESUPUESTO_MODULE_CANONICAL.md` es la regla de **Partida** (WBS); son reglas distintas con el mismo número en inventarios extendidos.
 
 ## 1. Propósito del Módulo
 El módulo de Recursos gestiona los insumos económicos (Materiales, Mano de Obra, Equipos, Subcontratos) utilizados en los presupuestos. Actúa como un catálogo maestro de precios y definiciones.
@@ -158,3 +167,36 @@ if (atributos == null) {
     atributos = new HashMap<>();
 }
 ```
+
+---
+
+## Apéndice A — API REST y casos de uso (sync código `main`, 2026-04-12)
+
+### REST
+
+| Method | Path | Descripción | Status |
+| --- | --- | --- | --- |
+| POST | `/api/v1/recursos` | Alta de recurso (`CrearRecursoRequest` → `CrearRecursoCommand` vía `toCommand()`) — **201** + `Location` | ✅ |
+| GET | `/api/v1/recursos` | Listado (`RecursoRepository.findAll` → dominio) | ✅ |
+| GET | `/api/v1/recursos/{id}` | Detalle por id (`ObtenerRecursoUseCase`) | ✅ |
+| PUT | `/api/v1/recursos/{id}` | Actualización parcial (`ActualizarRecursoUseCase`, `ActualizarRecursoRequest`) | ✅ |
+
+**Deuda:** sin `DELETE` REST explícito; sin paginación/filtros en `GET` listado.
+
+### Casos de uso
+
+| UC | Descripción | Implementación |
+| --- | --- | --- |
+| UC-R01 | Crear recurso (provisional o no, según `esProvisional`) | `CrearRecursoUseCase` / `CrearRecursoUseCaseImpl` |
+| UC-R02 | Listar recursos | `RecursoRepository.findAll` (expuesto vía `RecursoController`) |
+| UC-R03 | Obtener recurso por id | `ObtenerRecursoUseCase` / `ObtenerRecursoUseCaseImpl` |
+| UC-R04 | Actualizar recurso | `ActualizarRecursoUseCase` / `ActualizarRecursoUseCaseImpl` |
+
+### Errores / advice
+
+- `RecursoControllerAdvice` centraliza respuestas de dominio (p. ej. `RecursoDuplicadoException`).
+
+### Integración
+
+- **APU:** `CrearApuUseCaseImpl` valida existencia de cada `recursoId` de los insumos.
+- **Inventario / almacén:** movimientos referencian `recursoId` (ver `INVENTARIO_MODULE_CANONICAL.md`).

@@ -32,6 +32,10 @@ Update notebooks **BEFORE** or **DURING** the PR, never after.
    - If Notebook is updated -> Code matches it.
 3. **Approval**: PR is only approved when alignment is 100%.
 
+## 5. Sync masiva (recuperación de drift)
+
+Si acumularon muchos cambios de código sin notebook en el mismo ciclo, ejecutar una pasada **code-first** y actualizar el hub [`radiography/MODULE_CODE_ALIGNMENT_INDEX.md`](radiography/MODULE_CODE_ALIGNMENT_INDEX.md) + [`CODE_DOC_REVIEW_LOG.md`](radiography/CODE_DOC_REVIEW_LOG.md). Preferir commits atómicos por módulo (ver `scripts/atomic-commits-canonical-docs-sync.sh`).
+
 ## 4. Drift Management
 
 If you find a discrepancy (Drift):

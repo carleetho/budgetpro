@@ -35,6 +35,7 @@ public class ObtenerSCurveUseCaseImpl implements ObtenerSCurveUseCase {
     @Override
     @Transactional(readOnly = true)
     public SCurveResult obtener(UUID proyectoId, LocalDate startDate, LocalDate endDate) {
+        validarRangoFechas(startDate, endDate);
         validarProyectoExiste(proyectoId);
 
         List<EVMTimeSeries> timeSeries = evmTimeSeriesRepository.findByProyectoId(proyectoId, startDate, endDate);
@@ -60,6 +61,12 @@ public class ObtenerSCurveUseCaseImpl implements ObtenerSCurveUseCase {
                 firstRow.getBacTotal(),
                 bacAjustado,
                 dataPoints);
+    }
+
+    private static void validarRangoFechas(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("startDate no puede ser posterior a endDate");
+        }
     }
 
     private void validarProyectoExiste(UUID proyectoId) {

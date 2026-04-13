@@ -3,6 +3,7 @@ package com.budgetpro.application.recurso.port.out;
 import com.budgetpro.domain.finanzas.recurso.model.Recurso;
 import com.budgetpro.domain.finanzas.recurso.model.RecursoId;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,4 +49,9 @@ public interface RecursoRepository {
      * @return Un Optional con el recurso si existe
      */
     Optional<Recurso> findByNombre(String nombreNormalizado);
+
+    /**
+     * Lista recursos (read-model mínimo).
+     */
+    List<Recurso> findAll();
 }

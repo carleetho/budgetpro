@@ -2,13 +2,18 @@ package com.budgetpro.infrastructure.rest.partida.controller;
 
 import com.budgetpro.application.partida.dto.CrearPartidaCommand;
 import com.budgetpro.application.partida.dto.PartidaResponse;
+import com.budgetpro.application.partida.dto.WbsNodeResponse;
 import com.budgetpro.application.partida.port.in.CrearPartidaUseCase;
+import com.budgetpro.application.partida.port.in.ObtenerPartidaUseCase;
+import com.budgetpro.application.partida.port.in.ObtenerWbsUseCase;
 import com.budgetpro.infrastructure.rest.partida.dto.CrearPartidaRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Controller REST para operaciones de Partida.
@@ -18,9 +23,15 @@ import java.net.URI;
 public class PartidaController {
 
     private final CrearPartidaUseCase crearPartidaUseCase;
+    private final ObtenerPartidaUseCase obtenerPartidaUseCase;
+    private final ObtenerWbsUseCase obtenerWbsUseCase;
 
-    public PartidaController(CrearPartidaUseCase crearPartidaUseCase) {
+    public PartidaController(CrearPartidaUseCase crearPartidaUseCase,
+                             ObtenerPartidaUseCase obtenerPartidaUseCase,
+                             ObtenerWbsUseCase obtenerWbsUseCase) {
         this.crearPartidaUseCase = crearPartidaUseCase;
+        this.obtenerPartidaUseCase = obtenerPartidaUseCase;
+        this.obtenerWbsUseCase = obtenerWbsUseCase;
     }
 
     /**
@@ -46,5 +57,15 @@ public class PartidaController {
         return ResponseEntity
                 .created(URI.create("/api/v1/partidas/" + response.id()))
                 .body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PartidaResponse> obtenerPorId(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(obtenerPartidaUseCase.obtenerPorId(id));
+    }
+
+    @GetMapping("/wbs")
+    public ResponseEntity<List<WbsNodeResponse>> obtenerWbs(@RequestParam("presupuestoId") UUID presupuestoId) {
+        return ResponseEntity.ok(obtenerWbsUseCase.obtenerWbsPorPresupuesto(presupuestoId));
     }
 }

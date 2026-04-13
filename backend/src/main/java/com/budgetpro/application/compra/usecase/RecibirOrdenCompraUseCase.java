@@ -143,20 +143,9 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             }
         }
         
-        // Step 7: Crear agregado Recepcion con sus detalles
-        // NOTA: Los detalles se crearán en el Step 10 después de crear los MovimientoAlmacen
-        // para poder incluir el movimientoAlmacenId en cada detalle
+        // Step 7: Preparar recepción (los detalles se crean después de crear MovimientoAlmacen)
         RecepcionId recepcionId = RecepcionId.generate();
         List<RecepcionDetalle> detallesRecepcion = new ArrayList<>();
-        
-        Recepcion recepcion = Recepcion.crear(
-            recepcionId,
-            compraId,
-            command.getFechaRecepcion(),
-            command.getGuiaRemision(),
-            detallesRecepcion,
-            command.getUsuarioId()
-        );
         
         // Step 8: Actualizar cantidad_recibida en CompraDetalle
         for (var detalleCommand : command.getDetalles()) {
@@ -250,15 +239,21 @@ public class RecibirOrdenCompraUseCase implements RecibirOrdenCompraInputPort {
             detallesRecepcion.add(detalleRecepcion);
         }
         
-        // Actualizar la recepción con los detalles creados
-        recepcion = Recepcion.crear(
-            recepcionId,
-            compraId,
-            command.getFechaRecepcion(),
-            command.getGuiaRemision(),
-            detallesRecepcion,
-            command.getUsuarioId()
-        );
+        // Crear la recepción con los detalles creados
+        Recepcion recepcion;
+        try {
+            recepcion = Recepcion.crear(
+                recepcionId,
+                compraId,
+                command.getFechaRecepcion(),
+                command.getGuiaRemision(),
+                detallesRecepcion,
+                command.getUsuarioId()
+            );
+        } catch (com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException e) {
+            // Normalizar a excepción de aplicación para el boundary REST
+            throw new BusinessRuleException(e.getMessage());
+        }
         
         // Step 11: Persistir todos los cambios
         recepcionRepository.save(recepcion);

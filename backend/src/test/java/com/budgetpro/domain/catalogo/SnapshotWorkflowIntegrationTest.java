@@ -1,5 +1,6 @@
 package com.budgetpro.domain.catalogo;
 
+import com.budgetpro.infrastructure.AbstractIntegrationTest;
 import com.budgetpro.domain.catalogo.model.APUInsumoSnapshot;
 import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.port.ApuSnapshotRepository;
@@ -13,9 +14,6 @@ import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -35,12 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - Integración con control financiero de Partida
  * - Múltiples snapshots del mismo external_id
  */
-@SpringBootTest
 @Transactional
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SuppressWarnings({"NullAway", "null"})
-class SnapshotWorkflowIntegrationTest {
+class SnapshotWorkflowIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private SnapshotService snapshotService;

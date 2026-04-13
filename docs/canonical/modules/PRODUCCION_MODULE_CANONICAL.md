@@ -1,7 +1,25 @@
-# PRODUCCIÓN (RPC) MODULE CANONICAL NOTEBOOK
+# PRODUCCION_MODULE_CANONICAL.md — Current State Radiography
+
+> **Scope**: Reportes de producción de campo (RPC), aprobación/rechazo, cantidades por partida  
+> **Status**: Functional (55%) — conviven **dos** superficies REST (legacy bajo `/api/v1` y `/api/v1/produccion/reportes`)  
+> **Last Updated**: 2026-04-08  
+> **Authors**: Antigravity (sync código `main`)
+
+**Orquestación:** `com.budgetpro.application.produccion.service.ProduccionService` · **Persistencia:** entidades `ReporteProduccionEntity`, `DetalleRPCEntity` (JPA).
 
 ## 1. Propósito del Módulo
 El módulo de Producción (Reportes de Producción de Campo - RPC) es el componente responsable de registrar el avance físico "real" ejecutado en obra. A diferencia de las Estimaciones (que son financieras), los RPC son técnicos y sirven como fuente de verdad para el control de avance y la generación posterior de estimaciones.
+
+### 1.1 API REST (código `main`, 2026-04-08)
+
+| Origen | Base | Métodos y rutas | DTOs |
+| --- | --- | --- | --- |
+| `ProduccionController` | `/api/v1` | `POST /proyectos/{proyectoId}/produccion` (201 `Location` `/api/v1/produccion/{id}`), `GET /proyectos/{proyectoId}/produccion`, `GET /produccion/{id}`, `PATCH /produccion/{id}/aprobar`, `PATCH /produccion/{id}/rechazar` | `infrastructure.rest.dto.produccion.*` |
+| `ReporteProduccionController` | `/api/v1/produccion/reportes` | `POST /`, `PUT /{reporteId}`, `DELETE /{reporteId}`, `POST /{reporteId}/aprobar`, `POST /{reporteId}/rechazar` | `infrastructure.rest.produccion.dto.*` |
+
+**Diferencias operativas:** el controlador **legacy** toma `responsableId` / aprobador desde `AuditorAware<UUID>` (seguridad); el de **reportes** envía `responsableId` y `aprobadorId` en el cuerpo de las peticiones.
+
+**Deuda:** unificar contrato público y documentación OpenAPI para no mantener dos clientes divergentes sobre el mismo `ProduccionService`.
 
 ## 2. Invariantes y Reglas de Negocio
 

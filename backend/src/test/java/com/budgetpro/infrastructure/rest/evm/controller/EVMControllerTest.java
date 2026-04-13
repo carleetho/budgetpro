@@ -163,6 +163,23 @@ class EVMControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/v1/evm/{proyectoId}/s-curve retorna 400 cuando startDate > endDate")
+    void deberiaRetornar400SiRangoDeFechasInvertido() throws Exception {
+        UUID proyectoId = UUID.randomUUID();
+        LocalDate startDate = LocalDate.of(2025, 6, 1);
+        LocalDate endDate = LocalDate.of(2025, 1, 1);
+        when(obtenerSCurveUseCase.obtener(eq(proyectoId), eq(startDate), eq(endDate)))
+                .thenThrow(new IllegalArgumentException("startDate no puede ser posterior a endDate"));
+
+        mockMvc.perform(get("/api/v1/evm/{proyectoId}/s-curve", proyectoId)
+                        .queryParam("startDate", "2025-06-01")
+                        .queryParam("endDate", "2025-01-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
     @DisplayName("POST /api/v1/evm/{proyectoId}/cerrar-periodo retorna 200 con proyectoId, periodoId, fechaCorte, status")
     void deberiaCerrarPeriodoConExito() throws Exception {
         UUID proyectoId = UUID.randomUUID();

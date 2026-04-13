@@ -2,7 +2,7 @@
 
 > **Status**: Completed (90%)
 > **Owner**: Architecture Team
-> **Last Updated**: 2026-01-31
+> **Last Updated**: 2026-04-12
 
 ## 1. Module Maturity Roadmap
 
@@ -142,6 +142,12 @@
 
 - **Service**: `AuthService`, `NotificationService`
 - **Responsibility**: Security and Comms.
+
+### 7.1 Boundary errors (REST)
+
+- **`GlobalExceptionHandler`** centraliza excepciones comunes; varios handlers devuelven **`ErrorResponses.ErrorResponse`** (`status`, código de negocio, `message`) — ver `com.budgetpro.infrastructure.rest.error.ErrorResponses`.
+- **Excepción:** `ProyectoNotFoundException` (EVM) aún puede responder con cuerpo `Map` legacy (`error`, `proyectoId`); alinear a `ErrorResponses` en evolución futura.
+- **`IllegalArgumentException`:** tratado como **400** con cuerpo unificado (p. ej. validación de paginación, rango de fechas UC-E04).
 
 ## 8. REST Endpoints
 

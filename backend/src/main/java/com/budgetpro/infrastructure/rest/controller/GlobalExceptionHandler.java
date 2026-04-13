@@ -2,13 +2,15 @@ package com.budgetpro.infrastructure.rest.controller;
 
 import com.budgetpro.application.finanzas.evm.exception.PeriodoFechaInvalidaException;
 import com.budgetpro.application.finanzas.evm.port.in.ProyectoNotFoundException;
+import com.budgetpro.infrastructure.rest.error.ErrorResponses;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,190 +20,123 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException.class)
-    public ResponseEntity<Map<String, Object>> handleCompraDomainRule(
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleCompraDomainRule(
             com.budgetpro.domain.logistica.compra.exception.CompraDomainRuleException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "BUSINESS_RULE_VIOLATION");
-        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "BUSINESS_RULE_VIOLATION", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.BusinessRuleException.class)
-    public ResponseEntity<Map<String, Object>> handleCompraBusinessRule(com.budgetpro.application.compra.exception.BusinessRuleException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "BUSINESS_RULE_VIOLATION");
-        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleCompraBusinessRule(com.budgetpro.application.compra.exception.BusinessRuleException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "BUSINESS_RULE_VIOLATION", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.produccion.exception.BusinessRuleException.class)
-    public ResponseEntity<Map<String, Object>> handleProduccionBusinessRule(com.budgetpro.application.produccion.exception.BusinessRuleException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "BUSINESS_RULE");
-        body.put("status", HttpStatus.CONFLICT.value());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleProduccionBusinessRule(com.budgetpro.application.produccion.exception.BusinessRuleException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "BUSINESS_RULE", ex.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "NOT_FOUND");
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponses.error(HttpStatus.NOT_FOUND.value(), "NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(PeriodoFechaInvalidaException.class)
-    public ResponseEntity<Map<String, Object>> handlePeriodoFechaInvalida(PeriodoFechaInvalidaException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", ex.getMessage());
-        body.put("fechaCorte", ex.getFechaCorte().toString());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handlePeriodoFechaInvalida(PeriodoFechaInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "INVALID_PERIOD", ex.getMessage()));
     }
 
     @ExceptionHandler(ProyectoNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleProyectoNotFound(ProyectoNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", "Proyecto no encontrado");
-        body.put("proyectoId", ex.getProyectoId().toString());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                        "error", "Proyecto no encontrado",
+                        "proyectoId", ex.getProyectoId().toString()
+                ));
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        
-        // Determinar si es un error de regla de negocio (422) o conflicto de estado (409)
-        String message = ex.getMessage() != null ? ex.getMessage() : "";
-        HttpStatus status;
-        String errorCode;
-        
-        if (message.contains("L-01") || message.contains("L-04") || message.contains("REGLA-153") 
-            || message.contains("presupuesto") || message.contains("proveedor") || message.contains("partida")) {
-            // Error de regla de negocio: 422 Unprocessable Entity
-            status = HttpStatus.UNPROCESSABLE_ENTITY;
-            errorCode = "BUSINESS_RULE_VIOLATION";
-        } else {
-            // Conflicto de estado: 409 Conflict
-            status = HttpStatus.CONFLICT;
-            errorCode = "ILLEGAL_STATE";
-        }
-        
-        body.put("error", errorCode);
-        body.put("status", status.value());
-        return ResponseEntity.status(status).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "ILLEGAL_STATE", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, Object> body = new HashMap<>();
-        String message = ex.getMessage() != null ? ex.getMessage() : "";
-        
-        // Detectar si es una violación de regla de negocio por el contenido del mensaje
-        // L-01, L-04, REGLA-153 son reglas de negocio que deben retornar 422
-        if (message.contains("L-01") || message.contains("L-04") || message.contains("REGLA-153") 
-            || message.contains("presupuesto insuficiente") || message.contains("proveedor inactivo")
-            || message.contains("partida debe ser hoja") || message.contains("no puede exceder el presupuesto disponible")) {
-            // Error de regla de negocio: 422 Unprocessable Entity
-            body.put("message", message);
-            body.put("error", "BUSINESS_RULE_VIOLATION");
-            body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
-        }
-        
-        // Otros IllegalArgumentException son errores de validación: 400 Bad Request
-        body.put("message", message);
-        body.put("error", "INVALID_ARGUMENT");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "INVALID_ARGUMENT", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.OverDeliveryException.class)
-    public ResponseEntity<Map<String, Object>> handleOverDelivery(com.budgetpro.application.compra.exception.OverDeliveryException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "OVER_DELIVERY");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleOverDelivery(com.budgetpro.application.compra.exception.OverDeliveryException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "OVER_DELIVERY", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.InvalidStateException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidState(com.budgetpro.application.compra.exception.InvalidStateException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "INVALID_STATE");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleInvalidState(com.budgetpro.application.compra.exception.InvalidStateException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "INVALID_STATE", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.MissingGuiaRemisionException.class)
-    public ResponseEntity<Map<String, Object>> handleMissingGuiaRemision(com.budgetpro.application.compra.exception.MissingGuiaRemisionException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "MISSING_GUIA_REMISION");
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleMissingGuiaRemision(com.budgetpro.application.compra.exception.MissingGuiaRemisionException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "MISSING_GUIA_REMISION", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.UnauthorizedRoleException.class)
-    public ResponseEntity<Map<String, Object>> handleUnauthorizedRole(com.budgetpro.application.compra.exception.UnauthorizedRoleException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "UNAUTHORIZED_ROLE");
-        body.put("status", HttpStatus.FORBIDDEN.value());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleUnauthorizedRole(com.budgetpro.application.compra.exception.UnauthorizedRoleException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponses.error(HttpStatus.FORBIDDEN.value(), "UNAUTHORIZED_ROLE", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.DuplicateReceptionException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicateReception(com.budgetpro.application.compra.exception.DuplicateReceptionException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "DUPLICATE_RECEPTION");
-        body.put("status", HttpStatus.CONFLICT.value());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleDuplicateReception(com.budgetpro.application.compra.exception.DuplicateReceptionException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "DUPLICATE_RECEPTION", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.ProjectNotActiveException.class)
-    public ResponseEntity<Map<String, Object>> handleProjectNotActive(com.budgetpro.application.compra.exception.ProjectNotActiveException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "PROJECT_NOT_ACTIVE");
-        body.put("status", HttpStatus.PRECONDITION_FAILED.value());
-        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(body);
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleProjectNotActive(com.budgetpro.application.compra.exception.ProjectNotActiveException ex) {
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
+                .body(ErrorResponses.error(HttpStatus.PRECONDITION_FAILED.value(), "PROJECT_NOT_ACTIVE", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.rrhh.exception.ProyectoNoActivoException.class)
-    public ResponseEntity<Map<String, Object>> handleProyectoNoActivo(
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleProyectoNoActivo(
             com.budgetpro.application.rrhh.exception.ProyectoNoActivoException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "PROYECTO_NO_ACTIVO");
-        body.put("status", HttpStatus.PRECONDITION_FAILED.value());
-        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(body);
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
+                .body(ErrorResponses.error(HttpStatus.PRECONDITION_FAILED.value(), "PROYECTO_NO_ACTIVO", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleConfiguracionLaboralNotFound(
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleConfiguracionLaboralNotFound(
             com.budgetpro.application.rrhh.exception.ConfiguracionLaboralNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "CONFIGURACION_LABORAL_NO_ENCONTRADA");
-        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponses.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), "CONFIGURACION_LABORAL_NO_ENCONTRADA", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.AuthenticationRequiredException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthenticationRequired(
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleAuthenticationRequired(
             com.budgetpro.application.compra.exception.AuthenticationRequiredException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", ex.getMessage());
-        body.put("error", "AUTHENTICATION_REQUIRED");
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponses.error(HttpStatus.UNAUTHORIZED.value(), "AUTHENTICATION_REQUIRED", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponses.ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new java.util.HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            if (error instanceof FieldError fe) {
+                errors.put(fe.getField(), fe.getDefaultMessage());
+            }
+        });
+        return ResponseEntity.badRequest()
+                .body(ErrorResponses.validation(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", errors));
     }
 }
