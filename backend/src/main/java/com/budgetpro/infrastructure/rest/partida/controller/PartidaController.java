@@ -59,13 +59,14 @@ public class PartidaController {
                 .body(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PartidaResponse> obtenerPorId(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(obtenerPartidaUseCase.obtenerPorId(id));
-    }
-
+    // Ruta literal antes de /{id}: evita que /wbs se enlace como id=UUID.
     @GetMapping("/wbs")
     public ResponseEntity<List<WbsNodeResponse>> obtenerWbs(@RequestParam("presupuestoId") UUID presupuestoId) {
         return ResponseEntity.ok(obtenerWbsUseCase.obtenerWbsPorPresupuesto(presupuestoId));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PartidaResponse> obtenerPorId(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(obtenerPartidaUseCase.obtenerPorId(id));
     }
 }
