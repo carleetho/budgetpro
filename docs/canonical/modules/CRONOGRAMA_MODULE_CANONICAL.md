@@ -2,7 +2,7 @@
 
 > **Status**: Functional (60%)
 > **Owner**: Planificación Team
-> **Last Updated**: 2026-04-08
+> **Last Updated**: 2026-04-12
 
 ## 1. Module Maturity Roadmap
 
@@ -19,10 +19,10 @@
 | C-01 | **Program Frozen**: When Budget is approved, the Program must be frozen (Baseline creation). | ✅ Implemented        |
 | C-02 | **Dependency Integrity**: Start-to-Finish dependencies cannot create circular references.    | 🟡 Partial            |
 | C-03 | **One Activity Per Leaf**: Currently simplified to one activity per partida leaf.            | 🟡 Partial (Need 1:N) |
-| C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🟡 Revisar código     |
+| C-04 | **Working Days**: Durations must calculate based on project calendar (skip weekends).        | 🟡 Partial (Lun–Vie vía `WorkingDayCalculator` en duración total; excepciones/feriados → UC-C04) |
 | C-05 | **Temporal Consistency**: Activity end date must be ≥ start date (zero duration allowed).    | ✅ Implemented        |
 
-> **Nota C-04 (sync 2026-04-08):** Existe `WorkingDayCalculator` en `com.budgetpro.domain.finanzas.evm.util`, usado por **forecast EVM** (`ObtenerForecastFechaUseCaseImpl`). **No consta** en este análisis que el **cronograma de obra** (`CalculoCronogramaService` / `CronogramaService`) reutilice esa misma política de días hábiles. Mantener 🟡 hasta auditoría explícita del cálculo de duraciones en cronograma.
+> **Nota C-04 (sync 2026-04-12):** `CalculoCronogramaService` usa `WorkingDayCalculator.workingDaysBetween` en `calcularDuracionTotal` (política Lun–Vie alineada a EVM). Calendario de proyecto con feriados / excepciones sigue sin modelarse en API (UC-C04 🔴). Evidencia: [CRONOGRAMA_GAP_STUDY.md](../radiography/gaps/CRONOGRAMA_GAP_STUDY.md).
 
 ### 2.2 Extended Rule Inventory (Phase 1 Alignment)
 
@@ -105,7 +105,9 @@ graph TD
 | ------ | ----------------------------------------------- | ---------------- | ------ |
 | POST   | `/api/v1/proyectos/{id}/cronograma/actividades` | Program activity | ✅     |
 | GET    | `/api/v1/proyectos/{id}/cronograma`             | Get Gantt data   | ✅     |
-| POST   | `/api/v1/proyectos/{id}/cronograma/baseline`    | Freeze baseline  | ✅     |
+| POST   | `/api/v1/proyectos/{id}/cronograma/baseline`    | Freeze baseline  | 🔴 No expuesto en `CronogramaController` (2026-04-12); ver [CRONOGRAMA_GAP_STUDY.md](../radiography/gaps/CRONOGRAMA_GAP_STUDY.md) y **O-10** en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md) |
+
+**Estudio de gaps (Ola 1):** [CRONOGRAMA_GAP_STUDY.md](../radiography/gaps/CRONOGRAMA_GAP_STUDY.md).
 
 ## 9. Observability
 
