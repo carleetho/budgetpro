@@ -295,7 +295,7 @@ class IntegrityHashServiceTest {
         for (int i = 0; i < cantidad; i++) {
             Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(),
                     String.format("01.%02d", i + 1), "Descripción " + i, "UND", new BigDecimal("10.0"));
-            partida.actualizarPresupuestoAsignado(new BigDecimal("100.0").multiply(new BigDecimal(i + 1)));
+            partida = partida.actualizarPresupuestoAsignado(new BigDecimal("100.0").multiply(new BigDecimal(i + 1)));
             partidas.add(partida);
         }
         return partidas;
@@ -315,25 +315,24 @@ class IntegrityHashServiceTest {
     }
 
     private APUSnapshot crearAPUSnapshotConRendimientoDiferente(UUID partidaId) {
-        APUSnapshot apu = crearAPUSnapshot(partidaId);
-        return apu.actualizarRendimiento(new BigDecimal("3.0"), UUID.randomUUID());
+        return crearAPUSnapshot(partidaId).actualizarRendimiento(new BigDecimal("3.0"), UUID.randomUUID());
     }
 
     private List<Partida> crearPartidasConEstadoFinanciero() {
         Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(), "01.01",
                 "Partida con gastos", "UND", new BigDecimal("1.0"));
-        partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
-        partida.actualizarGastosReales(new BigDecimal("200.0"));
-        partida.actualizarCompromisosPendientes(new BigDecimal("100.0"));
+        partida = partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
+        partida = partida.actualizarGastosReales(new BigDecimal("200.0"));
+        partida = partida.actualizarCompromisosPendientes(new BigDecimal("100.0"));
         return List.of(partida);
     }
 
     private List<Partida> crearPartidasConEstadoFinancieroModificado() {
         Partida partida = Partida.crearRaiz(PartidaId.from(UUID.randomUUID()), presupuestoId.getValue(), "01.01",
                 "Partida con gastos modificados", "UND", new BigDecimal("1.0"));
-        partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
-        partida.actualizarGastosReales(new BigDecimal("300.0")); // Diferente
-        partida.actualizarCompromisosPendientes(new BigDecimal("150.0")); // Diferente
+        partida = partida.actualizarPresupuestoAsignado(new BigDecimal("1000.0"));
+        partida = partida.actualizarGastosReales(new BigDecimal("300.0")); // Diferente
+        partida = partida.actualizarCompromisosPendientes(new BigDecimal("150.0")); // Diferente
         return List.of(partida);
     }
 }

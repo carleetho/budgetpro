@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS movimiento_almacen (
   almacen_id UUID NOT NULL REFERENCES almacen(id),
   recurso_id UUID NOT NULL,
   tipo_movimiento VARCHAR(30) NOT NULL,
-  tipo VARCHAR(30) NOT NULL,
   fecha_movimiento DATE NOT NULL,
   fecha TIMESTAMP NOT NULL,
   cantidad NUMERIC(19,4) NOT NULL,
@@ -51,8 +50,8 @@ CREATE TABLE IF NOT EXISTS movimiento_almacen (
   CONSTRAINT chk_mov_almacen_precio CHECK (precio_unitario >= 0),
   CONSTRAINT chk_mov_almacen_importe CHECK (importe_total >= 0),
   CONSTRAINT chk_mov_almacen_tipo CHECK (tipo_movimiento IN ('ENTRADA', 'SALIDA', 'DEVOLUCION')),
-  CONSTRAINT chk_mov_almacen_tipo2 CHECK (tipo IN ('ENTRADA', 'SALIDA', 'DEVOLUCION')),
-  CONSTRAINT chk_mov_almacen_partida_salida CHECK (tipo = 'SALIDA' AND partida_id IS NOT NULL OR tipo <> 'SALIDA')
+  -- SALIDA exige partida; ENTRADA/DEVOLUCION no (equivalente claro a implicación, una sola columna de tipo)
+  CONSTRAINT chk_mov_almacen_partida_salida CHECK (tipo_movimiento <> 'SALIDA' OR partida_id IS NOT NULL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_movimiento_almacen ON movimiento_almacen (almacen_id);

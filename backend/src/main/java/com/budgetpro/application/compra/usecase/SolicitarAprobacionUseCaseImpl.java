@@ -7,6 +7,7 @@ import com.budgetpro.domain.logistica.compra.port.out.OrdenCompraRepository;
 import com.budgetpro.domain.logistica.compra.port.out.PartidaValidator;
 import com.budgetpro.domain.logistica.compra.port.out.PresupuestoValidator;
 import com.budgetpro.domain.logistica.compra.port.out.ProveedorValidator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class SolicitarAprobacionUseCaseImpl implements SolicitarAprobacionUseCas
 
     public SolicitarAprobacionUseCaseImpl(OrdenCompraRepository ordenCompraRepository,
                                          PresupuestoValidator presupuestoValidator,
-                                         PartidaValidator partidaValidator,
+                                         @Qualifier("compraPartidaValidatorAdapter") PartidaValidator partidaValidator,
                                          ProveedorValidator proveedorValidator) {
         this.ordenCompraRepository = ordenCompraRepository;
         this.presupuestoValidator = presupuestoValidator;

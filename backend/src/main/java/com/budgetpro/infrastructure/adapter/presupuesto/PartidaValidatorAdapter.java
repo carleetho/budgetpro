@@ -17,7 +17,7 @@ import java.util.UUID;
  * 
  * Valida que las partidas sean leaf nodes válidas según REGLA-153.
  */
-@Component
+@Component("compraPartidaValidatorAdapter")
 public class PartidaValidatorAdapter implements PartidaValidator {
 
     private final PartidaRepository partidaRepository;

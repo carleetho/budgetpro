@@ -54,11 +54,6 @@ public class MovimientoAlmacenEntity extends AuditEntity {
     @Column(name = "tipo_movimiento", nullable = false, length = 30)
     private com.budgetpro.domain.logistica.almacen.model.TipoMovimientoAlmacen tipoMovimiento;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 30)
-    private com.budgetpro.domain.logistica.almacen.model.TipoMovimientoAlmacen tipo;
-
     @Column(name = "fecha_movimiento", nullable = false)
     private LocalDate fechaMovimiento;
 
@@ -103,9 +98,6 @@ public class MovimientoAlmacenEntity extends AuditEntity {
     @PrePersist
     private void prePersist() {
         // REGLA-050
-        if (tipo == null) {
-            tipo = tipoMovimiento;
-        }
         if (fecha == null && fechaMovimiento != null) {
             fecha = fechaMovimiento.atStartOfDay();
         }
@@ -117,7 +109,7 @@ public class MovimientoAlmacenEntity extends AuditEntity {
     @AssertTrue(message = "partidaId es obligatorio cuando el tipo es SALIDA")
     private boolean isPartidaValidaParaSalida() {
         // REGLA-049
-        if (tipo == com.budgetpro.domain.logistica.almacen.model.TipoMovimientoAlmacen.SALIDA) {
+        if (tipoMovimiento == com.budgetpro.domain.logistica.almacen.model.TipoMovimientoAlmacen.SALIDA) {
             return partidaId != null;
         }
         return true;
@@ -135,7 +127,6 @@ public class MovimientoAlmacenEntity extends AuditEntity {
         this.almacenId = almacenId;
         this.recursoId = recursoId;
         this.tipoMovimiento = tipoMovimiento;
-        this.tipo = tipoMovimiento;
         this.fechaMovimiento = fechaMovimiento;
         this.fecha = fechaMovimiento != null ? fechaMovimiento.atStartOfDay() : null;
         this.cantidad = cantidad;
