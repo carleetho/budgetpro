@@ -64,6 +64,11 @@ public interface OrdenCompraRepository {
     List<OrdenCompra> findByProyectoIdAndEstado(UUID proyectoId, OrdenCompraEstado estado);
 
     /**
+     * Lista todas las órdenes de compra (para paginación en REST).
+     */
+    List<OrdenCompra> findAll();
+
+    /**
      * Genera el siguiente número secuencial de orden de compra para un año dado.
      * 
      * @param year El año para el cual generar el número
