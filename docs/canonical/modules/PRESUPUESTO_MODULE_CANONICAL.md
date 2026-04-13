@@ -3,8 +3,8 @@
 > **Scope**: Presupuesto, WBS (Partidas), congelamiento y reporting asociado  
 > **Status**: Complete (80%)  
 > **Owner**: Finanzas Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
 ## 1. Module Maturity Roadmap
 
@@ -173,6 +173,8 @@ graph TD
 | Method | Path                | Description   | Status |
 | ------ | ------------------- | ------------- | ------ |
 | POST   | `/api/v1/partidas`  | Add partida   | ✅     |
+| GET    | `/api/v1/partidas/{id}` | Get partida by id | ✅ |
+| GET    | `/api/v1/partidas/wbs` | WBS tree (`?presupuestoId=`) | ✅ |
 
 ### Configuración laboral (FSR) — `LaboralController` (relacionado P-06 / indirectos)
 
@@ -196,4 +198,4 @@ graph TD
 - [ ] **Legacy APUs**: Support for legacy non-snapshot APUs complicates validation logic. (Medium)
 - [ ] **Recursion Performance**: Recursive WBS loading needs optimization for deep trees. (Low)
 - [ ] **Domain events**: Publicar explícitamente `PresupuestoCreadoEvent` / `PresupuestoAprobadoEvent` (o equivalente) si se requiere desacoplar Cronograma/EVM vía mensajería. (Medium)
-- [ ] **Partidas**: Solo `POST` crear; sin listado/árbol REST dedicado en `PartidaController` (consumir vía presupuesto/proyecto según otros endpoints). (Low)
+- [ ] **Partidas**: existe `GET` por id y WBS por `presupuestoId`; sin listado paginado plano ni PUT/DELETE en `PartidaController`. (Low)

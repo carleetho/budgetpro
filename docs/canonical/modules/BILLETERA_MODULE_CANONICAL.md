@@ -1,18 +1,18 @@
 # BILLETERA_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: Caja del proyecto, movimientos INGRESO/EGRESO, saldo no negativo  
-> **Status**: Functional (50%)  
+> **Status**: Functional (70%)  
 > **Owner**: Finanzas Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
-**Dominio:** `com.budgetpro.domain.finanzas.model` (`Billetera`, `MovimientoCaja`) · **Aplicación:** `com.budgetpro.application.finanzas.billetera` · **REST:** `BilleteraController` → `/api/v1/billeteras`.
+**Dominio:** `com.budgetpro.domain.finanzas.model` (`Billetera`, `MovimientoCaja`) · **Aplicación:** `com.budgetpro.application.finanzas.billetera` · **REST:** `BilleteraController` + **`BilleteraQueryController`** → `/api/v1/billeteras`.
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State    | Deliverables                                     |
 | ----------- | --------- | --------------- | ------------------------------------------------ |
-| **Current** | Now       | 50% (Cash Flow) | Ingress/Egress, Balance Check                    |
+| **Current** | Now       | 70% (Cash Flow + consulta) | Ingress/Egress, consulta saldo/movimientos, Balance Check |
 | **Next**    | +1 Month  | 75%             | Multi-account Support, Bank Reconciliation       |
 | **Target**  | +3 Months | 90%             | Cash Flow Forecasting (Flujo de Caja Proyectado) |
 
@@ -80,7 +80,7 @@
 | ------ | ------------------------ | -------- | ------ |
 | UC-B01 | Register Ingress (Cobro) | P0       | ✅ `RegistrarMovimientoCajaUseCase` + REST (`INGRESO`) |
 | UC-B02 | Register Egress (Pago)   | P0       | 🟡 REST acepta `EGRESO`, pero `RegistrarMovimientoCajaUseCaseImpl` llama a `Billetera.egresar(..., null, false)` — **deuda** documentada en código (falta `presupuestoId` / política explícita en API). |
-| UC-B03 | Check Balance            | P0       | 🔴 **Sin endpoint REST** de saldo o movimientos bajo `BilleteraController` (2026-04-08). |
+| UC-B03 | Check Balance            | P0       | ✅ `GET /api/v1/billeteras/{billeteraId}/saldo` y `GET .../movimientos` (`BilleteraQueryController`; DTOs `BilleteraSaldoResponse`, `MovimientoCajaResponse`). |
 | UC-B04 | Multi-currency Transfer  | P2       | 🔴     |
 
 ## 7. Domain / application
@@ -93,9 +93,11 @@
 
 | Method | Path | Description | Status |
 | ------ | ---- | ----------- | ------ |
-| POST | `/api/v1/billeteras/{billeteraId}/movimientos` | Registrar movimiento (`RegistrarMovimientoRequest`: monto; moneda PEN/USD/EUR; tipo INGRESO o EGRESO; referencia obligatoria; evidencia opcional) | ✅ |
+| POST | `/api/v1/billeteras/{billeteraId}/movimientos` | Registrar movimiento (`RegistrarMovimientoRequest`: monto; moneda PEN/USD/EUR; tipo INGRESO o EGRESO — **tipo case-insensitive** en binding REST; referencia obligatoria; evidencia opcional) | ✅ |
+| GET | `/api/v1/billeteras/{billeteraId}/saldo` | Consultar saldo agregado por moneda | ✅ |
+| GET | `/api/v1/billeteras/{billeteraId}/movimientos` | Listar movimientos de la billetera | ✅ |
 
-**Corrección (reverse drift):** no existe en código `GET /api/v1/proyectos/{id}/billetera` en controladores actuales; la lectura de saldo/movimientos para UI queda como **deuda** salvo otro endpoint no listado aquí.
+**Nota:** no hay `GET /api/v1/proyectos/{id}/billetera`; el cliente usa `billeteraId` conocido o flujos que lo resuelven por proyecto fuera de este controlador.
 
 ## 9. Observability
 
@@ -110,5 +112,5 @@
 ## 11. Technical Debt & Risks
 
 - [ ] **Concurrency**: Balance updates need Optimistic Locking to prevent Race Conditions. (Critical)
-- [ ] **Consulta REST**: Exponer saldo y/o historial de `MovimientoCaja` por proyecto o `billeteraId`.
+- [ ] **Consulta por proyecto**: resolver `billeteraId` desde `proyectoId` en un endpoint dedicado (opcional UX).
 - [ ] **EGRESO vía API genérica:** alinear request/use case con reglas de `Billetera.egresar` (presupuesto / integridad) o documentar perfil “solo ingreso manual”.

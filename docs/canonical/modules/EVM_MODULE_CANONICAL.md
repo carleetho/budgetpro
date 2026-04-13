@@ -3,15 +3,15 @@
 > **Scope**: Earned Value Management  
 > **Status**: Complete (95%)  
 > **Owner**: Control Team  
-> **Last Updated**: 2026-04-07  
-> **Authors**: Ing. CL, Antigravity
+> **Last Updated**: 2026-04-12  
+> **Authors**: Ing. CL, Antigravity, BudgetPro
 
 ## 1. Module Maturity Roadmap
 
 | Phase       | Timeline  | Target State         | Deliverables                                                              |
 | ----------- | --------- | -------------------- | ------------------------------------------------------------------------- |
-| **Current** | Now       | 95% (Epic Complete)  | Physical progress ✅, CPI/SPI ✅, EAC/ETC ✅, S-Curve ✅, Forecast ✅, E-04 ✅ |
-| **Target**  | Optional  | 100%                 | evm.progress.registered.count metric, Dashboard aggregation               |
+| **Current** | Now       | 98% (Epic Complete)  | Physical progress ✅, CPI/SPI ✅, EAC/ETC ✅, S-Curve ✅, Forecast ✅, E-04 ✅, contador **`evm.progress.registered.count`** (`EvmMetrics` + `ValuacionCerradaEventListener`) |
+| **Target**  | Optional  | 100%                 | Dashboard aggregation cross-módulos               |
 
 ## 2. Invariants (Business Rules)
 

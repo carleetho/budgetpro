@@ -1,10 +1,10 @@
 # ESTIMACION_MODULE_CANONICAL.md — Current State Radiography
 
 > **Scope**: Estimaciones de avance, aprobación secuencial, integración con billetera y anticipos  
-> **Status**: Functional (60%)  
+> **Status**: Functional (75%)  
 > **Owner**: Finanzas Team  
-> **Last Updated**: 2026-04-08  
-> **Authors**: Antigravity (sync código `main`)
+> **Last Updated**: 2026-04-12  
+> **Authors**: Antigravity (sync código `main`), BudgetPro
 
 **Dominio:** `com.budgetpro.domain.finanzas.estimacion` · **Servicios dominio:** `GeneradorEstimacionService` · **Aplicación:** `com.budgetpro.application.estimacion` · **REST:** `EstimacionController` bajo `/api/v1/proyectos`.
 
@@ -12,7 +12,7 @@
 
 | Phase       | Timeline  | Target State          | Deliverables                          |
 | ----------- | --------- | --------------------- | ------------------------------------- |
-| **Current** | Now       | 60% (Sequential Flow) | Generate, Approve, Pay Flow           |
+| **Current** | Now       | 75% (Sequential Flow + lectura) | Generate, Approve, listar y obtener por id |
 | **Next**    | +1 Month  | 75%                   | Deductions (Amortization, Guarantee)  |
 | **Target**  | +3 Months | 90%                   | Integration with Electronic Invoicing |
 
@@ -97,6 +97,8 @@ graph TD
 | UC-ES02 | Approve Estimacion        | P0       | ✅     |
 | UC-ES03 | Calculate Deductions      | P1       | 🟡 Lógica en **generación** (`GenerarEstimacionUseCaseImpl`: amortización anticipo, retención FG) y dominio `Estimacion`; no es un caso de uso REST separado. |
 | UC-ES04 | Print Payment Certificate | P1       | 🔴     |
+| UC-ES05 | Listar estimaciones por proyecto | P1 | ✅ `ConsultarEstimacionUseCase.listarPorProyecto` |
+| UC-ES06 | Obtener estimación por id | P1 | ✅ `ConsultarEstimacionUseCase.obtenerPorId` |
 
 ## 7. Domain / application orchestration
 
@@ -110,10 +112,12 @@ graph TD
 | ------ | ---- | ----------- | ------ |
 | POST | `/api/v1/proyectos/{proyectoId}/estimaciones` | Generar estimación (`GenerarEstimacionUseCase`) | ✅ |
 | PUT | `/api/v1/proyectos/estimaciones/{estimacionId}/aprobar` | Aprobar y registrar ingreso en billetera (`AprobarEstimacionUseCase`) — **204** | ✅ |
+| GET | `/api/v1/proyectos/{proyectoId}/estimaciones` | Listar estimaciones del proyecto (`ConsultarEstimacionUseCase`) | ✅ |
+| GET | `/api/v1/proyectos/estimaciones/{estimacionId}` | Obtener estimación por id | ✅ |
 
 **Nota de ruta:** el `aprobar` cuelga del prefijo `/api/v1/proyectos`, no de `/api/v1/estimaciones/...` (evitar reverse drift en clientes y OpenAPI).
 
-**Deuda REST:** no hay `GET` de listado ni consulta por id de estimación en `EstimacionController`.
+**Deuda REST menor:** paginación/filtrado en listado; certificado de pago (UC-ES04).
 
 ## 9. Observability
 
@@ -128,7 +132,7 @@ graph TD
 ## 11. Technical Debt & Risks
 
 - [ ] **Rounding Errors**: Potential cent-differences in cumulative calculations. Needs standard RoundingMode. (Medium)
-- [ ] **API de lectura**: Falta listar / obtener estimación por id vía REST.
+- [ ] **Paginación**: el listado devuelve el conjunto completo por proyecto (puede crecer).
 - [ ] **Eventos**: Si se desacopla reporting u otros módulos, publicar evento explícito post-aprobación (hoy todo inline).
 
 ## 12. Detailed Rule Specifications
