@@ -2,7 +2,7 @@
 
 > **Scope**: Reportes de producción de campo (RPC), aprobación/rechazo, cantidades por partida  
 > **Status**: Functional (55%) — conviven **dos** superficies REST (legacy bajo `/api/v1` y `/api/v1/produccion/reportes`)  
-> **Last Updated**: 2026-04-08  
+> **Last Updated**: 2026-04-12  
 > **Authors**: Antigravity (sync código `main`)
 
 **Orquestación:** `com.budgetpro.application.produccion.service.ProduccionService` · **Persistencia:** entidades `ReporteProduccionEntity`, `DetalleRPCEntity` (JPA).
@@ -20,6 +20,8 @@ El módulo de Producción (Reportes de Producción de Campo - RPC) es el compone
 **Diferencias operativas:** el controlador **legacy** toma `responsableId` / aprobador desde `AuditorAware<UUID>` (seguridad); el de **reportes** envía `responsableId` y `aprobadorId` en el cuerpo de las peticiones.
 
 **Deuda:** unificar contrato público y documentación OpenAPI para no mantener dos clientes divergentes sobre el mismo `ProduccionService`.
+
+**Estudio de gaps (Ola 1):** [PRODUCCION_GAP_STUDY.md](../radiography/gaps/PRODUCCION_GAP_STUDY.md) — hallazgos O-07 / O-08 en [CODE_DOC_REVIEW_LOG.md](../radiography/CODE_DOC_REVIEW_LOG.md).
 
 ## 2. Invariantes y Reglas de Negocio
 
