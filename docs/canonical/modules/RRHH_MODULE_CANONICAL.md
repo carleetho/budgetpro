@@ -2,7 +2,7 @@
 
 > **Status**: Partial (≈35%; code-aligned)
 > **Owner**: Admin Team
-> **Last Updated**: 2026-04-13 (GF-02 asignación REST; §8.1 GF-01 rutas paralelas)
+> **Last Updated**: 2026-04-13 (UC-R03 POST: `RegistroAsistenciaPolitica`; GF-02 asignación REST; §8.1 GF-01 rutas paralelas)
 
 > [!CAUTION]
 > **DO NOT USE AI ASSISTANCE FOR CODE GENERATION IN THIS MODULE**
@@ -53,7 +53,7 @@
 | REGLA-122 | **Mano de obra es costo real; todo tiempo trabajado cuesta y deja rastro.** | 🟡 Implemented |
 | REGLA-123 | **El costo de mano de obra nunca se registra como salario neto; se calcula costo empresa con prestaciones.** | 🟡 Implemented |
 | REGLA-124 | **No se permite que un trabajador esté asignado a dos proyectos ACTIVO el mismo día y horario.** | 🟡 Implemented |
-| REGLA-125 | **El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.** | 🟡 Implemented |
+| REGLA-125 | **El tareo debe validar Proyecto ACTIVO, trabajador asignado, coherencia de fechas y no duplicidad horaria.** | ✅ Enforced en `POST /api/v1/rrhh/asistencias` vía `RegistroAsistenciaPolitica` + persistencia `existsVigenteAsignacionEmpleadoProyectoEnFecha` (2026-04-13) |
 | REGLA-150 | **Ningún módulo operativo puede ejecutar acciones si el Proyecto no está en estado ACTIVO.** | ✅ Enforced (asignación a proyecto + registro asistencia vía `ProyectoNoActivoException`; 2026-04-07) |
 
 ## 3. Domain Events
@@ -106,7 +106,7 @@ graph TD
 | ------ | ------------------------- | -------- | ------ |
 | UC-R01 | Configure Labor Rates     | P0       | ✅     |
 | UC-R02 | Register Worker           | P0       | ✅ (`CrearEmpleado` + evento dominio) |
-| UC-R03 | Register Daily Attendance | P1       | 🟡 (activo/nocturno/solape + proyecto ACTIVO; costos por proyecto consultan `findByProyectoAndPeriodo`) |
+| UC-R03 | Register Daily Attendance | P1       | ✅ **POST** (R-02, REGLA-150, REGLA-125 + nocturno/solape horario existente); límite R-03 multi-sitio delegado al puerto `AsignacionSolapeValidator` (**`NoOpAsignacionSolapeValidator`** en arranque). Costos por proyecto / nómina siguen 🟡 (`findByProyectoAndPeriodo`, `CalcularNomina`) |
 | UC-R04 | Generate Payroll          | P1       | 🟡 (`CalcularNomina`: ISR desde constante aplicación; IMSS desde `%` configuración; falla explícita si no hay config) |
 
 ## 7. Domain Services
@@ -129,7 +129,7 @@ Superficie bajo **`/api/v1/rrhh`** (controladores en `infrastructure/rest/rrhh/c
 | PUT | `/api/v1/rrhh/empleados/{id}` | idem | Actualizar | ✅ |
 | POST | `/api/v1/rrhh/empleados/{empleadoId}/asignaciones` | idem | Asignar empleado a proyecto (REGLA-150: proyecto **ACTIVO**); solape → **409** `ASIGNACION_PROYECTO_CONFLICTO` | ✅ |
 | DELETE | `/api/v1/rrhh/empleados/{id}` | idem | Inactivar | ✅ |
-| POST | `/api/v1/rrhh/asistencias` | `AsistenciaController` | Registrar asistencia | 🟡 |
+| POST | `/api/v1/rrhh/asistencias` | `AsistenciaController` | Registrar tareo: R-02 / REGLA-150 / REGLA-125 + solape horario; **400** `INACTIVE_WORKER`, **412** `PROYECTO_NO_ACTIVO`, **422** `EMPLEADO_NO_ASIGNADO_PROYECTO`, **409** `ASISTENCIA_SUPERPUESTA` | ✅ |
 | GET | `/api/v1/rrhh/asistencias` | idem | Listar por empleado **o** proyecto + rango; sin ambos filtros → **400** `MISSING_ATTENDANCE_FILTERS` | 🟡 |
 | GET | `/api/v1/rrhh/asistencias/resumen` | idem | Resumen mensual | ✅ |
 | POST | `/api/v1/rrhh/nominas/calcular` | `NominaController` | Calcular nómina | 🟡 |

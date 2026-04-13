@@ -2,7 +2,7 @@
 
 > **Tipo de PR**: G0 (solo documentación + alineación canónica §8 verificada en código).  
 > **Rama**: `feature/gaps-rrhh-ola1`  
-> **Fecha**: 2026-04-12 · **I1**: 2026-04-13 GF-03, GF-02 · **G0**: 2026-04-13 GF-01 (canónico §8.1)
+> **Fecha**: 2026-04-12 · **I1**: 2026-04-13 GF-03, GF-02, UC-R03 POST polish · **G0**: 2026-04-13 GF-01 (canónico §8.1)
 
 ## 1. Baseline
 
@@ -12,7 +12,7 @@
 | Módulo              | RRHH                                                               |
 | % oficial (tablero) | **35%** — [SCOREBOARD_17.md](../SCOREBOARD_17.md)                  |
 | Notebook            | [RRHH_MODULE_CANONICAL.md](../../modules/RRHH_MODULE_CANONICAL.md) |
-| Fecha revisión      | 2026-04-13 (GF-01/02/03 cerrados según fila)                         |
+| Fecha revisión      | 2026-04-13 (GF-01/02/03 + UC-R03 POST alineado dominio/aplicación)   |
 | Autor / revisores   | Code-first scan `backend/.../infrastructure/rest/rrhh`             |
 
 
@@ -28,8 +28,8 @@
   - `CuadrillaController` → `/api/v1/rrhh/cuadrillas`
   - `CostosLaboralesController` → `/api/v1/rrhh/costos`
 - **Migraciones**: `V15__create_rrhh_schema.sql`, `V26__rrhh_config_laboral_global_nullable_proyecto.sql`
-- **Excepciones REST** (muestra): `GlobalExceptionHandler` maneja `ProyectoNoActivoException`, `ConfiguracionLaboralNotFoundException`, `FiltrosConsultaAsistenciaIncompletosException`, `AsignacionProyectoConflictoException` (409 `ASIGNACION_PROYECTO_CONFLICTO`)
-- **Tests de referencia**: `RrhhRegla150ProyectoActivoTest`, `CrearEmpleadoUseCaseImplTest`, `CalculadorFSRTest`, `AsistenciaControllerTest`, `EmpleadoControllerTest`, adaptadores bajo `...persistence...rrhh`
+- **Excepciones REST** (muestra): `GlobalExceptionHandler` maneja `ProyectoNoActivoException`, `InactiveWorkerException` (400 `INACTIVE_WORKER`), `TrabajadorNoAsignadoAlProyectoException` (422 `EMPLEADO_NO_ASIGNADO_PROYECTO`), `AsistenciaSuperpuestaException` (409 `ASISTENCIA_SUPERPUESTA`), `ConfiguracionLaboralNotFoundException`, `FiltrosConsultaAsistenciaIncompletosException`, `AsignacionProyectoConflictoException` (409 `ASIGNACION_PROYECTO_CONFLICTO`)
+- **Tests de referencia**: `RrhhRegla150ProyectoActivoTest`, `RegistrarAsistenciaUseCaseImplTest`, `CrearEmpleadoUseCaseImplTest`, `CalculadorFSRTest`, `RegistroAsistenciaPoliticaTest`, `AsistenciaControllerTest`, `EmpleadoControllerTest`, adaptadores bajo `...persistence...rrhh`
 
 ## 3. Gaps funcionales (REST / casos de uso)
 
@@ -47,10 +47,11 @@
 
 | ID    | Regla (ID canónico)                 | Estado doc | Estado código | Notas                                                                        |
 | ----- | ----------------------------------- | ---------- | ------------- | ---------------------------------------------------------------------------- |
-| GR-01 | R-02 asistencia trabajador inactivo | ✅          | ✅ / tests     | `InactiveWorker` / validaciones en flujo asistencia                          |
-| GR-02 | R-03 doble booking / solape         | 🟡 Partial | 🟡            | Canónico: solape mismo trabajador; multi-sitio TBD — seguir antes de subir % |
-| GR-03 | REGLA-150 proyecto ACTIVO           | ✅          | ✅             | `ProyectoNoActivoException` + test `RrhhRegla150ProyectoActivoTest`          |
+| GR-01 | R-02 asistencia trabajador inactivo | ✅          | ✅ / tests     | `InactiveWorkerException` + `RegistroAsistenciaPolitica` en `POST .../asistencias` |
+| GR-02 | R-03 doble booking / solape         | 🟡 Partial | 🟡            | Solape **horario** de tareo + nocturno existente; solape **asignación** multi-sitio: puerto `AsignacionSolapeValidator` + `NoOpAsignacionSolapeValidator` hasta PO |
+| GR-03 | REGLA-150 proyecto ACTIVO           | ✅          | ✅             | `ProyectoNoActivoException` / dominio `ProyectoNoActivoParaOperacionException` + test `RrhhRegla150ProyectoActivoTest`          |
 | GR-04 | UC-R04 nómina                       | 🟡         | 🟡            | ISR fijo `NominaConstants`; deuda ya listada en canónico §11                 |
+| GR-05 | REGLA-125 tareo (asignación + fechas + no duplicidad) | ✅ | ✅ | `RegistroAsistenciaPolitica` + `existsVigenteAsignacionEmpleadoProyectoEnFecha` + tests `RegistrarAsistenciaUseCaseImplTest` / `AsistenciaControllerTest` |
 
 
 ## 5. Deuda técnica y riesgos
