@@ -26,16 +26,22 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
   const pathname = usePathname();
 
-  const menuItems = [
+  const menuItems: {
+    label: string;
+    href: string;
+    icon: typeof LayoutDashboard;
+    isActiveOverride?: (pathname: string) => boolean;
+  }[] = [
     {
       label: "General",
       href: `/proyectos/${proyectoId}`,
       icon: LayoutDashboard,
     },
     {
-      label: "Presupuesto",
-      href: `/proyectos/${proyectoId}/presupuesto`,
+      label: "Presupuestos",
+      href: `/proyectos/${proyectoId}#presupuestos`,
       icon: DollarSign,
+      isActiveOverride: (pathname) => pathname.startsWith(`/proyectos/${proyectoId}/presupuestos`),
     },
     {
       label: "Producción",
@@ -77,7 +83,7 @@ export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.href);
+          const active = item.isActiveOverride ? item.isActiveOverride(pathname) : isActive(item.href);
           
           return (
             <Link key={item.href} href={item.href}>

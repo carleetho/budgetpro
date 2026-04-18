@@ -39,6 +39,13 @@ export class PresupuestoService {
   }
 
   /**
+   * Obtiene el presupuesto activo de un proyecto.
+   */
+  static async obtenerActivo(proyectoId: string): Promise<Presupuesto> {
+    return apiClient.get<Presupuesto>(`/presupuestos/proyecto/${proyectoId}/activo`);
+  }
+
+  /**
    * Obtiene el árbol jerárquico de partidas del presupuesto.
    * 
    * TODO: Reemplazar con llamada real al backend cuando esté disponible.

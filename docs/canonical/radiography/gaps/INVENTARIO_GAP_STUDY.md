@@ -21,7 +21,7 @@
   - `InventarioController` — `@RequestMapping("/api/v1/proyectos")` → `GET /{proyectoId}/inventario` (`ConsultarInventarioUseCase`).
   - `AlmacenController` — `@RequestMapping("/api/v1/almacen")` → `POST /movimientos` (201 + `Location`), `GET /movimientos` (`almacenId` obligatorio, `recursoId` opcional).
   - `TransferenciaController` — `@RequestMapping("/api/v1/transferencias")` → `POST /entre-bodegas`, `POST /entre-proyectos` (204 sin cuerpo).
-- **Migraciones Flyway relevantes:** `V27__create_almacen_schema.sql`, `V23__add_movimiento_almacen_id_to_recepcion_detalle.sql`, `V34__repair_movimiento_almacen_drop_duplicate_tipo.sql` (canónico cita también checks en evolución del esquema; alinear detalle con `DATA_MODEL_CURRENT` si difiere de `V14` histórico).
+- **Migraciones Flyway relevantes:** `V20.1__create_almacen_schema.sql`, `V23__add_movimiento_almacen_id_to_recepcion_detalle.sql`, `V34__repair_movimiento_almacen_drop_duplicate_tipo.sql` (canónico cita también checks en evolución del esquema; alinear detalle con `DATA_MODEL_CURRENT` si difiere de `V14` histórico).
 - **Observabilidad / eventos:** búsqueda en `backend/**/*.java` sin coincidencias para `InventarioBajoAlert`, `InventarioBajo`, ni métrica documentada `inventory.value.total`; clases Micrometer localizadas: `EvmMetrics`, `CatalogMetrics`, `IntegrityMetrics` (sin clase dedicada inventario).
 
 ## 3. Gaps funcionales (REST / producto)

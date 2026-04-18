@@ -29,7 +29,7 @@ export default function LoginPage() {
       localStorage.setItem("auth_token", response.token);
       localStorage.setItem("auth_user", JSON.stringify(response));
       toast.success("Sesión iniciada correctamente.");
-      window.location.href = "/proyectos";
+      window.location.href = "/";
     } catch (error) {
       const message =
         error instanceof Error

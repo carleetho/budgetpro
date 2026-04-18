@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.Map;
 
@@ -176,6 +177,13 @@ public class GlobalExceptionHandler {
             com.budgetpro.application.presupuesto.exception.ProyectoNoCoincideConTenantException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponses.error(HttpStatus.FORBIDDEN.value(), "PROYECTO_TENANT_MISMATCH", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponses.error(HttpStatus.UNAUTHORIZED.value(), "AUTHENTICATION_FAILED",
+                        "Credenciales inválidas o sesión no válida."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

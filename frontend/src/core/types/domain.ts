@@ -11,9 +11,9 @@
 export type EstadoProyecto = 'BORRADOR' | 'ACTIVO' | 'SUSPENDIDO' | 'CERRADO';
 
 /**
- * Estado de un presupuesto.
+ * Estado de un presupuesto (API canónica).
  */
-export type EstadoPresupuesto = 'EN_EDICION' | 'APROBADO';
+export type EstadoPresupuesto = 'BORRADOR' | 'CONGELADO' | 'INVALIDADO';
 
 /**
  * Estado de una estimación.

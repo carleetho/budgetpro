@@ -83,7 +83,15 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
       setLoadError(null);
 
       try {
-        const response = await PresupuestoService.obtenerControlCostos(resolvedProyectoId);
+        // Primero obtener el presupuesto activo para el proyecto
+        const presupuestoActivo = await PresupuestoService.obtenerActivo(resolvedProyectoId);
+
+        if (!presupuestoActivo?.id) {
+          setLoadError("No se encontró un presupuesto activo para este proyecto.");
+          return;
+        }
+
+        const response = await PresupuestoService.obtenerControlCostos(presupuestoActivo.id);
         const controlCostos = response as ReporteControlCostosResponse;
         const hojas = flattenPartidas(controlCostos.partidas || []);
         const rows = hojas.map((partida) => ({

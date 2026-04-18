@@ -73,6 +73,10 @@ __pycache__/
 .pytest_cache/
 .test_axiom_integration/
 
+# --- Procesos locales (no versionar) ---
+.runtime/
+*.pid
+
 # --- Auditoría raíz: artefactos de escaneo y generados ---
 findings.json
 findings.sarif
