@@ -13,6 +13,7 @@ import com.budgetpro.infrastructure.persistence.repository.ProyectoJpaRepository
 import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.apu.ApuJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.apu.ApuInsumoJpaRepository;
+import com.budgetpro.infrastructure.persistence.repository.rrhh.ConfiguracionLaboralExtendidaJpaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +62,9 @@ class SobrecostoIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private ApuInsumoJpaRepository apuInsumoJpaRepository;
 
+    @Autowired
+    private ConfiguracionLaboralExtendidaJpaRepository configuracionLaboralExtendidaJpaRepository;
+
     private MockMvc mockMvc;
     private UUID proyectoId;
     private UUID presupuestoId;
@@ -71,7 +76,9 @@ class SobrecostoIntegrationTest extends AbstractIntegrationTest {
     void setUp() {
         // Configurar MockMvc
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        
+
+        configuracionLaboralExtendidaJpaRepository.deleteAll();
+
         // Limpiar datos de prueba
         apuInsumoJpaRepository.deleteAll();
         apuJpaRepository.deleteAll();
@@ -166,37 +173,39 @@ class SobrecostoIntegrationTest extends AbstractIntegrationTest {
     @Test
     void testCalcularFSR_ConParametrosElSalvador() throws Exception {
         // 1. Configurar parámetros laborales de El Salvador
-        String configLaboralJson = """
+        String fechaInicio = LocalDate.now().toString();
+        String configLaboralJson = String.format("""
                 {
+                    "fechaInicio": "%s",
                     "diasAguinaldo": 15,
                     "diasVacaciones": 15,
                     "porcentajeSeguridadSocial": 14.75,
                     "diasNoTrabajados": 10,
-                    "diasLaborablesAno": 251
+                    "diasLaborablesAno": 251,
+                    "factorHorasExtras": 0,
+                    "factorTurnoNocturno": 0,
+                    "factorRiesgo": 0,
+                    "factorRegional": 0
                 }
-                """;
+                """, fechaInicio);
 
         String responseJson = mockMvc.perform(put("/api/v1/configuracion-laboral")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(configLaboralJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.proyectoId").isEmpty())
                 .andExpect(jsonPath("$.diasAguinaldo").value(15))
                 .andExpect(jsonPath("$.diasVacaciones").value(15))
-                .andExpect(jsonPath("$.factorSalarioReal").exists())
+                .andExpect(jsonPath("$.fsrExtendido").exists())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        // 2. Verificar que el FSR calculado es aproximadamente 1.7
-        // FSR = 251 / (251 + 15 + 15 + 10) = 251 / 291 ≈ 0.8625
-        // Pero el cálculo real del libro es más complejo, así que verificamos que esté en rango razonable
+        // FSR extendido (modelo RRHH): base distinta del legado + factores 0
         com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(responseJson);
-        BigDecimal fsr = new BigDecimal(jsonNode.get("factorSalarioReal").asText());
-        
-        // FSR debería estar entre 0.8 y 1.0 para estos parámetros
-        assertThat(fsr).isBetween(new BigDecimal("0.8"), new BigDecimal("1.0"));
+        BigDecimal fsr = new BigDecimal(jsonNode.get("fsrExtendido").asText());
+
+        assertThat(fsr).isBetween(new BigDecimal("1.25"), new BigDecimal("1.35"));
     }
 
     @Test

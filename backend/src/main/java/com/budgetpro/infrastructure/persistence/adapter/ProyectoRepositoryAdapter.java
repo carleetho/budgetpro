@@ -3,6 +3,7 @@ package com.budgetpro.infrastructure.persistence.adapter;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.domain.proyecto.port.out.ProyectoRepository;
+import com.budgetpro.domain.shared.TenancyConstants;
 import com.budgetpro.infrastructure.persistence.entity.ProyectoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.ProyectoMapper;
 import com.budgetpro.infrastructure.persistence.repository.ProyectoJpaRepository;
@@ -41,6 +42,9 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository, com.budget
         } else {
             // Creación: mapear y guardar
             ProyectoEntity newEntity = mapper.toEntity(proyecto);
+            if (newEntity.getTenantId() == null) {
+                newEntity.setTenantId(TenancyConstants.DEFAULT_TENANT_ID);
+            }
             jpaRepository.save(newEntity);
         }
     }
@@ -79,5 +83,12 @@ public class ProyectoRepositoryAdapter implements ProyectoRepository, com.budget
     @Transactional(readOnly = true)
     public java.util.List<Proyecto> findAllWithFrecuenciaControl() {
         return jpaRepository.findAllWithFrecuenciaControl().stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByIdAndTenantId(com.budgetpro.domain.proyecto.model.ProyectoId id,
+            java.util.UUID tenantId) {
+        return jpaRepository.existsByIdAndTenantId(id.getValue(), tenantId);
     }
 }

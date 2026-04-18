@@ -2,10 +2,14 @@ package com.budgetpro.infrastructure.persistence.adapter;
 
 import com.budgetpro.domain.finanzas.presupuesto.model.Presupuesto;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
+import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoPage;
 import com.budgetpro.domain.finanzas.presupuesto.port.out.PresupuestoRepository;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.PresupuestoMapper;
 import com.budgetpro.infrastructure.persistence.repository.PresupuestoJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,5 +74,17 @@ public class PresupuestoRepositoryAdapter implements PresupuestoRepository {
     @Transactional(readOnly = true)
     public boolean existsByProyectoId(UUID proyectoId) {
         return jpaRepository.existsByProyectoId(proyectoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PresupuestoPage findByProyectoIdAndTenantId(UUID proyectoId, UUID tenantId, int pageNumber, int pageSize) {
+        PageRequest pr = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<PresupuestoEntity> page = jpaRepository.findByProyectoIdAndTenantId(proyectoId, tenantId, pr);
+        return new PresupuestoPage(
+                page.getContent().stream().map(mapper::toDomain).toList(),
+                page.getTotalElements(),
+                pageNumber,
+                pageSize);
     }
 }

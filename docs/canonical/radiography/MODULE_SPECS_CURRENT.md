@@ -15,7 +15,7 @@
 | **4. Estimacion**    | Billing, Sequential approvals          | **Functional (75%)** | `POST .../estimaciones`, `PUT /api/v1/proyectos/estimaciones/{id}/aprobar`, `GET /api/v1/proyectos/{id}/estimaciones`, `GET /api/v1/proyectos/estimaciones/{id}`. Ver `ESTIMACION_MODULE_CANONICAL.md`. |
 | **5. Compras**       | Procurement, Stock ingress             | **Functional (75%)** | OC + recepciones; **`ProveedorController`** CRUD; listado OC con paginación (`page`, `size`); `POST .../ordenes-compra/{id}/rechazar`. Ver `COMPRAS_MODULE_CANONICAL.md`. |
 | **6. Billetera**     | Cash flow management                   | **Functional (70%)** | `POST .../movimientos`; **`GET .../{id}/saldo`** y **`GET .../{id}/movimientos`** (`BilleteraQueryController`). EGRESO genérico 🟡 vs dominio. Ver `BILLETERA_MODULE_CANONICAL.md`. |
-| **7. RRHH**          | Labor management                       | **Partial (35%)**    | Superficie principal `/api/v1/rrhh/**`; FSR paralelo vía `LaboralController` (`/api/v1/configuracion-laboral`) documentado en canónico §8.1. `POST .../asignaciones`; `GET .../asistencias` (400 sin filtros). [RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md). |
+| **7. RRHH**          | Labor management                       | **Functional (50%)** | Superficie `/api/v1/rrhh/**`; R-03 `RegimenCivilSolapeValidator`; FSR paralelo vía `LaboralController` (§8.1 canónico). `POST .../asignaciones` / `POST .../asistencias`. [RRHH_GAP_STUDY.md](./gaps/RRHH_GAP_STUDY.md). |
 | **8. Inventario**    | Stock tracking                         | **Functional (70%)** | `GET .../inventario`, `POST/GET /api/v1/almacen/movimientos`; **`POST /api/v1/transferencias/entre-bodegas`** y **`/entre-proyectos`**. Ver `INVENTARIO_MODULE_CANONICAL.md`. |
 | **9. APU**           | Unit cost breakdown por partida       | **Functional (90%)** | `POST .../apu`, `GET` por partida y por id, `PUT .../rendimiento`. Deuda: bulk/OpenAPI. Ver `APU_MODULE_CANONICAL.md`. |
 | **10. Recursos**     | Catálogo maestro de insumos            | **Functional (70%)** | `POST/GET /api/v1/recursos`, `GET/PUT /api/v1/recursos/{id}`. Ver `RECURSOS_MODULE_CANONICAL.md`. |
@@ -30,7 +30,7 @@
 ## 2. Summary of Gaps
 
 - **Producción (RPC):** coexisten `ProduccionController` y `ReporteProduccionController`; conviene unificar contrato (ver `PRODUCCION_MODULE_CANONICAL.md` §1.1).
-- **RRHH**: Avance ~35%; priorizar reglas R-03 antes de expansión ciega.
+- **RRHH**: Avance ~50%; R-03 cerrado en dominio (`RegimenCivilSolapeValidator`); seguir con nómina/costos y régimen civil detallado con evidencia code-first.
 - **Partidas:** falta listado por `presupuestoId` en REST (hoy `GET` por id y `GET /wbs` según implementación).
 - **Reporting:** analítica cross-módulo aún mínima.
 

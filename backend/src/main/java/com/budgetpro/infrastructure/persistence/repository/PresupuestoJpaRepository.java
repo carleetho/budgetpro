@@ -1,7 +1,11 @@
 package com.budgetpro.infrastructure.persistence.repository;
 
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -28,4 +32,12 @@ public interface PresupuestoJpaRepository extends JpaRepository<PresupuestoEntit
      * @return true si existe, false en caso contrario
      */
     boolean existsByProyectoId(UUID proyectoId);
+
+    @Query("""
+            SELECT p FROM PresupuestoEntity p
+            JOIN p.proyecto pr
+            WHERE p.proyectoId = :proyectoId AND pr.tenantId = :tenantId
+            """)
+    Page<PresupuestoEntity> findByProyectoIdAndTenantId(@Param("proyectoId") UUID proyectoId,
+            @Param("tenantId") UUID tenantId, Pageable pageable);
 }

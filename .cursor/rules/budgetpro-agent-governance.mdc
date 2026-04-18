@@ -1,0 +1,58 @@
+---
+description: Gobernanza BudgetPro — precedencia código vs canónicos, anti-alucinación y lectura obligatoria antes de implementar negocio.
+alwaysApply: true
+---
+
+# BudgetPro — Gobernanza del Agent
+
+## 1. Jerarquía de autoridad (sin contradicción)
+
+Elige el **modo** según la petición del usuario. **No mezcles** las reglas de un modo en el otro.
+
+### Modo A — “As-built” / auditoría / madurez / cobertura
+
+- **Autoridad para “qué está implementado”**: **código + git** (fuentes ejecutables e historial).
+- Los `.md` (incluidos canónicos) pueden estar **desactualizados**: úsalos como guía, **no** como prueba de que algo exista en runtime sin verificarlo en código, tests o migraciones.
+- **Evidencia obligatoria** antes de afirmar hechos sobre el repo: inspección con herramientas (`grep`, lectura de archivos, tests, endpoints, migraciones) y, cuando aplique, `git log` / ramas / merges.
+
+### Modo B — Implementar o cambiar **comportamiento de negocio**, contratos públicos o invariantes
+
+- **Autoridad para “qué debe hacer el cambio”**: **especificación canónica** según `docs/canonical/AI_AGENT_PROTOCOL.md` y los notebooks indicados abajo.
+- **Prohibido inventar** reglas de negocio, validaciones o invariantes que **no** estén documentados explícitamente en el notebook de módulo o en radiografía enlazada.
+- Si el **código existente** contradice el canónico: **declara el conflicto en el chat** con el formato del protocolo (código hace X, notebook exige Y). **Objetivo de implementación**: alinear el cambio con **Y** (notebook) **salvo** que en el mismo hilo el usuario indique explícitamente seguir otra línea (p. ej. solo documentar deuda o un hotfix acotado).
+
+## 2. Anti-alucinación
+
+- No presentes como cierto lo que no hayas **comprobado** en el repositorio o en el texto que acabas de leer.
+- Si falta información: **pregunta** o **lee** el archivo; no rellenes huecos con suposiciones plausibles.
+
+### Petición ambigua o escueta (clarificación tipo BrainGrid)
+
+- Si la petición es **vaga** (sin módulo, alcance, entregable o “definición de hecho”): **no** inicies implementación ni refactors amplios hasta clarificar.
+- Usa el skill **`budgetpro-request-clarification`** (o el comando **`/bp-clarify`**): preguntas con opciones **a / b / c / d / otro**, máximo 5–7 en la primera ronda; luego **resume criterios de aceptación** y pide **confirmación** antes de continuar.
+- Plantilla de apertura de jornada (contexto + `@` canónicos): `.cursor/DAILY_OPENING.md`.
+
+## 3. Lectura obligatoria antes de escribir código de negocio (Modo B)
+
+Antes de proponer o aplicar cambios que afecten reglas de negocio, invariantes, estados, APIs de dominio o contratos entre capas:
+
+1. Lee `docs/canonical/AI_AGENT_PROTOCOL.md`.
+2. Lee `docs/canonical/radiography/ARCHITECTURAL_CONTRACTS_CURRENT.md`.
+3. Lee el **notebook de módulo** correspondiente: `docs/canonical/modules/<MODULO>_MODULE_CANONICAL.md` (el módulo lo indica el usuario o se infiere del área del código; si hay ambigüedad, **pregunta**).
+4. Usa `.cursor/canonical_context.md` como **índice de rutas** hacia radiografía y otros módulos; no sustituye los puntos 1–3.
+
+Si la tarea es solo mecánica (imports, formato, renombre sin semántica, etc.) y **no** toca negocio, indica brevemente por qué se omiten lecturas puntuales.
+
+## 4. Parada obligatoria y especificación incompleta
+
+- Si aparece `[AMBIGUITY_DETECTED]` en un canónico: **detente**; no implementes; pide aclaración citando el archivo y la sección.
+- Si falta una regla o invariante necesario: **detente** y pide la especificación (mensaje tipo: no encuentro la regla de validación para … en la sección de invariantes).
+- **No modifiques** `docs/canonical/**/*.md` salvo que el usuario lo pida **explícitamente** en el hilo.
+
+## 5. Tras cambios de feature (cuando toques canónicos)
+
+Si el usuario autoriza actualizar documentación canónica tras un cambio de código, el texto debe reflejar **fielmente** lo implementado (sin “ajustar” el canónico para ocultar deuda sin acuerdo).
+
+## 6. Skills y comandos del repo
+
+Para procedimientos largos y repetibles (implementación canónica, auditoría as-built, sesión AXIOM, exploración delegada, **clarificación de petición**), usa los **skills** en `.cursor/skills/` y los **comandos** `/bp-*` en `.cursor/commands/`. Índice: `.cursor/README.md`.

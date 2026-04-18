@@ -1,0 +1,25 @@
+---
+description: Delegación en subagentes — exploración amplia (explore) vs trabajo acotado en el hilo actual.
+alwaysApply: true
+---
+
+# BudgetPro — Delegación y subagentes
+
+## Cuándo usar subagente **explore** (solo lectura)
+
+- Preguntas del tipo “¿dónde está…?”, “¿cómo funciona… a nivel de repo?”, inventario de usos, mapa de módulos o rutas desconocidas.
+- Auditorías que requieran **muchas búsquedas** en paralelo o varios paquetes sin un archivo ya fijado en contexto.
+
+**Instrucción mínima al delegar:** pedir al subagente que devuelva **rutas de archivo**, **resumen por capa** (domain / application / infrastructure) y **hipótesis explícitas** (“no encontrado en X”). Prohibido presentar conclusiones sin citar rutas revisadas.
+
+## Cuándo usar subagente **shell**
+
+- Secuencias largas y repetitivas de **git** o **scripts** (`./axiom.sh`, builds) cuando el usuario lo pida explícitamente o cuando el propio flujo lo requiera y el hilo principal deba mantenerse legible.
+
+## Cuándo **no** delegar
+
+- Cambios en **un** archivo o pocos archivos ya identificados, fixes mecánicos, o lectura de un único use case: resolver **en el hilo** con herramientas directas.
+
+## Coherencia con gobernanza
+
+- Modo B (negocio): el subagente **explore** localiza código; **no sustituye** la lectura obligatoria de canónicos definida en `budgetpro-agent-governance.mdc` (el agente principal debe cumplir Modo B antes de implementar).

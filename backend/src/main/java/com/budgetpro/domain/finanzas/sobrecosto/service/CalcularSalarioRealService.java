@@ -1,11 +1,11 @@
 package com.budgetpro.domain.finanzas.sobrecosto.service;
 
-import com.budgetpro.domain.finanzas.sobrecosto.model.ConfiguracionLaboral;
-import com.budgetpro.domain.finanzas.sobrecosto.port.out.ConfiguracionLaboralRepository;
+import com.budgetpro.domain.finanzas.sobrecosto.port.out.LaborFsRReaderPort;
 import com.budgetpro.domain.finanzas.recurso.model.Recurso;
 import com.budgetpro.domain.shared.model.TipoRecurso;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -25,10 +25,10 @@ import java.util.UUID;
  */
 public class CalcularSalarioRealService {
 
-    private final ConfiguracionLaboralRepository configuracionLaboralRepository;
+    private final LaborFsRReaderPort laborFsRReaderPort;
 
-    public CalcularSalarioRealService(ConfiguracionLaboralRepository configuracionLaboralRepository) {
-        this.configuracionLaboralRepository = configuracionLaboralRepository;
+    public CalcularSalarioRealService(LaborFsRReaderPort laborFsRReaderPort) {
+        this.laborFsRReaderPort = laborFsRReaderPort;
     }
 
     /**
@@ -43,21 +43,11 @@ public class CalcularSalarioRealService {
             throw new IllegalArgumentException("El recurso debe ser de tipo MANO_OBRA para calcular FSR");
         }
 
-        // Buscar configuración laboral (por proyecto o global)
-        ConfiguracionLaboral configuracion = null;
-        if (proyectoId != null) {
-            configuracion = configuracionLaboralRepository.findByProyectoId(proyectoId)
-                    .orElse(null);
-        }
-
-        // Si no hay configuración por proyecto, usar la global
-        if (configuracion == null) {
-            configuracion = configuracionLaboralRepository.findGlobal()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "No existe configuración laboral. Debe configurarse antes de calcular FSR."));
-        }
-
-        return configuracion.calcularFSR();
+        Optional<BigDecimal> fsrProyecto = proyectoId != null ? laborFsRReaderPort.findFsRForProyecto(proyectoId)
+                : Optional.empty();
+        BigDecimal fsr = fsrProyecto.orElseGet(() -> laborFsRReaderPort.findFsRGlobal().orElseThrow(() -> new IllegalStateException(
+                "No existe configuración laboral. Debe configurarse antes de calcular FSR.")));
+        return fsr;
     }
 
     /**

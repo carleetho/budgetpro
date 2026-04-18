@@ -1,0 +1,27 @@
+---
+description: Aplica al trabajar con AXIOM, axiom.sh, .budgetpro/handbook, validadores de arquitectura, Semgrep o domain-validator. Exige handbook, modos y blast radius antes de proponer bypass.
+alwaysApply: false
+globs:
+  - "axiom.sh"
+  - ".budgetpro/**"
+  - "tools/axiom/**"
+  - "tools/domain-validator/**"
+  - ".semgrep/**"
+---
+
+# BudgetPro — AXIOM y handbook
+
+## Antes de editar o recomendar cambios
+
+1. Lee `.budgetpro/handbook/AXIOM_SAFE_OPERATIONS.md` (oráculo de modos y riesgo).
+2. Declara en el chat el **modo** (MODE_0 / MODE_1 / MODE_2) y la **clasificación de riesgo** (LOW / MID / HIGH) según el handbook y el estado del repo.
+3. Para validar estado: ejecuta desde la raíz del repo `./axiom.sh --dry-run` o los argumentos que el usuario indique compatibles con AXIOM.
+
+## Prohibiciones
+
+- No recomiendes `--no-verify` ni equivalentes para saltar gobernanza salvo **MODE_0** mecánico y sin contradecir el handbook.
+- No expandas blast radius ni mezcles features con estabilización sin acuerdo explícito del usuario.
+
+## Archivos sensibles
+
+Si tocas configuración de validadores (`axiom.config.yaml`, `boundary-rules.json`, `state-machine-rules.yml`, reglas Semgrep, `.budgetpro/**`), trata cada cambio como **alto impacto** y resume el efecto antes de aplicar el parche.

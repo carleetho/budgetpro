@@ -53,4 +53,9 @@ public interface PresupuestoRepository {
      * @return true si existe, false en caso contrario
      */
     boolean existsByProyectoId(UUID proyectoId);
+
+    /**
+     * Lista presupuestos de un proyecto validado contra un tenant, con paginación (índice base 0).
+     */
+    PresupuestoPage findByProyectoIdAndTenantId(UUID proyectoId, UUID tenantId, int pageNumber, int pageSize);
 }

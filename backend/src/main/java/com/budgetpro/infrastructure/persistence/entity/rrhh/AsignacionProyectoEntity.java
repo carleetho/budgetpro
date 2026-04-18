@@ -38,4 +38,8 @@ public class AsignacionProyectoEntity extends AuditEntity {
 
     @Column(name = "rol_proyecto", length = 50)
     private String rolProyecto;
+
+    /** Identificador del {@code recurso_proxy} persistido para esta asignación (estable entre lecturas). */
+    @Column(name = "recurso_proxy_id", nullable = false, updatable = true)
+    private UUID recursoProxyId;
 }

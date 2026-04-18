@@ -1,6 +1,6 @@
 package com.budgetpro.infrastructure.config;
 
-import com.budgetpro.domain.finanzas.sobrecosto.port.out.ConfiguracionLaboralRepository;
+import com.budgetpro.domain.finanzas.sobrecosto.port.out.LaborFsRReaderPort;
 import com.budgetpro.domain.finanzas.sobrecosto.service.CalcularSalarioRealService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class CalcularSalarioRealServiceConfig {
 
     @Bean
-    public CalcularSalarioRealService calcularSalarioRealService(ConfiguracionLaboralRepository configuracionLaboralRepository) {
-        return new CalcularSalarioRealService(configuracionLaboralRepository);
+    public CalcularSalarioRealService calcularSalarioRealService(LaborFsRReaderPort laborFsRReaderPort) {
+        return new CalcularSalarioRealService(laborFsRReaderPort);
     }
 }

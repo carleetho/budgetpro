@@ -41,9 +41,18 @@ public final class AsistenciaRegistro {
      */
     public static AsistenciaRegistro registrar(AsistenciaId id, EmpleadoId empleadoId, ProyectoId proyectoId,
             LocalDate fecha, LocalTime horaEntrada, LocalTime horaSalida, String ubicacion) {
-        // Validation logic can go here if needed beyond null checks
-        return new AsistenciaRegistro(id, empleadoId, proyectoId, fecha, horaEntrada, horaSalida, ubicacion,
-                EstadoAsistencia.PRESENTE);
+        Objects.requireNonNull(horaEntrada, "horaEntrada must not be null");
+        Objects.requireNonNull(horaSalida, "horaSalida must not be null");
+        if (horaEntrada.equals(horaSalida)) {
+            throw new IllegalArgumentException("Hora de entrada y salida no pueden ser idénticas.");
+        }
+        AsistenciaRegistro candidato = new AsistenciaRegistro(id, empleadoId, proyectoId, fecha, horaEntrada,
+                horaSalida, ubicacion, EstadoAsistencia.PRESENTE);
+        Duration d = candidato.calcularHoras();
+        if (d.isZero() || d.isNegative()) {
+            throw new IllegalArgumentException("La duración del turno debe ser estrictamente positiva.");
+        }
+        return candidato;
         // Initial state is PRESENTE upon registration? Requirements listed states but
         // not transition logic.
         // "registrar" implies creating a new record, usually PRESENTE.
