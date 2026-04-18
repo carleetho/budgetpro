@@ -1,7 +1,7 @@
 # MODULE_CODE_ALIGNMENT_INDEX.md — Catálogo canónico ↔ código
 
 > **Scope**: Auditoría reverse-drift / cola de sincronización  
-> **Last Updated**: 2026-04-13  
+> **Last Updated**: 2026-04-17  
 > **Authors**: Antigravity (code-first scan), BudgetPro (sync canónica)
 
 ## 1. Clasificación (prioridad de revisión)
@@ -35,7 +35,7 @@ Referencias verificadas en `backend/.../infrastructure/rest` y migraciones `V27`
 
 | # | Módulo (canónico) | Dominio / paquete principal | API REST (indicativa) | Tier | Observación breve |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `PRESUPUESTO_MODULE_CANONICAL.md` | `domain.finanzas.presupuesto`, `partida` (WBS) | `/api/v1/presupuestos` (+ control-costos, explosion-insumos, sobrecosto), `/api/v1/partidas` | P0/P1 | Sin cambio estructural en esta sync; Partidas ganó GET id + WBS en código |
+| 1 | `PRESUPUESTO_MODULE_CANONICAL.md` | `domain.finanzas.presupuesto`, `partida` (WBS) | `GET /api/v1/presupuestos?tenantId&proyectoId&page&size`, `POST/GET /api/v1/presupuestos/...` (+ control-costos, explosion-insumos, sobrecosto), laboral `PUT /configuracion-laboral` **y** `PUT /rrhh/configuracion/*`, `/api/v1/partidas` | P0/P1 | Sync 2026-04-17: notebook §8 + gap alineados a código (listado paginado, FSR dual prefijo GF-01 residual) |
 | 2 | `PARTIDAS_MODULE_CANONICAL.md` | `domain.finanzas.partida` | `POST` partidas/avances/apu; `GET /partidas/{id}`, `GET /partidas/wbs` | P0 | Sync 2026-04-12: lectura parcial expuesta; sin listado por presupuesto |
 | 3 | `APU_MODULE_CANONICAL.md` | `domain.finanzas.apu` | `POST .../apu`, `GET` por partida y por id, `PUT .../rendimiento` | P2 | Sync 2026-04-12: madurez ~90%; deuda bulk/OpenAPI |
 | 4 | `RECURSOS_MODULE_CANONICAL.md` | `domain.finanzas.recurso`, `TipoRecurso` en `domain.shared` | `POST/GET/PUT /api/v1/recursos` | P2 | Sync 2026-04-12: catálogo lectura + actualización REST |

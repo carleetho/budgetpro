@@ -79,7 +79,7 @@ npm run dev
 
 Base URL: `http://localhost:8080/api/v1`
 
-Ver documentación completa de endpoints en: `docs/ARQUITECTURA_VISUAL.md`
+Ver documentación completa de endpoints en: `docs/ARQUITECTURA_VISUAL.md`. Contrato y reglas del módulo Presupuesto (incl. listado paginado y FSR): `docs/canonical/modules/PRESUPUESTO_MODULE_CANONICAL.md` y `docs/canonical/radiography/gaps/PRESUPUESTO_GAP_STUDY.md`.
 
 ## 🧪 Testing
 

@@ -36,9 +36,11 @@
 | `POST` | `/api/v1/proyectos` | `ProyectoController` | `CrearProyectoRequest` | `ProyectoResponse` | Crear nuevo proyecto |
 | **PRESUPUESTO** |
 | `POST` | `/api/v1/presupuestos` | `PresupuestoController` | `CrearPresupuestoRequest` | `PresupuestoResponse` | Crear presupuesto |
+| `GET` | `/api/v1/presupuestos?tenantId=&proyectoId=&page=&size=` | `PresupuestoController` | - | `ListarPresupuestosPaginadosResponse` | Listar presupuestos del proyecto (paginado; `size` ≤ 100) |
 | `GET` | `/api/v1/presupuestos/{id}` | `PresupuestoController` | - | `PresupuestoResponse` | Consultar presupuesto |
 | `POST` | `/api/v1/presupuestos/{id}/aprobar` | `PresupuestoController` | - | `Void` (204) | Aprobar presupuesto |
 | `GET` | `/api/v1/presupuestos/{id}/control-costos` | `PresupuestoController` | - | `ReporteControlCostosResponse` | Reporte Plan vs Real |
+| `GET` | `/api/v1/presupuestos/{id}/explosion-insumos` | `PresupuestoController` | - | `ExplosionInsumosResponse` | Explosión de insumos (WBS hoja) |
 | `PUT` | `/api/v1/presupuestos/{id}/sobrecosto` | `SobrecostoController` | `ConfigurarSobrecostoRequest` | `AnalisisSobrecostoResponse` | Configurar sobrecosto |
 | **PARTIDA** |
 | `POST` | `/api/v1/partidas` | `PartidaController` | `CrearPartidaRequest` | `PartidaResponse` | Crear partida |
@@ -63,9 +65,12 @@
 | `GET` | `/api/v1/presupuestos/{id}/analisis` | `AnalisisController` | - | `AnalisisPresupuestoResponse` | Analizar presupuesto |
 | **REAJUSTE** |
 | `POST` | `/api/v1/presupuestos/{id}/reajuste` | `ReajusteController` | `CalcularReajusteRequest` | `EstimacionReajusteResponse` | Calcular reajuste |
-| **LABORAL** |
-| `PUT` | `/api/v1/configuracion-laboral` | `LaboralController` | `ConfigurarLaboralRequest` | `ConfiguracionLaboralResponse` | Configuración global |
-| `PUT` | `/api/v1/proyectos/{id}/configuracion-laboral` | `LaboralController` | `ConfigurarLaboralRequest` | `ConfiguracionLaboralResponse` | Configuración por proyecto |
+| **LABORAL / FSR (extendido, mismo UC)** |
+| `PUT` | `/api/v1/configuracion-laboral` | `LaboralController` | `ConfigurarLaboralExtendidaRequest` | `ConfiguracionLaboralExtendidaResponse` | Configuración global (alias Presupuesto) |
+| `PUT` | `/api/v1/proyectos/{id}/configuracion-laboral` | `LaboralController` | `ConfigurarLaboralExtendidaRequest` | `ConfiguracionLaboralExtendidaResponse` | Configuración por proyecto (alias Presupuesto) |
+| `PUT` | `/api/v1/rrhh/configuracion/global` | `ConfiguracionLaboralExtendidaController` | `ConfigurarLaboralExtendidaRequest` | `ConfiguracionLaboralExtendidaResponse` | Configuración global (perímetro RRHH) |
+| `PUT` | `/api/v1/rrhh/configuracion/proyectos/{id}` | `ConfiguracionLaboralExtendidaController` | `ConfigurarLaboralExtendidaRequest` | `ConfiguracionLaboralExtendidaResponse` | Configuración por proyecto (perímetro RRHH) |
+| `GET` | `/api/v1/rrhh/configuracion/proyectos/{id}/historial?fechaInicio=&fechaFin=` | `ConfiguracionLaboralExtendidaController` | - | `HistorialFSRResponse` | Historial FSR por fechas |
 
 ---
 
