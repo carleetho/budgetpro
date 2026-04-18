@@ -31,3 +31,7 @@
 - **New Feature**: Load `Relevant Module Canonical` + `Architecture`.
 - **Database Change**: Load `Data Model` + `Relevant Module Canonical`.
 - **API Change**: Load `Integration Patterns` + `Relevant Module Canonical`.
+
+## 4. Cursor (reglas, skills, comandos)
+
+Índice de la cadena de herramientas del Agent (BudgetPro): [`README.md` en este directorio](README.md) (incluye **tipos de reglas**, **`globs`** y patrones activos). Ritual de apertura: [`DAILY_OPENING.md`](DAILY_OPENING.md). Clarificación de peticiones vagas: comando `bp-clarify` / skill `budgetpro-request-clarification`. Comandos en chat con `/`; skills bajo `.cursor/skills/`.

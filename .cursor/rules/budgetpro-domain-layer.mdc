@@ -1,0 +1,23 @@
+---
+description: Código bajo com.budgetpro.domain — capa sagrada, sin frameworks, cambios semánticos acotados y alineados a canónicos cuando apliquen.
+alwaysApply: false
+globs:
+  - "backend/src/main/java/com/budgetpro/domain/**/*.java"
+  - "backend/src/test/java/com/budgetpro/domain/**/*.java"
+---
+
+# BudgetPro — capa de dominio (Java)
+
+## Invariantes de arquitectura
+
+- `com.budgetpro.domain` **no** importa Spring, Jakarta/JPA, Hibernate ni otros frameworks; solo JDK / estándar acordado en el proyecto.
+- No “arregles” violaciones de capas superiores metiendo lógica de infraestructura en el dominio.
+
+## Cambios de comportamiento
+
+- Si el cambio altera **reglas de negocio, invariantes o contratos**, cumple **Modo B** en `budgetpro-agent-governance.mdc` (lee `AI_AGENT_PROTOCOL`, contratos arquitectónicos y el notebook del módulo).
+- Respeta **blast radius** y modos AXIOM descritos en `.budgetpro/handbook/AXIOM_SAFE_OPERATIONS.md` cuando el flujo lo exija.
+
+## Tests
+
+- Cambios en dominio deben ir acompañados de pruebas en el mismo módulo cuando el patrón del repo ya las use para esa pieza.
