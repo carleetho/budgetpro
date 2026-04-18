@@ -8,6 +8,7 @@ package com.budgetpro.infrastructure.persistence.entity;
 // REGLA-149
 // REGLA-150
 import com.budgetpro.domain.finanzas.proyecto.model.FrecuenciaControl;
+import com.budgetpro.domain.shared.TenancyConstants;
 import com.budgetpro.infrastructure.persistence.converter.EstadoProyectoConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
@@ -33,7 +34,8 @@ import java.util.UUID;
 @Table(name = "proyecto",
        uniqueConstraints = @UniqueConstraint(name = "uq_proyecto_nombre", columnNames = "nombre"),
        indexes = {
-           @Index(name = "idx_proyecto_estado", columnList = "estado")
+           @Index(name = "idx_proyecto_estado", columnList = "estado"),
+           @Index(name = "idx_proyecto_tenant_id", columnList = "tenant_id")
        })
 // REGLA-145
 @Getter
@@ -86,6 +88,10 @@ public class ProyectoEntity extends AuditEntity {
     @Column(name = "frecuencia_control", length = 20)
     private FrecuenciaControl frecuenciaControl;
 
+    @NotNull
+    @Column(name = "tenant_id", nullable = false, updatable = true)
+    private UUID tenantId = TenancyConstants.DEFAULT_TENANT_ID;
+
     @PrePersist
     private void prePersist() {
         if (moneda == null || moneda.isBlank()) {
@@ -94,6 +100,9 @@ public class ProyectoEntity extends AuditEntity {
         // REGLA-071
         if (presupuestoTotal == null) {
             presupuestoTotal = BigDecimal.ZERO;
+        }
+        if (tenantId == null) {
+            tenantId = TenancyConstants.DEFAULT_TENANT_ID;
         }
     }
 
@@ -107,5 +116,6 @@ public class ProyectoEntity extends AuditEntity {
         this.ubicacion = ubicacion;
         this.estado = estado;
         this.version = version;
+        this.tenantId = TenancyConstants.DEFAULT_TENANT_ID;
     }
 }

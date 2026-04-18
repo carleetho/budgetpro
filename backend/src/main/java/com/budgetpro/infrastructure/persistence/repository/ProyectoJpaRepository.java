@@ -33,4 +33,6 @@ public interface ProyectoJpaRepository extends JpaRepository<ProyectoEntity, UUI
      * @return true si existe, false en caso contrario
      */
     boolean existsByNombre(String nombre);
+
+    boolean existsByIdAndTenantId(UUID id, UUID tenantId);
 }

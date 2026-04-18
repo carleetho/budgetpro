@@ -171,6 +171,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponses.error(HttpStatus.UNAUTHORIZED.value(), "AUTHENTICATION_REQUIRED", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.budgetpro.application.presupuesto.exception.ProyectoNoCoincideConTenantException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleProyectoTenantMismatch(
+            com.budgetpro.application.presupuesto.exception.ProyectoNoCoincideConTenantException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponses.error(HttpStatus.FORBIDDEN.value(), "PROYECTO_TENANT_MISMATCH", ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponses.ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new java.util.HashMap<>();

@@ -66,4 +66,9 @@ public interface ProyectoRepository {
      * @return Lista de proyectos con frecuenciaControl no nulo
      */
     java.util.List<Proyecto> findAllWithFrecuenciaControl();
+
+    /**
+     * Indica si el proyecto existe y pertenece al tenant indicado.
+     */
+    boolean existsByIdAndTenantId(ProyectoId id, java.util.UUID tenantId);
 }

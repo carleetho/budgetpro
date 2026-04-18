@@ -6,10 +6,15 @@ import com.budgetpro.application.explosion.dto.ExplosionInsumosResponse;
 import com.budgetpro.application.explosion.port.in.ExplotarInsumosPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.dto.CrearPresupuestoCommand;
 import com.budgetpro.application.presupuesto.dto.PresupuestoResponse;
+import com.budgetpro.application.presupuesto.dto.ListarPresupuestosPaginadosResponse;
 import com.budgetpro.application.presupuesto.port.in.AprobarPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.port.in.ConsultarPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.port.in.CrearPresupuestoUseCase;
+import com.budgetpro.application.presupuesto.port.in.ListarPresupuestosPaginadosUseCase;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -20,24 +25,42 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/v1/presupuestos")
+@Validated
 public class PresupuestoController {
 
     private final CrearPresupuestoUseCase crearPresupuestoUseCase;
     private final AprobarPresupuestoUseCase aprobarPresupuestoUseCase;
     private final ConsultarPresupuestoUseCase consultarPresupuestoUseCase;
+    private final ListarPresupuestosPaginadosUseCase listarPresupuestosPaginadosUseCase;
     private final ConsultarControlCostosUseCase consultarControlCostosUseCase;
     private final ExplotarInsumosPresupuestoUseCase explotarInsumosPresupuestoUseCase;
 
     public PresupuestoController(CrearPresupuestoUseCase crearPresupuestoUseCase,
                                  AprobarPresupuestoUseCase aprobarPresupuestoUseCase,
                                  ConsultarPresupuestoUseCase consultarPresupuestoUseCase,
+                                 ListarPresupuestosPaginadosUseCase listarPresupuestosPaginadosUseCase,
                                  ConsultarControlCostosUseCase consultarControlCostosUseCase,
                                  ExplotarInsumosPresupuestoUseCase explotarInsumosPresupuestoUseCase) {
         this.crearPresupuestoUseCase = crearPresupuestoUseCase;
         this.aprobarPresupuestoUseCase = aprobarPresupuestoUseCase;
         this.consultarPresupuestoUseCase = consultarPresupuestoUseCase;
+        this.listarPresupuestosPaginadosUseCase = listarPresupuestosPaginadosUseCase;
         this.consultarControlCostosUseCase = consultarControlCostosUseCase;
         this.explotarInsumosPresupuestoUseCase = explotarInsumosPresupuestoUseCase;
+    }
+
+    /**
+     * Lista presupuestos de un proyecto filtrando por tenant y proyecto (paginado).
+     */
+    @GetMapping(params = {"tenantId", "proyectoId"})
+    public ResponseEntity<ListarPresupuestosPaginadosResponse> listarPaginado(
+            @RequestParam UUID tenantId,
+            @RequestParam UUID proyectoId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        ListarPresupuestosPaginadosResponse response =
+                listarPresupuestosPaginadosUseCase.listar(tenantId, proyectoId, page, size);
+        return ResponseEntity.ok(response);
     }
 
     /**
