@@ -3,7 +3,7 @@
 > **Scope**: Presupuesto, WBS (Partidas), congelamiento y reporting asociado  
 > **Status**: Complete (80%)  
 > **Owner**: Finanzas Team  
-> **Last Updated**: 2026-04-12  
+> **Last Updated**: 2026-04-17  
 > **Authors**: Antigravity (sync código `main`), BudgetPro
 
 ## 1. Module Maturity Roadmap
@@ -11,7 +11,7 @@
 | Phase       | Timeline  | Target State      | Deliverables                                    |
 | ----------- | --------- | ----------------- | ----------------------------------------------- |
 | **Current** | Now       | 80% (Core Stable) | CRUD, WBS, Freeze Logic, Snapshots              |
-| **Next**    | +1 Month  | 85%               | Advanced Analytics, Export to Excel/PDF         |
+| **Next**    | +1 Month  | 85%               | Advanced Analytics, Export to Excel/PDF (PDF: ver nota bajo §6 UC-P09) |
 | **Target**  | +3 Months | 95%               | Versioning v2 (History), Multi-currency Support |
 
 ## 2. Invariants (Business Rules)
@@ -141,11 +141,13 @@ graph TD
 | UC-P02 | Add Partidas (WBS)    | P0       | ✅     |
 | UC-P03 | Assign APU/Snapshot   | P0       | ✅     |
 | UC-P04 | Approve/Freeze Budget | P0       | ✅ `AprobarPresupuestoUseCase` → `PresupuestoService.aprobar()` → estado `CONGELADO` |
-| UC-P05 | Consult Budget        | P0       | ✅ `GET /api/v1/presupuestos/{id}` (`ConsultarPresupuestoUseCase`) |
+| UC-P05 | Consult Budget        | P0       | ✅ `GET /api/v1/presupuestos/{id}` (`ConsultarPresupuestoUseCase`); índice paginado por proyecto/tenant: `GET /api/v1/presupuestos?tenantId=&proyectoId=&page=&size=` (`ListarPresupuestosPaginadosUseCase`) |
 | UC-P06 | Cost Control Report   | P1       | ✅ `GET /api/v1/presupuestos/{id}/control-costos` (`ConsultarControlCostosUseCase`) |
 | UC-P07 | Bill of Materials Explosion | P1 | ✅ `GET /api/v1/presupuestos/{id}/explosion-insumos` (`ExplotarInsumosPresupuestoUseCase`) |
 | UC-P08 | Clone Budget          | P2       | 🔴     |
-| UC-P09 | Export to Excel       | P1       | 🔴     |
+| UC-P09 | Export budget (Excel en primera entrega) | P1       | 🔴     |
+
+**UC-P09 y roadmap §1 Next:** la fila UC-P09 cubre **exportación tabular (Excel)** como entregable explícito. **Export PDF** aparece en el roadmap fase **Next** (§1) pero **no** constituye un caso de uso numerado aparte hasta que Finanzas lo acote (plantilla, páginas obligatorias, firma). Ver [PRESUPUESTO_GAP_STUDY.md §10](../radiography/gaps/PRESUPUESTO_GAP_STUDY.md) (acotación Next) y entregables de analítica avanzada en el mismo anexo.
 
 ## 7. Domain Services
 
@@ -162,6 +164,7 @@ graph TD
 | Method | Path                                   | Description      | Status |
 | ------ | -------------------------------------- | ---------------- | ------ |
 | POST   | `/api/v1/presupuestos`                 | Create budget    | ✅     |
+| GET    | `/api/v1/presupuestos` | List budgets paginated (**requiere** query `tenantId`, `proyectoId`; opcionales `page` default 0, `size` default 20 máx. 100). Valida coherencia `tenantId` ↔ `proyecto.tenant_id`. | ✅ |
 | GET    | `/api/v1/presupuestos/{presupuestoId}` | Get budget by ID | ✅     |
 | POST   | `/api/v1/presupuestos/{presupuestoId}/aprobar` | Approve/freeze → `CONGELADO` | ✅ 204 |
 | GET    | `/api/v1/presupuestos/{presupuestoId}/control-costos` | Plan vs real cost report | ✅ |
@@ -176,12 +179,19 @@ graph TD
 | GET    | `/api/v1/partidas/{id}` | Get partida by id | ✅ |
 | GET    | `/api/v1/partidas/wbs` | WBS tree (`?presupuestoId=`) | ✅ |
 
-### Configuración laboral (FSR) — `LaboralController` (relacionado P-06 / indirectos)
+### Configuración laboral (FSR) — `LaboralController` + `ConfiguracionLaboralExtendidaController` (P-06 / indirectos)
+
+Mismo caso de uso y payload **extendido** (`ConfigurarLaboralExtendidaUseCase`): persistencia única en configuración laboral extendida (perímetro RRHH).
 
 | Method | Path | Description | Status |
 | ------ | ---- | ----------- | ------ |
-| PUT    | `/api/v1/configuracion-laboral` | Config global | ✅ |
-| PUT    | `/api/v1/proyectos/{proyectoId}/configuracion-laboral` | Config por proyecto | ✅ |
+| PUT    | `/api/v1/configuracion-laboral` | Config global (alias Presupuesto/sobrecosto) | ✅ |
+| PUT    | `/api/v1/proyectos/{proyectoId}/configuracion-laboral` | Config por proyecto (alias Presupuesto/sobrecosto) | ✅ |
+| PUT    | `/api/v1/rrhh/configuracion/global` | Config global (perímetro RRHH) | ✅ |
+| PUT    | `/api/v1/rrhh/configuracion/proyectos/{proyectoId}` | Config por proyecto (perímetro RRHH) | ✅ |
+| GET    | `/api/v1/rrhh/configuracion/proyectos/{proyectoId}/historial` | Historial FSR por rango de fechas (`fechaInicio`, `fechaFin`) | ✅ |
+
+**GF-01 residual (documentación):** dos prefijos HTTP para escritura laboral global/proyecto; mitigación en modelo/UC — ver [PRESUPUESTO_GAP_STUDY.md](../radiography/gaps/PRESUPUESTO_GAP_STUDY.md).
 
 **Estudio de gaps (Ola 1b):** [PRESUPUESTO_GAP_STUDY.md](../radiography/gaps/PRESUPUESTO_GAP_STUDY.md).
 
