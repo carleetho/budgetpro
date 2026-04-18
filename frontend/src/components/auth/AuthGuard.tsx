@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -21,7 +22,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }, [router]);
 
   if (!checked) {
-    return null;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+        <span className="text-sm">Comprobando sesión…</span>
+      </div>
+    );
   }
 
   return <>{children}</>;

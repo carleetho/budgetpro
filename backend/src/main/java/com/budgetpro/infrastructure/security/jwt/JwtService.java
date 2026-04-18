@@ -27,7 +27,7 @@ public class JwtService {
     private final Duration expiration;
 
     public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.expiration-hours:24}") long expirationHours) {
+            @Value("${jwt.expiration-hours:24}") long expirationHours) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalStateException("JWT_SECRET es obligatorio.");
         }
@@ -42,16 +42,10 @@ public class JwtService {
 
     public String generarToken(UsuarioEntity usuario) {
         Instant now = Instant.now();
-        return Jwts.builder()
-                .setSubject(usuario.getEmail())
-                .setIssuedAt(Date.from(now))
+        return Jwts.builder().setSubject(usuario.getEmail()).setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plus(expiration)))
-                .addClaims(Map.of(
-                        "uid", usuario.getId().toString(),
-                        "rol", usuario.getRol().name()
-                ))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
+                .addClaims(Map.of("uid", usuario.getId().toString(), "rol", usuario.getRol().name()))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
     }
 
     public String extraerUsername(String token) {
@@ -74,18 +68,15 @@ public class JwtService {
     }
 
     private Claims extraerClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
     }
 
     private Key getSigningKey() {
         try {
             byte[] keyBytes = Decoders.BASE64.decode(secret);
             return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException ex) {
+        } catch (Exception ex) {
+            // Fallback to plain UTF-8 if it's not a valid Base64 string
             return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         }
     }

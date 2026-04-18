@@ -1,7 +1,7 @@
 # DATA_MODEL_CURRENT.md — Current State Radiography
 
 > **Scope**: JPA/Database  
-> **Last Updated**: 2026-04-12  
+> **Last Updated**: 2026-04-18  
 > **Authors**: Antigravity, BudgetPro (Flyway V27–V33 + alineación JPA)
 
 ## 1. Overview
@@ -38,7 +38,7 @@ erDiagram
     PRESUPUESTO ||--o{ ANALISIS_PRESUPUESTO : "alertas paramétricas"
 ```
 
-> **Gobernanza Flyway:** en el repo conviven dos scripts con versión **`V17__`**: `V17__add_evm_time_series.sql` y `V17__create_presupuesto_integrity_audit.sql`. Flyway las ordena **lexicográficamente** (`add` antes de `create`). Validar en CI que no haya solapamiento con otra convención de versionado.
+> **Gobernanza Flyway:** la serie EVM en **`V17__add_evm_time_series.sql`** se aplica antes que la tabla de auditoría de integridad en **`V17.1__create_presupuesto_integrity_audit.sql`** (resolución **H-14** / cierre **O-04**: ya no hay dos migraciones con la misma versión mayor `17` sin sufijo).
 
 ## 3. Entity Schemas
 
@@ -73,7 +73,7 @@ erDiagram
 | `Recepcion`            | id, compra_id, fecha, guía, auditoría (`V21`)    | N:1 `Compra`                                   | Cumplimiento recepción compra directa                                       |
 | `RecepcionDetalle`     | compra_detalle_id, recurso_id, almacen_id, cantidades (`V21`, `V23`) | N:1 Recepción                         | FK opcional `movimiento_almacen_id` → `movimiento_almacen`                 |
 
-**Almacén (JPA + Flyway):** `V27__create_almacen_schema.sql` crea el esquema de almacén (`almacen`, `movimiento_almacen`, `stock_actual`, etc.) alineado a `AlmacenEntity` / `MovimientoAlmacenEntity` / `StockActualEntity` y a `AlmacenController`. Las migraciones `V21`/`V23` enlazan recepciones a `movimiento_almacen` donde aplica.
+**Almacén (JPA + Flyway):** `V20.1__create_almacen_schema.sql` crea el esquema de almacén (`almacen`, `movimiento_almacen`, `stock_actual`, etc.) **antes** de `V21__add_recepcion_tables.sql` (FK `recepcion_detalle.almacen_id` → `almacen`). Alineado a `AlmacenEntity` / `MovimientoAlmacenEntity` / `StockActualEntity` y a `AlmacenController`. `V23` añade `movimiento_almacen_id` donde aplica.
 
 **Transferencias:** columna `transferencia_id` en `movimiento_inventario` (`V10`); dominio `TransferenciaService` expuesto vía **`TransferenciaController`** (`POST /api/v1/transferencias/entre-bodegas`, `.../entre-proyectos`). No se documenta aquí una tabla `transferencia` dedicada: la trazabilidad opera vía movimientos de inventario/almacén según implementación.
 
@@ -121,7 +121,7 @@ Ajustes posteriores: `V26__rrhh_config_laboral_global_nullable_proyecto.sql` (nu
 
 | Tabla | Migración | Uso |
 | ----- | --------- | ----- |
-| `presupuesto_integrity_audit` | `V17__create_presupuesto_integrity_audit.sql` | Eventos HASH_GENERATED / VALIDATED / VIOLATION (`IntegrityAuditLog`) |
+| `presupuesto_integrity_audit` | `V17.1__create_presupuesto_integrity_audit.sql` | Eventos HASH_GENERATED / VALIDATED / VIOLATION (`IntegrityAuditLog`) |
 | `analisis_presupuesto` | `V31__create_alertas_schema.sql` (esquema alertas / análisis según script) | Resultado de `AnalizarPresupuestoUseCase` / alertas paramétricas |
 
 ### 3.9. Producción (RPC)
@@ -137,11 +137,11 @@ Ajustes posteriores: `V26__rrhh_config_laboral_global_nullable_proyecto.sql` (nu
 | ----- | ------- | ----- |
 | `marketing_lead` | `LeadEntity` | Leads públicos (`PublicController`) y API interna (`MarketingLeadController`). **Migración:** `V30__create_marketing_lead.sql`. |
 
-### 3.11. Lote Flyway V27–V33 (suplemento al modelo core)
+### 3.11. Lote Flyway V20.1 (almacén) y V28–V33 (suplemento al modelo core)
 
 | Script | Contenido resumido |
 | ------ | ------------------ |
-| `V27__create_almacen_schema.sql` | Esquema almacén / movimiento / stock |
+| `V20.1__create_almacen_schema.sql` | Esquema almacén / movimiento / stock (ordenado antes de recepciones `V21`) |
 | `V28__create_estimacion_schema.sql` | Tablas `estimacion`, `detalle_estimacion` (y relaciones al esquema existente) |
 | `V29__create_produccion_schema.sql` | `reporte_produccion`, `detalle_rpc` |
 | `V30__create_marketing_lead.sql` | `marketing_lead` |

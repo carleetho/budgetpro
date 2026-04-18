@@ -7,6 +7,7 @@
 
 import { API_BASE_URL, API_TIMEOUT } from '@/core/config/env';
 import type { ApiResponse, PaginatedResponse, PaginationParams, SearchParams } from '@/core/types';
+import { BudgetProApiError, tryParseBudgetProApiError } from '@/lib/budget-pro-api-error';
 
 /**
  * Opciones de configuración para peticiones HTTP.
@@ -33,7 +34,7 @@ class ApiClient {
    */
   private buildURL(endpoint: string, params?: SearchParams | PaginationParams): string {
     const url = new URL(`${this.baseURL}${endpoint}`);
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -41,7 +42,7 @@ class ApiClient {
         }
       });
     }
-    
+
     return url.toString();
   }
 
@@ -51,7 +52,7 @@ class ApiClient {
   private async fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -77,22 +78,25 @@ class ApiClient {
       }
       let errorMessage = response.statusText;
       let errorDetails: any = null;
-      
+
       // Clonar la respuesta para poder leer el body múltiples veces si es necesario
       const clonedResponse = response.clone();
-      
+
       try {
         const contentType = response.headers.get('content-type');
         const text = await response.text();
-        
+
+        const structured = tryParseBudgetProApiError(response.status, text);
+        if (structured) {
+          throw structured;
+        }
+
         if (text) {
-          // Intentar parsear como JSON
           if (contentType && contentType.includes('application/json')) {
             try {
               const error = JSON.parse(text);
               errorDetails = error;
-              
-              // Intentar extraer el mensaje de error de diferentes formatos
+
               if (error.message) {
                 errorMessage = error.message;
               } else if (error.error) {
@@ -102,41 +106,36 @@ class ApiClient {
               } else if (typeof error === 'string') {
                 errorMessage = error;
               }
-            } catch (jsonError) {
-              // Si no es JSON válido, usar el texto directamente
+            } catch {
               errorMessage = text;
             }
           } else {
-            // Si no es JSON, usar el texto directamente
             errorMessage = text;
           }
         }
       } catch (parseError) {
-        // Si falla completamente, usar el statusText
+        if (BudgetProApiError.isInstance(parseError)) {
+          throw parseError;
+        }
         console.error('Error parsing error response:', parseError);
       }
-      
-      // Log detallado del error para debugging
-      console.error('API Error Details:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        errorMessage,
-        errorDetails,
-      });
-      
-      // Crear un error más informativo
+
+      console.error(`API Error [${response.status}] ${response.statusText} at ${response.url}`);
+      console.error(`Error Message: ${errorMessage}`);
+      console.error(`Error Details: ${JSON.stringify(errorDetails, null, 2)}`);
+      console.error(`Raw Response: ${await clonedResponse.text()}`);
+
       const error = new Error(errorMessage || `HTTP ${response.status}: ${response.statusText}`);
       (error as any).status = response.status;
       (error as any).details = errorDetails;
       throw error;
     }
-    
+
     // Si la respuesta está vacía (204 No Content)
     if (response.status === 204) {
       return undefined as T;
     }
-    
+
     return response.json();
   }
 
@@ -146,7 +145,7 @@ class ApiClient {
   async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
     const timeout = options?.timeout || this.defaultTimeout;
-    
+
     const response = await this.fetchWithTimeout(url, {
       method: 'GET',
       headers: {
@@ -158,7 +157,7 @@ class ApiClient {
       },
       ...options,
     }, timeout);
-    
+
     return this.handleResponse<T>(response);
   }
 
@@ -192,7 +191,7 @@ class ApiClient {
   async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
     const timeout = options?.timeout || this.defaultTimeout;
-    
+
     const response = await this.fetchWithTimeout(url, {
       method: 'POST',
       headers: {
@@ -205,7 +204,7 @@ class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
       ...options,
     }, timeout);
-    
+
     return this.handleResponse<T>(response);
   }
 
@@ -215,7 +214,7 @@ class ApiClient {
   async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
     const timeout = options?.timeout || this.defaultTimeout;
-    
+
     const response = await this.fetchWithTimeout(url, {
       method: 'PUT',
       headers: {
@@ -228,7 +227,7 @@ class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
       ...options,
     }, timeout);
-    
+
     return this.handleResponse<T>(response);
   }
 
@@ -238,7 +237,7 @@ class ApiClient {
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
     const timeout = options?.timeout || this.defaultTimeout;
-    
+
     const response = await this.fetchWithTimeout(url, {
       method: 'DELETE',
       headers: {
@@ -250,7 +249,7 @@ class ApiClient {
       },
       ...options,
     }, timeout);
-    
+
     return this.handleResponse<T>(response);
   }
 }
