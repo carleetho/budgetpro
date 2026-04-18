@@ -10,8 +10,12 @@ import com.budgetpro.application.rrhh.port.out.ProyectoRepositoryPort;
 import com.budgetpro.domain.proyecto.model.EstadoProyecto;
 import com.budgetpro.domain.proyecto.model.Proyecto;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
+import com.budgetpro.domain.catalogo.model.RecursoProxyId;
+import com.budgetpro.domain.rrhh.exception.AsignacionSuperpuestaException;
 import com.budgetpro.domain.rrhh.exception.InactiveWorkerException;
 import com.budgetpro.domain.rrhh.exception.TrabajadorNoAsignadoAlProyectoException;
+import com.budgetpro.domain.rrhh.model.AsignacionProyecto;
+import com.budgetpro.domain.rrhh.model.AsignacionProyectoId;
 import com.budgetpro.domain.rrhh.model.AsistenciaId;
 import com.budgetpro.domain.rrhh.model.AsistenciaRegistro;
 import com.budgetpro.domain.rrhh.model.Contacto;
@@ -31,6 +35,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,6 +68,7 @@ class RegistrarAsistenciaUseCaseImplTest {
 
     private final UUID empleadoUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private final UUID proyectoUuid = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private final UUID proyectoOtroUuid = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
 
     @BeforeEach
     void setUp() {
@@ -82,12 +88,13 @@ class RegistrarAsistenciaUseCaseImplTest {
                         EstadoProyecto.ACTIVO)));
         when(asignacionProyectoRepositoryPort.existsVigenteAsignacionEmpleadoProyectoEnFecha(
                 EmpleadoId.of(empleadoUuid), ProyectoId.from(proyectoUuid), fecha)).thenReturn(true);
+        when(asignacionProyectoRepositoryPort.findAsignacionesByEmpleadoId(EmpleadoId.of(empleadoUuid)))
+                .thenReturn(List.of(AsignacionProyecto.crear(AsignacionProyectoId.generate(),
+                        EmpleadoId.of(empleadoUuid), ProyectoId.from(proyectoUuid), RecursoProxyId.generate(),
+                        LocalDate.of(2025, 3, 1), LocalDate.of(2025, 5, 1), null, null)));
         when(asistenciaRepositoryPort.findOverlapping(any(), any(), any(), any()))
                 .thenReturn(Collections.emptyList());
 
-        AsistenciaRegistro guardado = AsistenciaRegistro.registrar(AsistenciaId.random(), EmpleadoId.of(empleadoUuid),
-                ProyectoId.from(proyectoUuid), fecha, java.time.LocalTime.of(8, 0), java.time.LocalTime.of(17, 0),
-                null);
         when(asistenciaRepositoryPort.save(any(AsistenciaRegistro.class))).thenAnswer(inv -> inv.getArgument(0));
 
         RegistrarAsistenciaCommand command = new RegistrarAsistenciaCommand(EmpleadoId.of(empleadoUuid),
@@ -96,6 +103,28 @@ class RegistrarAsistenciaUseCaseImplTest {
 
         assertNotNull(useCase.registrarAsistencia(command));
         verify(asistenciaRepositoryPort).save(any(AsistenciaRegistro.class));
+        verify(asignacionProyectoRepositoryPort).findAsignacionesByEmpleadoId(EmpleadoId.of(empleadoUuid));
+    }
+
+    @Test
+    @DisplayName("R-03: otra obra con asignación vigente solapada en la fecha → AsignacionSuperpuestaException")
+    void otraObraSolapada_lanzaAsignacionSuperpuestaException() {
+        LocalDate fecha = LocalDate.of(2025, 4, 1);
+        when(empleadoRepositoryPort.findById(EmpleadoId.of(empleadoUuid))).thenReturn(Optional.of(empleadoActivo()));
+        when(proyectoRepositoryPort.findById(ProyectoId.from(proyectoUuid)))
+                .thenReturn(Optional.of(Proyecto.reconstruir(ProyectoId.from(proyectoUuid), "Obra A", "Lima",
+                        EstadoProyecto.ACTIVO)));
+        when(asignacionProyectoRepositoryPort.existsVigenteAsignacionEmpleadoProyectoEnFecha(
+                EmpleadoId.of(empleadoUuid), ProyectoId.from(proyectoUuid), fecha)).thenReturn(true);
+        AsignacionProyecto asignacionOtraObra = AsignacionProyecto.crear(AsignacionProyectoId.generate(),
+                EmpleadoId.of(empleadoUuid), ProyectoId.from(proyectoOtroUuid), RecursoProxyId.generate(),
+                LocalDate.of(2025, 3, 1), LocalDate.of(2025, 5, 1), null, null);
+        when(asignacionProyectoRepositoryPort.findAsignacionesByEmpleadoId(EmpleadoId.of(empleadoUuid)))
+                .thenReturn(List.of(asignacionOtraObra));
+        when(asistenciaRepositoryPort.findOverlapping(any(), any(), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(AsignacionSuperpuestaException.class, () -> useCase.registrarAsistencia(comandoValido()));
     }
 
     @Test

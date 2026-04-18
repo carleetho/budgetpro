@@ -87,10 +87,13 @@ public class RegistrarAsistenciaUseCaseImpl implements RegistrarAsistenciaUseCas
             throw new AsistenciaSuperpuestaException(e.getMessage());
         }
 
-        List<AsignacionProyecto> asignacionesEmpleado = asignacionProyectoRepositoryPort
-                .findAsignacionesByEmpleadoId(command.getEmpleadoId());
+        // R-03: validar solape frente a otras obras; la asignación al proyecto del tareo intersecta siempre [fecha..fecha]
+        List<AsignacionProyecto> asignacionesOtrasObras = asignacionProyectoRepositoryPort
+                .findAsignacionesByEmpleadoId(command.getEmpleadoId()).stream()
+                .filter(a -> !a.getProyectoId().equals(command.getProyectoId()))
+                .toList();
         RegistroAsistenciaPolitica.delegarValidacionSolapeAsignacionR03(asignacionSolapeValidator,
-                command.getEmpleadoId(), command.getFecha(), asignacionesEmpleado);
+                command.getEmpleadoId(), command.getFecha(), asignacionesOtrasObras);
 
         AsistenciaRegistro asistencia = AsistenciaRegistro.registrar(AsistenciaId.random(), command.getEmpleadoId(),
                 command.getProyectoId(), command.getFecha(), command.getHoraEntrada().toLocalTime(),
