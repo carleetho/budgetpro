@@ -45,6 +45,7 @@ public class AsignacionProyectoRepositoryAdapter implements AsignacionProyectoRe
         entity.setFechaInicio(domain.getFechaInicio());
         entity.setFechaFin(domain.getFechaFin());
         entity.setRolProyecto(domain.getRolProyecto());
+        entity.setRecursoProxyId(domain.getRecursoProxyId().getValue());
 
         repository.save(entity);
     }
@@ -68,8 +69,13 @@ public class AsignacionProyectoRepositoryAdapter implements AsignacionProyectoRe
     }
 
     private AsignacionProyecto toDomain(AsignacionProyectoEntity entity) {
+        if (entity.getRecursoProxyId() == null) {
+            throw new IllegalStateException(
+                    "Asignación sin recurso_proxy_id en persistencia (id asignación=" + entity.getId() + ")");
+        }
         return AsignacionProyecto.reconstruir(AsignacionProyectoId.of(entity.getId()),
                 EmpleadoId.of(entity.getEmpleado().getId()), ProyectoId.from(entity.getProyecto().getId()),
-                RecursoProxyId.generate(), entity.getFechaInicio(), entity.getFechaFin(), null, entity.getRolProyecto());
+                RecursoProxyId.of(entity.getRecursoProxyId()), entity.getFechaInicio(), entity.getFechaFin(), null,
+                entity.getRolProyecto());
     }
 }
