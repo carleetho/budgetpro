@@ -5,6 +5,8 @@ import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 /**
  * Mapper para convertir entre Presupuesto (dominio) y PresupuestoEntity (persistencia).
  */
@@ -98,7 +100,15 @@ public class PresupuestoMapper {
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
     }
 
+    /**
+     * Solo materializa {@link Presupuesto.CabeceraOpcionB} cuando hay datos más allá de los defaults de esquema
+     * (V39: jornada 8h, tipo EDIFICACIONES, flags false). Si no, el dominio recibe {@code null}, coherente con
+     * {@link Presupuesto#getCabeceraOpcionB()} y con {@link #aplicarCabecera} / hash de integridad.
+     */
     private static Presupuesto.CabeceraOpcionB cabeceraDesde(PresupuestoEntity entity) {
+        if (!persisteCabeceraOpcionBMasAllaDeDefaults(entity)) {
+            return null;
+        }
         return new Presupuesto.CabeceraOpcionB(
                 entity.getCodigo(),
                 entity.getClienteId(),
@@ -117,9 +127,74 @@ public class PresupuestoMapper {
                 entity.getEsContractualVigente());
     }
 
+    /**
+     * Filas posteriores a V39 llevan valores NOT NULL por defecto aun sin “cabecera S10” cargada por UI/API.
+     * Solo tratamos como cabecera ausente cuando todo coincide con migración + columnas opcionales nulas,
+     * salvo {@code es_contractual_vigente} true (backfill V39), que sí es semántica de dominio.
+     */
+    private static boolean persisteCabeceraOpcionBMasAllaDeDefaults(PresupuestoEntity entity) {
+        if (entity.getCodigo() != null) {
+            return true;
+        }
+        if (entity.getClienteId() != null) {
+            return true;
+        }
+        if (entity.getDistritoId() != null) {
+            return true;
+        }
+        if (entity.getFechaElaboracion() != null) {
+            return true;
+        }
+        if (entity.getPlazoDias() != null) {
+            return true;
+        }
+        if (entity.getMonedaBaseId() != null || entity.getMonedaAlternaId() != null || entity.getFactorCambio() != null) {
+            return true;
+        }
+        if (entity.getDecimalesPrecios() != null || entity.getDecimalesMetrados() != null
+                || entity.getDecimalesIncidencias() != null) {
+            return true;
+        }
+        BigDecimal jd = entity.getJornadaDiaria();
+        if (jd != null && jd.compareTo(new BigDecimal("8.00")) != 0) {
+            return true;
+        }
+        String tipo = entity.getTipoApu();
+        if (tipo != null && !"EDIFICACIONES".equals(tipo)) {
+            return true;
+        }
+        if (Boolean.TRUE.equals(entity.getRequiereFormulaPolinomica())) {
+            return true;
+        }
+        return Boolean.TRUE.equals(entity.getEsContractualVigente());
+    }
+
+    /**
+     * Valores de esquema V39 cuando no hay cabecera Opción B en dominio ({@code actualizarCabeceraOpcionB(null)}).
+     * Columnas NOT NULL deben reapuntarse a estos defaults al limpiar; las opcionales van a null.
+     */
+    private static void resetCabeceraOpcionBEnEntity(PresupuestoEntity entity) {
+        entity.setCodigo(null);
+        entity.setClienteId(null);
+        entity.setDistritoId(null);
+        entity.setFechaElaboracion(null);
+        entity.setPlazoDias(null);
+        entity.setJornadaDiaria(new BigDecimal("8.00"));
+        entity.setMonedaBaseId(null);
+        entity.setMonedaAlternaId(null);
+        entity.setFactorCambio(null);
+        entity.setRequiereFormulaPolinomica(Boolean.FALSE);
+        entity.setTipoApu("EDIFICACIONES");
+        entity.setDecimalesPrecios(null);
+        entity.setDecimalesMetrados(null);
+        entity.setDecimalesIncidencias(null);
+        entity.setEsContractualVigente(Boolean.FALSE);
+    }
+
     private static void aplicarCabecera(PresupuestoEntity entity, Presupuesto presupuesto) {
         Presupuesto.CabeceraOpcionB cab = presupuesto.getCabeceraOpcionB();
         if (cab == null) {
+            resetCabeceraOpcionBEnEntity(entity);
             return;
         }
         entity.setCodigo(cab.codigo());

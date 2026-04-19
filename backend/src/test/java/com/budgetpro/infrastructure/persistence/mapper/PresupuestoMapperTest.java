@@ -7,6 +7,7 @@ import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -295,5 +296,83 @@ class PresupuestoMapperTest {
 
         // Then
         assertNull(domain);
+    }
+
+    @Test
+    void toDomain_defaultsV39SinDatosCliente_materializaCabeceraOpcionBNull() {
+        UUID proyectoId = UUID.randomUUID();
+        UUID presupuestoId = UUID.randomUUID();
+
+        PresupuestoEntity entity = new PresupuestoEntity();
+        entity.setId(presupuestoId);
+        entity.setProyectoId(proyectoId);
+        entity.setNombre("Solo defaults");
+        entity.setEstado(EstadoPresupuesto.BORRADOR);
+        entity.setEsContractual(false);
+        entity.setVersion(0);
+        entity.setJornadaDiaria(new BigDecimal("8.00"));
+        entity.setTipoApu("EDIFICACIONES");
+        entity.setRequiereFormulaPolinomica(Boolean.FALSE);
+        entity.setEsContractualVigente(Boolean.FALSE);
+
+        Presupuesto domain = mapper.toDomain(entity);
+
+        assertNull(domain.getCabeceraOpcionB(), "Sin datos S10 no debe aparecer CabeceraOpcionB vacía");
+    }
+
+    @Test
+    void updateEntity_cabeceraDominoNull_limpiaColumnasOpcionBEnEntidad() {
+        UUID proyectoId = UUID.randomUUID();
+        UUID presupuestoId = UUID.randomUUID();
+        UUID clienteId = UUID.randomUUID();
+
+        PresupuestoEntity entity = new PresupuestoEntity();
+        entity.setId(presupuestoId);
+        entity.setProyectoId(proyectoId);
+        entity.setNombre("Con cabecera");
+        entity.setEstado(EstadoPresupuesto.BORRADOR);
+        entity.setEsContractual(false);
+        entity.setVersion(0);
+        entity.setCodigo("PRE-001");
+        entity.setClienteId(clienteId);
+        entity.setJornadaDiaria(new BigDecimal("10.00"));
+        entity.setTipoApu("CARRETERAS");
+        entity.setRequiereFormulaPolinomica(Boolean.TRUE);
+        entity.setEsContractualVigente(Boolean.TRUE);
+
+        Presupuesto domain = mapper.toDomain(entity);
+        domain.actualizarCabeceraOpcionB(null);
+
+        mapper.updateEntity(entity, domain);
+
+        assertNull(entity.getCodigo());
+        assertNull(entity.getClienteId());
+        assertEquals(0, new BigDecimal("8.00").compareTo(entity.getJornadaDiaria()));
+        assertEquals("EDIFICACIONES", entity.getTipoApu());
+        assertEquals(Boolean.FALSE, entity.getRequiereFormulaPolinomica());
+        assertEquals(Boolean.FALSE, entity.getEsContractualVigente());
+    }
+
+    @Test
+    void toDomain_esContractualVigenteTrue_materializaCabeceraOpcionB() {
+        UUID proyectoId = UUID.randomUUID();
+        UUID presupuestoId = UUID.randomUUID();
+
+        PresupuestoEntity entity = new PresupuestoEntity();
+        entity.setId(presupuestoId);
+        entity.setProyectoId(proyectoId);
+        entity.setNombre("Backfill vigente");
+        entity.setEstado(EstadoPresupuesto.BORRADOR);
+        entity.setEsContractual(false);
+        entity.setVersion(0);
+        entity.setJornadaDiaria(new BigDecimal("8.00"));
+        entity.setTipoApu("EDIFICACIONES");
+        entity.setRequiereFormulaPolinomica(Boolean.FALSE);
+        entity.setEsContractualVigente(Boolean.TRUE);
+
+        Presupuesto domain = mapper.toDomain(entity);
+
+        assertNotNull(domain.getCabeceraOpcionB());
+        assertTrue(domain.getCabeceraOpcionB().esContractualVigente());
     }
 }

@@ -5,6 +5,7 @@ import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.PartidaMapper;
 import com.budgetpro.domain.finanzas.presupuesto.model.Subpresupuesto;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
@@ -60,10 +61,7 @@ public class PartidaRepositoryAdapter implements PartidaRepository,
             PresupuestoEntity presupuestoEntity = presupuestoJpaRepository.findById(partida.getPresupuestoId())
                     .orElseThrow(() -> new IllegalStateException("Presupuesto no encontrado: " + partida.getPresupuestoId()));
 
-            var subpresupuestoEntity = subpresupuestoJpaRepository
-                    .findByPresupuesto_IdAndNombre(presupuestoEntity.getId(), Subpresupuesto.NOMBRE_PRINCIPAL)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Subpresupuesto Principal no existe para presupuesto: " + presupuestoEntity.getId()));
+            SubpresupuestoEntity subpresupuestoEntity = resolverSubpresupuestoParaCreacion(partida, presupuestoEntity);
 
             PartidaEntity padreEntity = null;
             if (partida.getPadreId() != null) {
@@ -110,5 +108,30 @@ public class PartidaRepositoryAdapter implements PartidaRepository,
         return jpaRepository.findById(partidaId)
                 .map(partida -> partida.getPresupuesto().getEstado() == EstadoPresupuesto.CONGELADO)
                 .orElse(false);
+    }
+
+    /**
+     * Si el dominio indica {@link Partida#getSubpresupuestoId()}, persiste contra ese subpresupuesto
+     * (validando pertenencia al mismo presupuesto). Si viene nulo — p. ej. factories legacy —
+     * usa el subpresupuesto sintético "Principal" por compatibilidad con Opción B.
+     */
+    private SubpresupuestoEntity resolverSubpresupuestoParaCreacion(Partida partida,
+            PresupuestoEntity presupuestoEntity) {
+        UUID solicitado = partida.getSubpresupuestoId();
+        if (solicitado != null) {
+            SubpresupuestoEntity entity = subpresupuestoJpaRepository.findById(solicitado).orElseThrow(() -> new IllegalStateException(
+                    "Subpresupuesto no encontrado: " + solicitado));
+            UUID presupuestoEsperado = presupuestoEntity.getId();
+            UUID presupuestoDelSub = entity.getPresupuesto() != null ? entity.getPresupuesto().getId() : null;
+            if (presupuestoDelSub == null || !presupuestoEsperado.equals(presupuestoDelSub)) {
+                throw new IllegalStateException(
+                        "El subpresupuesto " + solicitado + " no pertenece al presupuesto " + presupuestoEsperado);
+            }
+            return entity;
+        }
+        return subpresupuestoJpaRepository
+                .findByPresupuesto_IdAndNombre(presupuestoEntity.getId(), Subpresupuesto.NOMBRE_PRINCIPAL)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Subpresupuesto Principal no existe para presupuesto: " + presupuestoEntity.getId()));
     }
 }
