@@ -64,8 +64,10 @@ backend/.docker/
 
 # --- Documentación y recursos ---
 knowledge_base/
-# PDFs privados (no versionar ni publicar en GitHub)
-docs/PDF/
+# PDFs en docs/PDF: por defecto no versionar (licencias / borradores).
+# Excepciones explícitas (fragmentos de referencia del equipo):
+docs/PDF/*
+!docs/PDF/S10-pag-9-16.pdf
 backend/target/
 
 # --- Python ---
