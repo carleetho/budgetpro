@@ -14,6 +14,8 @@ public final class Partida {
 
     private final PartidaId id;
     private final UUID presupuestoId;
+    /** Opción B: contenedor WBS; null en memoria hasta persistencia o lectura. */
+    private final UUID subpresupuestoId;
     private final UUID padreId; // Opcional, para jerarquía recursiva
     private final String item; // Código WBS: "01.01", "02.01.05"
     private final String descripcion;
@@ -28,13 +30,15 @@ public final class Partida {
     /**
      * Constructor privado. Usar factory methods.
      */
-    private Partida(PartidaId id, UUID presupuestoId, UUID padreId, String item, String descripcion, String unidad,
+    private Partida(PartidaId id, UUID presupuestoId, UUID subpresupuestoId, UUID padreId, String item,
+            String descripcion, String unidad,
             BigDecimal metrado, BigDecimal presupuestoAsignado, BigDecimal gastosReales,
             BigDecimal compromisosPendientes, Integer nivel, Long version) {
         validarInvariantes(presupuestoId, item, descripcion, metrado, nivel);
 
         this.id = Objects.requireNonNull(id, "El ID de la partida no puede ser nulo");
         this.presupuestoId = Objects.requireNonNull(presupuestoId, "El presupuestoId no puede ser nulo");
+        this.subpresupuestoId = subpresupuestoId;
         // REGLA-038
         this.padreId = padreId;
         this.item = normalizarItem(item);
@@ -53,7 +57,13 @@ public final class Partida {
      */
     public static Partida crearRaiz(PartidaId id, UUID presupuestoId, String item, String descripcion, String unidad,
             BigDecimal metrado) {
-        return new Partida(id, presupuestoId, null, item, descripcion, unidad, metrado, BigDecimal.ZERO,
+        return crearRaiz(id, presupuestoId, null, item, descripcion, unidad, metrado);
+    }
+
+    public static Partida crearRaiz(PartidaId id, UUID presupuestoId, UUID subpresupuestoId, String item,
+            String descripcion, String unidad, BigDecimal metrado) {
+        return new Partida(id, presupuestoId, subpresupuestoId, null, item, descripcion, unidad, metrado,
+                BigDecimal.ZERO,
                 BigDecimal.ZERO, BigDecimal.ZERO, 1, 0L);
     }
 
@@ -62,17 +72,26 @@ public final class Partida {
      */
     public static Partida crearHija(PartidaId id, UUID presupuestoId, UUID padreId, String item, String descripcion,
             String unidad, BigDecimal metrado, Integer nivel) {
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, metrado, BigDecimal.ZERO,
+        return crearHija(id, presupuestoId, null, padreId, item, descripcion, unidad, metrado, nivel);
+    }
+
+    public static Partida crearHija(PartidaId id, UUID presupuestoId, UUID subpresupuestoId, UUID padreId,
+            String item, String descripcion,
+            String unidad, BigDecimal metrado, Integer nivel) {
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, metrado,
+                BigDecimal.ZERO,
                 BigDecimal.ZERO, BigDecimal.ZERO, nivel, 0L);
     }
 
     /**
      * Factory method para reconstruir una Partida desde persistencia.
      */
-    public static Partida reconstruir(PartidaId id, UUID presupuestoId, UUID padreId, String item, String descripcion,
+    public static Partida reconstruir(PartidaId id, UUID presupuestoId, UUID subpresupuestoId, UUID padreId,
+            String item, String descripcion,
             String unidad, BigDecimal metrado, BigDecimal presupuestoAsignado, BigDecimal gastosReales,
             BigDecimal compromisosPendientes, Integer nivel, Long version) {
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, metrado,
+                presupuestoAsignado,
                 gastosReales, compromisosPendientes, nivel, version);
     }
 
@@ -111,17 +130,20 @@ public final class Partida {
     }
 
     public Partida actualizarItem(String nuevoItem) {
-        return new Partida(id, presupuestoId, padreId, nuevoItem, descripcion, unidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, nuevoItem, descripcion, unidad, metrado,
+                presupuestoAsignado,
                 gastosReales, compromisosPendientes, nivel, version);
     }
 
     public Partida actualizarDescripcion(String nuevaDescripcion) {
-        return new Partida(id, presupuestoId, padreId, item, nuevaDescripcion, unidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, nuevaDescripcion, unidad, metrado,
+                presupuestoAsignado,
                 gastosReales, compromisosPendientes, nivel, version);
     }
 
     public Partida actualizarUnidad(String nuevaUnidad) {
-        return new Partida(id, presupuestoId, padreId, item, descripcion, nuevaUnidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, nuevaUnidad, metrado,
+                presupuestoAsignado,
                 gastosReales, compromisosPendientes, nivel, version);
     }
 
@@ -130,7 +152,8 @@ public final class Partida {
         if (m.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El metrado no puede ser negativo");
         }
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, m, presupuestoAsignado, gastosReales,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, m,
+                presupuestoAsignado, gastosReales,
                 compromisosPendientes, nivel, version);
     }
 
@@ -138,7 +161,8 @@ public final class Partida {
         if (nuevoPresupuestoAsignado == null || nuevoPresupuestoAsignado.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El presupuesto asignado no puede ser nulo ni negativo");
         }
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, metrado, nuevoPresupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, metrado,
+                nuevoPresupuestoAsignado,
                 gastosReales, compromisosPendientes, nivel, version);
     }
 
@@ -146,7 +170,8 @@ public final class Partida {
         if (nuevosGastosReales == null || nuevosGastosReales.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Los gastos reales no pueden ser nulos ni negativos");
         }
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, metrado,
+                presupuestoAsignado,
                 nuevosGastosReales, compromisosPendientes, nivel, version);
     }
 
@@ -154,7 +179,8 @@ public final class Partida {
         if (nuevosCompromisosPendientes == null || nuevosCompromisosPendientes.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Los compromisos pendientes no pueden ser nulos ni negativos");
         }
-        return new Partida(id, presupuestoId, padreId, item, descripcion, unidad, metrado, presupuestoAsignado,
+        return new Partida(id, presupuestoId, subpresupuestoId, padreId, item, descripcion, unidad, metrado,
+                presupuestoAsignado,
                 gastosReales, nuevosCompromisosPendientes, nivel, version);
     }
 
@@ -183,6 +209,10 @@ public final class Partida {
 
     public UUID getPresupuestoId() {
         return presupuestoId;
+    }
+
+    public UUID getSubpresupuestoId() {
+        return subpresupuestoId;
     }
 
     public UUID getPadreId() {

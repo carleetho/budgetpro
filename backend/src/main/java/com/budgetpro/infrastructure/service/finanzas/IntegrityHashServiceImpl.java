@@ -66,6 +66,25 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
         data.append(presupuesto.getEstado());
         data.append(presupuesto.getEsContractual());
 
+        Presupuesto.CabeceraOpcionB cab = presupuesto.getCabeceraOpcionB();
+        if (cab != null) {
+            data.append(Objects.toString(cab.codigo(), ""));
+            data.append(Objects.toString(cab.clienteId(), ""));
+            data.append(Objects.toString(cab.distritoId(), ""));
+            data.append(Objects.toString(cab.fechaElaboracion(), ""));
+            data.append(Objects.toString(cab.plazoDias(), ""));
+            data.append(Objects.toString(cab.jornadaDiaria(), ""));
+            data.append(Objects.toString(cab.monedaBaseId(), ""));
+            data.append(Objects.toString(cab.monedaAlternaId(), ""));
+            data.append(Objects.toString(cab.factorCambio(), ""));
+            data.append(Objects.toString(cab.requiereFormulaPolinomica(), ""));
+            data.append(Objects.toString(cab.tipoApu(), ""));
+            data.append(Objects.toString(cab.decimalesPrecios(), ""));
+            data.append(Objects.toString(cab.decimalesMetrados(), ""));
+            data.append(Objects.toString(cab.decimalesIncidencias(), ""));
+            data.append(Objects.toString(cab.esContractualVigente(), ""));
+        }
+
         // 2. Partidas Merkle root
         List<Partida> partidas = partidaRepository.findByPresupuestoId(presupuesto.getId().getValue());
         String partidasMerkleRoot = calculatePartidasMerkleRoot(partidas);
@@ -147,6 +166,7 @@ public class IntegrityHashServiceImpl implements IntegrityHashService {
         data.append(partida.getMetrado());
         data.append(partida.getPresupuestoAsignado());
         data.append(partida.getPadreId());
+        data.append(partida.getSubpresupuestoId());
         data.append(partida.getNivel());
 
         Optional<APUSnapshot> apuOpt = apuSnapshotRepository.findByPartidaId(partida.getId().getValue());

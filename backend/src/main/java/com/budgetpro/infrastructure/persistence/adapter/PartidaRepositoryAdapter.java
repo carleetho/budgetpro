@@ -6,7 +6,7 @@ import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.PartidaMapper;
-import com.budgetpro.domain.finanzas.presupuesto.model.SubpresupuestoNaming;
+import com.budgetpro.domain.finanzas.presupuesto.model.Subpresupuesto;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.PresupuestoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.SubpresupuestoJpaRepository;
@@ -61,7 +61,7 @@ public class PartidaRepositoryAdapter implements PartidaRepository,
                     .orElseThrow(() -> new IllegalStateException("Presupuesto no encontrado: " + partida.getPresupuestoId()));
 
             var subpresupuestoEntity = subpresupuestoJpaRepository
-                    .findByPresupuesto_IdAndNombre(presupuestoEntity.getId(), SubpresupuestoNaming.PRINCIPAL)
+                    .findByPresupuesto_IdAndNombre(presupuestoEntity.getId(), Subpresupuesto.NOMBRE_PRINCIPAL)
                     .orElseThrow(() -> new IllegalStateException(
                             "Subpresupuesto Principal no existe para presupuesto: " + presupuestoEntity.getId()));
 

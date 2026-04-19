@@ -3,6 +3,8 @@ package com.budgetpro.domain.finanzas.presupuesto.model;
 import com.budgetpro.domain.finanzas.presupuesto.service.IntegrityHashService;
 import com.budgetpro.domain.finanzas.presupuesto.exception.BudgetIntegrityViolationException;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -90,12 +92,16 @@ public final class Presupuesto {
     private String integrityHashAlgorithm; // nosemgrep: budgetpro.domain.immutability.entity-final-fields.presupuesto -
                                            // Audit metadata
 
+    /** Cabecera Opción B (S10 / multimoneda); null si aún no aplica o no cargada desde persistencia. */
+    private CabeceraOpcionB cabeceraOpcionB;
+
     /**
      * Constructor privado. Usar factory methods.
      */
     private Presupuesto(PresupuestoId id, UUID proyectoId, String nombre, EstadoPresupuesto estado,
             Boolean esContractual, Long version, String integrityHashApproval, String integrityHashExecution,
-            LocalDateTime integrityHashGeneratedAt, UUID integrityHashGeneratedBy, String integrityHashAlgorithm) {
+            LocalDateTime integrityHashGeneratedAt, UUID integrityHashGeneratedBy, String integrityHashAlgorithm,
+            CabeceraOpcionB cabeceraOpcionB) {
         validarInvariantes(proyectoId, nombre, estado);
 
         this.id = Objects.requireNonNull(id, "El ID del presupuesto no puede ser nulo");
@@ -112,6 +118,7 @@ public final class Presupuesto {
         this.integrityHashGeneratedAt = integrityHashGeneratedAt;
         this.integrityHashGeneratedBy = integrityHashGeneratedBy;
         this.integrityHashAlgorithm = integrityHashAlgorithm;
+        this.cabeceraOpcionB = cabeceraOpcionB;
     }
 
     /**
@@ -120,7 +127,7 @@ public final class Presupuesto {
      */
     public static Presupuesto crear(PresupuestoId id, UUID proyectoId, String nombre) {
         return new Presupuesto(id, proyectoId, nombre, EstadoPresupuesto.BORRADOR, false, 0L, null, null, null, null,
-                null);
+                null, null);
     }
 
     /**
@@ -134,7 +141,8 @@ public final class Presupuesto {
     @Deprecated
     public static Presupuesto reconstruir(PresupuestoId id, UUID proyectoId, String nombre, EstadoPresupuesto estado,
             Boolean esContractual, Long version) {
-        return new Presupuesto(id, proyectoId, nombre, estado, esContractual, version, null, null, null, null, null);
+        return new Presupuesto(id, proyectoId, nombre, estado, esContractual, version, null, null, null, null, null,
+                null);
     }
 
     /**
@@ -144,8 +152,20 @@ public final class Presupuesto {
     public static Presupuesto reconstruir(PresupuestoId id, UUID proyectoId, String nombre, EstadoPresupuesto estado,
             Boolean esContractual, Long version, String integrityHashApproval, String integrityHashExecution,
             LocalDateTime integrityHashGeneratedAt, UUID integrityHashGeneratedBy, String integrityHashAlgorithm) {
+        return reconstruir(id, proyectoId, nombre, estado, esContractual, version, integrityHashApproval,
+                integrityHashExecution, integrityHashGeneratedAt, integrityHashGeneratedBy, integrityHashAlgorithm, null);
+    }
+
+    /**
+     * Reconstruye desde persistencia incluyendo cabecera Opción B (columnas V39).
+     */
+    public static Presupuesto reconstruir(PresupuestoId id, UUID proyectoId, String nombre, EstadoPresupuesto estado,
+            Boolean esContractual, Long version, String integrityHashApproval, String integrityHashExecution,
+            LocalDateTime integrityHashGeneratedAt, UUID integrityHashGeneratedBy, String integrityHashAlgorithm,
+            CabeceraOpcionB cabeceraOpcionB) {
         return new Presupuesto(id, proyectoId, nombre, estado, esContractual, version, integrityHashApproval,
-                integrityHashExecution, integrityHashGeneratedAt, integrityHashGeneratedBy, integrityHashAlgorithm);
+                integrityHashExecution, integrityHashGeneratedAt, integrityHashGeneratedBy, integrityHashAlgorithm,
+                cabeceraOpcionB);
     }
 
     /**
@@ -197,6 +217,17 @@ public final class Presupuesto {
             throw new IllegalArgumentException("El nombre del presupuesto no puede estar vacío");
         }
         this.nombre = nuevoNombre.trim();
+    }
+
+    /**
+     * Actualiza datos de cabecera Opción B (solo en BORRADOR / sin sello).
+     */
+    public void actualizarCabeceraOpcionB(CabeceraOpcionB nuevaCabecera) {
+        if (integrityHashApproval != null) {
+            throw new BudgetIntegrityViolationException(this.id, integrityHashApproval, "N/A",
+                    "Structure modification attempted");
+        }
+        this.cabeceraOpcionB = nuevaCabecera;
     }
 
     /**
@@ -337,6 +368,10 @@ public final class Presupuesto {
         return version;
     }
 
+    public CabeceraOpcionB getCabeceraOpcionB() {
+        return cabeceraOpcionB;
+    }
+
     public boolean isAprobado() {
         return estado == EstadoPresupuesto.CONGELADO;
     }
@@ -422,5 +457,26 @@ public final class Presupuesto {
         return String.format(
                 "Presupuesto{id=%s, proyectoId=%s, nombre='%s', estado=%s, esContractual=%s, version=%d, sealed=%s}",
                 id, proyectoId, nombre, estado, esContractual, version, isSealed());
+    }
+
+    /**
+     * Columnas V39 / cabecera S10 enlazadas al presupuesto (Opción B).
+     */
+    public record CabeceraOpcionB(
+            String codigo,
+            UUID clienteId,
+            UUID distritoId,
+            LocalDate fechaElaboracion,
+            Integer plazoDias,
+            BigDecimal jornadaDiaria,
+            UUID monedaBaseId,
+            UUID monedaAlternaId,
+            BigDecimal factorCambio,
+            Boolean requiereFormulaPolinomica,
+            String tipoApu,
+            Integer decimalesPrecios,
+            Integer decimalesMetrados,
+            Integer decimalesIncidencias,
+            Boolean esContractualVigente) {
     }
 }

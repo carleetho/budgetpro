@@ -1,6 +1,6 @@
 package com.budgetpro.infrastructure;
 
-import com.budgetpro.domain.finanzas.presupuesto.model.SubpresupuestoNaming;
+import com.budgetpro.domain.finanzas.presupuesto.model.Subpresupuesto;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.repository.SubpresupuestoJpaRepository;
@@ -39,7 +39,7 @@ public abstract class AbstractIntegrationTest {
     /** Subpresupuesto sintético "Principal" (trigger Flyway V41 tras insert presupuesto). */
     protected SubpresupuestoEntity principalSub(PresupuestoEntity presupuesto) {
         return subpresupuestoJpaRepository
-                .findByPresupuesto_IdAndNombre(presupuesto.getId(), SubpresupuestoNaming.PRINCIPAL)
+                .findByPresupuesto_IdAndNombre(presupuesto.getId(), Subpresupuesto.NOMBRE_PRINCIPAL)
                 .orElseThrow(() -> new IllegalStateException(
                         "Subpresupuesto Principal no existe para presupuesto " + presupuesto.getId()));
     }

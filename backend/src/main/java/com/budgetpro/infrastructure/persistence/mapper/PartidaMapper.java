@@ -55,6 +55,7 @@ public class PartidaMapper {
 
         UUID padreId = entity.getPadre() != null ? entity.getPadre().getId() : null;
         UUID presupuestoId = entity.getPresupuesto() != null ? entity.getPresupuesto().getId() : null;
+        UUID subpresupuestoId = entity.getSubpresupuesto() != null ? entity.getSubpresupuesto().getId() : null;
 
         BigDecimal presupuestoAsignado = entity.getPrecioUnitario() != null && entity.getMetrado() != null
                 ? entity.getPrecioUnitario().multiply(entity.getMetrado())
@@ -63,6 +64,7 @@ public class PartidaMapper {
         Partida partida = Partida.reconstruir(
             PartidaId.from(entity.getId()),
             presupuestoId,
+            subpresupuestoId,
             padreId,
             entity.getItem(),
             entity.getDescripcion(),

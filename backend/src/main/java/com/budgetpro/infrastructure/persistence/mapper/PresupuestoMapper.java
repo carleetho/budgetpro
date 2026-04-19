@@ -40,6 +40,8 @@ public class PresupuestoMapper {
         entity.setIntegrityHashGeneratedBy(presupuesto.getIntegrityHashGeneratedBy());
         entity.setIntegrityHashAlgorithm(presupuesto.getIntegrityHashAlgorithm());
 
+        aplicarCabecera(entity, presupuesto);
+
         return entity;
     }
 
@@ -67,7 +69,8 @@ public class PresupuestoMapper {
             entity.getIntegrityHashExecution(),      // Puede ser null
             entity.getIntegrityHashGeneratedAt(),    // Puede ser null
             entity.getIntegrityHashGeneratedBy(),    // Puede ser null
-            entity.getIntegrityHashAlgorithm()       // Puede ser null
+            entity.getIntegrityHashAlgorithm(),       // Puede ser null
+            cabeceraDesde(entity)
         );
     }
 
@@ -89,7 +92,58 @@ public class PresupuestoMapper {
         existingEntity.setIntegrityHashGeneratedAt(presupuesto.getIntegrityHashGeneratedAt());
         existingEntity.setIntegrityHashGeneratedBy(presupuesto.getIntegrityHashGeneratedBy());
         existingEntity.setIntegrityHashAlgorithm(presupuesto.getIntegrityHashAlgorithm());
+
+        aplicarCabecera(existingEntity, presupuesto);
         
         // CRÍTICO: NO se toca version. Hibernate lo maneja con @Version
+    }
+
+    private static Presupuesto.CabeceraOpcionB cabeceraDesde(PresupuestoEntity entity) {
+        return new Presupuesto.CabeceraOpcionB(
+                entity.getCodigo(),
+                entity.getClienteId(),
+                entity.getDistritoId(),
+                entity.getFechaElaboracion(),
+                entity.getPlazoDias(),
+                entity.getJornadaDiaria(),
+                entity.getMonedaBaseId(),
+                entity.getMonedaAlternaId(),
+                entity.getFactorCambio(),
+                entity.getRequiereFormulaPolinomica(),
+                entity.getTipoApu(),
+                entity.getDecimalesPrecios(),
+                entity.getDecimalesMetrados(),
+                entity.getDecimalesIncidencias(),
+                entity.getEsContractualVigente());
+    }
+
+    private static void aplicarCabecera(PresupuestoEntity entity, Presupuesto presupuesto) {
+        Presupuesto.CabeceraOpcionB cab = presupuesto.getCabeceraOpcionB();
+        if (cab == null) {
+            return;
+        }
+        entity.setCodigo(cab.codigo());
+        entity.setClienteId(cab.clienteId());
+        entity.setDistritoId(cab.distritoId());
+        entity.setFechaElaboracion(cab.fechaElaboracion());
+        entity.setPlazoDias(cab.plazoDias());
+        if (cab.jornadaDiaria() != null) {
+            entity.setJornadaDiaria(cab.jornadaDiaria());
+        }
+        entity.setMonedaBaseId(cab.monedaBaseId());
+        entity.setMonedaAlternaId(cab.monedaAlternaId());
+        entity.setFactorCambio(cab.factorCambio());
+        if (cab.requiereFormulaPolinomica() != null) {
+            entity.setRequiereFormulaPolinomica(cab.requiereFormulaPolinomica());
+        }
+        if (cab.tipoApu() != null) {
+            entity.setTipoApu(cab.tipoApu());
+        }
+        entity.setDecimalesPrecios(cab.decimalesPrecios());
+        entity.setDecimalesMetrados(cab.decimalesMetrados());
+        entity.setDecimalesIncidencias(cab.decimalesIncidencias());
+        if (cab.esContractualVigente() != null) {
+            entity.setEsContractualVigente(cab.esContractualVigente());
+        }
     }
 }

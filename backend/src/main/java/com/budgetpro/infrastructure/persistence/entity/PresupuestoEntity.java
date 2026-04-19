@@ -9,6 +9,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -96,6 +99,55 @@ public class PresupuestoEntity extends AuditEntity {
     @Column(name = "integrity_hash_algorithm", length = 20)
     private String integrityHashAlgorithm;
 
+    @Column(name = "codigo", length = 50)
+    private String codigo;
+
+    @Column(name = "cliente_id")
+    private UUID clienteId;
+
+    @Column(name = "distrito_id")
+    private UUID distritoId;
+
+    @Column(name = "fecha_elaboracion")
+    private LocalDate fechaElaboracion;
+
+    @Column(name = "plazo_dias")
+    private Integer plazoDias;
+
+    @NotNull
+    @Column(name = "jornada_diaria", nullable = false, precision = 5, scale = 2)
+    private BigDecimal jornadaDiaria;
+
+    @Column(name = "moneda_base_id")
+    private UUID monedaBaseId;
+
+    @Column(name = "moneda_alterna_id")
+    private UUID monedaAlternaId;
+
+    @Column(name = "factor_cambio", precision = 19, scale = 8)
+    private BigDecimal factorCambio;
+
+    @NotNull
+    @Column(name = "requiere_formula_polinomica", nullable = false)
+    private Boolean requiereFormulaPolinomica = Boolean.FALSE;
+
+    @NotBlank
+    @Column(name = "tipo_apu", nullable = false, length = 20)
+    private String tipoApu;
+
+    @Column(name = "decimales_precios")
+    private Integer decimalesPrecios;
+
+    @Column(name = "decimales_metrados")
+    private Integer decimalesMetrados;
+
+    @Column(name = "decimales_incidencias")
+    private Integer decimalesIncidencias;
+
+    @NotNull
+    @Column(name = "es_contractual_vigente", nullable = false)
+    private Boolean esContractualVigente = Boolean.FALSE;
+
     @Transient
     private com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto estadoOriginal;
 
@@ -111,6 +163,18 @@ public class PresupuestoEntity extends AuditEntity {
         }
         if (esContractual == null) {
             esContractual = Boolean.FALSE;
+        }
+        if (jornadaDiaria == null) {
+            jornadaDiaria = new BigDecimal("8.00");
+        }
+        if (tipoApu == null) {
+            tipoApu = "EDIFICACIONES";
+        }
+        if (requiereFormulaPolinomica == null) {
+            requiereFormulaPolinomica = Boolean.FALSE;
+        }
+        if (esContractualVigente == null) {
+            esContractualVigente = Boolean.FALSE;
         }
     }
 
