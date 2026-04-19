@@ -4,6 +4,7 @@ import com.budgetpro.domain.finanzas.partida.model.Partida;
 import com.budgetpro.domain.finanzas.partida.model.PartidaId;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -21,7 +22,8 @@ public class PartidaMapper {
      * CRÍTICO: Para nuevas entidades, pasa null en version.
      * Hibernate inicializará la versión automáticamente.
      */
-    public PartidaEntity toEntity(Partida partida, PresupuestoEntity presupuestoEntity, PartidaEntity padreEntity) {
+    public PartidaEntity toEntity(Partida partida, PresupuestoEntity presupuestoEntity,
+            SubpresupuestoEntity subpresupuestoEntity, PartidaEntity padreEntity) {
         if (partida == null) {
             throw new IllegalArgumentException("Partida domain object cannot be null");
         }
@@ -29,6 +31,7 @@ public class PartidaMapper {
         PartidaEntity entity = new PartidaEntity(
             partida.getId().getValue(),
             presupuestoEntity,
+            subpresupuestoEntity,
             padreEntity, // Puede ser null para partida raíz
             partida.getItem(),
             partida.getDescripcion(),

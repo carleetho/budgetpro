@@ -1,5 +1,10 @@
 package com.budgetpro.infrastructure;
 
+import com.budgetpro.domain.finanzas.presupuesto.model.SubpresupuestoNaming;
+import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
+import com.budgetpro.infrastructure.persistence.repository.SubpresupuestoJpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,6 +32,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ActiveProfiles("test")
 @Testcontainers(disabledWithoutDocker = true)
 public abstract class AbstractIntegrationTest {
+
+    @Autowired
+    protected SubpresupuestoJpaRepository subpresupuestoJpaRepository;
+
+    /** Subpresupuesto sintético "Principal" (trigger Flyway V41 tras insert presupuesto). */
+    protected SubpresupuestoEntity principalSub(PresupuestoEntity presupuesto) {
+        return subpresupuestoJpaRepository
+                .findByPresupuesto_IdAndNombre(presupuesto.getId(), SubpresupuestoNaming.PRINCIPAL)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Subpresupuesto Principal no existe para presupuesto " + presupuesto.getId()));
+    }
     static {
         // NOTA: Docker 29.1.4 soporta API 1.52, pero Testcontainers 1.20.4 usa docker-java 3.4.0
         // que tiene API 1.32 embebida. Esto causa incompatibilidad.

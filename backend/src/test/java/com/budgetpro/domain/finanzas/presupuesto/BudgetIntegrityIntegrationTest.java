@@ -352,6 +352,7 @@ class BudgetIntegrityIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.randomUUID());
         partida.setPresupuesto(presupuesto);
+        partida.setSubpresupuesto(principalSub(presupuesto));
         partida.setPadre(null);
         partida.setCodigo("01.01");
         partida.setItem("01.01");
@@ -430,6 +431,7 @@ class BudgetIntegrityIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.randomUUID());
         partida.setPresupuesto(presupuesto);
+        partida.setSubpresupuesto(principalSub(presupuesto));
         partida.setPadre(null);
         partida.setCodigo("01.01");
         partida.setItem("01.01");

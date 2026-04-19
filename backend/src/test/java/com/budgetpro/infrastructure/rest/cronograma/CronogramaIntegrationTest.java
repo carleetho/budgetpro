@@ -87,6 +87,7 @@ class CronogramaIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partidaA = new PartidaEntity(
             UUID.randomUUID(),
             presupuesto,
+            principalSub(presupuesto),
             null, // Sin padre (raíz)
             "01",
             "Cimentación",
@@ -102,6 +103,7 @@ class CronogramaIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partidaB = new PartidaEntity(
             UUID.randomUUID(),
             presupuesto,
+            principalSub(presupuesto),
             null, // Sin padre (raíz)
             "02",
             "Muros",

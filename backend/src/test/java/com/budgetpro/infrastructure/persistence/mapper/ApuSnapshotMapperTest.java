@@ -5,6 +5,7 @@ import com.budgetpro.domain.catalogo.model.APUInsumoSnapshotId;
 import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuSnapshotEntity;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,9 @@ class ApuSnapshotMapperTest {
 
                 PartidaEntity partidaEntity = new PartidaEntity();
                 partidaEntity.setId(snapshot.getPartidaId());
+                SubpresupuestoEntity subStub = new SubpresupuestoEntity();
+                subStub.setId(UUID.randomUUID());
+                partidaEntity.setSubpresupuesto(subStub);
                 UUID createdBy = UUID.randomUUID();
 
                 ApuSnapshotEntity entity = mapper.toEntity(snapshot, partidaEntity, createdBy);

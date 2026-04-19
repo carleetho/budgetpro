@@ -245,6 +245,13 @@ class ApuMigrationTest {
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.randomUUID());
         partida.setPresupuesto(presupuesto);
+        com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity subTx =
+                new com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity();
+        subTx.setId(UUID.randomUUID());
+        subTx.setPresupuesto(presupuesto);
+        subTx.setNombre("Principal");
+        subTx.setCreatedBy(testUserId);
+        partida.setSubpresupuesto(subTx);
         partida.setCodigo("01.01");
         partida.setDescripcion("Partida Test");
         partida.setUnidad("M2");

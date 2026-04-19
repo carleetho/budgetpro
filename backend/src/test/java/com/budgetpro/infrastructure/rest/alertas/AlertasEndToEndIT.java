@@ -64,6 +64,7 @@ class AlertasEndToEndIT extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.randomUUID());
         partida.setPresupuesto(presupuesto);
+        partida.setSubpresupuesto(principalSub(presupuesto));
         partida.setCodigo("1.1");
         partida.setItem("1.1");
         partida.setDescripcion("Partida IT");

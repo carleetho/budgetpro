@@ -3,6 +3,7 @@ package com.budgetpro.infrastructure.persistence.adapter;
 import com.budgetpro.domain.catalogo.model.APUSnapshot;
 import com.budgetpro.domain.catalogo.model.APUSnapshotId;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuSnapshotEntity;
 import com.budgetpro.infrastructure.persistence.mapper.ApuInsumoSnapshotMapper;
 import com.budgetpro.infrastructure.persistence.mapper.ApuSnapshotMapper;
@@ -46,6 +47,9 @@ class ApuSnapshotRepositoryAdapterTest {
 
         PartidaEntity partidaEntity = new PartidaEntity();
         partidaEntity.setId(Objects.requireNonNull(snapshot.getPartidaId()));
+        SubpresupuestoEntity subSt = new SubpresupuestoEntity();
+        subSt.setId(UUID.randomUUID());
+        partidaEntity.setSubpresupuesto(subSt);
 
         UUID snapshotId = Objects.requireNonNull(snapshot.getId().getValue());
         when(jpaRepository.findById(snapshotId)).thenReturn(Optional.empty());
@@ -68,6 +72,9 @@ class ApuSnapshotRepositoryAdapterTest {
         entity.setId(Objects.requireNonNull(UUID.randomUUID()));
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+        SubpresupuestoEntity su1 = new SubpresupuestoEntity();
+        su1.setId(UUID.randomUUID());
+        partida.setSubpresupuesto(su1);
         entity.setPartida(partida);
         entity.setExternalApuId("APU-EXT-2");
         entity.setCatalogSource("CAT-B");
@@ -95,6 +102,9 @@ class ApuSnapshotRepositoryAdapterTest {
         entity.setId(Objects.requireNonNull(UUID.randomUUID()));
         PartidaEntity partida = new PartidaEntity();
         partida.setId(UUID.fromString("00000000-0000-0000-0000-000000000002"));
+        SubpresupuestoEntity su2 = new SubpresupuestoEntity();
+        su2.setId(UUID.randomUUID());
+        partida.setSubpresupuesto(su2);
         entity.setPartida(partida);
         entity.setExternalApuId("APU-EXT-3");
         entity.setCatalogSource("CAT-C");

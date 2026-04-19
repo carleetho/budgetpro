@@ -111,6 +111,7 @@ class ControlCostosIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity(
             UUID.randomUUID(),
             presupuesto,
+            principalSub(presupuesto),
             null, // Sin padre (raíz)
             "01",
             "Concreto f'c=210 kg/cm2",

@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,13 +22,13 @@ import java.util.UUID;
 @Table(name = "partida",
        indexes = {
            @Index(name = "idx_partida_presupuesto", columnList = "presupuesto_id"),
+           @Index(name = "idx_partida_subpresupuesto", columnList = "subpresupuesto_id"),
            @Index(name = "idx_partida_padre", columnList = "padre_id"),
            @Index(name = "idx_partida_codigo", columnList = "presupuesto_id, codigo")
        })
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class PartidaEntity extends AuditEntity {
 
@@ -41,6 +40,11 @@ public class PartidaEntity extends AuditEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "presupuesto_id", nullable = false, updatable = false)
     private PresupuestoEntity presupuesto;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "subpresupuesto_id", nullable = false, updatable = false)
+    private SubpresupuestoEntity subpresupuesto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "padre_id")
@@ -131,11 +135,12 @@ public class PartidaEntity extends AuditEntity {
     /**
      * Constructor de compatibilidad para mapeos existentes.
      */
-    public PartidaEntity(UUID id, PresupuestoEntity presupuesto, PartidaEntity padre,
+    public PartidaEntity(UUID id, PresupuestoEntity presupuesto, SubpresupuestoEntity subpresupuesto, PartidaEntity padre,
                          String item, String descripcion, String unidad,
                          BigDecimal metrado, Integer nivel, Integer version) {
         this.id = id;
         this.presupuesto = presupuesto;
+        this.subpresupuesto = subpresupuesto;
         this.padre = padre;
         this.item = item;
         this.codigo = item;

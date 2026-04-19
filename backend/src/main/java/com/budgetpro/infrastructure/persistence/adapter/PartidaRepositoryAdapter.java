@@ -6,8 +6,10 @@ import com.budgetpro.domain.finanzas.partida.port.out.PartidaRepository;
 import com.budgetpro.infrastructure.persistence.entity.PartidaEntity;
 import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.mapper.PartidaMapper;
+import com.budgetpro.domain.finanzas.presupuesto.model.SubpresupuestoNaming;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.PresupuestoJpaRepository;
+import com.budgetpro.infrastructure.persistence.repository.SubpresupuestoJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +32,16 @@ public class PartidaRepositoryAdapter implements PartidaRepository,
 
     private final PartidaJpaRepository jpaRepository;
     private final PresupuestoJpaRepository presupuestoJpaRepository;
+    private final SubpresupuestoJpaRepository subpresupuestoJpaRepository;
     private final PartidaMapper mapper;
 
     public PartidaRepositoryAdapter(PartidaJpaRepository jpaRepository,
                                    PresupuestoJpaRepository presupuestoJpaRepository,
+                                   SubpresupuestoJpaRepository subpresupuestoJpaRepository,
                                    PartidaMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.presupuestoJpaRepository = presupuestoJpaRepository;
+        this.subpresupuestoJpaRepository = subpresupuestoJpaRepository;
         this.mapper = mapper;
     }
 
@@ -55,13 +60,18 @@ public class PartidaRepositoryAdapter implements PartidaRepository,
             PresupuestoEntity presupuestoEntity = presupuestoJpaRepository.findById(partida.getPresupuestoId())
                     .orElseThrow(() -> new IllegalStateException("Presupuesto no encontrado: " + partida.getPresupuestoId()));
 
+            var subpresupuestoEntity = subpresupuestoJpaRepository
+                    .findByPresupuesto_IdAndNombre(presupuestoEntity.getId(), SubpresupuestoNaming.PRINCIPAL)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Subpresupuesto Principal no existe para presupuesto: " + presupuestoEntity.getId()));
+
             PartidaEntity padreEntity = null;
             if (partida.getPadreId() != null) {
                 padreEntity = jpaRepository.findById(partida.getPadreId())
                         .orElseThrow(() -> new IllegalStateException("Partida padre no encontrada: " + partida.getPadreId()));
             }
 
-            PartidaEntity newEntity = mapper.toEntity(partida, presupuestoEntity, padreEntity);
+            PartidaEntity newEntity = mapper.toEntity(partida, presupuestoEntity, subpresupuestoEntity, padreEntity);
             jpaRepository.save(newEntity);
         }
     }

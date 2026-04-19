@@ -118,6 +118,7 @@ class OrdenCompraE2ETest extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity(
             UUID.randomUUID(),
             presupuesto,
+            principalSub(presupuesto),
             null, // Sin padre (raíz)
             "01",
             "Cemento Portland",
@@ -300,9 +301,11 @@ class OrdenCompraE2ETest extends AbstractIntegrationTest {
     @DisplayName("Debe validar partida leaf al solicitar aprobación (REGLA-153)")
     void debeValidarPartidaLeafAlSolicitar() {
         // Crear partida con hijo (no es leaf)
+        PresupuestoEntity ps = presupuestoJpaRepository.findById(presupuestoId).orElseThrow();
         PartidaEntity partidaPadre = new PartidaEntity(
             UUID.randomUUID(),
-            presupuestoJpaRepository.findById(presupuestoId).orElseThrow(),
+            ps,
+            principalSub(ps),
             null,
             "01",
             "Partida Padre",
@@ -315,7 +318,8 @@ class OrdenCompraE2ETest extends AbstractIntegrationTest {
 
         PartidaEntity partidaHijo = new PartidaEntity(
             UUID.randomUUID(),
-            presupuestoJpaRepository.findById(presupuestoId).orElseThrow(),
+            ps,
+            principalSub(ps),
             partidaPadre,
             "01.01",
             "Partida Hijo",

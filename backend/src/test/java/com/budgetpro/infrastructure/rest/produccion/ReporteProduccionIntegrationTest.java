@@ -89,6 +89,7 @@ class ReporteProduccionIntegrationTest extends AbstractIntegrationTest {
         PartidaEntity partida = new PartidaEntity(
                 UUID.randomUUID(),
                 presupuesto,
+                principalSub(presupuesto),
                 null,
                 "01.01",
                 "Partida Test",
