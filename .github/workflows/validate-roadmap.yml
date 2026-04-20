@@ -11,6 +11,11 @@ on:
       - develop
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   validate-roadmap:
     name: Validate Module Development Order
@@ -41,9 +46,9 @@ jobs:
         run: |
           java -jar target/domain-validator-1.0.0-SNAPSHOT.jar \
             validate \
-            --repo-path ../../backend \ 
-            --strict \ 
-            --output-format json \ 
+            --repo-path ../../backend \
+            --strict \
+            --output-format json \
             --output-file validation-report.json
           
           EXIT_CODE=$?
