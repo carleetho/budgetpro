@@ -32,6 +32,8 @@ export interface Proyecto {
   id: string;
   nombre: string;
   ubicacion?: string;
+  /** Catálogo de cliente vinculado al proyecto (cuando exista en API). */
+  clienteNombre?: string | null;
   estado: EstadoProyecto;
   createdAt?: string;
   updatedAt?: string;

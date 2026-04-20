@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ProjectListTable } from "../components/ProjectListTable";
 import { CreateProjectDialog } from "../components/CreateProjectDialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
  * Página principal de gestión de proyectos.
  */
 export default function ProjectsPage() {
+  const router = useRouter();
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,8 +41,17 @@ export default function ProjectsPage() {
     loadProyectos();
   }, []);
 
-  const handleCreateSuccess = () => {
-    loadProyectos();
+  const handleCreateSuccess = (created: Proyecto) => {
+    void loadProyectos();
+    toast.success("Obra creada", {
+      description:
+        "Siguiente paso: entra en la obra y crea un presupuesto cuando lo necesites.",
+      action: {
+        label: "Ir al proyecto",
+        onClick: () => router.push(`/proyectos/${created.id}#presupuestos`),
+      },
+      duration: 10000,
+    });
   };
 
 

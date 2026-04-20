@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
   DollarSign, 
-  Calendar, 
-  FileText,
   ClipboardCheck,
   ArrowLeft,
   LogOut
@@ -47,16 +45,6 @@ export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
       label: "Producción",
       href: `/proyectos/${proyectoId}/produccion/nuevo`,
       icon: ClipboardCheck,
-    },
-    {
-      label: "Cronograma",
-      href: `/proyectos/${proyectoId}/cronograma`,
-      icon: Calendar,
-    },
-    {
-      label: "Estimaciones",
-      href: `/proyectos/${proyectoId}/estimaciones`,
-      icon: FileText,
     },
   ];
 
