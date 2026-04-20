@@ -2,6 +2,7 @@ package com.budgetpro.infrastructure.rest.controller;
 
 import com.budgetpro.application.finanzas.evm.exception.PeriodoFechaInvalidaException;
 import com.budgetpro.application.finanzas.evm.port.in.ProyectoNotFoundException;
+import com.budgetpro.domain.finanzas.presupuesto.exception.PresupuestoSinCronogramaException;
 import com.budgetpro.infrastructure.rest.error.ErrorResponses;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponses.ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponses.error(HttpStatus.BAD_REQUEST.value(), "INVALID_ARGUMENT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(PresupuestoSinCronogramaException.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handlePresupuestoSinCronograma(
+            PresupuestoSinCronogramaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponses.error(HttpStatus.CONFLICT.value(), "BUSINESS_RULE", ex.getMessage()));
     }
 
     @ExceptionHandler(com.budgetpro.application.compra.exception.OverDeliveryException.class)
