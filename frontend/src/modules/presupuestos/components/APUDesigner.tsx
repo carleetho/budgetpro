@@ -22,9 +22,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Package, Users, Wrench, Calculator, FileText } from "lucide-react";
+import { Plus, Trash2, Package, Users, Wrench, Calculator, FileText, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { ResourceLibrary } from "@/modules/recursos/components/ResourceLibrary";
 import { RecursosService } from "@/services/recursos.service";
+import { ApuApiService } from "@/services/apu-api.service";
 import type { ItemPresupuesto } from "@/core/types/presupuesto";
 import type { DetalleAPU, AnalisisUnitario } from "@/core/types/apu";
 import type { Recurso, TipoRecurso } from "@/core/types/recursos";
@@ -57,16 +59,60 @@ export function APUDesigner({
   const [isResourceLibraryOpen, setIsResourceLibraryOpen] = useState(false);
   const [tipoRecursoSeleccionado, setTipoRecursoSeleccionado] = useState<TipoRecurso>("MATERIAL");
   const [isSaving, setIsSaving] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+  const [lecturaSolo, setLecturaSolo] = useState(false);
 
-  // Cargar APU existente si existe
+  // Cargar APU existente si existe (`GET /partidas/{id}/apu`)
   useEffect(() => {
-    if (open && partida) {
-      // TODO: Cargar APU desde backend cuando esté disponible
-      // Por ahora, inicializar vacío
-      setDetalles([]);
-      setRendimientoDiario(undefined);
+    if (!open || !partida?.id) {
+      return;
     }
-  }, [open, partida]);
+    let cancelled = false;
+    void (async () => {
+      setLoadingExisting(true);
+      try {
+        const existing = await ApuApiService.obtenerPorPartidaOpcional(partida.id);
+        if (cancelled) return;
+        if (existing) {
+          setLecturaSolo(true);
+          setRendimientoDiario(
+            existing.rendimiento != null ? Number(existing.rendimiento) : undefined
+          );
+          const mapped = await Promise.all(
+            existing.insumos.map(async (ins, idx) => {
+              const recurso = await RecursosService.obtenerPorId(ins.recursoId);
+              const detalle: DetalleAPU = {
+                id: ins.id ?? `det-${idx}-${ins.recursoId}`,
+                recursoId: ins.recursoId,
+                recurso: recurso ?? undefined,
+                rendimiento: Number(ins.cantidad),
+                precio: Number(ins.precioUnitario),
+                parcial: Number(ins.subtotal),
+              };
+              return detalle;
+            })
+          );
+          setDetalles(mapped);
+        } else {
+          setLecturaSolo(false);
+          setDetalles([]);
+          setRendimientoDiario(undefined);
+        }
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          toast.error("No se pudo cargar el APU de esta partida.");
+          setLecturaSolo(false);
+          setDetalles([]);
+        }
+      } finally {
+        if (!cancelled) setLoadingExisting(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, partida.id]);
 
   // Calcular costo directo total
   const costoDirecto = detalles.reduce((sum, detalle) => sum + detalle.parcial, 0);
@@ -128,6 +174,13 @@ export function APUDesigner({
 
   // Guardar APU
   const handleGuardar = async () => {
+    if (lecturaSolo) {
+      return;
+    }
+    if (detalles.length === 0) {
+      toast.error("Agrega al menos un insumo antes de guardar.");
+      return;
+    }
     setIsSaving(true);
     try {
       const apu: AnalisisUnitario = {
@@ -169,6 +222,7 @@ export function APUDesigner({
           <Button
             variant="outline"
             size="sm"
+            disabled={lecturaSolo || loadingExisting}
             onClick={() => handleAbrirBiblioteca(tipo)}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -215,6 +269,7 @@ export function APUDesigner({
                         type="number"
                         step="0.01"
                         min="0"
+                        readOnly={lecturaSolo}
                         value={detalle.rendimiento}
                         onChange={(e) =>
                           handleActualizarRendimiento(
@@ -230,6 +285,7 @@ export function APUDesigner({
                         type="number"
                         step="0.01"
                         min="0"
+                        readOnly={lecturaSolo}
                         value={detalle.precio}
                         onChange={(e) =>
                           handleActualizarPrecio(
@@ -249,14 +305,18 @@ export function APUDesigner({
                       })}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEliminarDetalle(detalle.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {!lecturaSolo ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEliminarDetalle(detalle.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -273,9 +333,14 @@ export function APUDesigner({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex flex-wrap items-center gap-2">
               <Calculator className="h-5 w-5" />
               Análisis de Precio Unitario
+              {lecturaSolo && (
+                <Badge variant="secondary" className="font-normal">
+                  Registrado (solo lectura)
+                </Badge>
+              )}
             </DialogTitle>
             <DialogDescription>
               {partida.descripcion} ({partida.codigo})
@@ -283,6 +348,13 @@ export function APUDesigner({
           </DialogHeader>
 
           <div className="space-y-6 flex-1 overflow-y-auto">
+            {loadingExisting ? (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="text-sm">Cargando APU…</span>
+              </div>
+            ) : (
+              <>
             {/* Rendimiento Diario */}
             <div className="space-y-2">
               <Label htmlFor="rendimientoDiario">Rendimiento Diario (Opcional)</Label>
@@ -291,6 +363,7 @@ export function APUDesigner({
                 type="number"
                 step="0.01"
                 min="0"
+                readOnly={lecturaSolo}
                 value={rendimientoDiario ?? ""}
                 onChange={(e) =>
                   setRendimientoDiario(
@@ -360,15 +433,19 @@ export function APUDesigner({
                 </Badge>
               </div>
             </div>
+              </>
+            )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button onClick={handleGuardar} disabled={isSaving}>
-              {isSaving ? "Guardando..." : "Guardar APU"}
-            </Button>
+            {!lecturaSolo && (
+              <Button onClick={() => void handleGuardar()} disabled={isSaving || loadingExisting}>
+                {isSaving ? "Guardando..." : "Guardar APU"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -95,7 +95,7 @@ describe('ProjectsPage', () => {
 
     // Verificar que el Dialog se abre (debe aparecer la descripción del dialog)
     await waitFor(() => {
-      expect(screen.getByText(/Crea un nuevo proyecto para comenzar/i)).toBeInTheDocument();
+      expect(screen.getByText(/Registra solo el nombre y la ubicación de la obra/i)).toBeInTheDocument();
     });
   });
 

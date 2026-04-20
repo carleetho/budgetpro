@@ -3,8 +3,6 @@ package com.budgetpro.domain.finanzas.presupuesto.exception;
 import com.budgetpro.domain.finanzas.presupuesto.model.PresupuestoId;
 
 import java.util.Objects;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.UUID;
 
@@ -28,7 +26,6 @@ import java.util.UUID;
  * presupuesto se congela, el cronograma también debe congelarse simultáneamente
  * para mantener la integridad del baseline del proyecto.
  */
-@ResponseStatus(HttpStatus.CONFLICT)
 public class PresupuestoSinCronogramaException extends RuntimeException {
 
     private final PresupuestoId presupuestoId;

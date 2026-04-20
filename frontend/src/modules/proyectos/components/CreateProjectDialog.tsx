@@ -13,11 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import type { Proyecto } from "@/core/types";
 
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  /** Recibe el proyecto recién creado (para navegación / siguiente paso). */
+  onSuccess: (created: Proyecto) => void;
 }
 
 /**
@@ -45,20 +47,17 @@ export function CreateProjectDialog({
     try {
       const { ProyectoService } = await import("@/services/proyecto.service");
       
-      await ProyectoService.crear({
+      const created = await ProyectoService.crear({
         nombre: nombre.trim(),
         ubicacion: ubicacion.trim() || undefined,
       });
 
-      toast.success("Proyecto creado exitosamente");
-      
       // Resetear formulario
       setNombre("");
       setUbicacion("");
       onOpenChange(false);
       
-      // Recargar lista
-      onSuccess();
+      onSuccess(created);
     } catch (error) {
       console.error("Error al crear proyecto:", error);
       
@@ -106,9 +105,13 @@ export function CreateProjectDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nuevo Proyecto</DialogTitle>
-          <DialogDescription>
-            Crea un nuevo proyecto para comenzar a gestionar presupuestos y costos.
+          <DialogTitle>Nueva obra</DialogTitle>
+          <DialogDescription className="space-y-2 text-left">
+            <span className="block">
+              Registra solo el nombre y la ubicación de la obra. Los datos económicos del presupuesto (monedas,
+              ámbito geográfico, fechas, etc.) se configuran al crear o abrir un presupuesto desde la ficha de la
+              obra.
+            </span>
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

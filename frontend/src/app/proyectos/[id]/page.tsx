@@ -191,9 +191,8 @@ export default function ProjectPage() {
           <div>
             <CardTitle>Presupuestos</CardTitle>
             <CardDescription>
-              Relación 1:N con el proyecto. Listado vía paginación agregada en cliente (
-              <code className="text-xs">GET /presupuestos?tenantId&amp;proyectoId&amp;page&amp;size</code>
-              ).
+              Presupuestos vinculados a esta obra. Desde aquí puedes abrir cada uno para ver partidas,
+              totales y parámetros.
             </CardDescription>
           </div>
           <Button type="button" onClick={() => setCreateOpen(true)} disabled={tienePresupuestoActivo}>
@@ -204,8 +203,8 @@ export default function ProjectPage() {
         <CardContent className="space-y-3">
           {tienePresupuestoActivo && (
             <p className="text-sm text-muted-foreground">
-              [REGLA-110] Ya existe un presupuesto en estado BORRADOR o CONGELADO para este proyecto; no se puede
-              crear otro presupuesto activo desde esta vista.
+              Ya hay un presupuesto en borrador o congelado para esta obra. Cierra o invalida el actual antes
+              de crear otro, según las reglas de tu organización.
             </p>
           )}
           {presupuestos.length === 0 ? (
@@ -237,7 +236,9 @@ export default function ProjectPage() {
                     </TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/proyectos/${proyecto.id}/presupuestos/${p.id}`}>Ver</Link>
+                        <Link href={`/proyectos/${proyecto.id}/presupuestos/${p.id}/partidas`}>
+                          Abrir
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -269,7 +270,8 @@ export default function ProjectPage() {
             <DialogHeader>
               <DialogTitle>Nuevo presupuesto</DialogTitle>
               <DialogDescription>
-                POST /presupuestos — nombre obligatorio; proyecto actual como cabecera.
+                Asigna un nombre claro (por ejemplo versión o escenario). Podrás editar parámetros y partidas
+                después.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-4">
