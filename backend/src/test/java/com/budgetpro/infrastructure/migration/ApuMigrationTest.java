@@ -5,8 +5,17 @@ import com.budgetpro.infrastructure.persistence.entity.RecursoEntity;
 import com.budgetpro.infrastructure.persistence.entity.apu.ApuEntity;
 import com.budgetpro.infrastructure.persistence.entity.apu.ApuInsumoEntity;
 import com.budgetpro.infrastructure.persistence.entity.catalogo.ApuSnapshotEntity;
+import com.budgetpro.domain.finanzas.presupuesto.model.Subpresupuesto;
+import com.budgetpro.domain.proyecto.model.EstadoProyecto;
+import com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto;
+import com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity;
+import com.budgetpro.infrastructure.persistence.entity.ProyectoEntity;
+import com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity;
 import com.budgetpro.infrastructure.persistence.repository.PartidaJpaRepository;
+import com.budgetpro.infrastructure.persistence.repository.PresupuestoJpaRepository;
+import com.budgetpro.infrastructure.persistence.repository.ProyectoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.RecursoJpaRepository;
+import com.budgetpro.infrastructure.persistence.repository.SubpresupuestoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.apu.ApuInsumoJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.apu.ApuJpaRepository;
 import com.budgetpro.infrastructure.persistence.repository.ApuInsumoSnapshotJpaRepository;
@@ -79,6 +88,15 @@ class ApuMigrationTest {
     @Autowired
     private RecursoJpaRepository recursoJpaRepository;
 
+    @Autowired
+    private ProyectoJpaRepository proyectoJpaRepository;
+
+    @Autowired
+    private PresupuestoJpaRepository presupuestoJpaRepository;
+
+    @Autowired
+    private SubpresupuestoJpaRepository subpresupuestoJpaRepository;
+
     private UUID testUserId;
     private PartidaEntity testPartida;
     private RecursoEntity testRecurso;
@@ -86,10 +104,44 @@ class ApuMigrationTest {
     @BeforeEach
     void setUp() {
         testUserId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        
-        // Crear partida de prueba
-        testPartida = crearPartidaTest();
-        partidaJpaRepository.save(testPartida);
+
+        ProyectoEntity proyecto = new ProyectoEntity(
+                UUID.randomUUID(),
+                "ApuMigration-" + UUID.randomUUID(),
+                "Ubicación test",
+                EstadoProyecto.BORRADOR,
+                null);
+        proyecto = proyectoJpaRepository.save(proyecto);
+
+        final PresupuestoEntity presupuestoGuardado = presupuestoJpaRepository.save(new PresupuestoEntity(
+                UUID.randomUUID(),
+                proyecto.getId(),
+                "Presupuesto ApuMigration",
+                EstadoPresupuesto.BORRADOR,
+                false,
+                null));
+
+        SubpresupuestoEntity principal = subpresupuestoJpaRepository
+                .findByPresupuesto_IdAndNombre(presupuestoGuardado.getId(), Subpresupuesto.NOMBRE_PRINCIPAL)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Subpresupuesto Principal no existe para presupuesto " + presupuestoGuardado.getId()));
+
+        testPartida = new PartidaEntity(
+                UUID.randomUUID(),
+                presupuestoGuardado,
+                principal,
+                null,
+                "01.01",
+                "Partida Test",
+                "M2",
+                BigDecimal.ONE,
+                1,
+                null);
+        testPartida.setPrecioUnitario(BigDecimal.ONE);
+        testPartida.setCreatedBy(testUserId);
+        testPartida.setCreatedAt(LocalDateTime.now());
+        testPartida.setUpdatedAt(LocalDateTime.now());
+        testPartida = partidaJpaRepository.save(testPartida);
         
         // Crear recurso de prueba
         testRecurso = crearRecursoTest("Cemento Portland", TipoRecurso.MATERIAL, "BOL", new BigDecimal("25.50"));
@@ -230,43 +282,6 @@ class ApuMigrationTest {
     }
 
     // Métodos auxiliares
-
-    private PartidaEntity crearPartidaTest() {
-        // Crear presupuesto mínimo para la partida
-        com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity presupuesto = new com.budgetpro.infrastructure.persistence.entity.PresupuestoEntity();
-        presupuesto.setId(UUID.randomUUID());
-        presupuesto.setProyectoId(UUID.randomUUID());
-        presupuesto.setEstado(com.budgetpro.domain.finanzas.presupuesto.model.EstadoPresupuesto.BORRADOR);
-        presupuesto.setVersion(0);
-        presupuesto.setCreatedBy(testUserId);
-        presupuesto.setCreatedAt(LocalDateTime.now());
-        presupuesto.setUpdatedAt(LocalDateTime.now());
-        
-        PartidaEntity partida = new PartidaEntity();
-        partida.setId(UUID.randomUUID());
-        partida.setPresupuesto(presupuesto);
-        com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity subTx =
-                new com.budgetpro.infrastructure.persistence.entity.SubpresupuestoEntity();
-        subTx.setId(UUID.randomUUID());
-        subTx.setPresupuesto(presupuesto);
-        subTx.setNombre("Principal");
-        subTx.setCreatedBy(testUserId);
-        partida.setSubpresupuesto(subTx);
-        partida.setCodigo("01.01");
-        partida.setDescripcion("Partida Test");
-        partida.setUnidad("M2");
-        partida.setMetradoOriginal(BigDecimal.ONE);
-        partida.setMetradoVigente(BigDecimal.ONE);
-        partida.setPrecioUnitario(BigDecimal.ONE);
-        partida.setGastosReales(BigDecimal.ZERO);
-        partida.setCompromisosPendientes(BigDecimal.ZERO);
-        partida.setNivel(1);
-        partida.setVersion(0);
-        partida.setCreatedBy(testUserId);
-        partida.setCreatedAt(LocalDateTime.now());
-        partida.setUpdatedAt(LocalDateTime.now());
-        return partida;
-    }
 
     private RecursoEntity crearRecursoTest(String nombre, TipoRecurso tipo, String unidad, BigDecimal costo) {
         RecursoEntity recurso = new RecursoEntity();
