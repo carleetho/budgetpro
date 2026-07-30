@@ -4,8 +4,14 @@ import com.budgetpro.application.compra.dto.CompraDetalleCommand;
 import com.budgetpro.application.compra.dto.RegistrarCompraCommand;
 import com.budgetpro.application.compra.dto.RegistrarCompraResponse;
 import com.budgetpro.application.compra.port.in.RegistrarCompraUseCase;
-import com.budgetpro.infrastructure.rest.compra.dto.CompraDetalleRequest;
 import com.budgetpro.infrastructure.rest.compra.dto.RegistrarCompraRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +20,16 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 /**
- * Controller REST para operaciones de Compra.
+ * Controller REST para operaciones de Compra (registro directo).
+ * Ciclo de vida OC completo: ver tag "Órdenes de Compra".
  */
+@Tag(name = "Compras", description = """
+        Registro de compras / impacto en partidas. Madurez radiografía ~75%.
+        ⚠️ Flujo de aprobación OC y edge cases: preferir OrdenCompraController + revisión humana.
+        """)
 @RestController
 @RequestMapping("/api/v1/compras")
+@SecurityRequirement(name = "bearer-jwt")
 public class CompraController {
 
     private final RegistrarCompraUseCase registrarCompraUseCase;
@@ -26,15 +38,19 @@ public class CompraController {
         this.registrarCompraUseCase = registrarCompraUseCase;
     }
 
-    /**
-     * Registra una nueva compra.
-     * 
-     * @param request Request con los datos de la compra
-     * @return ResponseEntity con la compra registrada y código HTTP 201 CREATED
-     */
+    @Operation(
+            summary = "Registrar compra",
+            description = "Registra compra con detalles de insumos vinculados a partidas. Integración inventario vía dominio."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Compra registrada",
+                    content = @Content(schema = @Schema(implementation = RegistrarCompraResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Bean Validation"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "422", description = "Regla de negocio")
+    })
     @PostMapping
     public ResponseEntity<RegistrarCompraResponse> registrar(@Valid @RequestBody RegistrarCompraRequest request) {
-        // Mapear detalles del request
         java.util.List<CompraDetalleCommand> detallesCommand = request.detalles().stream()
                 .map(detalle -> new CompraDetalleCommand(
                     detalle.recursoExternalId(),
