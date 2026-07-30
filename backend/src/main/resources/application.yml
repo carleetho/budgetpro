@@ -47,6 +47,8 @@ app:
   notification:
     email: ${ADMIN_EMAIL}
     sender: ${NOTIFICATION_SENDER:onboarding@resend.dev}
+  rate-limit:
+    enabled: true
 
 # REGLA-054
 jwt:
@@ -128,3 +130,16 @@ resilience4j:
         limitForPeriod: 100
         limitRefreshPeriod: 1m
         timeoutDuration: 1s
+      # REQ-47 Task 8 — API tiers (in-memory; keys = user|IP vía ApiRateLimitingFilter)
+      api-per-user:
+        limitForPeriod: 1000
+        limitRefreshPeriod: 1h
+        timeoutDuration: 0s
+      api-public:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1h
+        timeoutDuration: 0s
+      auth-login:
+        limitForPeriod: 5
+        limitRefreshPeriod: 15m
+        timeoutDuration: 0s

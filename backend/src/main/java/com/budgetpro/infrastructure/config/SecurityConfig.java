@@ -1,6 +1,8 @@
 package com.budgetpro.infrastructure.config;
 
+import com.budgetpro.infrastructure.security.filter.ApiRateLimitingFilter;
 import com.budgetpro.infrastructure.security.filter.JwtAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,11 +31,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ApiRateLimitingFilter apiRateLimitingFilter;
     private final UserDetailsService userDetailsService;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          ApiRateLimitingFilter apiRateLimitingFilter,
                           UserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.apiRateLimitingFilter = apiRateLimitingFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -59,7 +64,18 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Tras JWT para poder key-ar api-per-user por principal autenticado
+                .addFilterAfter(apiRateLimitingFilter, JwtAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiRateLimitingFilter> disableApiRateLimitingServletRegistration(
+            ApiRateLimitingFilter filter) {
+        // Solo corre en SecurityFilterChain (tras JWT); evita doble conteo por auto-registro servlet
+        FilterRegistrationBean<ApiRateLimitingFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean

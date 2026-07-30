@@ -39,6 +39,8 @@ app:
   notification:
     email: admin@test.local
     sender: onboarding@resend.dev
+  rate-limit:
+    enabled: false
 
 jwt:
   secret: "test-secret-test-secret-test-secret-123456"
