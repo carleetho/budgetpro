@@ -184,13 +184,15 @@ Hasta entonces, tipar DTOs a mano mirando controllers/`Crear*Request` o el JSON 
 
 ## 9. Rate limits (headers)
 
-Respuestas `/api/**` pueden incluir `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+Respuestas `/api/**` pueden incluir `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (expuestos en CORS).
 
 | Tier | Límite |
 |------|--------|
 | auth login/register | 5 / 15 min por IP |
 | `/api/public/**` | 100 / h por IP |
 | API autenticada | 1000 / h por usuario |
+
+**CORS:** el backend permite orígenes en `CORS_ALLOWED_ORIGINS` (default `http://localhost:3000,http://localhost:3001`) y headers `Authorization`, `Content-Type`, `Accept`, `X-Correlation-ID`.
 
 ## 10. Checklist de arranque FE
 

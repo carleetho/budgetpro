@@ -50,6 +50,10 @@ app:
   rate-limit:
     enabled: true
 
+# CORS (REQ-47 Task 7). Prod: CORS_ALLOWED_ORIGINS=https://app.example.com
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
+
 # REGLA-054
 jwt:
   secret: ${JWT_SECRET}

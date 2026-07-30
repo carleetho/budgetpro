@@ -45,3 +45,6 @@ app:
 jwt:
   secret: "test-secret-test-secret-test-secret-123456"
   expiration-hours: 24
+
+cors:
+  allowed-origins: http://localhost:3000
