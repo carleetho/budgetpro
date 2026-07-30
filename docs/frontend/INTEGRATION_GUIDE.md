@@ -173,14 +173,13 @@ Detalle de validación Zod vs Bean: `VALIDATION_STRATEGY.md`.
 
 ## 8. Tipos desde OpenAPI (recomendado)
 
-Cuando el spec esté exportado (Task 3 / CI):
-
 ```bash
-# Ejemplo futuro — alinear path del YAML con el artefacto CI
-npx openapi-typescript http://localhost:8080/v3/api-docs -o frontend/src/types/api.ts
+# Con backend arriba:
+./scripts/generate-openapi-spec.sh
+npx openapi-typescript docs/api/openapi.yaml -o frontend/src/types/api.ts
 ```
 
-Hasta entonces, tipar DTOs a mano mirando controllers/`Crear*Request` o el JSON de `/v3/api-docs`.
+Hasta tener el YAML regenerado (hoy puede ser placeholder), tipar DTOs mirando controllers o `http://localhost:8080/v3/api-docs`.
 
 ## 9. Rate limits (headers)
 
