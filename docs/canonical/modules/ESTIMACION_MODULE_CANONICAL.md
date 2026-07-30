@@ -407,3 +407,18 @@ El detalle de estimación es único por (estimacion_id, partida_id).
 // Note: Explicit @UniqueConstraint for (estimacion_id, partida_id) should be enforcing this.
 ```
 
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | `frontend/src/modules/estimaciones/` (scaffold / `.gitkeep` — sin UI completa) |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | Integration Guide §5 (Phase 1) |
+| Notas | Documentar pantallas solo cuando existan en el repo. |

@@ -462,3 +462,18 @@ En rechazo RPC legacy: motivo obligatorio.
 @NotBlank(message = "El motivo es obligatorio")
 String motivo
 ```
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | Sin módulo FE dedicado as-built |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | Integration Guide §16 (Phase 2) — ~55% |
+| Notas | Superficie REST dual; unificar contrato antes de cliente FE definitivo. |
