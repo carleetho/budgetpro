@@ -46,7 +46,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // /error debe ser anónimo: si un controlador lanza una excepción no mapeada,
                         // el forward a /error no puede quedar detrás de .authenticated() (403 vacío).
-                        .requestMatchers("/error", "/api/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers(
+                                "/error",
+                                "/api/public/**",
+                                "/api/v1/auth/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**"
+                        ).permitAll()
                         // REGLA-052
                         .anyRequest().authenticated()
                 )

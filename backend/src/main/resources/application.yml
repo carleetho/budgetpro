@@ -63,6 +63,16 @@ catalog:
       sources: ${CATALOG_WARM_SOURCES:CAPECO}
       limit: ${CATALOG_WARM_LIMIT:100}
 
+# OpenAPI / Swagger UI (REQ-47 Task 1). Metadata Info/JWT: OpenApiConfig.java
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  show-actuator: false
+
 management:
   endpoints:
     web:
