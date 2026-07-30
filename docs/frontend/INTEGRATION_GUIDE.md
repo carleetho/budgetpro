@@ -1,9 +1,10 @@
-# Guía de integración Frontend ↔ API (Phase 1) — REQ-47
+# Guía de integración Frontend ↔ API (Phase 1 + 2) — REQ-47
 
 > **Stack FE as-built:** Next.js 16 (App Router), React 19, TypeScript, Zod + React Hook Form, TanStack Table.  
 > **Cliente HTTP:** `frontend/src/services/api-client.ts` + `BudgetProApiError`.  
 > **Base URL:** `NEXT_PUBLIC_API_BASE_URL` → default `http://localhost:8080/api/v1`.  
-> **Docs relacionadas:** `VALIDATION_STRATEGY.md`, `AI_SAFETY_GUIDE.md`, Swagger `http://localhost:8080/swagger-ui.html`.
+> **Docs relacionadas:** `VALIDATION_STRATEGY.md`, `AI_SAFETY_GUIDE.md`, `RRHH_UNDER_DEVELOPMENT.md`, Swagger `http://localhost:8080/swagger-ui.html`.  
+> **Madurez:** cifras de `AI_SAFETY_GUIDE.md` / radiografía (no inventar %).
 
 ## 1. Quick start
 
@@ -202,6 +203,140 @@ Respuestas `/api/**` pueden incluir `X-RateLimit-Limit`, `X-RateLimit-Remaining`
 - [ ] Probar aprobar presupuesto y ver bloqueo post-congelado (P-01)
 - [ ] Revisar tags Phase 1 en Swagger
 
-## 11. Fuera de alcance
+## 11. Phase 2 — plantilla de aviso
 
-Phase 2/3 (Compras, RRHH, EVM UI, etc.) → Task 11. Generación automática de tipos en CI → Task 12 / 3.
+### ⚠️ Medium maturity (XX%)
+
+- Funcionalidad core expuesta por API; **edge cases** pueden estar incompletos en canónico.
+- Código FE generado por IA: **revisión humana** antes de merge.
+- Fuente de negocio: notebook del módulo + radiografía; no inventar validaciones en cliente.
+
+---
+
+## 12. Cronograma (~60%)
+
+| Endpoint | Método | Notas |
+|----------|--------|-------|
+| `/proyectos/{proyectoId}/cronograma` | GET | Datos Gantt |
+| `/proyectos/{proyectoId}/cronograma/actividades` | POST | Programar/actualizar actividad + predecesoras |
+
+```typescript
+await apiClient.get(`/proyectos/${proyectoId}/cronograma`);
+await apiClient.post(`/proyectos/${proyectoId}/cronograma/actividades`, {
+  partidaId,
+  fechaInicio,
+  fechaFin,
+  predecesoras: [] as string[],
+});
+```
+
+### ⚠️ Medium maturity (~60%)
+
+- CPM / ciclos / días hábiles: **revisión humana** (C-04). No calcular ruta crítica solo en FE.
+- Dependencias complejas pueden fallar o comportarse distinto a lo esperado por IA.
+
+Notebook: `CRONOGRAMA_MODULE_CANONICAL.md`.
+
+---
+
+## 13. EVM (~95% backend; UX FE con cuidado)
+
+| Endpoint | Método | Notas |
+|----------|--------|-------|
+| `/evm/{proyectoId}` | GET | Snapshot PV/EV/AC/CPI/SPI (`fechaCorte` opcional ISO) |
+| `/evm/{proyectoId}/s-curve` | GET | Serie temporal |
+| `/evm/{proyectoId}/forecast` | GET | Fecha fin proyectada (SPI) |
+| `/evm/{proyectoId}/cerrar-periodo` | POST | Cierre de periodo (E-04) |
+
+```typescript
+const snap = await apiClient.get(`/evm/${proyectoId}`, { fechaCorte: "2026-07-01T00:00:00" });
+const curve = await apiClient.get(`/evm/${proyectoId}/s-curve`);
+```
+
+### ⚠️ High maturity backend / review FE
+
+- Mostrar métricas del API; **no** inventar reglas UI tipo “bloquear si CPI &lt; 1”.
+- Escenarios de varianza raros / dashboard: validar con notebook EVM.
+- Cierre de periodo: impacto irreversible → confirmación humana en UI.
+
+Notebook: `EVM_MODULE_CANONICAL.md`.
+
+---
+
+## 14. Compras / Órdenes de compra (~75%)
+
+| Endpoint | Método | Notas |
+|----------|--------|-------|
+| `/compras` | POST | Registro directo + impacto partidas |
+| `/ordenes-compra` | POST/GET | Ciclo de vida OC |
+| `/ordenes-compra/{id}/solicitar` … `/aprobar` … `/enviar` … `/confirmar-recepcion` | POST | Transiciones |
+
+```typescript
+await apiClient.post("/compras", { /* RegistrarCompraRequest */ });
+const oc = await apiClient.get(`/ordenes-compra/${id}`);
+await apiClient.post(`/ordenes-compra/${id}/aprobar`);
+```
+
+### ⚠️ Medium maturity (~75%)
+
+- Preferir **OrdenCompraController** para flujo de aprobación; `CompraController` es registro directo.
+- Edge cases de aprobación / recepción: revisión humana; no inventar estados en FE.
+
+Notebook: `COMPRAS_MODULE_CANONICAL.md`.
+
+---
+
+## 15. Inventario / almacén (~70%)
+
+| Endpoint | Método | Notas |
+|----------|--------|-------|
+| `/proyectos/{proyectoId}/inventario` | GET | Stock del proyecto |
+| `/almacen/movimientos` | POST/GET | Movimientos de almacén |
+
+```typescript
+await apiClient.get(`/proyectos/${proyectoId}/inventario`);
+await apiClient.post("/almacen/movimientos", { /* payload as-built */ });
+```
+
+### ⚠️ Medium maturity (~70%)
+
+- Multi-almacén / escenarios complejos: parcialmente definidos → no inventar en cliente.
+- Integración con compras: vía dominio; FE solo refleja respuestas del API.
+
+Notebook: `INVENTARIO_MODULE_CANONICAL.md`.
+
+---
+
+## 16. Producción — reportes (~55%)
+
+| Endpoint | Método | Notas |
+|----------|--------|-------|
+| `/produccion/reportes` | GET/POST | Listar / crear |
+| `/produccion/reportes/{reporteId}` | GET/PUT/DELETE | Detalle / editar / borrar |
+| `.../aprobar` · `.../rechazar` | POST | Transiciones |
+
+```typescript
+await apiClient.post("/produccion/reportes", { /* payload */ });
+await apiClient.post(`/produccion/reportes/${reporteId}/aprobar`);
+```
+
+### ⚠️ Medium-low maturity (~55%)
+
+- Metrado / REGLA-004: validar contra canónico; no duplicar reglas en Zod sin notebook.
+- Superficie dual / gaps: tratar como Phase 2 con revisión; ver `AI_SAFETY_GUIDE.md`.
+
+Notebook: `PRODUCCION_MODULE_CANONICAL.md`.
+
+---
+
+## 17. RRHH (Phase 3 — no integrar UI completa)
+
+Ver `RRHH_UNDER_DEVELOPMENT.md`. Tag OpenAPI: **RRHH (Under Development)**. Madurez ~50% + riesgo alto de alucinación.
+
+---
+
+## 18. Fuera de alcance
+
+- Generación automática de tipos en CI → Task 12.
+- Documentación FE en notebooks canónicos → Task 13 (incremental, solo as-built).
+- Completar gaps de negocio Phase 2/3 (fuera de REQ-47).
