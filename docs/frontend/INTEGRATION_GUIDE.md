@@ -172,15 +172,26 @@ try {
 
 Detalle de validación Zod vs Bean: `VALIDATION_STRATEGY.md`.
 
-## 8. Tipos desde OpenAPI (recomendado)
+## 8. Tipos desde OpenAPI
 
 ```bash
-# Con backend arriba:
+# 1) Spec real (backend arriba) — el YAML committed puede ser placeholder
 ./scripts/generate-openapi-spec.sh
-npx openapi-typescript docs/api/openapi.yaml -o frontend/src/types/api.ts
+
+# 2) Tipos TS (desde frontend/)
+cd frontend && npm run generate:types
+# → frontend/src/types/api.ts (commitear tras regenerar)
 ```
 
-Hasta tener el YAML regenerado (hoy puede ser placeholder), tipar DTOs mirando controllers o `http://localhost:8080/v3/api-docs`.
+Uso típico (cuando el spec ya no es placeholder):
+
+```typescript
+import type { paths } from "@/types/api";
+
+type LoginBody = paths["/api/v1/auth/login"]["post"]["requestBody"]["content"]["application/json"];
+```
+
+Hasta regenerar el YAML, tipar DTOs mirando controllers o `http://localhost:8080/v3/api-docs`. No enganchar `generate:types` a cada `next build` mientras el baseline sea placeholder.
 
 ## 9. Rate limits (headers)
 
