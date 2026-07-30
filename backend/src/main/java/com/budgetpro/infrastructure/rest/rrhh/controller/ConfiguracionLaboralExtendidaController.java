@@ -7,6 +7,8 @@ import com.budgetpro.application.rrhh.port.in.ConsultarHistorialFSRUseCase;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.infrastructure.rest.rrhh.dto.ConfigurarLaboralExtendidaRequest;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Tag(name = "RRHH (Under Development)", description = """
+        ⚠️ UNDER DEVELOPMENT — madurez radiografía ~50%; riesgo alto de alucinación FE/IA.
+        Config laboral / historial FSR: superficie parcial; no inventar reglas laborales.
+        Ver docs/frontend/RRHH_UNDER_DEVELOPMENT.md.
+        """)
 @RestController
 @RequestMapping("/api/v1/rrhh/configuracion")
+@SecurityRequirement(name = "bearer-jwt")
 public class ConfiguracionLaboralExtendidaController {
 
     private final ConfigurarLaboralExtendidaUseCase configurarLaboralExtendidaUseCase;

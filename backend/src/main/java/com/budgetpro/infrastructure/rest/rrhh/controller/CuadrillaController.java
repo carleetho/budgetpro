@@ -10,6 +10,8 @@ import com.budgetpro.infrastructure.rest.rrhh.dto.ActualizarMiembrosRequest;
 import com.budgetpro.infrastructure.rest.rrhh.dto.AsignarActividadRequest;
 import com.budgetpro.infrastructure.rest.rrhh.dto.CrearCuadrillaRequest;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -18,8 +20,14 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "RRHH (Under Development)", description = """
+        ⚠️ UNDER DEVELOPMENT — madurez radiografía ~50%; riesgo alto de alucinación FE/IA.
+        NO generar pantallas completas con IA. Ver docs/frontend/RRHH_UNDER_DEVELOPMENT.md.
+        Cuadrillas: CRUD/asignación a actividad parcial.
+        """)
 @RestController
 @RequestMapping("/api/v1/rrhh/cuadrillas")
+@SecurityRequirement(name = "bearer-jwt")
 public class CuadrillaController {
 
     private final CrearCuadrillaUseCase crearCuadrillaUseCase;

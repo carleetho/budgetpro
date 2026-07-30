@@ -5,6 +5,8 @@ import com.budgetpro.application.rrhh.dto.CostosLaboralesResponse;
 import com.budgetpro.application.rrhh.port.in.ConsultarCostosLaboralesUseCase;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Tag(name = "RRHH (Under Development)", description = """
+        ⚠️ UNDER DEVELOPMENT — madurez radiografía ~50%; riesgo alto de alucinación FE/IA.
+        Costos laborales: consulta parcial; no generar dashboards RRHH completos con IA.
+        Ver docs/frontend/RRHH_UNDER_DEVELOPMENT.md.
+        """)
 @RestController
 @RequestMapping("/api/v1/rrhh/costos")
+@SecurityRequirement(name = "bearer-jwt")
 public class CostosLaboralesController {
 
     private final ConsultarCostosLaboralesUseCase consultarCostosLaboralesUseCase;
