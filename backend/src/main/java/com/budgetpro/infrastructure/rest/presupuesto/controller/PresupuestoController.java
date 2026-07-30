@@ -11,6 +11,15 @@ import com.budgetpro.application.presupuesto.port.in.AprobarPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.port.in.ConsultarPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.port.in.CrearPresupuestoUseCase;
 import com.budgetpro.application.presupuesto.port.in.ListarPresupuestosPaginadosUseCase;
+import com.budgetpro.infrastructure.rest.presupuesto.dto.CrearPresupuestoRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +32,11 @@ import java.util.UUID;
 /**
  * Controller REST para operaciones de Presupuesto.
  */
+@Tag(name = "Presupuestos", description = "Gestión de presupuestos, control de costos y explosión de insumos")
 @RestController
 @RequestMapping("/api/v1/presupuestos")
 @Validated
+@SecurityRequirement(name = "bearer-jwt")
 public class PresupuestoController {
 
     private final CrearPresupuestoUseCase crearPresupuestoUseCase;
@@ -49,29 +60,47 @@ public class PresupuestoController {
         this.explotarInsumosPresupuestoUseCase = explotarInsumosPresupuestoUseCase;
     }
 
-    /**
-     * Lista presupuestos de un proyecto filtrando por tenant y proyecto (paginado).
-     */
+    @Operation(
+            summary = "Listar presupuestos (paginado)",
+            description = "Lista presupuestos filtrados por tenant y proyecto."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de presupuestos",
+                    content = @Content(schema = @Schema(implementation = ListarPresupuestosPaginadosResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @GetMapping(params = {"tenantId", "proyectoId"})
     public ResponseEntity<ListarPresupuestosPaginadosResponse> listarPaginado(
-            @RequestParam UUID tenantId,
-            @RequestParam UUID proyectoId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+            @Parameter(description = "ID del tenant", required = true) @RequestParam UUID tenantId,
+            @Parameter(description = "ID del proyecto", required = true) @RequestParam UUID proyectoId,
+            @Parameter(description = "Página (0-based)") @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Tamaño de página (1-100)") @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         ListarPresupuestosPaginadosResponse response =
                 listarPresupuestosPaginadosUseCase.listar(tenantId, proyectoId, page, size);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Crea un nuevo presupuesto.
-     * 
-     * @param request Request con los datos del presupuesto
-     * @return ResponseEntity con el presupuesto creado y código HTTP 201 CREATED
-     */
+    @Operation(
+            summary = "Crear presupuesto",
+            description = """
+                    Crea un presupuesto asociado a un proyecto.
+                    
+                    **Validaciones / reglas:**
+                    - `proyectoId` obligatorio (REGLA-098)
+                    - `nombre` no blank
+                    - El proyecto debe existir (dominio)
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Presupuesto creado",
+                    content = @Content(schema = @Schema(implementation = PresupuestoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Bean Validation / INVALID_ARGUMENT"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "403", description = "Tenant/proyecto no autorizado")
+    })
     @PostMapping
-    public ResponseEntity<PresupuestoResponse> crear(
-            @RequestBody com.budgetpro.infrastructure.rest.presupuesto.dto.CrearPresupuestoRequest request) {
+    public ResponseEntity<PresupuestoResponse> crear(@RequestBody CrearPresupuestoRequest request) {
         CrearPresupuestoCommand command = new CrearPresupuestoCommand(
                 request.proyectoId(),
                 request.nombre()
@@ -84,51 +113,71 @@ public class PresupuestoController {
                 .body(response);
     }
 
-    /**
-     * Aprueba un presupuesto.
-     * 
-     * @param presupuestoId El ID del presupuesto a aprobar
-     * @return ResponseEntity con código HTTP 204 NO CONTENT
-     */
+    @Operation(
+            summary = "Aprobar presupuesto",
+            description = """
+                    Aprueba el presupuesto y lo congela (hash de integridad).
+                    
+                    **Reglas:** no modificar presupuesto congelado (invariante P-01 / estado CONGELADO).
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Aprobado / congelado"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Presupuesto no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Estado ilegal / ya congelado")
+    })
     @PostMapping("/{presupuestoId}/aprobar")
-    public ResponseEntity<Void> aprobar(@PathVariable UUID presupuestoId) {
+    public ResponseEntity<Void> aprobar(
+            @Parameter(description = "ID del presupuesto", required = true) @PathVariable UUID presupuestoId) {
         aprobarPresupuestoUseCase.aprobar(presupuestoId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Consulta un presupuesto por su ID.
-     * 
-     * @param presupuestoId El ID del presupuesto
-     * @return ResponseEntity con el presupuesto y código HTTP 200 OK
-     */
+    @Operation(summary = "Consultar presupuesto por ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Presupuesto",
+                    content = @Content(schema = @Schema(implementation = PresupuestoResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
     @GetMapping("/{presupuestoId}")
-    public ResponseEntity<PresupuestoResponse> consultar(@PathVariable UUID presupuestoId) {
+    public ResponseEntity<PresupuestoResponse> consultar(
+            @Parameter(description = "ID del presupuesto", required = true) @PathVariable UUID presupuestoId) {
         PresupuestoResponse response = consultarPresupuestoUseCase.consultar(presupuestoId);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Consulta el reporte de control de costos (Plan vs Real) de un presupuesto.
-     * 
-     * @param presupuestoId El ID del presupuesto
-     * @return ResponseEntity con el reporte de control de costos y código HTTP 200 OK
-     */
+    @Operation(
+            summary = "Control de costos (Plan vs Real)",
+            description = "Reporte de control de costos del presupuesto."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reporte",
+                    content = @Content(schema = @Schema(implementation = ReporteControlCostosResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Presupuesto no encontrado")
+    })
     @GetMapping("/{presupuestoId}/control-costos")
-    public ResponseEntity<ReporteControlCostosResponse> consultarControlCostos(@PathVariable UUID presupuestoId) {
+    public ResponseEntity<ReporteControlCostosResponse> consultarControlCostos(
+            @Parameter(description = "ID del presupuesto", required = true) @PathVariable UUID presupuestoId) {
         ReporteControlCostosResponse response = consultarControlCostosUseCase.consultar(presupuestoId);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Explota los insumos de un presupuesto, agregando cantidades totales normalizadas por unidad base.
-     * Solo considera partidas hoja (sin hijos en WBS) y agrupa recursos por tipo.
-     * 
-     * @param presupuestoId El ID del presupuesto
-     * @return ResponseEntity con la explosión de insumos agrupada por tipo de recurso y código HTTP 200 OK
-     */
+    @Operation(
+            summary = "Explosión de insumos",
+            description = "Agrega cantidades por unidad base sobre partidas hoja del WBS, agrupadas por tipo de recurso."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Explosión",
+                    content = @Content(schema = @Schema(implementation = ExplosionInsumosResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Presupuesto no encontrado")
+    })
     @GetMapping("/{presupuestoId}/explosion-insumos")
-    public ResponseEntity<ExplosionInsumosResponse> explotarInsumos(@PathVariable UUID presupuestoId) {
+    public ResponseEntity<ExplosionInsumosResponse> explotarInsumos(
+            @Parameter(description = "ID del presupuesto", required = true) @PathVariable UUID presupuestoId) {
         ExplosionInsumosResponse response = explotarInsumosPresupuestoUseCase.ejecutar(presupuestoId);
         return ResponseEntity.ok(response);
     }
