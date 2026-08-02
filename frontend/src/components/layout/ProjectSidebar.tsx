@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  DollarSign, 
+import {
+  LayoutDashboard,
+  DollarSign,
   ClipboardCheck,
   ArrowLeft,
-  LogOut
+  LogOut,
+  CalendarRange,
+  FileSpreadsheet,
+  ShoppingCart,
+  Users,
+  LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthService } from "@/services/auth.service";
@@ -19,10 +24,10 @@ interface ProjectSidebarProps {
 
 /**
  * Sidebar lateral para la gestión de un proyecto individual.
- * Muestra enlaces a las diferentes secciones del proyecto.
  */
 export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
   const pathname = usePathname();
+  const base = `/proyectos/${proyectoId}`;
 
   const menuItems: {
     label: string;
@@ -32,24 +37,49 @@ export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
   }[] = [
     {
       label: "General",
-      href: `/proyectos/${proyectoId}`,
+      href: base,
       icon: LayoutDashboard,
     },
     {
       label: "Presupuestos",
-      href: `/proyectos/${proyectoId}#presupuestos`,
+      href: `${base}#presupuestos`,
       icon: DollarSign,
-      isActiveOverride: (pathname) => pathname.startsWith(`/proyectos/${proyectoId}/presupuestos`),
+      isActiveOverride: (p) => p.startsWith(`${base}/presupuestos`),
     },
     {
       label: "Producción",
-      href: `/proyectos/${proyectoId}/produccion/nuevo`,
+      href: `${base}/produccion/nuevo`,
       icon: ClipboardCheck,
+    },
+    {
+      label: "Estimaciones",
+      href: `${base}/estimaciones`,
+      icon: FileSpreadsheet,
+    },
+    {
+      label: "Cronograma",
+      href: `${base}/cronograma`,
+      icon: CalendarRange,
+    },
+    {
+      label: "Compras",
+      href: `${base}/compras`,
+      icon: ShoppingCart,
+    },
+    {
+      label: "RRHH",
+      href: `${base}/rrhh`,
+      icon: Users,
+    },
+    {
+      label: "EVM / Caja",
+      href: `${base}/control`,
+      icon: LineChart,
     },
   ];
 
   const isActive = (href: string) => {
-    if (href === `/proyectos/${proyectoId}`) {
+    if (href === base) {
       return pathname === href;
     }
     return pathname.startsWith(href);
@@ -57,7 +87,6 @@ export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 border-r bg-background flex flex-col z-10">
-      {/* Header del Sidebar */}
       <div className="p-4 border-b">
         <Link href="/">
           <Button variant="ghost" size="sm" className="w-full justify-start">
@@ -67,20 +96,18 @@ export function ProjectSidebar({ proyectoId }: ProjectSidebarProps) {
         </Link>
       </div>
 
-      {/* Menú de Navegación */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const active = item.isActiveOverride ? item.isActiveOverride(pathname) : isActive(item.href);
-          
+          const active = item.isActiveOverride
+            ? item.isActiveOverride(pathname)
+            : isActive(item.href);
+
           return (
             <Link key={item.href} href={item.href}>
               <Button
                 variant={active ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  active && "bg-accent font-medium"
-                )}
+                className={cn("w-full justify-start", active && "bg-accent font-medium")}
               >
                 <Icon className="h-4 w-4 mr-2" />
                 {item.label}

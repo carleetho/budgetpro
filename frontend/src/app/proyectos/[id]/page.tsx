@@ -29,15 +29,13 @@ import { ProyectoService } from "@/services/proyecto.service";
 import { PresupuestoApiService } from "@/services/presupuesto-api.service";
 import type { Proyecto } from "@/core/types";
 import type { PresupuestoResponseDto } from "@/core/types/presupuesto-contract";
-import { presupuestoEstaActivo } from "@/core/types/presupuesto-contract";
 import { getTenantIdForApi } from "@/lib/jwt-tenant";
 import { BudgetProApiError } from "@/lib/budget-pro-api-error";
 import { ClipboardCheck, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 /**
- * Dashboard del proyecto: datos del proyecto + listado 1:N de presupuestos (histórico + activos).
- * [REGLA-110]: deshabilita “Crear presupuesto” si ya existe uno ACTIVO (BORRADOR o CONGELADO).
+ * Dashboard del proyecto: un presupuesto por obra (as-built BE `existsByProyectoId`).
  */
 export default function ProjectPage() {
   const params = useParams();
@@ -102,10 +100,14 @@ export default function ProjectPage() {
     toast.info("Funcionalidad de edición próximamente");
   };
 
-  const tienePresupuestoActivo = presupuestos.some((p) => presupuestoEstaActivo(p.estado));
+  const yaTienePresupuesto = presupuestos.length > 0;
 
   const handleCrearPresupuesto = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (yaTienePresupuesto) {
+      toast.error("Esta obra ya tiene un presupuesto. El backend no permite un segundo.");
+      return;
+    }
     const nombre = nuevoNombre.trim();
     if (!nombre) {
       toast.error("El nombre del presupuesto es obligatorio.");
@@ -191,20 +193,19 @@ export default function ProjectPage() {
           <div>
             <CardTitle>Presupuestos</CardTitle>
             <CardDescription>
-              Presupuestos vinculados a esta obra. Desde aquí puedes abrir cada uno para ver partidas,
-              totales y parámetros.
+              Esta obra admite un solo presupuesto (regla del backend: un registro por proyecto).
+              Ábrelo para partidas, totales y parámetros locales.
             </CardDescription>
           </div>
-          <Button type="button" onClick={() => setCreateOpen(true)} disabled={tienePresupuestoActivo}>
+          <Button type="button" onClick={() => setCreateOpen(true)} disabled={yaTienePresupuesto}>
             <Plus className="h-4 w-4 mr-2" />
             Crear presupuesto
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {tienePresupuestoActivo && (
+          {yaTienePresupuesto && (
             <p className="text-sm text-muted-foreground">
-              Ya hay un presupuesto en borrador o congelado para esta obra. Cierra o invalida el actual antes
-              de crear otro, según las reglas de tu organización.
+              Ya existe un presupuesto para esta obra. No se puede crear otro.
             </p>
           )}
           {presupuestos.length === 0 ? (
