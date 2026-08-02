@@ -120,7 +120,7 @@ export function PresupuestoParametrosForm({
     try {
       saveParametrosDraft(presupuestoId, draft);
       toast.success(
-        "Borrador guardado en este navegador. Cuando exista API, se sincronizará con el servidor."
+        "Borrador guardado solo en este navegador. No se envía al servidor."
       );
     } finally {
       setSaving(false);
@@ -161,6 +161,15 @@ export function PresupuestoParametrosForm({
 
   return (
     <div className="space-y-6 pb-28">
+      <Alert>
+        <HelpCircle className="h-4 w-4" />
+        <AlertTitle>Solo borrador local</AlertTitle>
+        <AlertDescription>
+          Estos parámetros se guardan en este navegador (`localStorage`). No hay endpoint de cabecera
+          en el backend: no afectan WBS, APU ni la aprobación del presupuesto.
+        </AlertDescription>
+      </Alert>
+
       {/* Barra de estado global */}
       <div className="flex flex-wrap items-center gap-2 border-b pb-4">
         <Badge variant="outline" className="gap-1">

@@ -18,6 +18,7 @@ interface BudgetNodeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   proyectoId: string;
+  /** Nivel inicial sugerido (CAPITULO en raíz, PARTIDA al agregar hijo). */
   nivel: NivelPresupuesto;
   padreId?: string | null;
   itemEditando?: ItemPresupuesto | null;
@@ -25,57 +26,58 @@ interface BudgetNodeDialogProps {
 }
 
 /**
- * Modal para crear o editar un nodo del presupuesto.
- * 
- * Los campos son dinámicos según el nivel:
- * - CAPITULO/SUBCAPITULO: Solo código y descripción
- * - PARTIDA: Código, descripción, unidad, metrado y precio unitario
+ * Modal para crear un nodo WBS.
+ * `POST /partidas` no usa precio unitario: el PU nace del APU.
  */
 export function BudgetNodeDialog({
   open,
   onOpenChange,
   proyectoId,
-  nivel,
+  nivel: nivelInicial,
   padreId = null,
   itemEditando = null,
   onSubmit,
 }: BudgetNodeDialogProps) {
-  const isPartida = nivel === 'PARTIDA';
   const isEditando = !!itemEditando;
 
+  const [nivel, setNivel] = useState<NivelPresupuesto>(nivelInicial);
   const [codigo, setCodigo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [unidad, setUnidad] = useState("");
   const [metrado, setMetrado] = useState<number | undefined>(undefined);
-  const [precioUnitario, setPrecioUnitario] = useState<number | undefined>(undefined);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Inicializar valores si estamos editando
+  const isPartida = nivel === "PARTIDA";
+
   useEffect(() => {
     if (itemEditando) {
       setCodigo(itemEditando.codigo);
       setDescripcion(itemEditando.descripcion);
       setUnidad(itemEditando.unidad || "");
       setMetrado(itemEditando.metrado);
-      setPrecioUnitario(itemEditando.precioUnitario);
+      setNivel(itemEditando.nivel);
     } else {
-      // Resetear formulario
       setCodigo("");
       setDescripcion("");
       setUnidad("");
       setMetrado(undefined);
-      setPrecioUnitario(undefined);
+      setNivel(nivelInicial);
     }
-  }, [itemEditando, open]);
+    setValidationError(null);
+  }, [itemEditando, open, nivelInicial]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setValidationError(null);
+
     if (!codigo.trim() || !descripcion.trim()) {
+      setValidationError("Código y descripción son obligatorios.");
       return;
     }
 
-    if (isPartida && (!unidad.trim() || metrado === undefined || precioUnitario === undefined)) {
+    if (isPartida && (!unidad.trim() || metrado === undefined || Number.isNaN(metrado))) {
+      setValidationError("Para una partida indica unidad y metrado (≥ 0).");
       return;
     }
 
@@ -91,7 +93,6 @@ export function BudgetNodeDialog({
         ...(isPartida && {
           unidad: unidad.trim(),
           metrado: metrado!,
-          precioUnitario: precioUnitario!,
         }),
       };
 
@@ -108,7 +109,7 @@ export function BudgetNodeDialog({
     if (isEditando) {
       return `Editar ${nivel}`;
     }
-    return `Agregar ${nivel}`;
+    return padreId ? "Agregar nodo hijo" : "Agregar ítem raíz";
   };
 
   return (
@@ -118,16 +119,32 @@ export function BudgetNodeDialog({
           <DialogTitle>{getTitle()}</DialogTitle>
           <DialogDescription>
             {isPartida
-              ? "Completa los datos de la partida de obra."
-              : "Completa los datos del capítulo o subcapítulo."}
+              ? "Partida de obra (hoja WBS). El precio unitario se define al guardar el APU."
+              : "Capítulo o subcapítulo (puede tener hijos)."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            {/* Código */}
+            {!isEditando && (
+              <div className="space-y-2">
+                <Label htmlFor="nivel">Tipo de nodo *</Label>
+                <select
+                  id="nivel"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                  value={nivel === "PARTIDA" ? "PARTIDA" : "CAPITULO"}
+                  onChange={(e) =>
+                    setNivel(e.target.value === "PARTIDA" ? "PARTIDA" : "CAPITULO")
+                  }
+                >
+                  <option value="CAPITULO">Capítulo / título</option>
+                  <option value="PARTIDA">Partida (hoja)</option>
+                </select>
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="codigo">Código *</Label>
+              <Label htmlFor="codigo">Código / ítem *</Label>
               <Input
                 id="codigo"
                 value={codigo}
@@ -137,7 +154,6 @@ export function BudgetNodeDialog({
               />
             </div>
 
-            {/* Descripción */}
             <div className="space-y-2">
               <Label htmlFor="descripcion">Descripción *</Label>
               <Input
@@ -149,10 +165,8 @@ export function BudgetNodeDialog({
               />
             </div>
 
-            {/* Campos específicos para PARTIDA */}
             {isPartida && (
               <>
-                {/* Unidad */}
                 <div className="space-y-2">
                   <Label htmlFor="unidad">Unidad *</Label>
                   <Input
@@ -164,7 +178,6 @@ export function BudgetNodeDialog({
                   />
                 </div>
 
-                {/* Metrado */}
                 <div className="space-y-2">
                   <Label htmlFor="metrado">Metrado *</Label>
                   <Input
@@ -173,44 +186,20 @@ export function BudgetNodeDialog({
                     step="0.01"
                     min="0"
                     value={metrado ?? ""}
-                    onChange={(e) => setMetrado(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    onChange={(e) =>
+                      setMetrado(e.target.value ? parseFloat(e.target.value) : undefined)
+                    }
                     placeholder="0.00"
                     required
                   />
                 </div>
-
-                {/* Precio Unitario */}
-                <div className="space-y-2">
-                  <Label htmlFor="precioUnitario">Precio Unitario (USD) *</Label>
-                  <Input
-                    id="precioUnitario"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={precioUnitario ?? ""}
-                    onChange={(e) => setPrecioUnitario(e.target.value ? parseFloat(e.target.value) : undefined)}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                {/* Parcial calculado (solo lectura) */}
-                {metrado !== undefined && precioUnitario !== undefined && (
-                  <div className="space-y-2">
-                    <Label>Parcial</Label>
-                    <Input
-                      value={(metrado * precioUnitario).toLocaleString('es-ES', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                        style: 'currency',
-                        currency: 'USD'
-                      })}
-                      readOnly
-                      className="font-semibold"
-                    />
-                  </div>
-                )}
               </>
+            )}
+
+            {validationError && (
+              <p className="text-sm text-destructive" role="alert">
+                {validationError}
+              </p>
             )}
           </div>
 

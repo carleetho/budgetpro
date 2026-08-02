@@ -101,8 +101,9 @@ export function isWbsLeafNode(node: WbsNodeResponseDto): boolean {
 }
 
 /**
- * [REGLA-110]: un solo presupuesto ACTIVO por proyecto (BORRADOR o CONGELADO).
- * Nota: con paginación, el consumidor debe revisar todas las páginas si `totalElements > size`.
+ * [REGLA-110 en comentarios FE históricos]: un presupuesto BORRADOR/CONGELADO se considera "activo".
+ * As-built BE (`CrearPresupuestoUseCaseImpl.existsByProyectoId`): **un solo presupuesto por proyecto**
+ * (no se permite un segundo aunque el primero esté INVALIDADO). La UI debe alinearse a 1:1 absoluto.
  */
 export function presupuestoEstaActivo(estado: EstadoPresupuestoRest): boolean {
   return estado === "BORRADOR" || estado === "CONGELADO";

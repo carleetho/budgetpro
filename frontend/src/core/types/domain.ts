@@ -21,9 +21,10 @@ export type EstadoPresupuesto = 'BORRADOR' | 'CONGELADO' | 'INVALIDADO';
 export type EstadoEstimacion = 'BORRADOR' | 'APROBADA' | 'PAGADA';
 
 /**
- * Tipo de recurso.
+ * Tipo de recurso (alias limitado; el catálogo canónico está en `recursos.ts`).
+ * @deprecated Preferir import desde `@/core/types/recursos`.
  */
-export type TipoRecurso = 'MATERIAL' | 'MANO_OBRA' | 'EQUIPO';
+export type TipoRecurso = 'MATERIAL' | 'MANO_OBRA' | 'EQUIPO' | 'EQUIPO_MAQUINA' | 'EQUIPO_HERRAMIENTA' | 'SUBCONTRATO';
 
 /**
  * Proyecto.

@@ -121,7 +121,7 @@ export function PartidasTreeGrid({ nodes, readOnly, onAssignApu, onAddChild }: P
                   <Calculator className="h-3.5 w-3.5 text-primary" />
                 </Button>
               )}
-              {!leaf && onAddChild && (
+              {onAddChild && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -168,13 +168,26 @@ export function PartidasTreeGrid({ nodes, readOnly, onAssignApu, onAddChild }: P
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <TreeDataGrid
-        data={nodes}
-        columns={columns as ColumnDef<RowModel>[]}
-        getSubRows={getSubRows}
-        className="w-full"
-      />
+    <div className="space-y-3">
+      {!readOnly && onAddChild && (
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => onAddChild("", 0)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Agregar ítem raíz
+          </Button>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Las partidas solo se pueden crear (no hay edición ni borrado en la API).
+      </p>
+      <div className="border rounded-lg overflow-hidden">
+        <TreeDataGrid
+          data={nodes}
+          columns={columns as ColumnDef<RowModel>[]}
+          getSubRows={getSubRows}
+          className="w-full"
+        />
+      </div>
     </div>
   );
 }

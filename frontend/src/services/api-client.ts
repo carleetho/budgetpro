@@ -123,7 +123,8 @@ class ApiClient {
       console.error(`API Error [${response.status}] ${response.statusText} at ${response.url}`);
       console.error(`Error Message: ${errorMessage}`);
       console.error(`Error Details: ${JSON.stringify(errorDetails, null, 2)}`);
-      console.error(`Raw Response: ${await clonedResponse.text()}`);
+      const rawBody = await clonedResponse.text();
+      console.error(`Raw Response: ${rawBody}`);
 
       const error = new Error(errorMessage || `HTTP ${response.status}: ${response.statusText}`);
       (error as any).status = response.status;

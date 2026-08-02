@@ -37,7 +37,7 @@ export default function PresupuestoPartidasPage() {
             precioUnitario: d.precio,
           })),
         });
-        toast.success("APU registrado.");
+        toast.success("APU registrado. Los insumos quedan fijos; el rendimiento se puede ajustar después.");
         await reload();
         setApuOpen(false);
         setApuTarget(null);
@@ -72,7 +72,7 @@ export default function PresupuestoPartidasPage() {
           <CardTitle>Partidas</CardTitle>
           <CardDescription>
             Estructura jerárquica del presupuesto. En cada partida hoja puedes abrir el análisis de precio
-            unitario (APU).
+            unitario (APU). No hay edición ni borrado de partidas en la API: revisa el ítem antes de crear.
             {budget.estado === "CONGELADO" && (
               <span className="text-amber-700 dark:text-amber-400 font-medium ml-1">
                 Solo lectura: presupuesto congelado.

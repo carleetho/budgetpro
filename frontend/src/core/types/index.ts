@@ -10,7 +10,8 @@ export * from './api';
 export * from './domain';
 export * from './presupuesto';
 // Recursos: re-exportar solo lo que no está en domain
-export type { Recurso, CrearRecursoCommand } from './recursos';
+export type { Recurso, CrearRecursoCommand, TipoRecursoFiltroUi } from './recursos';
 export type { TipoRecurso } from './recursos';
+export { esTipoEquipo, coincideFiltroTipo, etiquetaTipoRecurso } from './recursos';
 export * from './apu';
 export * from './produccion';
