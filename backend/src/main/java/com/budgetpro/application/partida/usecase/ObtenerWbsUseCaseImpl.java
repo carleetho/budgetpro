@@ -30,7 +30,8 @@ public class ObtenerWbsUseCaseImpl implements ObtenerWbsUseCase {
             throw new IllegalArgumentException("presupuestoId es obligatorio");
         }
 
-        List<Partida> partidas = partidaRepository.findByPresupuestoId(presupuestoId);
+        // Copia mutable: el adapter puede devolver lista no modificable (p. ej. stream().toList()).
+        List<Partida> partidas = new ArrayList<>(partidaRepository.findByPresupuestoId(presupuestoId));
         partidas.sort(Comparator.comparing(Partida::getItem, Comparator.nullsLast(String::compareTo)));
 
         Map<UUID, List<Partida>> childrenByParent = new HashMap<>();
@@ -50,7 +51,9 @@ public class ObtenerWbsUseCaseImpl implements ObtenerWbsUseCase {
     }
 
     private WbsNodeResponse buildNode(Partida partida, Map<UUID, List<Partida>> childrenByParent) {
-        List<Partida> children = childrenByParent.getOrDefault(partida.getId().getValue(), List.of());
+        // No usar List.of() + sort(): List.of() es inmutable → UnsupportedOperationException (500 en /wbs).
+        List<Partida> children = new ArrayList<>(
+                childrenByParent.getOrDefault(partida.getId().getValue(), List.of()));
         children.sort(Comparator.comparing(Partida::getItem, Comparator.nullsLast(String::compareTo)));
         List<WbsNodeResponse> mapped = children.stream().map(c -> buildNode(c, childrenByParent)).toList();
         return new WbsNodeResponse(ObtenerPartidaUseCaseImpl.toResponse(partida), mapped);
