@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { ProjectSubnav } from "@/components/layout/ProjectSubnav";
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
@@ -8,9 +9,11 @@ interface ProjectLayoutProps {
 
 /**
  * Layout de detalle de proyecto.
- * El shell global (sidebar) lo aporta `app/(app)/layout.tsx`.
+ * Shell global: `app/(app)/layout.tsx`. Subnav de módulos: ProjectSubnav.
  */
-export default async function ProjectLayout({ children }: ProjectLayoutProps) {
+export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
+  const { id } = await params;
+
   return (
     <div className="mx-auto w-full max-w-7xl px-6 py-8">
       <Link
@@ -20,6 +23,7 @@ export default async function ProjectLayout({ children }: ProjectLayoutProps) {
         <ArrowLeft className="h-4 w-4" />
         Volver a Proyectos
       </Link>
+      <ProjectSubnav proyectoId={id} />
       {children}
     </div>
   );

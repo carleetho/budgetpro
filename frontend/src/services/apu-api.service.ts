@@ -28,7 +28,7 @@ export class ApuApiService {
       }
       const status =
         typeof e === "object" && e !== null && "status" in e
-          ? Number((e as { status?: number }).status)
+          ? Number((e as { status?: unknown }).status)
           : NaN;
       if (status === 404) {
         return null;
@@ -40,5 +40,17 @@ export class ApuApiService {
   /** `POST /api/v1/partidas/{partidaId}/apu` */
   static async crear(partidaId: string, body: CrearApuRequestDto): Promise<ApuResponseDto> {
     return apiClient.post<ApuResponseDto>(`/partidas/${partidaId}/apu`, body);
+  }
+
+  /** `PUT /api/v1/apu/{apuId}/rendimiento` → 204 */
+  static async actualizarRendimiento(
+    apuId: string,
+    nuevoRendimiento: number,
+    usuarioId: string
+  ): Promise<void> {
+    await apiClient.put<void>(`/apu/${apuId}/rendimiento`, {
+      nuevoRendimiento,
+      usuarioId,
+    });
   }
 }

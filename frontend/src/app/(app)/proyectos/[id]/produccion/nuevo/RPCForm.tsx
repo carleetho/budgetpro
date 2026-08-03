@@ -5,11 +5,19 @@ import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PresupuestoService } from "@/services/presupuesto.service";
+import { PresupuestoApiService } from "@/services/presupuesto-api.service";
 import { ProduccionService } from "@/services/produccion.service";
+import { getTenantIdForApi } from "@/lib/jwt-tenant";
+import type { PresupuestoResponseDto } from "@/core/types/presupuesto-contract";
+import { presupuestoEstaActivo } from "@/core/types/presupuesto-contract";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { BudgetProApiError } from "@/lib/budget-pro-api-error";
 
 interface ReportePartidaDTO {
   id: string;
@@ -21,10 +29,6 @@ interface ReportePartidaDTO {
   gastoAcumulado?: number | null;
   saldo?: number | null;
   hijos?: ReportePartidaDTO[] | null;
-}
-
-interface ReporteControlCostosResponse {
-  partidas: ReportePartidaDTO[];
 }
 
 interface PartidaRow {
@@ -64,7 +68,13 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
   const params = useParams();
   const routeId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const resolvedProyectoId = proyectoId ?? routeId ?? "";
+
+  const [presupuestos, setPresupuestos] = useState<PresupuestoResponseDto[]>([]);
+  const [presupuestoId, setPresupuestoId] = useState<string>("");
   const [partidas, setPartidas] = useState<PartidaRow[]>([]);
+  const [reportes, setReportes] = useState<
+    Array<{ id: string; fechaReporte?: string; estado?: string }>
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -72,7 +82,7 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
   const [avances, setAvances] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const loadPartidas = async () => {
+    const loadPresupuestos = async () => {
       if (!resolvedProyectoId || !isValidUuid(resolvedProyectoId)) {
         setLoadError("ID de proyecto no válido.");
         setIsLoading(false);
@@ -83,39 +93,75 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
       setLoadError(null);
 
       try {
-        // Primero obtener el presupuesto activo para el proyecto
-        const presupuestoActivo = await PresupuestoService.obtenerActivo(resolvedProyectoId);
+        const todos = await PresupuestoApiService.listarTodosPorProyecto(
+          getTenantIdForApi(),
+          resolvedProyectoId
+        );
+        const activos = todos.filter((p) => presupuestoEstaActivo(p.estado));
+        setPresupuestos(activos.length > 0 ? activos : todos);
 
-        if (!presupuestoActivo?.id) {
-          setLoadError("No se encontró un presupuesto activo para este proyecto.");
-          return;
+        const preferido =
+          activos.find((p) => p.estado === "CONGELADO") ??
+          activos[0] ??
+          (await PresupuestoService.obtenerActivo(resolvedProyectoId));
+
+        if (preferido?.id) {
+          setPresupuestoId(preferido.id);
+        } else if (todos[0]?.id) {
+          setPresupuestoId(todos[0].id);
+        } else {
+          setLoadError("No hay presupuestos en este proyecto.");
         }
 
-        const response = await PresupuestoService.obtenerControlCostos(presupuestoActivo.id);
-        const controlCostos = response as ReporteControlCostosResponse;
-        const hojas = flattenPartidas(controlCostos.partidas || []);
-        const rows = hojas.map((partida) => ({
-          id: partida.id,
-          codigo: partida.item,
-          descripcion: partida.descripcion,
-          metradoTotal: Number(partida.metrado ?? 0),
-          acumuladoActual: Number(partida.gastoAcumulado ?? 0),
-        }));
-        setPartidas(rows);
+        const lista = await ProduccionService.listar(resolvedProyectoId).catch(() => []);
+        setReportes(
+          (lista as Array<{ id: string; fechaReporte?: string; estado?: string }>) ?? []
+        );
       } catch (error) {
-        console.error("Error al cargar partidas:", error);
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Error al cargar partidas del presupuesto.";
-        setLoadError(errorMessage);
+        console.error(error);
+        if (BudgetProApiError.isInstance(error)) {
+          setLoadError(`[${error.businessCode}] ${error.message}`);
+        } else {
+          setLoadError(error instanceof Error ? error.message : "Error al cargar presupuestos.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadPartidas();
+    void loadPresupuestos();
   }, [resolvedProyectoId]);
+
+  useEffect(() => {
+    if (!presupuestoId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await PresupuestoService.obtenerControlCostos(presupuestoId);
+        const hojas = flattenPartidas(response.partidas || []);
+        if (cancelled) return;
+        setPartidas(
+          hojas.map((partida) => ({
+            id: partida.id,
+            codigo: partida.item,
+            descripcion: partida.descripcion,
+            metradoTotal: Number(partida.metrado ?? 0),
+            acumuladoActual: Number(partida.gastoAcumulado ?? 0),
+          }))
+        );
+        setAvances({});
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) {
+          setPartidas([]);
+          toast.error("No se pudo cargar el control de costos del presupuesto.");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [presupuestoId]);
 
   const totalRows = useMemo(() => partidas.length, [partidas]);
 
@@ -152,19 +198,25 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
       });
       toast.success("Reporte de producción registrado correctamente.");
       setAvances({});
+      const lista = await ProduccionService.listar(resolvedProyectoId).catch(() => []);
+      setReportes(
+        (lista as Array<{ id: string; fechaReporte?: string; estado?: string }>) ?? []
+      );
     } catch (error) {
       const status = (error as { status?: number }).status;
       const message =
-        error instanceof Error
-          ? error.message
-          : "Error al registrar el reporte de producción.";
+        error instanceof Error ? error.message : "Error al registrar el reporte de producción.";
 
       if (status === 409) {
         setSubmitError(message);
         return;
       }
 
-      toast.error(message);
+      if (BudgetProApiError.isInstance(error)) {
+        toast.error(`[${error.businessCode}] ${error.message}`);
+      } else {
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -174,7 +226,7 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Cargando partidas...</span>
+        <span className="ml-2 text-muted-foreground">Cargando producción…</span>
       </div>
     );
   }
@@ -189,13 +241,32 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {submitError && (
         <Alert variant="destructive">
           <AlertTitle>Regla de negocio</AlertTitle>
           <AlertDescription>{submitError}</AlertDescription>
         </Alert>
       )}
+
+      <div className="space-y-2 max-w-md">
+        <Label htmlFor="presupuesto-rpc">Presupuesto de referencia</Label>
+        <select
+          id="presupuesto-rpc"
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+          value={presupuestoId}
+          onChange={(e) => setPresupuestoId(e.target.value)}
+        >
+          {presupuestos.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.nombre} ({p.estado})
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Se usa el listado de presupuestos del proyecto (sin endpoint `/activo`).
+        </p>
+      </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{totalRows} partidas disponibles</span>
@@ -237,10 +308,32 @@ export default function RPCForm({ proyectoId }: RPCFormProps) {
       </div>
 
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
+        <Button onClick={() => void handleSubmit()} disabled={isSubmitting || !presupuestoId}>
           {isSubmitting ? "Certificando..." : "Certificar Avance"}
         </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Reportes recientes</CardTitle>
+          <CardDescription>`GET /proyectos/{"{id}"}/produccion`</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {reportes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aún no hay reportes.</p>
+          ) : (
+            <ul className="space-y-2">
+              {reportes.slice(0, 10).map((r) => (
+                <li key={r.id} className="flex items-center justify-between text-sm border-b py-2">
+                  <span className="font-mono text-xs">{r.id.slice(0, 8)}…</span>
+                  <span>{r.fechaReporte ?? "—"}</span>
+                  <Badge variant="outline">{r.estado ?? "—"}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

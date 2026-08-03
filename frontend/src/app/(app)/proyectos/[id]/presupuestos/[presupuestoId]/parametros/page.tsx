@@ -3,7 +3,7 @@
 import { PresupuestoParametrosForm } from "@/modules/presupuestos/components/PresupuestoParametrosForm";
 import { usePresupuestoWorkspace } from "@/modules/presupuestos/context/PresupuestoWorkspaceContext";
 
-/** Parámetros económicos y de contexto del presupuesto (borrador local hasta API). */
+/** Parámetros económicos (borrador local en navegador; sin PATCH de cabecera en API). */
 export default function PresupuestoParametrosPage() {
   const {
     presupuestoId,

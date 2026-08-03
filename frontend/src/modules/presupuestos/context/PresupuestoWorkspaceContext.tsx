@@ -16,10 +16,17 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BudgetNodeDialog } from "@/modules/presupuestos/components/BudgetNodeDialog";
+import {
+  AprobarChecklistDialog,
+  type AprobarChecklistState,
+} from "@/modules/presupuestos/components/AprobarChecklistDialog";
+import { collectWbsLeafPartidas } from "@/modules/presupuestos/utils/wbs-leaves";
 import { apiClient } from "@/services/api-client";
 import { PresupuestoApiService } from "@/services/presupuesto-api.service";
 import { PartidasWbsService } from "@/services/partidas-wbs.service";
 import { ProyectoService } from "@/services/proyecto.service";
+import { ApuApiService } from "@/services/apu-api.service";
+import { CronogramaService } from "@/services/cronograma.service";
 import type { Proyecto } from "@/core/types";
 import type { CrearItemPresupuestoCommand } from "@/core/types/presupuesto";
 import type { PresupuestoResponseDto, WbsNodeResponseDto } from "@/core/types/presupuesto-contract";
@@ -40,6 +47,20 @@ function badgeVariant(
   }
 }
 
+function mapAprobarError(e: unknown): string {
+  if (BudgetProApiError.isInstance(e)) {
+    const msg = e.message.toLowerCase();
+    if (msg.includes("cronograma") || msg.includes("programaobra") || msg.includes("programa de obra")) {
+      return `[${e.businessCode}] Falta programa de obra (cronograma). Créalo en Cronograma y reintenta.`;
+    }
+    if (msg.includes("apu")) {
+      return `[${e.businessCode}] Faltan APUs en partidas hoja. Completa el análisis en Partidas.`;
+    }
+    return `[${e.businessCode}] ${e.message}`;
+  }
+  return "No se pudo aprobar el presupuesto.";
+}
+
 export interface PresupuestoWorkspaceContextValue {
   presupuestoId: string;
   proyectoId: string;
@@ -51,7 +72,7 @@ export interface PresupuestoWorkspaceContextValue {
   readOnly: boolean;
   reload: () => Promise<void>;
   approving: boolean;
-  aprobar: () => Promise<void>;
+  requestAprobar: () => void;
   isDialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   selectedPadreId: string | null;
@@ -69,6 +90,14 @@ export function usePresupuestoWorkspace(): PresupuestoWorkspaceContextValue {
   return ctx;
 }
 
+const emptyChecklist: AprobarChecklistState = {
+  checking: false,
+  leafCount: 0,
+  hojasSinApu: [],
+  tieneCronograma: false,
+  cronogramaError: null,
+};
+
 export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode }) {
   const params = useParams();
   const presupuestoId = params.presupuestoId as string;
@@ -82,6 +111,8 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPadreId, setSelectedPadreId] = useState<string | null>(null);
   const [selectedPadreLevel, setSelectedPadreLevel] = useState(0);
+  const [checklistOpen, setChecklistOpen] = useState(false);
+  const [checklist, setChecklist] = useState<AprobarChecklistState>(emptyChecklist);
 
   const proyectoId = budget?.proyectoId ?? "";
 
@@ -122,18 +153,61 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
 
   const readOnly = budget ? isPresupuestoWbsReadOnly(budget.estado) : true;
 
-  const aprobar = useCallback(async () => {
+  const evaluateChecklist = useCallback(async () => {
+    setChecklist({ ...emptyChecklist, checking: true });
+    const leaves = collectWbsLeafPartidas(wbs);
+    const sinApu: AprobarChecklistState["hojasSinApu"] = [];
+
+    await Promise.all(
+      leaves.map(async (leaf) => {
+        const apu = await ApuApiService.obtenerPorPartidaOpcional(leaf.id);
+        if (!apu) {
+          sinApu.push({ id: leaf.id, item: leaf.item, descripcion: leaf.descripcion });
+        }
+      })
+    );
+
+    let tieneCronograma = false;
+    let cronogramaError: string | null = null;
+    const pid = budget?.proyectoId;
+    if (pid) {
+      try {
+        const crono = await CronogramaService.obtener(pid);
+        tieneCronograma = Boolean(crono.programaObraId) || (crono.actividades?.length ?? 0) > 0;
+        if (!tieneCronograma) {
+          cronogramaError = "El cronograma no tiene programa de obra ni actividades.";
+        }
+      } catch (e) {
+        tieneCronograma = false;
+        cronogramaError = BudgetProApiError.isInstance(e)
+          ? e.message
+          : "No se pudo obtener el cronograma del proyecto.";
+      }
+    }
+
+    setChecklist({
+      checking: false,
+      leafCount: leaves.length,
+      hojasSinApu: sinApu,
+      tieneCronograma,
+      cronogramaError,
+    });
+  }, [wbs, budget?.proyectoId]);
+
+  const requestAprobar = useCallback(() => {
+    setChecklistOpen(true);
+    void evaluateChecklist();
+  }, [evaluateChecklist]);
+
+  const confirmarAprobar = useCallback(async () => {
     setApproving(true);
     try {
       await PresupuestoApiService.aprobar(presupuestoId);
       toast.success("Presupuesto aprobado y congelado.");
+      setChecklistOpen(false);
       await loadAll();
     } catch (e) {
-      if (BudgetProApiError.isInstance(e)) {
-        toast.error(`[${e.businessCode}] ${e.message}`);
-      } else {
-        toast.error("No se pudo aprobar el presupuesto.");
-      }
+      toast.error(mapAprobarError(e));
     } finally {
       setApproving(false);
     }
@@ -150,7 +224,7 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
       try {
         const payload = {
           presupuestoId,
-          padreId: command.padreId,
+          padreId: command.padreId || null,
           item: command.codigo,
           descripcion: command.descripcion,
           unidad: command.unidad || null,
@@ -162,7 +236,11 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
         await loadAll();
       } catch (e) {
         console.error(e);
-        toast.error("No se pudo crear el ítem.");
+        if (BudgetProApiError.isInstance(e)) {
+          toast.error(`[${e.businessCode}] ${e.message}`);
+        } else {
+          toast.error("No se pudo crear el ítem.");
+        }
         throw e;
       }
     },
@@ -181,7 +259,7 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
       readOnly,
       reload: loadAll,
       approving,
-      aprobar,
+      requestAprobar,
       isDialogOpen,
       setDialogOpen: setIsDialogOpen,
       selectedPadreId,
@@ -199,7 +277,7 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
       readOnly,
       loadAll,
       approving,
-      aprobar,
+      requestAprobar,
       isDialogOpen,
       selectedPadreId,
       openAddChild,
@@ -208,7 +286,47 @@ export function PresupuestoWorkspaceProvider({ children }: { children: ReactNode
   );
 
   return (
-    <PresupuestoWorkspaceContext.Provider value={value}>{children}</PresupuestoWorkspaceContext.Provider>
+    <PresupuestoWorkspaceContext.Provider value={value}>
+      {children}
+      <AprobarChecklistBridge
+        open={checklistOpen}
+        onOpenChange={setChecklistOpen}
+        state={checklist}
+        approving={approving}
+        onConfirm={() => void confirmarAprobar()}
+      />
+    </PresupuestoWorkspaceContext.Provider>
+  );
+}
+
+function AprobarChecklistBridge({
+  open,
+  onOpenChange,
+  state,
+  approving,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  state: AprobarChecklistState;
+  approving: boolean;
+  onConfirm: () => void;
+}) {
+  const params = useParams();
+  const proyectoRouteId = params.id as string;
+  const presupuestoId = params.presupuestoId as string;
+  const base = `/proyectos/${proyectoRouteId}/presupuestos/${presupuestoId}`;
+
+  return (
+    <AprobarChecklistDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      proyectoRouteId={proyectoRouteId}
+      presupuestoBasePath={base}
+      state={state}
+      approving={approving}
+      onConfirm={onConfirm}
+    />
   );
 }
 
@@ -224,7 +342,7 @@ export function PresupuestoWorkspaceShell({ children }: { children: ReactNode })
     proyectoLoading,
     loading,
     approving,
-    aprobar,
+    requestAprobar,
     isDialogOpen,
     setDialogOpen,
     selectedPadreId,
@@ -283,7 +401,7 @@ export function PresupuestoWorkspaceShell({ children }: { children: ReactNode })
           )}
           <Button
             type="button"
-            onClick={() => void aprobar()}
+            onClick={() => requestAprobar()}
             disabled={budget.estado !== "BORRADOR" || approving}
           >
             {approving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aprobar presupuesto"}
@@ -294,7 +412,7 @@ export function PresupuestoWorkspaceShell({ children }: { children: ReactNode })
       <nav className="flex flex-wrap gap-2 border-b pb-3" aria-label="Secciones del presupuesto">
         <WorkspaceNavLink href={`${base}/resumen`}>Resumen</WorkspaceNavLink>
         <WorkspaceNavLink href={`${base}/partidas`}>Partidas</WorkspaceNavLink>
-        <WorkspaceNavLink href={`${base}/parametros`}>Parámetros</WorkspaceNavLink>
+        <WorkspaceNavLink href={`${base}/parametros`}>Parámetros (local)</WorkspaceNavLink>
       </nav>
 
       <div>{children}</div>

@@ -29,7 +29,8 @@ import { RecursosService } from "@/services/recursos.service";
 import { ApuApiService } from "@/services/apu-api.service";
 import type { ItemPresupuesto } from "@/core/types/presupuesto";
 import type { DetalleAPU, AnalisisUnitario } from "@/core/types/apu";
-import type { Recurso, TipoRecurso } from "@/core/types/recursos";
+import type { Recurso, TipoRecursoFiltroUi } from "@/core/types/recursos";
+import { esTipoEquipo } from "@/core/types/recursos";
 
 interface APUDesignerProps {
   open: boolean;
@@ -57,10 +58,12 @@ export function APUDesigner({
   const [detalles, setDetalles] = useState<DetalleAPU[]>([]);
   const [rendimientoDiario, setRendimientoDiario] = useState<number | undefined>(undefined);
   const [isResourceLibraryOpen, setIsResourceLibraryOpen] = useState(false);
-  const [tipoRecursoSeleccionado, setTipoRecursoSeleccionado] = useState<TipoRecurso>("MATERIAL");
+  const [tipoRecursoSeleccionado, setTipoRecursoSeleccionado] = useState<TipoRecursoFiltroUi>("MATERIAL");
   const [isSaving, setIsSaving] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
   const [lecturaSolo, setLecturaSolo] = useState(false);
+  const [existingApuId, setExistingApuId] = useState<string | null>(null);
+  const [rendimientoOriginal, setRendimientoOriginal] = useState<number | undefined>(undefined);
 
   // Cargar APU existente si existe (`GET /partidas/{id}/apu`)
   useEffect(() => {
@@ -75,9 +78,11 @@ export function APUDesigner({
         if (cancelled) return;
         if (existing) {
           setLecturaSolo(true);
-          setRendimientoDiario(
-            existing.rendimiento != null ? Number(existing.rendimiento) : undefined
-          );
+          setExistingApuId(existing.id);
+          const rend =
+            existing.rendimiento != null ? Number(existing.rendimiento) : undefined;
+          setRendimientoDiario(rend);
+          setRendimientoOriginal(rend);
           const mapped = await Promise.all(
             existing.insumos.map(async (ins, idx) => {
               const recurso = await RecursosService.obtenerPorId(ins.recursoId);
@@ -95,14 +100,17 @@ export function APUDesigner({
           setDetalles(mapped);
         } else {
           setLecturaSolo(false);
+          setExistingApuId(null);
           setDetalles([]);
           setRendimientoDiario(undefined);
+          setRendimientoOriginal(undefined);
         }
       } catch (e) {
         console.error(e);
         if (!cancelled) {
           toast.error("No se pudo cargar el APU de esta partida.");
           setLecturaSolo(false);
+          setExistingApuId(null);
           setDetalles([]);
         }
       } finally {
@@ -117,29 +125,30 @@ export function APUDesigner({
   // Calcular costo directo total
   const costoDirecto = detalles.reduce((sum, detalle) => sum + detalle.parcial, 0);
 
-  // Agrupar detalles por tipo
-  const detallesPorTipo = {
-    MATERIAL: detalles.filter(d => d.recurso?.tipo === "MATERIAL"),
-    MANO_DE_OBRA: detalles.filter(d => d.recurso?.tipo === "MANO_DE_OBRA"),
-    EQUIPO: detalles.filter(d => d.recurso?.tipo === "EQUIPO"),
-    SUBCONTRATO: detalles.filter(d => d.recurso?.tipo === "SUBCONTRATO"),
+  // Agrupar detalles por tipo (filtros UI; equipos agrupan variantes BE)
+  const detallesPorTipo: Record<TipoRecursoFiltroUi, DetalleAPU[]> = {
+    MATERIAL: detalles.filter((d) => d.recurso?.tipo === "MATERIAL"),
+    MANO_OBRA: detalles.filter((d) => d.recurso?.tipo === "MANO_OBRA"),
+    EQUIPO: detalles.filter((d) => d.recurso?.tipo != null && esTipoEquipo(d.recurso.tipo)),
+    SUBCONTRATO: detalles.filter((d) => d.recurso?.tipo === "SUBCONTRATO"),
   };
 
   // Abrir biblioteca de recursos
-  const handleAbrirBiblioteca = (tipo: TipoRecurso) => {
+  const handleAbrirBiblioteca = (tipo: TipoRecursoFiltroUi) => {
     setTipoRecursoSeleccionado(tipo);
     setIsResourceLibraryOpen(true);
   };
 
-  // Agregar recurso seleccionado
+  // Agregar recurso seleccionado (precio se captura en la grilla; catálogo no expone PU)
   const handleSeleccionarRecurso = async (recurso: Recurso) => {
+    const precioInicial = recurso.precioBase ?? 0;
     const nuevoDetalle: DetalleAPU = {
       id: `det-${Date.now()}`,
       recursoId: recurso.id,
       recurso: recurso,
       rendimiento: 1.0,
-      precio: recurso.precioBase,
-      parcial: recurso.precioBase,
+      precio: precioInicial,
+      parcial: precioInicial,
     };
 
     setDetalles([...detalles, nuevoDetalle]);
@@ -172,8 +181,44 @@ export function APUDesigner({
     setDetalles(detalles.filter(d => d.id !== detalleId));
   };
 
-  // Guardar APU
+  // Guardar APU nuevo o actualizar solo rendimiento de APU existente
   const handleGuardar = async () => {
+    if (lecturaSolo && existingApuId) {
+      if (rendimientoDiario == null || !(rendimientoDiario > 0)) {
+        toast.error("Indica un rendimiento diario mayor a 0.");
+        return;
+      }
+      if (rendimientoDiario === rendimientoOriginal) {
+        toast.info("Sin cambios de rendimiento.");
+        onOpenChange(false);
+        return;
+      }
+      let usuarioId = "";
+      try {
+        const raw = localStorage.getItem("auth_user");
+        const u = raw ? (JSON.parse(raw) as { usuarioId?: string; id?: string }) : {};
+        usuarioId = u.usuarioId ?? u.id ?? "";
+      } catch {
+        usuarioId = "";
+      }
+      if (!usuarioId) {
+        toast.error("No se pudo resolver el usuario de sesión para actualizar rendimiento.");
+        return;
+      }
+      setIsSaving(true);
+      try {
+        await ApuApiService.actualizarRendimiento(existingApuId, rendimientoDiario, usuarioId);
+        toast.success("Rendimiento del APU actualizado.");
+        onOpenChange(false);
+      } catch (error) {
+        console.error(error);
+        toast.error("No se pudo actualizar el rendimiento.");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
     if (lecturaSolo) {
       return;
     }
@@ -197,13 +242,14 @@ export function APUDesigner({
       onOpenChange(false);
     } catch (error) {
       console.error("Error al guardar APU:", error);
+      toast.error("No se pudo guardar el APU.");
     } finally {
       setIsSaving(false);
     }
   };
 
   // Renderizar tabla de detalles por tipo
-  const renderTablaDetalles = (tipo: TipoRecurso, icon: React.ReactNode) => {
+  const renderTablaDetalles = (tipo: TipoRecursoFiltroUi, icon: React.ReactNode) => {
     const detallesTipo = detallesPorTipo[tipo];
 
     return (
@@ -213,7 +259,7 @@ export function APUDesigner({
             {icon}
             <h3 className="font-semibold">
               {tipo === "MATERIAL" && "Materiales"}
-              {tipo === "MANO_DE_OBRA" && "Mano de Obra"}
+              {tipo === "MANO_OBRA" && "Mano de Obra"}
               {tipo === "EQUIPO" && "Equipos"}
               {tipo === "SUBCONTRATO" && "Subcontratos"}
             </h3>
@@ -338,12 +384,23 @@ export function APUDesigner({
               Análisis de Precio Unitario
               {lecturaSolo && (
                 <Badge variant="secondary" className="font-normal">
-                  Registrado (solo lectura)
+                  {existingApuId ? "Insumos fijos · rendimiento editable" : "Solo lectura"}
                 </Badge>
               )}
             </DialogTitle>
             <DialogDescription>
               {partida.descripcion} ({partida.codigo})
+              {!lecturaSolo && (
+                <span className="block mt-1 text-xs">
+                  Al guardar, los insumos quedan fijos (API 1:1). Después solo podrás ajustar el
+                  rendimiento diario.
+                </span>
+              )}
+              {lecturaSolo && existingApuId && (
+                <span className="block mt-1 text-xs">
+                  Los insumos no se editan. Puedes actualizar el rendimiento vía API.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -363,7 +420,7 @@ export function APUDesigner({
                 type="number"
                 step="0.01"
                 min="0"
-                readOnly={lecturaSolo}
+                readOnly={Boolean(lecturaSolo && !existingApuId)}
                 value={rendimientoDiario ?? ""}
                 onChange={(e) =>
                   setRendimientoDiario(
@@ -381,7 +438,7 @@ export function APUDesigner({
                   <Package className="h-4 w-4 mr-2" />
                   Materiales
                 </TabsTrigger>
-                <TabsTrigger value="MANO_DE_OBRA">
+                <TabsTrigger value="MANO_OBRA">
                   <Users className="h-4 w-4 mr-2" />
                   Mano de Obra
                 </TabsTrigger>
@@ -399,8 +456,8 @@ export function APUDesigner({
                 {renderTablaDetalles("MATERIAL", <Package className="h-5 w-5" />)}
               </TabsContent>
 
-              <TabsContent value="MANO_DE_OBRA" className="mt-4">
-                {renderTablaDetalles("MANO_DE_OBRA", <Users className="h-5 w-5" />)}
+              <TabsContent value="MANO_OBRA" className="mt-4">
+                {renderTablaDetalles("MANO_OBRA", <Users className="h-5 w-5" />)}
               </TabsContent>
 
               <TabsContent value="EQUIPO" className="mt-4">
@@ -444,6 +501,11 @@ export function APUDesigner({
             {!lecturaSolo && (
               <Button onClick={() => void handleGuardar()} disabled={isSaving || loadingExisting}>
                 {isSaving ? "Guardando..." : "Guardar APU"}
+              </Button>
+            )}
+            {lecturaSolo && existingApuId && (
+              <Button onClick={() => void handleGuardar()} disabled={isSaving || loadingExisting}>
+                {isSaving ? "Guardando..." : "Guardar rendimiento"}
               </Button>
             )}
           </DialogFooter>

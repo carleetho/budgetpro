@@ -1,54 +1,63 @@
 /**
- * Tipos específicos para el módulo de Recursos (Catálogo).
- * 
- * Define los recursos que pueden ser utilizados en los Análisis de Precios Unitarios (APU).
+ * Tipos del catálogo de Recursos — alineados a `TipoRecurso` (Java) y `RecursoResponse`.
  */
 
-/**
- * Tipo de recurso disponible en el sistema.
- */
-export type TipoRecurso = 'MATERIAL' | 'MANO_DE_OBRA' | 'EQUIPO' | 'SUBCONTRATO';
+/** Valores del enum backend `com.budgetpro.domain.shared.model.TipoRecurso`. */
+export type TipoRecurso =
+  | "MATERIAL"
+  | "MANO_OBRA"
+  | "EQUIPO"
+  | "EQUIPO_MAQUINA"
+  | "EQUIPO_HERRAMIENTA"
+  | "SUBCONTRATO";
 
-/**
- * Recurso del catálogo.
- * 
- * Representa un insumo que puede ser utilizado en un APU:
- * - MATERIAL: Cemento, Arena, Ladrillos, etc.
- * - MANO_DE_OBRA: Peón, Operario, Maestro, etc.
- * - EQUIPO: Mezcladora, Vibrador, etc.
- * - SUBCONTRATO: Servicios externos
- */
+/** Filtros de UI (agrupan variantes de equipo). */
+export type TipoRecursoFiltroUi =
+  | "MATERIAL"
+  | "MANO_OBRA"
+  | "EQUIPO"
+  | "SUBCONTRATO";
+
 export interface Recurso {
-  /** ID único del recurso */
   id: string;
-  
-  /** Nombre del recurso */
   nombre: string;
-  
-  /** Unidad de medida (m³, kg, gal, día, etc.) */
-  unidad: string;
-  
-  /** Precio base del recurso (en USD) */
-  precioBase: number;
-  
-  /** Tipo de recurso */
   tipo: TipoRecurso;
-  
-  /** Descripción opcional */
+  /** Unidad base si el backend la expuso en atributos; si no, placeholder. */
+  unidad: string;
+  /** El DTO REST actual no expone precio; el PU se captura al armar el APU. */
+  precioBase: number | null;
+  estado?: string;
   descripcion?: string;
-  
-  /** Código interno opcional */
   codigo?: string;
 }
 
-/**
- * DTO para crear/editar un recurso.
- */
+/** Body de `POST /api/v1/recursos` (`CrearRecursoRequest`). */
 export interface CrearRecursoCommand {
   nombre: string;
-  unidad: string;
-  precioBase: number;
   tipo: TipoRecurso;
-  descripcion?: string;
-  codigo?: string;
+  unidadBase: string;
+  atributos?: Record<string, unknown>;
+  esProvisional?: boolean;
+}
+
+export function esTipoEquipo(tipo: TipoRecurso): boolean {
+  return tipo === "EQUIPO" || tipo === "EQUIPO_MAQUINA" || tipo === "EQUIPO_HERRAMIENTA";
+}
+
+export function coincideFiltroTipo(tipo: TipoRecurso, filtro: TipoRecursoFiltroUi): boolean {
+  if (filtro === "EQUIPO") return esTipoEquipo(tipo);
+  return tipo === filtro;
+}
+
+export function etiquetaTipoRecurso(tipo: TipoRecurso): string {
+  switch (tipo) {
+    case "MANO_OBRA":
+      return "MANO OBRA";
+    case "EQUIPO_MAQUINA":
+      return "EQUIPO MAQUINA";
+    case "EQUIPO_HERRAMIENTA":
+      return "EQUIPO HERRAMIENTA";
+    default:
+      return tipo;
+  }
 }
