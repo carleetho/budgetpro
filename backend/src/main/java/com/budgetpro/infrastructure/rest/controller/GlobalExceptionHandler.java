@@ -4,6 +4,7 @@ import com.budgetpro.application.finanzas.evm.exception.PeriodoFechaInvalidaExce
 import com.budgetpro.application.finanzas.evm.port.in.ProyectoNotFoundException;
 import com.budgetpro.domain.finanzas.presupuesto.exception.PresupuestoSinCronogramaException;
 import com.budgetpro.infrastructure.rest.error.ErrorResponses;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -204,5 +205,19 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity.badRequest()
                 .body(ErrorResponses.validation(HttpStatus.BAD_REQUEST.value(), "VALIDATION_ERROR", errors));
+    }
+
+    /**
+     * Resilience4j {@code @RateLimiter} (p. ej. catalog-api) y otros puntos AOP.
+     * El filtro HTTP {@code ApiRateLimitingFilter} responde 429 directamente; este handler cubre anotaciones.
+     */
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<ErrorResponses.ErrorResponse> handleRateLimitExceeded(RequestNotPermitted ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", "3600")
+                .body(ErrorResponses.error(
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        "RATE_LIMIT_EXCEEDED",
+                        "Rate limit exceeded. Try again later."));
     }
 }

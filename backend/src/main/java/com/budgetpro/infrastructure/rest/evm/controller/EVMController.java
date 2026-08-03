@@ -12,6 +12,14 @@ import com.budgetpro.infrastructure.rest.evm.dto.CerrarPeriodoResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.EVMSnapshotResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.ForecastResponse;
 import com.budgetpro.infrastructure.rest.evm.dto.SCurveResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +33,14 @@ import java.util.UUID;
 /**
  * Controller REST para el módulo EVM.
  */
+@Tag(name = "EVM", description = """
+        Earned Value (CPI/SPI/EAC, S-Curve, forecast, cierre de periodo).
+        Madurez radiografía ~95%. Agrupado en Phase 2 de REQ-47 por roadmap histórico.
+        ⚠️ Agregaciones dashboard / escenarios de varianza raros: validar con notebook EVM.
+        """)
 @RestController
 @RequestMapping("/api/v1/evm")
+@SecurityRequirement(name = "bearer-jwt")
 public class EVMController {
 
     private static final String STATUS_CERRADO = "CERRADO";
@@ -44,11 +58,16 @@ public class EVMController {
         this.cerrarPeriodoUseCase = cerrarPeriodoUseCase;
     }
 
-    /**
-     * Calcula y retorna el snapshot de EVM para un proyecto y fecha de corte.
-     */
+    @Operation(summary = "Snapshot EVM", description = "Calcula y persiste métricas PV/EV/AC/CPI/SPI para fecha de corte.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Snapshot",
+                    content = @Content(schema = @Schema(implementation = EVMSnapshotResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    })
     @GetMapping("/{proyectoId}")
-    public ResponseEntity<EVMSnapshotResponse> obtenerMetricas(@PathVariable UUID proyectoId,
+    public ResponseEntity<EVMSnapshotResponse> obtenerMetricas(
+            @Parameter(description = "ID del proyecto", required = true) @PathVariable UUID proyectoId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaCorte) {
 
         LocalDateTime corte = fechaCorte != null ? fechaCorte : LocalDateTime.now();
@@ -57,30 +76,48 @@ public class EVMController {
         return ResponseEntity.ok(toResponse(snapshot));
     }
 
+    @Operation(summary = "S-Curve", description = "Serie temporal PV/EV/AC (UC-E04).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "S-Curve",
+                    content = @Content(schema = @Schema(implementation = SCurveResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @GetMapping("/{proyectoId}/s-curve")
     public ResponseEntity<SCurveResponse> getSCurve(
-            @PathVariable UUID proyectoId,
+            @Parameter(description = "ID del proyecto", required = true) @PathVariable UUID proyectoId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         SCurveResult result = obtenerSCurveUseCase.obtener(proyectoId, startDate, endDate);
         return ResponseEntity.ok(toResponse(result));
     }
 
-    /**
-     * Obtiene la fecha de finalización proyectada basada en SPI y cronograma (REQ-63, UC-E05).
-     */
+    @Operation(summary = "Forecast fecha fin", description = "Proyección por SPI (UC-E05 / REQ-63).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Forecast",
+                    content = @Content(schema = @Schema(implementation = ForecastResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @GetMapping("/{proyectoId}/forecast")
-    public ResponseEntity<ForecastResponse> getForecast(@PathVariable UUID proyectoId) {
+    public ResponseEntity<ForecastResponse> getForecast(
+            @Parameter(description = "ID del proyecto", required = true) @PathVariable UUID proyectoId) {
         ForecastResult result = obtenerForecastFechaUseCase.obtener(proyectoId);
         return ResponseEntity.ok(toForecastResponse(result));
     }
 
-    /**
-     * Cierra un período de valuación para el proyecto (REQ-64, Invariante E-04).
-     */
+    @Operation(
+            summary = "Cerrar periodo de valuación",
+            description = "Cierre de periodo (invariante E-04 / REQ-64). Requiere revisión humana en escenarios borde."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Periodo cerrado",
+                    content = @Content(schema = @Schema(implementation = CerrarPeriodoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Fecha inválida"),
+            @ApiResponse(responseCode = "401", description = "No autenticado"),
+            @ApiResponse(responseCode = "409", description = "Periodo ya cerrado / estado ilegal")
+    })
     @PostMapping("/{proyectoId}/cerrar-periodo")
     public ResponseEntity<CerrarPeriodoResponse> cerrarPeriodo(
-            @PathVariable UUID proyectoId,
+            @Parameter(description = "ID del proyecto", required = true) @PathVariable UUID proyectoId,
             @Valid @RequestBody CerrarPeriodoRequest request) {
         String periodoId = cerrarPeriodoUseCase.cerrar(proyectoId, request.fechaCorte());
         return ResponseEntity.ok(new CerrarPeriodoResponse(

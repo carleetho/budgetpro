@@ -298,3 +298,18 @@ Inventario sin Partida es ilegal (para salidas).
 // Cross-check: Output must be linked to a Leaf Partida
 ```
 
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | Sin módulo FE dedicado as-built |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | Integration Guide §15 (Phase 2) — ~70% |
+| Notas | Multi-almacén parcialmente definido. |

@@ -8,6 +8,13 @@ import com.budgetpro.infrastructure.rest.auth.dto.AuthResponse;
 import com.budgetpro.infrastructure.rest.auth.dto.LoginRequest;
 import com.budgetpro.infrastructure.rest.auth.dto.RegisterRequest;
 import com.budgetpro.infrastructure.security.jwt.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Controlador de autenticación.
  */
+@Tag(name = "Authentication", description = "Autenticación y autorización de usuarios (JWT)")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -45,6 +53,22 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Operation(
+            summary = "Login",
+            description = """
+                    Autentica con email/password y emite JWT Bearer.
+                    
+                    Rate limit: tier `auth-login` (5 intentos / 15 min por IP).
+                    Seguridad: sesión stateless JWT (REGLA-051 / REGLA-138 en canónico de seguridad).
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login exitoso",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Payload inválido (Bean Validation)"),
+            @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
+            @ApiResponse(responseCode = "429", description = "RATE_LIMIT_EXCEEDED (auth-login)")
+    })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
@@ -64,6 +88,17 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Register",
+            description = "Registra un usuario nuevo (rol inicial RESIDENTE) y emite JWT."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuario creado",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Payload inválido"),
+            @ApiResponse(responseCode = "409", description = "Email ya registrado"),
+            @ApiResponse(responseCode = "429", description = "RATE_LIMIT_EXCEEDED (auth-login)")
+    })
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (usuarioJpaRepository.existsByEmailIgnoreCase(request.email())) {
@@ -89,6 +124,16 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(
+            summary = "Perfil actual",
+            description = "Devuelve el usuario autenticado a partir del JWT.",
+            security = @SecurityRequirement(name = "bearer-jwt")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil",
+                    content = @Content(schema = @Schema(implementation = AuthMeResponse.class))),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
     @GetMapping("/me")
     public ResponseEntity<AuthMeResponse> me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

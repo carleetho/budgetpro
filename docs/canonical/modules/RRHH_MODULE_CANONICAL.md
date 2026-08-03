@@ -143,3 +143,18 @@ Superficie bajo **`/api/v1/rrhh`** (controladores en `infrastructure/rest/rrhh/c
 - [ ] **Complex Regime**: Civil Construction regime is complex (holidays, rain days, altitude). Needs a robust Rules Engine, not just simple math. (High)
 - [ ] **Consultar costos**: varianza sigue con costo estimado fijo de demostración; agrupación CUADRILLA/PARTIDA placeholder `"N/A"`.
 - [ ] **Nómina**: ISR sigue siendo factor fijo en `NominaConstants` (no tabla fiscal progresiva).
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | Sin módulo FE dedicado as-built — **Under Development** |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | [`RRHH_UNDER_DEVELOPMENT.md`](../../frontend/RRHH_UNDER_DEVELOPMENT.md) + Guide §17 |
+| Notas | NO generar pantallas/nómina con IA. Madurez radiografía ~50% + riesgo alto alucinación. |

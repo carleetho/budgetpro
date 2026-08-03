@@ -12,6 +12,8 @@ import com.budgetpro.infrastructure.rest.rrhh.dto.ActualizarEmpleadoRequest;
 import com.budgetpro.infrastructure.rest.rrhh.dto.AsignarEmpleadoProyectoRequest;
 import com.budgetpro.infrastructure.rest.rrhh.dto.CrearEmpleadoRequest;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -20,8 +22,15 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "RRHH (Under Development)", description = """
+        ⚠️ UNDER DEVELOPMENT — madurez radiografía ~50%; riesgo alto de alucinación FE/IA.
+        NO generar pantallas/nómina completas con IA. Ver docs/frontend/RRHH_UNDER_DEVELOPMENT.md
+        y RRHH_MODULE_CANONICAL.md / RRHH_GAP_STUDY.md. APIs pueden cambiar.
+        Empleados: superficie parcial (CRUD/asignaciones).
+        """)
 @RestController
 @RequestMapping("/api/v1/rrhh/empleados")
+@SecurityRequirement(name = "bearer-jwt")
 public class EmpleadoController {
 
     private final CrearEmpleadoUseCase crearEmpleadoUseCase;

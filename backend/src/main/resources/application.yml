@@ -47,6 +47,12 @@ app:
   notification:
     email: ${ADMIN_EMAIL}
     sender: ${NOTIFICATION_SENDER:onboarding@resend.dev}
+  rate-limit:
+    enabled: true
+
+# CORS (REQ-47 Task 7). Prod: CORS_ALLOWED_ORIGINS=https://app.example.com
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
 
 # REGLA-054
 jwt:
@@ -62,6 +68,16 @@ catalog:
     warm:
       sources: ${CATALOG_WARM_SOURCES:CAPECO}
       limit: ${CATALOG_WARM_LIMIT:100}
+
+# OpenAPI / Swagger UI (REQ-47 Task 1). Metadata Info/JWT: OpenApiConfig.java
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  show-actuator: false
 
 management:
   endpoints:
@@ -118,3 +134,16 @@ resilience4j:
         limitForPeriod: 100
         limitRefreshPeriod: 1m
         timeoutDuration: 1s
+      # REQ-47 Task 8 — API tiers (in-memory; keys = user|IP vía ApiRateLimitingFilter)
+      api-per-user:
+        limitForPeriod: 1000
+        limitRefreshPeriod: 1h
+        timeoutDuration: 0s
+      api-public:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1h
+        timeoutDuration: 0s
+      auth-login:
+        limitForPeriod: 5
+        limitRefreshPeriod: 15m
+        timeoutDuration: 0s

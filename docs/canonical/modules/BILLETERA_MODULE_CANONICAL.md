@@ -116,3 +116,18 @@
 - [ ] **Concurrency**: Balance updates need Optimistic Locking to prevent Race Conditions. (Critical)
 - [ ] **Consulta por proyecto**: resolver `billeteraId` desde `proyectoId` en un endpoint dedicado (opcional UX).
 - [ ] **EGRESO vía API genérica:** alinear request/use case con reglas de `Billetera.egresar` (presupuesto / integridad) o documentar perfil “solo ingreso manual”.
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | Sin módulo FE dedicado as-built |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | Integration Guide §6 (Phase 1) |
+| Notas | Stub estructural; no inventar dashboard de caja. |

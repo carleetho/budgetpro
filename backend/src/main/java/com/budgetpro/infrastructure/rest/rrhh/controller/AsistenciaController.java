@@ -9,6 +9,8 @@ import com.budgetpro.domain.rrhh.model.EmpleadoId;
 import com.budgetpro.domain.proyecto.model.ProyectoId;
 import com.budgetpro.infrastructure.rest.rrhh.dto.RegistrarAsistenciaRequest;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +22,14 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
+@Tag(name = "RRHH (Under Development)", description = """
+        ⚠️ UNDER DEVELOPMENT — madurez radiografía ~50%; riesgo alto de alucinación FE/IA.
+        NO generar pantallas/nómina completas con IA. Ver docs/frontend/RRHH_UNDER_DEVELOPMENT.md.
+        Asistencias: registro/consulta parcial; filtros incompletos pueden fallar.
+        """)
 @RestController
 @RequestMapping("/api/v1/rrhh/asistencias")
+@SecurityRequirement(name = "bearer-jwt")
 public class AsistenciaController {
 
     private final RegistrarAsistenciaUseCase registrarAsistenciaUseCase;

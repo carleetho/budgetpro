@@ -268,3 +268,18 @@ Mismo caso de uso y payload **extendido** (`ConfigurarLaboralExtendidaUseCase`):
 | Fecha | Cambio |
 | ----- | ------ |
 | 2026-04-18 | **Opción B / contenedor contractual:** REGLA-110 sustituida (múltiples presupuestos por proyecto; un **contractual vigente**). Nuevas REGLA-158–162 (Subpresupuesto, jornada, tipo APU, precios fecha+lugar, multimoneda cabecera). Contratos §5 ampliados; Partida → **`subpresupuesto_id`**. UC-P02b/c añadidos; evento objetivo `PresupuestoUbicacionOFechaModificadaEvent`. |
+
+---
+
+## Frontend Integration (REQ-47 — Phase 1 stub)
+
+> **To Be Documented** — guía operativa: [`docs/frontend/INTEGRATION_GUIDE.md`](../../frontend/INTEGRATION_GUIDE.md).  
+> Solo documentar implementación FE **as-built** (no especulación). AI safety: [`AI_SAFETY_GUIDE.md`](../../frontend/AI_SAFETY_GUIDE.md).  
+> Tipos: `cd frontend && npm run generate:types` → `src/types/api.ts` (requiere OpenAPI real, no placeholder).
+
+| Área | Estado as-built |
+|------|-----------------|
+| Módulo Next.js | `frontend/src/modules/presupuestos/` (workspace, partidas, APU designer, totales) |
+| Cliente HTTP | `frontend/src/services/api-client.ts` + `BudgetProApiError` |
+| Integración API (ejemplos) | Integration Guide §4 (Phase 1) |
+| Notas | UI parcial existente; mantener sync con invariantes P-01 / REGLA-110 al documentar pantallas. |

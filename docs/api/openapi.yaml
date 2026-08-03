@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: BudgetPro API
+  version: 1.0.0
+  description: |
+    Placeholder versionado. Regenerar con `./scripts/generate-openapi-spec.sh`
+    (backend en ejecución) antes de mergear cambios de controllers REST.
+servers:
+  - url: http://localhost:8080
+    description: Desarrollo local
+paths: {}

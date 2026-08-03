@@ -65,7 +65,7 @@ public class CapecoApiAdapter implements CatalogPort {
     private final CatalogEventLogger catalogEventLogger;
 
     public CapecoApiAdapter(RestTemplate restTemplate, @Value("${catalog.capeco.url}") String apiBaseUrl,
-            @Value("${CAPECO_API_KEY}") String apiKey, CatalogCache catalogCache, CatalogMetrics catalogMetrics,
+            @Value("${CAPECO_API_KEY:}") String apiKey, CatalogCache catalogCache, CatalogMetrics catalogMetrics,
             CatalogEventLogger catalogEventLogger) {
         this.restTemplate = restTemplate;
         this.apiBaseUrl = apiBaseUrl;
