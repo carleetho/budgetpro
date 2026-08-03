@@ -5,6 +5,7 @@ on:
     paths:
       - "backend/src/main/java/com/budgetpro/infrastructure/rest/**"
       - "backend/src/main/java/com/budgetpro/infrastructure/config/OpenApiConfig.java"
+      - "backend/src/main/java/com/budgetpro/infrastructure/config/SecurityConfig.java"
       - "docs/api/**"
       - "scripts/generate-openapi-spec.sh"
       - ".github/workflows/api-validation.yml"
@@ -12,6 +13,8 @@ on:
     branches: [main, develop]
     paths:
       - "backend/src/main/java/com/budgetpro/infrastructure/rest/**"
+      - "backend/src/main/java/com/budgetpro/infrastructure/config/OpenApiConfig.java"
+      - "backend/src/main/java/com/budgetpro/infrastructure/config/SecurityConfig.java"
       - "docs/api/**"
       - "scripts/generate-openapi-spec.sh"
       - ".github/workflows/api-validation.yml"
