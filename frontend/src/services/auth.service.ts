@@ -16,13 +16,24 @@ export interface AuthResponse {
   rol: string;
 }
 
-export interface AuthMeResponse {
-  id?: string;
-  usuarioId?: string;
-  email?: string;
-  rol?: string;
-  nombreCompleto?: string;
-  [key: string]: unknown;
+/** Contrato backend `GET /api/v1/auth/me` (AuthMeResponse). */
+interface AuthMeApiResponse {
+  usuarioId: string;
+  nombreCompleto: string;
+  email: string;
+  rol: string;
+}
+
+/** Perfil normalizado para UI (shell REQ-70 + AuthGuard). */
+export interface AuthMe {
+  id: string;
+  /** Alias de `id` para compatibilidad con `auth_user.usuarioId`. */
+  usuarioId: string;
+  nombre: string;
+  nombreCompleto: string;
+  email: string;
+  rol: string;
+  avatarUrl: string | null;
 }
 
 export class AuthService {
@@ -38,9 +49,21 @@ export class AuthService {
     return apiClient.post<AuthResponse>("/auth/register", data);
   }
 
-  /** `GET /api/v1/auth/me` — valida sesión y refresca perfil. */
-  static async me(): Promise<AuthMeResponse> {
-    return apiClient.get<AuthMeResponse>("/auth/me");
+  /**
+   * Perfil del usuario autenticado.
+   * Mapea `GET /api/v1/auth/me` al shape de UI.
+   */
+  static async me(): Promise<AuthMe> {
+    const raw = await apiClient.get<AuthMeApiResponse>("/auth/me");
+    return {
+      id: raw.usuarioId,
+      usuarioId: raw.usuarioId,
+      nombre: raw.nombreCompleto,
+      nombreCompleto: raw.nombreCompleto,
+      email: raw.email,
+      rol: raw.rol,
+      avatarUrl: null,
+    };
   }
 
   static logout() {
