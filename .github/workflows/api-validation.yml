@@ -43,6 +43,9 @@ jobs:
       RESEND_API_KEY: test-key
       ADMIN_EMAIL: admin@test.local
       CORS_ALLOWED_ORIGINS: http://localhost:3000
+      CAPECO_API_KEY: ci-placeholder
+      CAPECO_API_URL: http://localhost:8081
+      CATALOG_PROVIDER: capeco
 
     steps:
       - uses: actions/checkout@v4
